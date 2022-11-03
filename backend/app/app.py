@@ -1,9 +1,14 @@
 from flask import Flask, render_template
 import os
 
-app = Flask(__name__, template_folder='templates')
+app = Flask(__name__, template_folder='web/templates')
 
 BASE_PATH_TEMPLATE = "/app/templates/"
+
+
+@app.route('/')
+def home():
+    return render_template("./NO_TEMPLATE.html")
 
 
 @app.route('/')

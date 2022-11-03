@@ -1,3 +1,7 @@
+# TODO: add versions for the respective packages
 flask
-numpy
+pandas
 seaborn
+SQLAlchemy
+psycopg2-binary
+requests
