@@ -32,7 +32,7 @@ setup(
         'Development Status :: DEV ALPHA',
         'License :: OSI Approved :: UNKNOWN',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.10.0',
+        'Programming Language :: Python :: 3.10',
     ],
 
     packages=["backend", "database"],

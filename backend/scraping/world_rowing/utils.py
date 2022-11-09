@@ -43,6 +43,7 @@ def _alter_dataframe_column_types(df: pd.DataFrame, type_mapping: dict[str, str]
     """
     # TODO: adjust me if we use python >= 3.10
     #  switch/case would be the call here. That is only present in python >= 3.10
+    #  UPGRADE TO python 3.10
     assert (set(type_mapping.keys()).issubset(set(df.columns.to_list())))
 
     for k, v in type_mapping.items():

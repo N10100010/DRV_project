@@ -10,8 +10,13 @@ WR_ENDPOINT_RACE = "race/"
 WR_ENDPOINT_EVENT = "event/"
 WR_ENDPOINT_COMPETITION = "competition/"
 
+# import tenacity
 
 def load_json(url: str, params=None, timeout=20., **kwargs):
+    """
+    Loads any json from any URL.
+    """
+    # TODO: use tenacity for retries
     r = requests.get(url, params=params, timeout=timeout, **kwargs)
     r.raise_for_status()
     if r.text:
