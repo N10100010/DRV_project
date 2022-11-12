@@ -1,6 +1,4 @@
-import requests
-import utils
-
+import backend.scraping.world_rowing.utils as ut
 import pandas as pd
 
 # CONSTANTS
@@ -10,22 +8,13 @@ WR_ENDPOINT_RACE = "race/"
 WR_ENDPOINT_EVENT = "event/"
 WR_ENDPOINT_COMPETITION = "competition/"
 
-# import tenacity
-
-def load_json(url: str, params=None, timeout=20., **kwargs):
-    """
-    Loads any json from any URL.
-    """
-    # TODO: use tenacity for retries
-    r = requests.get(url, params=params, timeout=timeout, **kwargs)
-    r.raise_for_status()
-    if r.text:
-        return r.json()
-    else:
-        return {}
+PIPE_PRE_PROCESS = ut.Pipeline(
+    functions=[ut.alter_dataframe_column_types, ut.extract_rsc_codes],
+    default_kwargs=None
+)
 
 
-def pre_process_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+def _pre_process_to_dataframe(_dict: dict) -> pd.DataFrame:
     """
     Identifies date- and binary-columns and transforms their types.
 
@@ -34,27 +23,21 @@ def pre_process_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         d2 = {2:2, 3:3}
         d1 | d2 == {1: 1, 2: 2, 3: 3}
     """
-    date_cols = _get_date_columns(df.columns.to_list())
-    binary_cols = _get_binary_columns(df)
+    df = ut.preprocess_json_to_dataframe(_dict)
+
+    date_cols = ut.get_date_columns(df.columns.to_list())
+    binary_cols = ut.get_binary_columns(df)
 
     date_cols = {k: "date" for k in date_cols}
     binary_cols = {k: "bool" for k in binary_cols}
+    datatypes = {'type_mapping': date_cols | binary_cols}
 
-    _dict = date_cols | binary_cols
-
-    df = _alter_dataframe_column_types(df, _dict)
-
-    return df
-
-
-def get_dataframe_from_dict(dictionary: dict) -> pd.DataFrame:
-    assert ("data" in dictionary.keys())
-    return pd.DataFrame.from_dict(dictionary['data'])
+    return PIPE_PRE_PROCESS(df, kwargs_list=[datatypes, None])
 
 
 def get_competitions(year: int = None, kind: str = None):
-    _json_dict = load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_COMPETITION}')
-    df = get_dataframe_from_dict(_json_dict)
+    _json_dict = ut.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_COMPETITION}')
+    df = _pre_process_to_dataframe(_json_dict)
 
     if year:
         # if the date column is known, one can filter for it
@@ -65,8 +48,8 @@ def get_competitions(year: int = None, kind: str = None):
 
 
 def get_races(year: int = None, kind: str = None):
-    _json_dict = load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_RACE}')
-    df = get_dataframe_from_dict(_json_dict)
+    _json_dict = ut.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_RACE}')
+    df = _pre_process_to_dataframe(_json_dict)
 
     if year:
         # if the date column is known, one can filter for it
@@ -77,8 +60,8 @@ def get_races(year: int = None, kind: str = None):
 
 
 def get_events(year: int = None, kind: str = None):
-    _json_dict = load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_EVENT}')
-    df = get_dataframe_from_dict(_json_dict)
+    _json_dict = ut.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_EVENT}')
+    df = _pre_process_to_dataframe(_json_dict)
 
     if year:
         # if the date column is known, one can filter for it
