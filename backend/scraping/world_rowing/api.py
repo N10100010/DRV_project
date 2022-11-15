@@ -11,6 +11,7 @@ WR_ENDPOINT_COMPETITIONTYPE = "competitionType/"
 WR_ENDPOINT_STATS = "statistic/"
 WR_ENDPOINT_VENUE = "venue/"
 WR_ENDPOINT_BOATCLASSES = "boatClass/"
+WR_ENDPOINT_COUNTIRES = "country/"
 
 PIPE_PRE_PROCESS = ut.Pipeline(
     functions=[ut.alter_dataframe_column_types, ut.extract_rsc_codes],
@@ -46,6 +47,13 @@ def get_competitiontype(kwargs: dict = {}) -> pd.DataFrame:
     return df
 
 
+def get_countries(kwargs: dict = {}) -> pd.DataFrame:
+    _json_dict = ut.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_COUNTIRES}', **kwargs)
+    df = _pre_process_to_dataframe(_json_dict)
+
+    return df
+
+
 def get_boatclasses(kwargs: dict = {}) -> pd.DataFrame:
     _json_dict = ut.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_BOATCLASSES}', **kwargs)
     df = _pre_process_to_dataframe(_json_dict)
@@ -60,9 +68,47 @@ def get_statistics(kwargs: dict = {}) -> pd.DataFrame:
     return df
 
 
+def get_venues(kwargs: dict = {}) -> pd.DataFrame:
+    _json_dict = ut.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_VENUE}', **kwargs)
+    df = _pre_process_to_dataframe(_json_dict)
+
+    return df
+
+
 def get_competitions(year: int = None, kind: str = None, kwargs: dict = {}) -> pd.DataFrame:
+    _extend_by = kwargs.get('extend_by', None)
+    if _extend_by:
+        del kwargs['extend_by']
+
     _json_dict = ut.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_COMPETITION}', **kwargs)
     df = _pre_process_to_dataframe(_json_dict)
+
+    if _extend_by:
+        _extend_by_venue = _extend_by.get('venue', None)
+        _extend_by_country = _extend_by.get('country', None)
+
+        if _extend_by_venue and _extend_by_country:
+            df = ut.merge(
+                (df, get_venues(), get_countries()),
+                how='left',
+                left_on=('venueid', 'countryid'),
+                right_on=('id', 'id'),
+                suffixes=(
+                    (None, '_venue'),
+                    (None, '_county')
+                )
+            )
+        elif _extend_by_venue:
+            df = ut.merge(
+                (df, get_venues()),
+                how='left',
+                left_on=('venueid'),
+                right_on=('id'),
+                suffixes=(
+                    (None, '_venue')
+                )
+
+            )
 
     if year:
         # if the date column is known, one can filter for it
@@ -94,6 +140,8 @@ def get_events(year: int = None, kind: str = None, kwargs: dict = {}) -> pd.Data
         return df
     else:
         return df
+
+
 
 
 def merge_race_event_competitions(races: pd.DataFrame, events: pd.DataFrame, competitions: pd.DataFrame) -> pd.DataFrame:

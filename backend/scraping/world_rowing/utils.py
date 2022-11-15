@@ -18,15 +18,6 @@ logger = logging.getLogger(__name__)
 ## ABBREVIATIONS
 #WR = WorldRowing
 
-############################################################
-# CONSTANTS
-WR_BASE_URL = "https://world-rowing-api.soticcloud.net/stats/api/"
-# ENDPOINTS FOR THE BASE-URL
-WR_ENDPOINT_RACE = "race/"
-WR_ENDPOINT_EVENT = "event/"
-WR_ENDPOINT_COMPETITION = "competition/"
-############################################################
-
 
 class Pipeline:
     """

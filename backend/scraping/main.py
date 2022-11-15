@@ -20,13 +20,17 @@ def main():
     # the current result is always 1000 rows long. Why is that?
     races = api.get_races()
     events = api.get_events()
-    comps = api.get_competitions()
-
-    #stats = api.get_statistics()
-    #comp_types = api.get_competitiontype()
-    #boat_classes = api.get_boatclasses()
-
+    comps = api.get_competitions(kwargs={'extend_by': {'venue': True, 'country': True}})
+    comps_1 = api.get_competitions()
+    stats = api.get_statistics()
+    comp_types = api.get_competitiontype()
+    boat_classes = api.get_boatclasses()
+    venues = api.get_venues()
+    countries = api.get_countries()
+    # --> countries can
     merged = api.merge_race_event_competitions(races, events, comps)
+
+    _json_dict = ut.load_json(url=f'{api.WR_BASE_URL}{api.WR_ENDPOINT_STATS}')
 
 
     print()
