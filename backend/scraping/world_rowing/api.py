@@ -7,6 +7,10 @@ WR_BASE_URL = "https://world-rowing-api.soticcloud.net/stats/api/"
 WR_ENDPOINT_RACE = "race/"
 WR_ENDPOINT_EVENT = "event/"
 WR_ENDPOINT_COMPETITION = "competition/"
+WR_ENDPOINT_COMPETITIONTYPE = "competitionType/"
+WR_ENDPOINT_STATS = "statistic/"
+WR_ENDPOINT_VENUE = "venue/"
+WR_ENDPOINT_BOATCLASSES = "boatClass/"
 
 PIPE_PRE_PROCESS = ut.Pipeline(
     functions=[ut.alter_dataframe_column_types, ut.extract_rsc_codes],
@@ -35,8 +39,29 @@ def _pre_process_to_dataframe(_dict: dict) -> pd.DataFrame:
     return PIPE_PRE_PROCESS(df, kwargs_list=[datatypes, None])
 
 
-def get_competitions(year: int = None, kind: str = None):
-    _json_dict = ut.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_COMPETITION}')
+def get_competitiontype(kwargs: dict = {}) -> pd.DataFrame:
+    _json_dict = ut.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_COMPETITIONTYPE}', **kwargs)
+    df = _pre_process_to_dataframe(_json_dict)
+
+    return df
+
+
+def get_boatclasses(kwargs: dict = {}) -> pd.DataFrame:
+    _json_dict = ut.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_BOATCLASSES}', **kwargs)
+    df = _pre_process_to_dataframe(_json_dict)
+
+    return df
+
+
+def get_statistics(kwargs: dict = {}) -> pd.DataFrame:
+    _json_dict = ut.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_STATS}', **kwargs)
+    df = _pre_process_to_dataframe(_json_dict)
+
+    return df
+
+
+def get_competitions(year: int = None, kind: str = None, kwargs: dict = {}) -> pd.DataFrame:
+    _json_dict = ut.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_COMPETITION}', **kwargs)
     df = _pre_process_to_dataframe(_json_dict)
 
     if year:
@@ -47,8 +72,8 @@ def get_competitions(year: int = None, kind: str = None):
         return df
 
 
-def get_races(year: int = None, kind: str = None):
-    _json_dict = ut.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_RACE}')
+def get_races(year: int = None, kind: str = None, kwargs: dict = {}) -> pd.DataFrame:
+    _json_dict = ut.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_RACE}', **kwargs)
     df = _pre_process_to_dataframe(_json_dict)
 
     if year:
@@ -59,8 +84,8 @@ def get_races(year: int = None, kind: str = None):
         return df
 
 
-def get_events(year: int = None, kind: str = None):
-    _json_dict = ut.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_EVENT}')
+def get_events(year: int = None, kind: str = None, kwargs: dict = {}) -> pd.DataFrame:
+    _json_dict = ut.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_EVENT}', **kwargs)
     df = _pre_process_to_dataframe(_json_dict)
 
     if year:
@@ -69,3 +94,20 @@ def get_events(year: int = None, kind: str = None):
         return df
     else:
         return df
+
+
+def merge_race_event_competitions(races: pd.DataFrame, events: pd.DataFrame, competitions: pd.DataFrame) -> pd.DataFrame:
+    return ut.merge(
+        (
+            races.reset_index(), events,
+            competitions, get_boatclasses()
+        ),
+        how='left',
+        left_on=('eventid', 'competitionid', 'boatclassid'),
+        right_on='id',
+        suffixes=(
+            (None, '_event'),
+            (None, '_competition'),
+            (None, '_boat_class')
+        )
+    ).set_index('id')

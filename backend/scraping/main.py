@@ -1,5 +1,19 @@
 from world_rowing import api
 import pandas as pd
+from world_rowing import utils as ut
+
+import logging
+
+logging_level = logging.INFO
+main_logger = logging.getLogger()
+main_logger.setLevel(logging_level)
+
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging_level)
+formatter = logging.Formatter("%(asctime)s | %(name)s | %(levelname)s | %(message)s")
+stream_handler.setFormatter(formatter)
+
+main_logger.addHandler(stream_handler)
 
 
 def main():
@@ -8,28 +22,11 @@ def main():
     events = api.get_events()
     comps = api.get_competitions()
 
-    races_rsc = races.rsccode.unique()
-    #events_rsc = events.rsccode.unique()
+    #stats = api.get_statistics()
+    #comp_types = api.get_competitiontype()
+    #boat_classes = api.get_boatclasses()
 
-    def merge_events_races(races: pd.DataFrame, events: pd.DataFrame):
-        # todo: find out who with who with what
-
-        # todo: the rsccodes of races is more profane. The starting substring of the rsccode from races and events are the same
-        #pd.concat([races[['eventid', 'rsccode']], events[['id', 'rsccode']]], axis=1)
-
-        # todo: no connection seen between the following subparts
-        #pd.concat(
-        #    [
-        #        comps[['id', 'competitioncode', 'competitiontypeid']],
-        #        events[['id', 'competitionid', 'competitiontypeid']]
-        #    ], axis=1)
-
-
-        #merged = pd.merge(left=races, right=events, left_on='RscCode', right_on='RscCode')
-        #return merged
-        print()
-
-    # merge_events_races(races=races, events=events)
+    merged = api.merge_race_event_competitions(races, events, comps)
 
 
     print()
