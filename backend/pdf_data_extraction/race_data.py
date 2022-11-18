@@ -20,6 +20,10 @@ If 2000m is the only value on the second page for the 50m interval there are als
 ####################################################################################################
 '''
 
+from utils import write_to_json
+from utils import print_stats
+from utils import get_competition_ids
+
 import traceback
 import json
 from typing import Tuple
@@ -32,6 +36,7 @@ import numpy as np
 import pandas as pd
 pd.options.mode.chained_assignment = None
 
+
 # CONSTANTS
 BASE_URL = "https://world-rowing-api.soticcloud.net/stats/api/competition/"
 FILTER_STRING = "/?include=pdfUrls.orisCode,events.pdfUrls,events.races.pdfUrls.orisCode,events.boatClass,events.races.racePhase,events.races.photoFinishImage&sortInclude[pdfUrls.created_at]=asc&sortInclude[events.pdfUrls.DisplayName]=desc&sortInclude[events.races.pdfUrls.created_at]=asc"
@@ -41,30 +46,6 @@ JSON_INDENT_SIZE = 4
 NO_OF_COMPETITIONS = 50  # 1000
 DIST_INTERVALS = ["10", "25", "50"]
 RACE_DIST = "2000"
-
-
-def write_to_json(data: list, filename: str) -> None:
-    '''
-    Takes a list and writes to .json file.
-    '''
-    options = jsbeautifier.default_options()
-    options.indent_size = JSON_INDENT_SIZE
-    file = open(f"{filename}.json", "w")
-    file.write(jsbeautifier.beautify(json.dumps(data), options))
-    file.close()
-
-
-def print_stats(total: int, errors: int, empties: int, rate: str) -> None:
-    ''''
-    Prints basic statistics for the pdf reading process.
-    '''
-    print("{txt:-^25}".format(txt=f"\nRead: {(total)-errors}/{total} PDFs | ({rate}%)"))
-    print("{txt:-^25}".format(txt=f"Empty Files: {empties}"))
-
-
-def get_competition_ids() -> list:
-    competitions = requests.get(BASE_URL).json()["data"]
-    return [competition["id"] for competition in competitions]
 
 
 def fetch_race_data_urls(comp_ids: list) -> list:
@@ -321,7 +302,8 @@ def extract_table_data(pdf_urls: list) -> Tuple[list, list]:
     * List with json-like objects (final structure needs to be discussed) for each team per race
     * List containing the urls of all failed requests
     '''
-    json_lst = failed_requests = []
+    json_lst = []
+    failed_requests = []
     errors: int = 0
     empty_files: int = 0
 
@@ -350,8 +332,8 @@ def extract_table_data(pdf_urls: list) -> Tuple[list, list]:
     return json_lst, failed_requests
 
 
-competition_ids = get_competition_ids()
-urls = fetch_race_data_urls(comp_ids=competition_ids)
+competition_ids = get_competition_ids(base_url=BASE_URL)
+urls = fetch_race_data_urls(comp_ids=competition_ids)[:10]
 
 data, failed_requests = extract_table_data(pdf_urls=urls)
 
