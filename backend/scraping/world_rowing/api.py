@@ -1,4 +1,4 @@
-import backend.scraping.world_rowing.utils as ut
+from backend.scraping.world_rowing import utils as ut
 import pandas as pd
 
 # CONSTANTS
@@ -7,11 +7,14 @@ WR_BASE_URL = "https://world-rowing-api.soticcloud.net/stats/api/"
 WR_ENDPOINT_RACE = "race/"
 WR_ENDPOINT_EVENT = "event/"
 WR_ENDPOINT_COMPETITION = "competition/"
+WR_ENDPOINT_COMPETITION = "competitionCategory/"
 WR_ENDPOINT_COMPETITIONTYPE = "competitionType/"
 WR_ENDPOINT_STATS = "statistic/"
 WR_ENDPOINT_VENUE = "venue/"
 WR_ENDPOINT_BOATCLASSES = "boatClass/"
 WR_ENDPOINT_COUNTIRES = "country/"
+
+# add function descriptions
 
 PIPE_PRE_PROCESS = ut.Pipeline(
     functions=[ut.alter_dataframe_column_types, ut.extract_rsc_codes],
@@ -107,7 +110,6 @@ def get_competitions(year: int = None, kind: str = None, kwargs: dict = {}) -> p
                 suffixes=(
                     (None, '_venue')
                 )
-
             )
 
     if year:
@@ -140,8 +142,6 @@ def get_events(year: int = None, kind: str = None, kwargs: dict = {}) -> pd.Data
         return df
     else:
         return df
-
-
 
 
 def merge_race_event_competitions(races: pd.DataFrame, events: pd.DataFrame, competitions: pd.DataFrame) -> pd.DataFrame:

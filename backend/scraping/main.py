@@ -1,6 +1,7 @@
 from world_rowing import api
-import pandas as pd
 from world_rowing import utils as ut
+
+# TODO: what about this website? http://wrmr2022.rowtiming.com/
 
 import logging
 
