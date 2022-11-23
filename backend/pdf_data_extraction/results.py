@@ -10,8 +10,8 @@ Basic stats:
 * Extraction time per file: approx. 1.2 - 1.6s
 
 -------------------------------------
-# TODO: Add delta times.
 # TODO: Add multi-page functionality.
+# TODO: Add delta times.
 # TODO: Add intermediate ranks.
 
 ####################################################################################################
@@ -36,7 +36,7 @@ BASE_URL = "https://world-rowing-api.soticcloud.net/stats/api/competition/"
 # To be replaced by call to generic scraper class
 FILTER_STRING = "/?include=pdfUrls.orisCode,events.pdfUrls,events.races.pdfUrls.orisCode,events.boatClass,events.races.racePhase,events.races.photoFinishImage,events.races.raceBoats.raceBoatIntermediates.distance"
 SORT_STRING = "&sortInclude[pdfUrls.created_at]=asc&sortInclude[events.pdfUrls.DisplayName]=desc&sortInclude[events.races.pdfUrls.created_at]=asc"
-NO_OF_COMPETITIONS = 500
+NO_OF_COMPETITIONS = 300
 INTERMED_INTERVAL = 500
 DISTS = ['500m', '1000m', '1500m', '2000m']
 
@@ -50,10 +50,7 @@ def extract_result_data(urls: list) -> list:
     --------------
     Returns: list with extracted data
     """
-    result_data = []
-    failed_requests = []
-    errors = 0
-    empty_files = 0
+    result_data, failed_requests, errors, empty_files = [], [], 0, 0
 
     for url in tqdm(urls):
 
@@ -61,8 +58,8 @@ def extract_result_data(urls: list) -> list:
             tables = camelot.read_pdf(url, flavor="stream", pages="all")
 
             # prepare df
-            df = clean(handle_table_partitions(tables=tables, doc_type=1))
-            rank_row = get_string_loc(df, rank=True)["rank"]["row"]
+            df = clean(handle_table_partitions(tables=tables, results=1))
+            rank_row = get_string_loc(df, rank=True, column=0)["rank"]["row"]
             new_df = df.iloc[rank_row:].copy()
             new_df, _ = clean_df(new_df)
 
@@ -73,12 +70,16 @@ def extract_result_data(urls: list) -> list:
                 dist_locs = get_string_loc(new_df, *DISTS)["str"]["col"]
 
             # get rank and lane locations
-            rank_col = get_string_loc(new_df, rank=True, first=True)[
+            rank_col = get_string_loc(new_df, rank=True, first=True, column=0)[
                 "rank"]["col"]
-            lane_col = get_string_loc(new_df, "Lane", first=True)["str"]["col"]
+
+            # currently there are two terms for lane: lane & order
+            lane_col = get_string_loc(new_df, "Lane", "Order", first=True)[
+                "str"]["col"]
 
             # get country locations
-            cntry_locs = get_string_loc(new_df, country=True)["cntry"]
+            cntry_locs = get_string_loc(
+                new_df, country=True, results=1)["cntry"]
             cntry_row, cntry_col = cntry_locs["row"], cntry_locs["col"]
 
             # get names column index
@@ -89,7 +90,7 @@ def extract_result_data(urls: list) -> list:
                 lane = new_df.iloc[cntry:cntry+1, lane_col].values[0]
 
                 # handle edge case, when rank, lane and country code are in first col
-                if (rank_col + lane_col + cntry_col) == 0:
+                if rank_col == lane_col == cntry_col == 0:
                     rank_lane = new_df.iloc[cntry:cntry+1, 0].values[0]
                     rank_lane = clean_str(rank_lane, str_type="number")
                     if len(rank_lane) == 2:
@@ -104,11 +105,10 @@ def extract_result_data(urls: list) -> list:
                 # handle athlete name(s)
                 next_cntry = cntry_row[idx+1] if idx + \
                     1 < len(cntry_row) else new_df.shape[0]
-                athletes = new_df.iloc[cntry:next_cntry,
-                                       name_locs[0]].to_list()
-                athletes = list(filter(None, athletes))
+                athletes = new_df.iloc[cntry:next_cntry, name_locs[0]].copy()
+                athletes.dropna(inplace=True)
                 athletes = [clean_str(name, str_type='name')
-                            for name in athletes]
+                            for name in athletes.to_list()]
                 athletes = list(filter(None, athletes))
 
                 # handle intermediate times
@@ -144,11 +144,11 @@ def extract_result_data(urls: list) -> list:
     return result_data, failed_requests
 
 
-competition_ids = get_competition_ids(base_url=BASE_URL)
+competition_ids = get_competition_ids(base_url=BASE_URL, year=2020)
 pdf_urls = get_pdf_urls(base_url=BASE_URL, comp_ids=competition_ids,
-                        comp_limit=NO_OF_COMPETITIONS, filter_str=FILTER_STRING+SORT_STRING, pdf_type=1)[0:3000]
+                        comp_limit=NO_OF_COMPETITIONS, filter_str=FILTER_STRING+SORT_STRING, results=1)[0:20]
 
-print(f"Extracting data from {len(pdf_urls)} pdfs.")
+print(f"Extracting data from {pdf_urls} pdfs.")
 pdf_data, failed_req = extract_result_data(urls=pdf_urls)
 
 # write results to file

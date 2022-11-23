@@ -39,7 +39,7 @@ from utils import reset_axis_0
 BASE_URL = "https://world-rowing-api.soticcloud.net/stats/api/competition/"
 FILTER_STRING = "/?include=pdfUrls.orisCode,events.pdfUrls,events.races.pdfUrls.orisCode,events.boatClass,events.races.racePhase,events.races.photoFinishImage&sortInclude[pdfUrls.created_at]=asc&sortInclude[events.pdfUrls.DisplayName]=desc&sortInclude[events.races.pdfUrls.created_at]=asc"
 JSON_INDENT_SIZE = 4
-NO_OF_COMPETITIONS = 500  # INFO: API gives only max. 1000
+NO_OF_COMPETITIONS = 100  # INFO: API gives only max. 1000
 
 
 def df_to_json(df: pd.DataFrame) -> list:
@@ -52,45 +52,42 @@ def df_to_json(df: pd.DataFrame) -> list:
     rank_found = bool(get_string_loc(df, rank=True)["rank"]["row"])
     top_part = df.iloc[cnty_idx:cnty_idx+(2 if rank_found else 1)]
     top_df = reset_axis_0(top_part)
-    countr = [x for x in np.concatenate(top_df.iloc[0:1, 1:].to_numpy()) if x]
+    countries = [x for x in np.concatenate(
+        top_df.iloc[0:1, 1:].to_numpy()) if x]
+
     if rank_found:
         ranks = [x for x in np.concatenate(
             top_df.iloc[1:2, 1:].to_numpy()) if x]
 
     # Handle data part
     data_range = get_data_loc(df)
-    data_df = reset_axis_0(df.iloc[data_range[0]:data_range[1]])
+    data_df = reset_axis_0(df.iloc[data_range[0]:data_range[1]+1])
     data_df, deleted_cols = clean_df(data_df)
 
     # Handle countries with empty data colums.
     for num in deleted_cols:
         if num % 2 != 0:
             idx = ((num+1)//2)-1
-            if idx < len(countr) and num+1 in deleted_cols:
-                countr.pop(idx)
+            if idx < len(countries) and num+1 in deleted_cols:
+                countries.pop(idx)
 
     # Create dict with relevant data and return as list of dicts.
     data, offset = [], 0
-    dist = [int(el) for el in data_df.iloc[:, 0].values]
+    dist = [int(el) for el in data_df[0].values]
 
-    for idx, country in enumerate(countr):
-        if country:
-            speed = data_df.iloc[:, (idx + 1) + offset: (idx + 2) + offset]
-            stroke = data_df.iloc[:, (idx + 2) + offset: (idx + 3) + offset]
-            race_data_obj = {
-                "country": countr[idx],
-                "rank": ranks[idx] if rank_found else None,
-                "speed": {
-                    "dist_in_m": dist,
-                    "speed_val": clean_convert_to_list(speed)
-                },
-                "stroke": {
-                    "dist_in_m": dist,
-                    "stroke_val": clean_convert_to_list(stroke),
-                }
+    for idx, country in enumerate(countries):
+        speed = data_df.iloc[:, (idx + 1) + offset: (idx + 2) + offset]
+        stroke = data_df.iloc[:, (idx + 2) + offset: (idx + 3) + offset]
+        data.append({
+            "country": country,
+            "rank": ranks[idx] if rank_found else None,
+            "data": {
+                "dist [m]": dist,
+                "speed [m/s]": clean_convert_to_list(speed),
+                "stroke": clean_convert_to_list(stroke)
             }
-            data.append(race_data_obj)
-            offset += 1
+        })
+        offset += 1
     return data
 
 
@@ -112,8 +109,7 @@ def extract_table_data(pdf_urls: list) -> tuple[list, list]:
     for url in tqdm(pdf_urls):
         try:
             tables = camelot.read_pdf(url, flavor="stream", pages="all")
-
-            df = handle_table_partitions(tables=tables, doc_type=False)
+            df = handle_table_partitions(tables=tables, results=0)
             json_data = None if df.empty else df_to_json(df)
 
             if json_data:
@@ -123,25 +119,27 @@ def extract_table_data(pdf_urls: list) -> tuple[list, list]:
                 empty_files += 1
                 print(f"Empty file found: {url.split('/').pop()}.")
 
-        except Exception as e:
+        except Exception:
             errors += 1
             failed_requests.append(url)
-            print(f"Error extracting {url}: {e}.\nErrors so far: {errors}.")
-            traceback.print_exc()
+            print(
+                f"Error extracting {url}:\n{traceback.print_exc()}.\nErrors so far: {errors}.")
 
     # create extraction statistics
     total = len(pdf_urls) - empty_files
     rate = "{:.2f}".format(100 - ((errors / total if total else 0) * 100))
-    print_stats(total=total, errors=errors, empties=empty_files, rate=rate)
+    print_stats(total=total, errors=errors,
+                empties=empty_files, rate=rate)
 
     return json_lst, failed_requests
 
 
-competition_ids = get_competition_ids(base_url=BASE_URL)
+competition_ids = get_competition_ids(base_url=BASE_URL, year=2010)
 
 urls = get_pdf_urls(base_url=BASE_URL, comp_ids=competition_ids,
-                    comp_limit=NO_OF_COMPETITIONS, filter_str=FILTER_STRING, pdf_type=0)[0:10]
+                    comp_limit=NO_OF_COMPETITIONS, filter_str=FILTER_STRING, results=0)[0:1]
 
+print(urls)
 race_data, failed_req = extract_table_data(pdf_urls=urls)
 
 write_to_json(data=race_data, filename="race_data")
