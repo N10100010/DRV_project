@@ -137,7 +137,7 @@ def extract_table_data(pdf_urls: list) -> tuple[list, list]:
 competition_ids = get_competition_ids(base_url=BASE_URL, year=2010)
 
 urls = get_pdf_urls(base_url=BASE_URL, comp_ids=competition_ids,
-                    comp_limit=NO_OF_COMPETITIONS, filter_str=FILTER_STRING, results=0)[0:1]
+                    comp_limit=NO_OF_COMPETITIONS, filter_str=FILTER_STRING, results=0)[0:10]
 
 print(urls)
 race_data, failed_req = extract_table_data(pdf_urls=urls)

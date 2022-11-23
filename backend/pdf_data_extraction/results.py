@@ -106,9 +106,9 @@ def extract_result_data(urls: list) -> list:
                 next_cntry = cntry_row[idx+1] if idx + \
                     1 < len(cntry_row) else new_df.shape[0]
                 athletes = new_df.iloc[cntry:next_cntry, name_locs[0]].copy()
-                athletes.dropna(inplace=True)
+                athletes = list(filter(None, athletes))
                 athletes = [clean_str(name, str_type='name')
-                            for name in athletes.to_list()]
+                            for name in athletes]
                 athletes = list(filter(None, athletes))
 
                 # handle intermediate times
@@ -146,7 +146,7 @@ def extract_result_data(urls: list) -> list:
 
 competition_ids = get_competition_ids(base_url=BASE_URL, year=2020)
 pdf_urls = get_pdf_urls(base_url=BASE_URL, comp_ids=competition_ids,
-                        comp_limit=NO_OF_COMPETITIONS, filter_str=FILTER_STRING+SORT_STRING, results=1)[0:20]
+                        comp_limit=NO_OF_COMPETITIONS, filter_str=FILTER_STRING+SORT_STRING, results=1)[0:10]
 
 print(f"Extracting data from {pdf_urls} pdfs.")
 pdf_data, failed_req = extract_result_data(urls=pdf_urls)
