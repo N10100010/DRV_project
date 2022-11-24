@@ -21,8 +21,8 @@ def main():
     # the current result is always 1000 rows long. Why is that?
     races = api.get_races()
     events = api.get_events()
-    comps = api.get_competitions(kwargs={'extend_by': {'venue': True, 'country': True}})
-    comps_1 = api.get_competitions()
+    #comps = api.get_competitions(kwargs={'extend_by': {'venue': True, 'country': True}})
+    comps = api.get_competitions()
     stats = api.get_statistics()
     comp_types = api.get_competitiontype()
     boat_classes = api.get_boatclasses()
