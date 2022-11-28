@@ -17,8 +17,10 @@ import numpy as np
 import requests
 import jsbeautifier
 
+import logging
+logger = logging.getLogger(__name__)
+
 # General constants
-JSON_INDENT_SIZE = 4
 COUNTRY_CODES = {
     "AFG": "Afghanistan",
     "ALB": "Albanien",
@@ -248,19 +250,10 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     return new_df
 
 
-def write_to_json(data: list, filename: str) -> None:
-    """ Takes a list and writes to .json file. """
-    options = jsbeautifier.default_options()
-    options.indent_size = JSON_INDENT_SIZE
-    file = open(f"{filename}.json", "w")
-    file.write(jsbeautifier.beautify(json.dumps(data), options))
-    file.close()
-
-
 def print_stats(total: int, errors: int, empties: int, rate: str) -> None:
     """ Prints basic statistics for the pdf reading process. """
-    print("{txt:-^25}".format(txt=f"\nRead: {(total)-errors}/{total} PDFs | ({rate}%)"))
-    print("{txt:-^25}".format(txt=f" Empty Files: {empties} "))
+    logger.info("{txt:-^25}".format(txt=f"\nRead: {(total)-errors}/{total} PDFs | ({rate}%)"))
+    logger.info("{txt:-^25}".format(txt=f" Empty Files: {empties} "))
 
 
 def clean_convert_to_list(df: pd.DataFrame) -> list:
@@ -275,6 +268,51 @@ def clean_convert_to_list(df: pd.DataFrame) -> list:
 WorldRowing Utils
 ################################################################
 '''
+
+
+def get_competition_ids(base_url: str, year: int) -> list:
+    """ Fetches all competition Ids from WorldRowing.com
+    ---------
+    Parameters:
+    * base_url:    https://world-rowing-api.soticcloud.net/stats/api/competition/
+    * year:        specifies year --> in order to not hit the API limit of 1000 ids
+    """
+    year_filter_query = f"?filter[Year]={year}" if year else ''
+    competitions = requests.get(base_url + year_filter_query).json()["data"]
+    ids_list = [comp["id"] for comp in competitions]
+    return ids_list
+
+
+def get_pdf_urls(base_url: str, comp_ids: list, comp_limit: int, filter_str: str, results: bool) -> list:
+    """
+    OBSOLETE
+
+    Fetches URLs to pdf files on https://d3fpn4c9813ycf.cloudfront.net/.
+    ---------
+    Parameters:
+    * base_url:     for world rowing this is https://world-rowing-api.soticcloud.net/stats/api/competition/
+    * comp_ids:     list of competition ids
+    * comp_limit:   limit amount of competitions
+    * filter_str:   filter parameter and values as string, e.g. '?include=events.races<...>'
+    * results:      0 = "Race Data" | 1 = "Results"
+    ---------
+    Returns: list of urls for specified criteria
+    """
+    competition_ids = comp_ids[0:comp_limit]
+    urls = []
+    doc_type = "Results" if results else "Race Data"
+
+    for comp_id in competition_ids:
+        query = base_url + comp_id + filter_str
+        events = requests.get(query).json()["data"]["events"]
+
+        for event in events:
+            races = event["races"]
+            for race in races:
+                for pdf in race["pdfUrls"]:
+                    if pdf["title"] == doc_type:
+                        urls.append(pdf["url"])
+    return urls
 
 
 def get_string_loc(df: pd.DataFrame, *args: str, country: bool = False, rank: bool = False, first: bool = False, column: int = -1, results: bool = 0) -> dict:
@@ -380,8 +418,8 @@ def get_data_loc(df: pd.DataFrame, cust_str: str = '') -> tuple[int, int]:
                 start = get_string_loc(df, interval_50, column=0)["str"]["row"]
                 end = last_num_idx(df)
 
-    except Exception:
-        print(f"Error finding data start/end: \n{traceback.print_exc()}")
+    except Exception as e:
+        logging.error(f"Error finding data start/end: \n{e}")
 
     return start, end
 
@@ -556,7 +594,7 @@ def handle_dist_edge_case(df: pd.DataFrame) -> pd.DataFrame:
 
         elif loc and idx == 2:
             # Placeholder for edge case when there are four columns to split.
-            print("Not implemented yet. Data needs to be split to four columns.")
+            logging.warning("Not implemented yet. Data needs to be split to four columns.")
     return df
 
 

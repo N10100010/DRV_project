@@ -3,9 +3,7 @@ from datetime import datetime, date
 
 import numpy as np
 
-import utils_general as ut_general
 import utils_wr as ut_wr
-import utils_pdf as ut_pdf
 
 ########################################################################################################################
 # GLOBALS:
@@ -25,11 +23,12 @@ WR_ENDPOINT_COUNTIRES = "country/"
 
 def get_competition_ids(years: Optional[Union[list, int]] = None) -> list[str]:
     """
+    TODO: can we ask ONLY for the comp id, without overhead
     Gets the competition ids - optional by year.
     IF years is None aka not passed, the returned competition ids will be over the entire timeframe.
     --
     @param years: list or int, filtering the result
-    @return:
+    @return: list[str] - a list of strings containing the competition ids for the years contained in the years argument
     """
     # current year + 5
     #  This is to make sure we get planned comps as well
@@ -81,23 +80,3 @@ def get_pdf_urls(comp_ids: list,  results: bool, comp_limit: Optional[int] = Non
                     if pdf["title"] == doc_type:
                         urls.append(pdf["url"])
     return urls
-
-
-if __name__ == '__main__':
-
-    # SMALL TEST FOR THE GET_COMPETITION_IDS FUNCTION
-    #ids_all = get_competition_ids()
-    #
-    #_ids_all = []
-    #for y in np.arange(1900, 2030):
-    #    _ids_all.extend(get_competition_ids(y))
-
-    # SMALL TEST FOR THE GET_PDF_URLS FUNCTION
-    #ids_2010 = get_competition_ids(years=2010)
-    #result_urls = get_pdf_urls(comp_ids=ids_2010, results=True)
-
-
-    print()
-
-
-
