@@ -17,8 +17,10 @@ import numpy as np
 import requests
 import jsbeautifier
 
+import logging
+logger = logging.getLogger(__name__)
+
 # General constants
-JSON_INDENT_SIZE = 4
 COUNTRY_CODES = {
     "AFG": "Afghanistan",
     "ALB": "Albanien",
@@ -248,19 +250,10 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     return new_df
 
 
-def write_to_json(data: list, filename: str) -> None:
-    """ Takes a list and writes to .json file. """
-    options = jsbeautifier.default_options()
-    options.indent_size = JSON_INDENT_SIZE
-    file = open(f"{filename}.json", "w")
-    file.write(jsbeautifier.beautify(json.dumps(data), options))
-    file.close()
-
-
 def print_stats(total: int, errors: int, empties: int, rate: str) -> None:
     """ Prints basic statistics for the pdf reading process. """
-    print("{txt:-^25}".format(txt=f"\nRead: {(total)-errors}/{total} PDFs | ({rate}%)"))
-    print("{txt:-^25}".format(txt=f" Empty Files: {empties} "))
+    logger.info("{txt:-^25}".format(txt=f"\nRead: {(total)-errors}/{total} PDFs | ({rate}%)"))
+    logger.info("{txt:-^25}".format(txt=f" Empty Files: {empties} "))
 
 
 def clean_convert_to_list(df: pd.DataFrame) -> list:
@@ -291,7 +284,10 @@ def get_competition_ids(base_url: str, year: int) -> list:
 
 
 def get_pdf_urls(base_url: str, comp_ids: list, comp_limit: int, filter_str: str, results: bool) -> list:
-    """ Fetches URLs to pdf files on https://d3fpn4c9813ycf.cloudfront.net/.
+    """
+    OBSOLETE
+
+    Fetches URLs to pdf files on https://d3fpn4c9813ycf.cloudfront.net/.
     ---------
     Parameters:
     * base_url:     for world rowing this is https://world-rowing-api.soticcloud.net/stats/api/competition/
@@ -422,8 +418,8 @@ def get_data_loc(df: pd.DataFrame, cust_str: str = '') -> tuple[int, int]:
                 start = get_string_loc(df, interval_50, column=0)["str"]["row"]
                 end = last_num_idx(df)
 
-    except Exception:
-        print(f"Error finding data start/end: \n{traceback.print_exc()}")
+    except Exception as e:
+        logging.error(f"Error finding data start/end: \n{e}")
 
     return start, end
 
@@ -598,7 +594,7 @@ def handle_dist_edge_case(df: pd.DataFrame) -> pd.DataFrame:
 
         elif loc and idx == 2:
             # Placeholder for edge case when there are four columns to split.
-            print("Not implemented yet. Data needs to be split to four columns.")
+            logging.warning("Not implemented yet. Data needs to be split to four columns.")
     return df
 
 

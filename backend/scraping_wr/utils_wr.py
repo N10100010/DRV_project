@@ -1,17 +1,13 @@
-from typing import Mapping, Optional
 from tenacity import retry, wait_exponential, stop_after_attempt
-from tenacity.retry import retry_if_result
-from tenacity import Retrying
+from datetime import datetime
+from typing import Union
 
-import logging
 import requests
 import pandas as pd
 import numpy as np
 
-from datetime import datetime
 
 import logging
-
 logger = logging.getLogger(__name__)
 
 ############################################################
@@ -19,39 +15,24 @@ logger = logging.getLogger(__name__)
 #WR = WorldRowing
 
 
-class Pipeline:
-    """
-    arguably if this has to be a class.
-    Why? because the functions would be fixed and one would want to instantiate a pipeline for a purpose
-    """
-    functions: list
-    default_kwargs: Optional[list[dict]]
-
-    def __init__(self, functions: list, default_kwargs: Optional[list[dict]]):
-        self.functions = functions
-        self.default_kwargs = default_kwargs
-
-    def __call__(self, df, kwargs_list):
-        if kwargs_list is None:
-            if self.default_kwargs is None:
-                kwargs_list = {}
-            else:
-                kwargs_list = self.default_kwargs
-
-        for func, kwargs in zip(self.functions, kwargs_list):
-            if kwargs is None:
-                kwargs = {}
-            df = func(df, **kwargs)
-
-        return df
+WR_FILTER_MAPPING = {
+    'year': 'Year',
+    'others': 'Others'
+    # todo: extend me...
+}
 
 
 @retry(wait=wait_exponential(max=5), stop=stop_after_attempt(5))
 def load_json(url: str, params=None, timeout=20., **kwargs):
     """
     Loads any json from any URL.
-    todo: are we required to filter values on the fly?
-     Do we have to have to possibility to get subsets from the api?
+    The function will be retried, if the endpoint might not be reachable atm.
+    ------------
+    :param url: str - A url to an endpoint, that might contain a filter string.
+    :param params: not used
+    :param timeout: should stay at default (most of the time)
+    :param kwargs: mostly not used
+    :return: dict
     """
     res = None
     try:
@@ -61,14 +42,64 @@ def load_json(url: str, params=None, timeout=20., **kwargs):
         logger.error(f"Error appeared during get(). \n\tStatuscode: {res.status_code}\n\tURL: {url}")
         return {}
 
-
     if res.text and res.status_code != 404:
-        return res.json()
+        return res.json()['data']
     else:
-        # todo: depending on how we want to use this function
-        #  (with kwargs for filtering), we should either return an empty
-        #  dict here or raise an error
         return {}
+
+
+def stringify_params(val: Union[int, float, str, list]) -> str:
+    """
+    Stringifies a value
+    ---------
+    :param val: The parameter that will be stringified.
+    :return: Stringified val
+    """
+    if isinstance(val, (str, int, float, np.int64)):
+        return str(val)
+    elif isinstance(val, list):
+        return '||'.join(map(str, val))
+    else:
+        logger.error(f"Passed value of unknown type: {type(val)}. Allowed types: [str, int, np.int64, float, list]")
+
+
+def build_filter_string(filter_params: dict) -> str:
+    """
+    -
+    :param filter_params: dict - containing the parameters that are supposed to be filtered.
+        example: {'year': 2010} OR {'year': [2010, 2012]}
+        The passed value in the dict is allowed to be a list.
+
+    :returns: returns the string containing the parameters for filtering the resulting json.
+    """
+    ret = '?'
+    splitter = '&'
+    schema = f'filter[KEY]=PARAM'
+
+    if not set(filter_params.keys()).issubset(set(WR_FILTER_MAPPING.keys())):
+        # the keys for filters start with capital letters. For ease of use, this is taken care of by the function.
+        logger.error(f"A key of the passed filter is not allowed. Allowed filters: {list(WR_FILTER_MAPPING.keys())}")
+
+    last_key = list(filter_params.keys())[-1]
+    for k, v in filter_params.items():
+        ret += schema.replace('KEY', WR_FILTER_MAPPING[k]).replace('PARAM', stringify_params(val=v))
+        if k != last_key:
+            ret += splitter
+
+    return ret
+
+
+def extract_competition_ids(values: dict) -> list[str]:
+    """
+    -
+    @param values: dict - holding information about competitions
+    @return: list[str] - list holding the competition ids
+    """
+    return [comp['id'] for comp in values]
+
+########################################################################################################################
+# NICK - OLD
+########################################################################################################################
 
 
 def extract_rsc_codes(df: pd.DataFrame) -> pd.DataFrame:
