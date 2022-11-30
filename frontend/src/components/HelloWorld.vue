@@ -24,6 +24,8 @@ h1 {
 
 h3 {
   font-size: 1.2rem;
+  font-weight: bold;
+  font-style: italic;
 }
 
 .greetings h1,
