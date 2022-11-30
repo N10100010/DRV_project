@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy.orm import declarative_base
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Date, Interval
 
 # logging stuff
 import logging
@@ -24,43 +24,107 @@ Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
 
-class User(Base):
-    __tablename__ = "users"
+"""
+TODO:
+    - race data (high res)
+    - Specify Not Null Columns
+    - add backref / back_populates for easy access
+    - Consider foreign key checking via constraints
+    - Deifne Indexes
+
+https://world-rowing-api.soticcloud.net/stats/api/race/?include=racePhase%2Cevent.competition.competitionType%2Cevent.competition.competitionType.competitionCategory%2Cevent.boatClass&filter%5Bevent.competitionId%5D=b56cf9a5-a7d3-4e64-9571-38218f39413b&sort%5Bdate%5D=asc
+"""
+
+class Athletes(Base):
+    __tablename__ = "athletes"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String)
-    fullname = Column(String)
-    nickname = Column(String)
 
-    def __repr__(self):
-        return f"<User(name={self.name}, fullname={self.fullname}, nickname={self.nickname})>"
+    full_name = Column(String)
+    birthdate = Column(Date)
+    gender_id = Column(Integer) # TODO: gender table
+
+    height_cm = Column(Integer)
+    weight_kg = Column(Integer)
+
+    # TODO: country?
+
+
+class Boat_Classes(Base):
+    __tablename__ = "boat_classes"
+
+    id = Column(Integer, primary_key=True)
+    
+    abbreviation = Column(String, nullable=False)
+    display_name = Column(String, nullable=False)
+
+    gender_id = Column(Integer) # TODO: gender table
+
+
+class Competition_Classes(Base):
+    __tablename__ = "competition_classes"
+
+    id = Column(Integer, primary_key=True)
+
+    name = Column(String)
+    abbreviation = Column(String)
+
+
+class Competitions(Base):
+    __tablename__ = "competitions"
+
+    id = Column(Integer, primary_key=True)
+    competition_class_id = Column(Integer, ForeignKey("competition_classes.id"))
+
+    name = Column(String)
+
+    start_date = Column(Date)
+    end_date = Column(Date)
+
+    venue_country = Column(String(length=3))
+    venue_city = Column(String) # TODO: Normalize location data? Example https://world-rowing-api.soticcloud.net/stats/api/competition/b56cf9a5-a7d3-4e64-9571-38218f39413b?include=venue,venue.country
+    venue_site = Column(String)
+
+
+class Events(Base):
+    __tablename__ = "events"
+
+    id = Column(Integer, primary_key=True)
+    competition_id = Column(Integer, ForeignKey("competitions.id"))
+    boat_class_id = Column(Integer, ForeignKey("boat_classes.id"))
+
+
+class Races(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae369-8d05-4b8e-9a2e-7de5871715b7?include=racePhase%2CraceBoats.raceBoatAthletes.person%2CraceBoats.invalidMarkResultCode%2CraceBoats.raceBoatIntermediates.distance&sortInclude%5BraceBoats.raceBoatIntermediates.ResultTime%5D=asc
+    __tablename__ = "races"
+
+    id = Column(Integer, primary_key=True)
+    event_id = Column(Integer, ForeignKey("events.id"))
+
+    name = Column(String) # e.g. "FA", "H3", "SA/B1", etc...
+    phase = Column(String) # e.g. "Heat", "Final" // TODO: normalize?
+
+
+class Boats(Base):
+    __tablename__ = "boats"
+
+    id = Column(Integer, primary_key=True)
+    race_id = Column(Integer, ForeignKey("races.id"))
+
+
+class Results(Base):
+    __tablename__ = "results"
+
+    id = Column(Integer, primary_key=True)
+    boat_id = Column(Integer, ForeignKey("boats.id"))
+
+    data_source = Column(String) # e.g. "WorldRowing|PDF", "WorldRowing|API"
+    result_time = Column(Interval) # TODO: Simply milliseconds as Integer?
+
 
 # create all tables (init) if they don't exist
 Base.metadata.create_all(engine, checkfirst=True)
 
-# instantiate a User
-ed_user = User(name="ed", fullname="Ed Jones", nickname="edsnickname")
-ed_user.name
-ed_user.nickname
-str(ed_user.id)
-
 session = Session()
-session.add(ed_user)
-
-session.commit()
-
-
-# queries ...
-for instance in session.query(User).order_by(User.id):
-    print(instance.name, instance.fullname)
-
-ed_user = session.query(User).filter(User.name == "ed").first()
-
-# edit data
-ed_user.nickname = "ed-1337"
-
-# commit (see https://stackoverflow.com/a/26920108)
-# avoid race conditions (when incrementing numbers) with this approach: https://stackoverflow.com/a/2334917
 session.commit()
 
 if __name__ == '__main__':
