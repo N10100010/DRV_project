@@ -16,13 +16,11 @@ def pip_to_requirements(s):
 
 
 setup(
-    name='DRB_backend',
+    name='DRB_innovation_project',
     version=open('VERSION', 'r').read().strip(),
     author='UNKNOWN',
     author_email='UNKNOWN',
     license='UNKNOWN',
-    url='https://github.com/meejah/python-skeleton',
-
     install_requires=open('backend/requirements.txt').readlines(),
     extras_require=dict(
         dev=open('requirements-dev.txt').readlines()
@@ -34,12 +32,10 @@ setup(
         'Development Status :: DEV ALPHA',
         'License :: OSI Approved :: UNKNOWN',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
 
-    packages=["DRB_backend"],
+    packages=["backend", "database"],
     entry_points=dict(
-        console_scripts=[
-            'checkout=checkout.cli:cli'
-        ]
+
     ))
