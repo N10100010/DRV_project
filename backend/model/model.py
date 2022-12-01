@@ -15,7 +15,11 @@ logging.getLogger().setLevel(logging.INFO)
 # engine = create_engine("sqlite:///:memory:", echo=True)
 
 # sqlite file relative path
-engine = create_engine("sqlite:///foo.sqlite", echo=True)
+# engine = create_engine("sqlite:///foo.sqlite", echo=True)
+
+# postgres
+engine = create_engine("postgresql+psycopg2://postgres:postgres@localhost:5432/rowing", echo=True)
+
 Session = sessionmaker(bind=engine)
 
 # connect will actually establish a connection or create/load the sqlite file
