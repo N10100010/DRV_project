@@ -247,9 +247,9 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
 
 def print_stats(total: int, errors: int, empties: int, rate: str) -> None:
     """ Prints basic statistics for the pdf reading process. """
-    logger.info(
-        "{txt:-^25}".format(txt=f"\nRead: {(total)-errors}/{total} PDFs | ({rate}%)"))
-    logger.info("{txt:-^25}".format(txt=f" Empty Files: {empties} "))
+    # replace by logger.info
+    print("{txt:-^25}".format(txt=f"\nRead: {(total)-errors}/{total} PDFs | ({rate}%)"))
+    print("{txt:-^25}".format(txt=f" Empty Files: {empties} "))
 
 
 def clean_convert_to_list(df: pd.DataFrame) -> list:
@@ -257,6 +257,12 @@ def clean_convert_to_list(df: pd.DataFrame) -> list:
     df = df.replace('\\n', ' ', regex=True)
     df = df.apply(pd.to_numeric, errors='coerce').astype(float).fillna(0)
     return np.concatenate(df.to_numpy()).tolist()
+
+
+def convert_string_to_sec(string: str) -> int:
+    min = re.findall(r"(\d+):", string)[0]
+    sec = re.findall(r":(\d+)", string)[0]
+    return round(int(60 * int(min) + int(sec)), 2)
 
 
 '''
@@ -313,7 +319,8 @@ def get_string_loc(df: pd.DataFrame, *args: str, country: bool = False, rank: bo
         else:
             row_lst = []
             for col in df.columns:
-                occurence = df.loc[df[col].str.contains('|'.join(codes))]
+                contains_code = df[col].str.contains('|'.join(codes), na=False)
+                occurence = df.loc[contains_code]
                 row = int(occurence.index[0]) if occurence.size > 0 else None
                 if isinstance(row, int):
                     row_lst.append(row)
@@ -372,18 +379,18 @@ def get_data_loc(df: pd.DataFrame, cust_str: str = '') -> tuple[int, int]:
     try:
         if cust_str and cust_str in df.values:
             start = get_string_loc(df, cust_str, column=0)["str"]["row"]
-        elif cust_str in dists:
+        elif cust_str and cust_str in dists:
             start = dists.index(cust_str)
         else:
             for i in DIST_INTERVALS:
                 if i in df.values:
                     start = get_string_loc(df, i, column=0)["str"]["row"]
+                    break
             if start == 0 and end == 0:
                 for i in DIST_INTERVALS:
-                    try:
+                    if i in dists:
                         start = dists.index(i)
-                    except ValueError as e:
-                        logging.warn(f"No start index found: {e}")
+                        break
         end = last_num_idx(df)
 
     except Exception as e:
@@ -392,7 +399,7 @@ def get_data_loc(df: pd.DataFrame, cust_str: str = '') -> tuple[int, int]:
     return start, end
 
 
-def handle_table_partitions(tables, results: bool = 0) -> pd.DataFrame:
+def handle_table_partitions(tables, results: bool = 0):
     """ Camelot may create multiple table objects, e.g. when data is spread across multiple pages.
     This function should aggregate all tables to a single df.
     ----------
@@ -407,10 +414,12 @@ def handle_table_partitions(tables, results: bool = 0) -> pd.DataFrame:
     interval = tab_end = 0
     # edge case check, only keep useful dataframes
     checked_dfs = []
-    for tab in tables:
+    for idx, tab in enumerate(tables):
         checked_df = handle_edge_cases(tab.df, results=results)
         if not checked_df.empty:
             checked_dfs.append(checked_df)
+        elif tables[idx].df.equals(tables[idx-1].df):
+            checked_dfs.append(tables[idx])
 
     for idx, table in enumerate(checked_dfs):
         # When there is only one table the df can just be appended to main df
@@ -419,16 +428,18 @@ def handle_table_partitions(tables, results: bool = 0) -> pd.DataFrame:
             # if edge case error, empty df is returned only continue if df is not empty
             if not first_df.empty:
                 if results == 0:  # only apply on race data pdfs
-                    first_loc = get_data_loc(first_df)
                     # get distance interval, e.g. 25, 50 depending on scale
                     first_tab = first_df.apply(pd.to_numeric, errors='coerce')
                     interval = first_tab[0].diff().mode()[0].astype("int")
-                    df = df.append(first_df, ignore_index=True)
                     # set table_end to current last value of df
-                    tab_end = int(first_df.iat[first_loc[1], 0])
-
-                else:
-                    df = df.append(first_df, ignore_index=True)
+                    tab_end_data = first_df.iat[last_num_idx(first_df), 0]
+                    tab_end = int(tab_end_data)
+                df = pd.concat([df, first_df], ignore_index=True)
+                # TODO: Handle linebreaks
+                '''
+                tab_end_data = re.sub(r"\d*\.\d+", "", tab_end_data)
+                tab_end_data = re.sub(r"\n", "", tab_end_data)
+                '''
 
         # When there are more tables (and for race data pdfs final value for table_end (2000) is not reached)
         elif idx > 0 if results else (idx > 0 and tab_end != int(RACE_DIST)):
@@ -439,16 +450,17 @@ def handle_table_partitions(tables, results: bool = 0) -> pd.DataFrame:
                     next_loc = get_data_loc(
                         df=next_df, cust_str=str(next_start))
                     # set table_end to current last value of df
-                    tab_end = last_num_idx(next_df)
+                    tab_end = int(next_df.iat[last_num_idx(next_df), 0])
                     next_df = next_df.iloc[next_loc[0]:next_loc[1]+1]
                     # append next_df part to main df
-                    df = df.append(next_df, ignore_index=True)
+                    df = pd.concat([df, next_df], ignore_index=True)
                 else:
                     rank_row = get_string_loc(next_df, rank=True, column=0)[
                         "rank"]["row"]
                     # remove everything above the rank row
                     next_df = next_df.iloc[rank_row:].copy()
-                    df = df.append(next_df, ignore_index=True)
+                    df = pd.concat([df, next_df], ignore_index=True)
+
     return df
 
 
@@ -471,8 +483,8 @@ def clean_str(str_list: list, style: str):
     """
     type_dict = {
         "time": [r"\(.*?\)", r"[^0-9.:]"],
-        "name": [r"[0-9.:]", r"\(.*?\)"],
-        "country": [r"\(.*?\)", r"[0-9]"],
+        "name": [r"[0-9.:]", r"\(.*?\)", r"[A-Z]{3}$"],
+        "country": [r"\(.*?\)", r"[0-9]", r"[A-Z]{1,2}[a-z]+", r"[A-Z]{4,}"],
         "number": [r"\d+$", r"\D"],
         "dist": [r"\d*\.\d+", r"\n", r"[^0-9,]", r"\n.*"]
     }
@@ -512,6 +524,7 @@ Pandas Utils
 
 def last_num_idx(df: pd.DataFrame, col: int = 0) -> int:
     """ Finds and returns index of last numeric value in DataFrame."""
+    df = df[col].str.split('\n', expand=True)
     values = list(reversed(df[col].values))
     for idx, el in enumerate(values):
         if el.isdigit() and len(el) > 2:
@@ -519,19 +532,20 @@ def last_num_idx(df: pd.DataFrame, col: int = 0) -> int:
     return 0
 
 
-def clean_df(df: pd.DataFrame) -> tuple[pd.DataFrame, list]:
+def clean_df(df: pd.DataFrame):
     """ Returns cleaned DataFrame and a list with indices of columns, that
         were removed because no relevant information was contained.
     """
     df.replace(r"^\s*$", np.nan, regex=True, inplace=True)
     # store names of empty columns
-    empties_list = [df[col].name for col in df if df[col].dropna().empty]
-    df.dropna(axis=1, how="all", inplace=True)
-    df.set_axis(list(np.arange(0, df.shape[1])), axis=1, inplace=True)
-    df.set_axis(list(np.arange(0, df.shape[0])), axis=0, inplace=True)
+    df = df.dropna(axis=1, how='all')
     df = df.fillna(0)
-    return df, empties_list
+    df = df.set_axis(list(np.arange(0, df.shape[1])), axis=1)
+    df = df.set_axis(list(np.arange(0, df.shape[0])), axis=0)
+    return df  # empties_list
 
 
-def reset_axis_0(df: pd.DataFrame) -> pd.DataFrame:
-    return df.set_axis(list(np.arange(0, df.shape[0])), axis=0)
+def reset_axis(df: pd.DataFrame, axes: list) -> pd.DataFrame:
+    for el in axes:
+        df.set_axis(list(np.arange(0, df.shape[el])), axis=el)
+    return df

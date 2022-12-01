@@ -11,24 +11,26 @@ Basic stats:
 ####################################################################################################
 """
 
-import re
-import logging
-import camelot
-from tqdm import tqdm
 import pandas as pd
+from tqdm import tqdm
+import camelot
+import re
 
-from api import get_competition_ids, get_pdf_urls
-from utils_general import write_to_json
 from utils_pdf import (clean, clean_df, get_string_loc,
-                       handle_table_partitions, clean_str, print_stats)
+                       handle_table_partitions, clean_str, convert_string_to_sec, print_stats)
+from utils_general import write_to_json
+from api import get_competition_ids, get_pdf_urls
 
-BASE_URL = "https://world-rowing-api.soticcloud.net/stats/api/competition/"
-FILTER_STRING = "/?include=pdfUrls.orisCode,events.pdfUrls,events.races.pdfUrls.orisCode,events.boatClass,events.races.racePhase,events.races.photoFinishImage,events.races.raceBoats.raceBoatIntermediates.distance"
-SORT_STRING = "&sortInclude[pdfUrls.created_at]=asc&sortInclude[events.pdfUrls.DisplayName]=desc&sortInclude[events.races.pdfUrls.created_at]=asc"
+import logging
+logger = logging.getLogger(__name__)
+
 
 NO_OF_COMPETITIONS = 300
 INTERMED_INTERVAL = 500
 DISTS = ['500m', '1000m', '1500m', '2000m']
+SPECIAL_VALUES = ["dna", "DNS", "DNF", "BUW"]
+MEANS = [102.73, 209.96, 314.81, 424.03]
+STDS = [17.7, 31.9, 37.7, 103.9]
 
 
 def get_athletes(df: pd.DataFrame, rows: int, i: int, n_loc: list) -> list:
@@ -72,21 +74,32 @@ def get_times(df: pd.DataFrame, row: int, cols: list) -> dict:
     """
     vals, times, dns = [], {}, False
     for col in cols:
-        time = df.iloc[row:row+1, col].values[0]
-        # TODO: Create list with alternatives...
-        if "DNS" in str(time) or "DNF" in str(time) or "BUW" in str(time):
-            logging.warning(' DNS time found.')
-            dns = True
+        # some time values are one column to the left so here a security margin is added
+        time = df.iloc[row:row+1, col-1:col+1].values[0]
+        for el in time:
+            if str(el) in SPECIAL_VALUES:
+                logger.warning(' Special value (e.g. DNS, DNF, BUW) found.')
+                dns = True
         vals.extend(re.findall(r"\d{1,2}\:\d{2}\.\d{2}", str(time)))
-    time_strings = clean_str(vals, style='time')
+    # remove duplicates
+    time_strings = list(dict.fromkeys(clean_str(vals, style='time')))
 
     # Check how many time values have to be extracted
     data_list = df.values.tolist()
     data = ''.join(str(el) for el in data_list)
     num_of_times = [x for x in DISTS if x in data]
 
+    # categorize after standard deviation
+    if len(time_strings) != len(num_of_times):
+        logger.warning("Time values missing. Place by std.")
+        for idx, el in enumerate(time_strings):
+            time_in_sec = convert_string_to_sec(el)
+            min, max = MEANS[idx]-STDS[idx], MEANS[idx]+STDS[idx]
+            if time_in_sec <= min or time_in_sec >= max:
+                time_strings.insert(idx, "-")
     if not dns:
         assert len(time_strings) == len(num_of_times), "Not enough times found"
+
     for key, time in enumerate(time_strings):
         dict_key = (key+1) * INTERMED_INTERVAL
         times[dict_key] = time
@@ -119,6 +132,7 @@ def get_country_code(df: pd.DataFrame, row: int, cols: list) -> str:
     country_df = df.iloc[start_row:end_row, start_col:end_col]
     country_data = country_df.values.reshape(-1)
     country = clean_str(country_data, style="country")
+    country = re.findall(r"(?<![A-Z])[A-Z]{3}(?![A-Z])", str(country))
     return list(filter(None, country))[0]
 
 
@@ -166,20 +180,19 @@ def extract_result_data(urls: list) -> tuple[list, list]:
     --------------
     Returns: list with extracted data
     """
-    logging.info(f"Extracting data from {pdf_urls} pdfs.")
+    logger.info(f"Extracting data from {pdf_urls} pdfs.")
     result_data, failed_requests, errors, empty_files = [], [], 0, 0
 
     for url in tqdm(urls):
         try:
-            tables = camelot.read_pdf(
-                url, flavor="stream", pages="all", column_tol=5)
+            tables = camelot.read_pdf(url, flavor="stream", pages="all")
 
             # prepare df
             df = clean(handle_table_partitions(tables=tables, results=1))
             rank_row = get_string_loc(df, rank=True, column=0)["rank"]["row"]
             # remove everything above the rank row
             df = df.iloc[rank_row:].copy()
-            df, _ = clean_df(df)
+            df = clean_df(df)
 
             # get distance and country locations
             dist_locs = get_string_loc(df, *DISTS)["str"]["col"]
@@ -217,15 +230,15 @@ def extract_result_data(urls: list) -> tuple[list, list]:
                 empty_files += 1
             else:
                 extraction_result["url"] = url
-                # do plausibility checks on extracted data here
+                # do sanity checks on extracted data here
                 res = check_extracted_data(extraction_result)
                 result_data.append(res)
-                logging.info(f"Extract of {url.split('/').pop()} successful.")
+                logger.info(f"Extract of {url.split('/').pop()} successful.")
 
         except Exception as e:
             errors += 1
             failed_requests.append(url)
-            logging.error(f"Error at {url}: {e}.")
+            logger.exception(f"Error at {url}: {e}.")
 
     total = len(urls) - empty_files
     rate = "{:.2f}".format(100 - ((errors / total if total else 0) * 100))
@@ -234,9 +247,11 @@ def extract_result_data(urls: list) -> tuple[list, list]:
     return result_data, failed_requests
 
 
-competition_ids = get_competition_ids(years=2018)
-pdf_urls = get_pdf_urls(comp_ids=competition_ids,
-                        comp_limit=NO_OF_COMPETITIONS, results=1)[:10]  # [::3]
+for year in range(2012, 2022):
+    competition_ids = get_competition_ids(years=year)
+    pdf_urls = get_pdf_urls(comp_ids=competition_ids,
+                            comp_limit=NO_OF_COMPETITIONS, results=1)[::12]
+    pdf_data, failed_req = extract_result_data(urls=pdf_urls)
 
 
 pdf_data, failed_req = extract_result_data(urls=pdf_urls)
