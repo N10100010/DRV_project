@@ -22,13 +22,37 @@ WR_FILTER_MAPPING = {
 }
 
 
+def procedure_init():
+    """
+    TODO:
+     -
+    @return:
+    """
+
+    pass
+
+
+def procedure_update():
+    """
+    TODO:
+     - check, for races and events, what the biggest dates are
+     - query (big, combined query string for endpoint) data from the endpoint with respective filters for
+        races-dates and event-dates
+     - build connection to the database? should we do that here?
+
+    @return:
+    """
+
+    pass
+
+
 @retry(wait=wait_exponential(max=5), stop=stop_after_attempt(5))
 def load_json(url: str, params=None, timeout=20., **kwargs):
     """
     Loads any json from any URL.
     The function will be retried, if the endpoint might not be reachable atm.
     ------------
-    :param url: str - A url to an endpoint, that might contain a filter string.
+    :param url: str - A url to an endpoint, that might contain a filter string
     :param params: not used
     :param timeout: should stay at default (most of the time)
     :param kwargs: mostly not used

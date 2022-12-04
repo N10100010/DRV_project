@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 @dataclass
 class DC_Schema:
     #  todo: will every entity have an ID?
-
     _id: str
 
     def __init__(self, _id: str):
@@ -18,4 +17,8 @@ class DC_Schema:
 
     @abstractmethod
     def __post__init__(self):
-        logger.debug(f"Check correctness of {type(self)} id: {self._id}")
+        """
+        By overwriting this method in the child class, the respective implementation will be called.
+        The call of the method itself is implemented in the base class and must not be called explicitly.
+        """
+        pass
