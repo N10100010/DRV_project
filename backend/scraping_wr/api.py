@@ -1,4 +1,4 @@
-from typing import Union, Optional
+from typing import Union, Optional, Iterator
 from datetime import datetime, date
 
 import numpy as np
@@ -18,7 +18,39 @@ WR_ENDPOINT_STATS = "statistic/"
 WR_ENDPOINT_VENUE = "venue/"
 WR_ENDPOINT_BOATCLASSES = "boatClass/"
 WR_ENDPOINT_COUNTIRES = "country/"
+WR_INCLUDE_EVERYTHING = "?include=events.races,events.races.racePhase,events.races.raceStatus,events.races.racePhase,events.races.raceBoats.boat,events.races.raceBoats.raceBoatIntermediates.raceBoat,events.races.raceBoats.raceBoatAthletes.person,events.races.raceBoats.raceBoatIntermediates.distance,events.races.raceBoats.raceBoatIntermediates.distance"
 ########################################################################################################################
+
+
+def _extract(l: iter) -> list:
+    _l = []
+    for item in list(l):
+        _l.extend(item)
+
+    return _l
+
+
+def get_by_competition_id(ids: Union[str, list[str]], keys_of_interest: list[str]):
+
+    allowed_keys = ['events', 'races', 'raceBoats', 'raceBoatAthletes', 'raceBoatIntermediates']
+
+
+
+    if isinstance(ids, str):
+        ids = [ids]
+
+    ret_val = {koi: [] for koi in keys_of_interest}
+
+    for id in ids:
+        everything = ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_COMPETITION + id + WR_INCLUDE_EVERYTHING)
+        for koi in keys_of_interest:
+            ret_val[koi].extend(
+                _extract(
+                    ut_wr.get_all(everything, koi)
+                )
+            )
+
+    return ret_val
 
 
 def get_competition_ids(years: Optional[Union[list, int]] = None) -> list[str]:
@@ -72,11 +104,44 @@ def get_pdf_urls(comp_ids: list,  results: bool, comp_limit: Optional[int] = Non
     for comp_id in comp_ids:
         url = WR_BASE_URL + WR_ENDPOINT_COMPETITION + comp_id + include_str
         events = ut_wr.load_json(url)["events"]
+        pdfs = _extract(ut_wr.get_all(events, "pdfUrls"))
+        for pdf in pdfs:
+            if pdf["title"] == doc_type:
+                urls.append(pdf["url"])
 
-        for event in events:
-            races = event["races"]
-            for race in races:
-                for pdf in race["pdfUrls"]:
-                    if pdf["title"] == doc_type:
-                        urls.append(pdf["url"])
     return urls
+
+
+def get_competitiontype(kwargs: dict = {}):
+    _json_dict = ut_wr.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_COMPETITIONTYPE}', **kwargs)
+    return _json_dict
+
+
+def get_countries(kwargs: dict = {}):
+    _json_dict = ut_wr.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_COUNTIRES}', **kwargs)
+    return _json_dict
+
+
+def get_boatclasses(kwargs: dict = {}):
+    _json_dict = ut_wr.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_BOATCLASSES}', **kwargs)
+    return _json_dict
+
+
+def get_statistics(kwargs: dict = {}):
+    _json_dict = ut_wr.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_STATS}', **kwargs)
+    return _json_dict
+
+
+def get_venues(kwargs: dict = {}):
+    _json_dict = ut_wr.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_VENUE}', **kwargs)
+    return _json_dict
+
+
+#def get_races(year: int = None, kind: str = None, kwargs: dict = {}):
+#    _json_dict = ut_wr.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_RACE}', **kwargs)
+#    return _json_dict
+#
+#
+#def get_events(year: int = None, kind: str = None, kwargs: dict = {}):
+#    _json_dict = ut_wr.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_EVENT}', **kwargs)
+#    return _json_dict

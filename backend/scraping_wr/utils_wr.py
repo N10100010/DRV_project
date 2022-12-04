@@ -46,6 +46,29 @@ def procedure_update():
     pass
 
 
+def get_all(data: Union[dict, list], key: str):
+    """
+    Gets every value of occurrences of the key and yields it.
+    @param data: dict|list
+    @param key: some string like 'events', 'races', ...
+    @return: generator
+    """
+    sub_iter = []
+    if isinstance(data, dict):
+        if key in data:
+            yield data[key]
+        # we ensured the type of data is dict
+        #  values() is an internal function of the dict class
+        sub_iter = data.values()
+    if isinstance(data, list):
+        sub_iter = data
+
+    # iterate over all values
+    for x in sub_iter:
+        for y in get_all(x, key):
+            yield y
+
+
 @retry(wait=wait_exponential(max=5), stop=stop_after_attempt(5))
 def load_json(url: str, params=None, timeout=20., **kwargs):
     """
