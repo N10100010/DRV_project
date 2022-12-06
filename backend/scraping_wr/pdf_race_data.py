@@ -1,4 +1,3 @@
-
 """
 ####################################################################################################
 
@@ -18,6 +17,7 @@ import matplotlib.pyplot as plt
 import collections
 import traceback
 import logging
+from statistics import mean, stdev
 import camelot  # on Mac via 'pip install camelot-py[cv]'
 from tqdm import tqdm
 import itertools
@@ -27,9 +27,10 @@ import pandas as pd
 from utils_general import write_to_json
 from api import get_competition_ids, get_pdf_urls
 from utils_pdf import (handle_table_partitions, get_data_loc, print_stats,
-                       clean_df, get_string_loc, clean_convert_to_list, reset_axis, clean_str)
+                       clean_df, get_string_loc, check_speed_stroke, reset_axis, clean_str)
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 # CONSTANTS
@@ -43,26 +44,29 @@ def df_to_json(df: pd.DataFrame) -> dict:
     """
     # Handle top part with countries and ranks
     df = clean_df(df)
-    cnty_idx = get_string_loc(df, country=True)["cntry"]["row"]
-    cnty_idx = cnty_idx[0] if cnty_idx else None
+    country_idx = get_string_loc(df, country=True)["cntry"]["row"]
+    country_idx = country_idx[0] if country_idx else None
     rank_found = bool(get_string_loc(df, rank=True, column=0)["rank"]["row"])
-    top_part = df.iloc[cnty_idx:cnty_idx+(2 if rank_found else 1)]
+    top_part = df.iloc[country_idx:country_idx + (2 if rank_found else 1)]
     top_df = reset_axis(top_part, axes=[0])
 
     # extract country codes
     country_data = top_df.iloc[0:1, ].values.flatten().tolist()
-    country_list = [x.split('\n') for x in country_data if x]
+    # NOC is a special Code for Country and has to be excluded
+    country_list = [x.split('\n') for x in country_data if x and x != "NOC"]
     countries = list(itertools.chain(*country_list))
     countries = clean_str(countries, style="country")
 
+    # handle ranks data
+    ranks = None
     if rank_found:
-        ranks = [x for x in np.concatenate(
-            top_df.iloc[1:2, 1:].to_numpy()) if x]
+        ranks = [x for x in np.concatenate(top_df.iloc[1:2, 1:].to_numpy()) if x]
 
-    # Handle data part (incl. wrong column asignments where \n occurs)
+    # Handle data part (incl. wrong column assignments where \n occurs)
     data_range = get_data_loc(df)
-    data_df = df.iloc[data_range[0]:data_range[1]+1]
+    data_df = df.iloc[data_range[0]:data_range[1] + 1]
 
+    # split columns that are accidentally combined via linebreaks
     placeholder_df = pd.DataFrame()
     for col in data_df.columns:
         if data_df[col].astype(str).str.contains('\n').any():
@@ -70,24 +74,27 @@ def df_to_json(df: pd.DataFrame) -> dict:
         else:
             new_cols = data_df[col]
         placeholder_df = pd.concat([placeholder_df, new_cols], axis=1)
-    data_df = data_df.loc[:, (data_df != 0).any(axis=0)]
-    data_df = clean_df(data_df)
-    data_df = reset_axis(data_df, axes=[0, 1])
+    data_df = placeholder_df.loc[:, (placeholder_df != 0).any(axis=0)].copy()
+    data_df = reset_axis(clean_df(data_df), axes=[0, 1])
+
     # Create dict with relevant data and return as list of dicts.
     data, offset = {}, 0
     dist = clean_str(data_df[0].values, style="dist")
 
     for idx, country in enumerate(countries):
-        speed = data_df.iloc[:, (idx + 1) + offset: (idx + 2) + offset]
-        stroke = data_df.iloc[:, (idx + 2) + offset: (idx + 3) + offset]
+        speed_data = data_df.iloc[:, (idx + 1) + offset: (idx + 2) + offset]
+        stroke_data = data_df.iloc[:, (idx + 2) + offset: (idx + 3) + offset]
+        speeds = check_speed_stroke(speed_data, lb=0.01, ub=10.)
+        strokes = check_speed_stroke(stroke_data, lb=15., ub=50.)
+        rank = ranks[idx] if ranks else None
 
         data[idx] = {
             "country": country,
-            "rank": ranks[idx] if rank_found else None,
+            "rank": rank,
             "data": {
                 "dist [m]": dist,
-                "speed [m/s]": clean_convert_to_list(speed),
-                "stroke": clean_convert_to_list(stroke)
+                "speed [m/s]": speeds,
+                "stroke": strokes
             }
         }
         offset += 1
@@ -105,13 +112,13 @@ def extract_table_data(pdf_urls: list) -> tuple[list, list]:
     * List with json-like objects (final structure needs to be discussed) for each team per race
     * List containing the urls of all failed requests
     """
-    json_lst, failed_requests,  = [], []
+    json_lst, failed_requests, = [], []
     errors, empty_files = 0, 0
 
     for url in tqdm(pdf_urls):
         try:
             tables = camelot.read_pdf(url, flavor="stream", pages="all")
-            df = handle_table_partitions(tables=tables, results=0)
+            df = handle_table_partitions(tables=tables, results=False)
             json_data = None if df.empty else df_to_json(df)
 
             if json_data:
@@ -137,13 +144,11 @@ def extract_table_data(pdf_urls: list) -> tuple[list, list]:
     return json_lst, failed_requests
 
 
-competition_ids = get_competition_ids(years=2020)
-pdf_urls = get_pdf_urls(comp_ids=competition_ids,
-                        comp_limit=NO_OF_COMPETITIONS, results=0)[:10]  # [::15]
-print(pdf_urls)
+competition_ids = get_competition_ids(years=2017)
+pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=NO_OF_COMPETITIONS, results=False)[::12]
+# TODO: Append event/race id to final dict to match corresponding API data
 
 race_data, failed_req = extract_table_data(pdf_urls=pdf_urls)
-
 
 write_to_json(data=race_data, filename="race_data")
 write_to_json(data=failed_req, filename="race_data_failed")

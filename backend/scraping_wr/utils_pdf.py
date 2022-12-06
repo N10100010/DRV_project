@@ -13,6 +13,7 @@ import pandas as pd
 import numpy as np
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 # General constants
@@ -227,7 +228,6 @@ COUNTRY_CODES = {
 DIST_INTERVALS = ["10", "25", "50"]
 RACE_DIST = "2000"
 
-
 """
 ################################################################
 General Utils
@@ -237,9 +237,9 @@ General Utils
 
 def clean(df: pd.DataFrame) -> pd.DataFrame:
     df_regex = [
-        r'\s+$',    # one or more whitespaces from end
-        r'^\s+',    # one or more whitespaces from start
-        r'\n'       # linebreak
+        r'\s+$',  # one or more whitespaces from end
+        r'^\s+',  # one or more whitespaces from start
+        r'\n'  # linebreak
     ]
     new_df = df.replace(df_regex, ['' for _ in df_regex], regex=True)
     return new_df
@@ -248,21 +248,24 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
 def print_stats(total: int, errors: int, empties: int, rate: str) -> None:
     """ Prints basic statistics for the pdf reading process. """
     # replace by logger.info
-    print("{txt:-^25}".format(txt=f"\nRead: {(total)-errors}/{total} PDFs | ({rate}%)"))
+    print("{txt:-^25}".format(txt=f"\nRead: {total - errors}/{total} PDFs | ({rate}%)"))
     print("{txt:-^25}".format(txt=f" Empty Files: {empties} "))
 
 
-def clean_convert_to_list(df: pd.DataFrame) -> list:
+def check_speed_stroke(df: pd.DataFrame, lb: float = 0.0, ub: float = float('inf')) -> list:
     """ Removes linebreaks, fills non numeric values with 0, returns: list """
     df = df.replace('\\n', ' ', regex=True)
     df = df.apply(pd.to_numeric, errors='coerce').astype(float).fillna(0)
-    return np.concatenate(df.to_numpy()).tolist()
+    return [x if (lb <= x <= ub) else 0 for x in list(np.concatenate(np.array(df)))]
 
 
 def convert_string_to_sec(string: str) -> int:
-    min = re.findall(r"(\d+):", string)[0]
-    sec = re.findall(r":(\d+)", string)[0]
-    return round(int(60 * int(min) + int(sec)), 2)
+    if ':' in string:
+        minutes = re.findall(r"(\d+):", string)[0]
+        seconds = re.findall(r"(\d+)\.", string)[0]
+        return round(int(60 * int(minutes) + int(seconds)), 2)
+    else:
+        return int(re.findall(r"(\d+)\.", string)[0])
 
 
 '''
@@ -272,7 +275,8 @@ WorldRowing Utils
 '''
 
 
-def get_string_loc(df: pd.DataFrame, *args: str, country: bool = False, rank: bool = False, first: bool = False, column: int = -1, results: bool = 0) -> dict:
+def get_string_loc(df: pd.DataFrame, *args: str, country: bool = False, rank: bool = False, first: bool = False,
+                   column: int = -1, results: bool = 0) -> dict:
     """ Returns: dict with string locations
     ------------
     Parameters:
@@ -333,13 +337,13 @@ def get_string_loc(df: pd.DataFrame, *args: str, country: bool = False, rank: bo
         # even if they are in multiple columns
         i, row_idxs, country_codes = 0, [], '|'.join(codes)
         # from col 0 upwards check where country codes can be found
-        while len(row_idxs) == 0 and i < df.shape[1]-1:
+        while len(row_idxs) == 0 and i < df.shape[1] - 1:
             find_row_idxs = df[i].str.contains(country_codes) == True
             row_idxs = df.index[find_row_idxs].tolist()
             # only check the following column if there are no athlete names
-            next_col = df[i+1].isin([country_codes]).any()
+            next_col = df[i + 1].isin([country_codes]).any()
             if next_col:
-                locs["cntry"]["col"].extend([i, i+1])
+                locs["cntry"]["col"].extend([i, i + 1])
                 next_row_idxs = df.index[next_col].tolist()
                 locs["cntry"]["row"].extend(next_row_idxs)
             else:
@@ -418,7 +422,7 @@ def handle_table_partitions(tables, results: bool = 0):
         checked_df = handle_edge_cases(tab.df, results=results)
         if not checked_df.empty:
             checked_dfs.append(checked_df)
-        elif tables[idx].df.equals(tables[idx-1].df):
+        elif tables[idx].df.equals(tables[idx - 1].df):
             checked_dfs.append(tables[idx])
 
     for idx, table in enumerate(checked_dfs):
@@ -451,7 +455,7 @@ def handle_table_partitions(tables, results: bool = 0):
                         df=next_df, cust_str=str(next_start))
                     # set table_end to current last value of df
                     tab_end = int(next_df.iat[last_num_idx(next_df), 0])
-                    next_df = next_df.iloc[next_loc[0]:next_loc[1]+1]
+                    next_df = next_df.iloc[next_loc[0]:next_loc[1] + 1]
                     # append next_df part to main df
                     df = pd.concat([df, next_df], ignore_index=True)
                 else:
@@ -528,7 +532,7 @@ def last_num_idx(df: pd.DataFrame, col: int = 0) -> int:
     values = list(reversed(df[col].values))
     for idx, el in enumerate(values):
         if el.isdigit() and len(el) > 2:
-            return (len(values)-1)-idx
+            return (len(values) - 1) - idx
     return 0
 
 
