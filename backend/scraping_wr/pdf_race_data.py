@@ -33,10 +33,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# CONSTANTS
-JSON_INDENT_SIZE = 4
-NO_OF_COMPETITIONS = 100
-
 
 def df_to_json(df: pd.DataFrame) -> dict:
     """
@@ -52,8 +48,9 @@ def df_to_json(df: pd.DataFrame) -> dict:
 
     # extract country codes
     country_data = top_df.iloc[0:1, ].values.flatten().tolist()
-    # NOC is a special Code for Country and has to be excluded
-    country_list = [x.split('\n') for x in country_data if x and x != "NOC"]
+    # special codes for the country line, which could affect the detection --> must be excluded
+    special_codes = ["NPC", "NOC"]
+    country_list = [x.split('\n') for x in country_data if x and x not in special_codes]
     countries = list(itertools.chain(*country_list))
     countries = clean_str(countries, style="country")
 
@@ -85,7 +82,7 @@ def df_to_json(df: pd.DataFrame) -> dict:
         speed_data = data_df.iloc[:, (idx + 1) + offset: (idx + 2) + offset]
         stroke_data = data_df.iloc[:, (idx + 2) + offset: (idx + 3) + offset]
         speeds = check_speed_stroke(speed_data, lb=0.01, ub=10.)
-        strokes = check_speed_stroke(stroke_data, lb=15., ub=50.)
+        strokes = check_speed_stroke(stroke_data, lb=15., ub=100.)
         rank = ranks[idx] if ranks else None
 
         data[idx] = {
@@ -112,7 +109,7 @@ def extract_table_data(pdf_urls: list) -> tuple[list, list]:
     * List with json-like objects (final structure needs to be discussed) for each team per race
     * List containing the urls of all failed requests
     """
-    json_lst, failed_requests, = [], []
+    data, failed_requests, = [], []
     errors, empty_files = 0, 0
 
     for url in tqdm(pdf_urls):
@@ -123,7 +120,7 @@ def extract_table_data(pdf_urls: list) -> tuple[list, list]:
 
             if json_data:
                 json_data["url"] = url
-                json_lst.append(json_data)
+                data.append(json_data)
                 logging.info(f"Extract of {url.split('/').pop()} successful.")
             else:
                 empty_files += 1
@@ -132,23 +129,22 @@ def extract_table_data(pdf_urls: list) -> tuple[list, list]:
         except Exception as e:
             errors += 1
             failed_requests.append(url)
-            logging.error(
-                f"Error at {url}:\n{traceback.print_exc()}.\nErrors so far: {errors}.")
+            logging.error(f"Error at {url}:\n{traceback.print_exc()}.\nErrors so far: {errors}.")
 
     # create extraction statistics
     total = len(pdf_urls) - empty_files
     rate = "{:.2f}".format(100 - ((errors / total if total else 0) * 100))
-    print_stats(total=total, errors=errors,
-                empties=empty_files, rate=rate)
+    print_stats(total=total, errors=errors, empties=empty_files, rate=rate)
 
-    return json_lst, failed_requests
+    return data, failed_requests
 
 
-competition_ids = get_competition_ids(years=2017)
-pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=NO_OF_COMPETITIONS, results=False)[::12]
+for year in range(2010, 2022):
+    competition_ids = get_competition_ids(years=year)
+    pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=1000, results=False)[::7]
+    race_data, failed_req = extract_table_data(pdf_urls=pdf_urls)
+
 # TODO: Append event/race id to final dict to match corresponding API data
 
-race_data, failed_req = extract_table_data(pdf_urls=pdf_urls)
-
-write_to_json(data=race_data, filename="race_data")
-write_to_json(data=failed_req, filename="race_data_failed")
+#write_to_json(data=race_data, filename="race_data")
+#write_to_json(data=failed_req, filename="race_data_failed")

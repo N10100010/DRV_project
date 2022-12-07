@@ -1,18 +1,17 @@
 """
 ####################################################################################################
-
-This module extracts the data from results pdf files.
+This module extracts results data from World Rowing Result pdf files.
 
 Example file:
 https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/JWCH_2014/JWCH_2014_ROWWSCULL1--J---------SFNL000100--_C73X4443.pdf
 
 Basic stats:
-* Extraction time per file: approx. 1.2 - 1.6s
+* Extraction time per file: approx. 1.0 - 1.8s
 ####################################################################################################
 """
 
 import pandas as pd
-import numpy as np
+import itertools
 from tqdm import tqdm
 import camelot
 import re
@@ -23,45 +22,32 @@ from utils_general import write_to_json
 from api import get_competition_ids, get_pdf_urls
 
 import logging
-
 logger = logging.getLogger(__name__)
 
-NO_OF_COMPETITIONS = 300
 # dist includes basic 500m interval and 250m para intervals
-DISTS = ['250', '500', '750', '1000', '1500', '2000']
+DISTS = ["250", "500", "750", "1000", "1500", "2000"]
 SPECIAL_VALUES = ["dna", "DNS", "DNF", "BUW"]
 MEANS = [102.73, 209.96, 314.81, 424.03]
 STDS = [17.7, 31.9, 37.7, 103.9]
 
 
-def get_athletes(df: pd.DataFrame, rows: int, i: int, n_loc: list) -> list:
+def get_athletes(df: pd.DataFrame, rows: list, i: int) -> list:
     """
     Handles extraction of athlete names.
     -----------------------
     Parameters:
-    * df:       DataFrame
-    * c_row:    Row index of country, a.k.a. start point of names for given country
-    * i:        Index of current country with regard to countries in given pdf
-    * n_loc:    List with column indices for columns containing names
+    * df:       dataframe
+    * rows:     list of country row indices as start points for names of given country
+    * i:        index of current country w.r.t. countries in given pdf
     -----------------------
-    Returns:    List with athlete names
+    Returns:    list of strings containing athlete names
     """
-    # slice part of dataframe containing athlete names for given country
     # rows: starts at row of current country, ends at row of following country
-    # cols: starts at first occurrence of name col and ends at last occurrence of name col
     start_row = rows[i]
     end_row = rows[i + 1] if (i + 1 < len(rows)) else df.shape[0]
-    start_col = n_loc[0]
-    # extra margin because some names are one column right of where the names string was found
-    end_col = n_loc[len(n_loc) - 1] + 2
-    athlete_df = df.iloc[start_row:end_row, start_col:end_col]
-    # remove none values and convert to 1-d list
+    athlete_df = df.iloc[start_row:end_row, 0:df.shape[1] - 1]
     names = athlete_df.dropna().values.reshape(-1)
-    # clean list for relevant data
-    names = clean_str(names, style='name')
-    names = list(filter(None, names))
-
-    return names
+    return clean_str(names, style='name')
 
 
 def get_times(df: pd.DataFrame, row: int, cols: list) -> dict:
@@ -69,32 +55,28 @@ def get_times(df: pd.DataFrame, row: int, cols: list) -> dict:
     Handles extraction of intermediate times.
     ----------------------
     Parameters:
-    * df:   DataFrame
-    * row:  Row index of Country
-    * cols: List of columns containing intermediate times, e.g. 500m, 1000m
+    * df:   dataframe
+    * row:  row index of country
+    * cols: list of columns containing intermediate times, e.g. 500m, 1000m
     """
-    vals, times, dns = [], {}, False
+    vals, times = [], {}
     for col in cols:
-        # some time values are one column to the left so here a security margin is added
-        # TODO: row -1 because some time values are shifted wrongly one row above
-        time = df.iloc[row:row + 1, col - 1:col + 1].values[0]
+        [time] = df.iloc[row:row + 1, col - 2:col + 2].values
         for el in time:
             if str(el) in SPECIAL_VALUES:
                 logger.warning(' Special value (e.g. DNS, DNF, BUW) found.')
-                dns = True
         vals.extend(re.findall(r"(?:\d{1,2}:)?\d{2}\.\d{2}", str(time)))
     # remove duplicates
     time_strings = list(dict.fromkeys(clean_str(vals, style='time')))
-
     # Check how many time values have to be extracted
     data_list = df.values.tolist()
     data = ''.join(str(el) for el in data_list)
     distances = [x for x in DISTS if x in data]
     num_of_times = len(distances)
 
-    # categorize after standard deviation
+    # if time values are missing categorize times to distance after standard deviation
     if len(time_strings) != num_of_times:
-        logger.warning("Time values missing. Place by std.")
+        logger.warning(" Time values missing – place times w.r.t. stdv of data.")
         time_str_list = [None] * num_of_times
         for idx, mean in enumerate(MEANS):
             min_val, max_val = mean - 1.2 * STDS[idx], mean + 1.2 * STDS[idx]
@@ -104,11 +86,8 @@ def get_times(df: pd.DataFrame, row: int, cols: list) -> dict:
                     time_str_list[idx] = el
         time_strings = time_str_list
 
-    if not dns:
-        assert len(time_strings) == num_of_times, "Not enough times found"
-
-    # check interval
-    dist_diffs = [int(j)-int(i) for i, j in zip(distances[:-1], distances[1:])]
+    # check interval and place time values according to distance
+    dist_diffs = [int(j) - int(i) for i, j in zip(distances[:-1], distances[1:])]
     intermediate_interval = max(set(dist_diffs), key=dist_diffs.count)
     for key, time in enumerate(time_strings):
         dict_key = (key + 1) * intermediate_interval
@@ -123,44 +102,31 @@ def get_intermediate_ranks(df: pd.DataFrame, row: int) -> list:
     return [int(rank) for rank in ranks if rank]
 
 
-def get_country_code(df: pd.DataFrame, row: int, cols: list) -> str:
+def get_country_code(df: pd.DataFrame, row: int) -> str:
     """
     Handles extraction of country code.
     ----------------
     Parameters:
-    * df:   DataFrame
-    * row:  Row index of country
-    * cols: List of column indices containing country codes
+    * df:   dataframe
+    * row:  row index of country
+    * cols: list of column indices containing country codes
     ---------------
     Returns: string representing the country code
     """
-    start_row = row
-    end_row = row + 1
-    start_col = cols[0]
-    end_col = cols[-1] + 1
-
-    country_df = df.iloc[start_row:end_row, start_col:end_col]
+    country_df = df.iloc[row:row + 1, 0:df.shape[1] - 1]
     country_data = country_df.values.reshape(-1)
-    country = clean_str(country_data, style="country")
-    country = re.findall(r"(?<![A-Z])[A-Z]{3}(?![A-Z])", str(country))
-    return list(filter(None, country))[0]
+    reg = r"(?<![A-Z])[A-Z]{3}(?![A-Z])(?!\s)"
+    country = list(itertools.chain(*[re.findall(reg, str(x)) for x in country_data]))
+    return clean_str(country, style="country")
 
 
-def get_lane(df: pd.DataFrame, row: int, i: int, cols: int) -> tuple[int: int]:
-    start_row = row
-    end_row = row + 1
-    start_col = cols[0]
-    end_col = cols[-1] + 1
-
-    lane_df = df.iloc[start_row:end_row, start_col:end_col]
-    lane_data = lane_df.values.reshape(-1)
-    # Idea here: Lane is either the number that is not the rank (i+1)
-    # If this is not the case then it is equal to the rank
-    lane_string = ''.join(str(el) for el in lane_data)[:2]
-    assert len(lane_string) == 2, "String has not length of 2!"
-    nums = [int(x) for x in lane_string if x.isdigit()]
+def get_lane(df: pd.DataFrame, row: int, i: int) -> tuple[int: int]:
+    lane_data = df.iloc[row:row + 1, 0:df.shape[1] - 1].values.reshape(-1)
+    lane_string = ''.join(str(el) for el in lane_data)
+    nums = [int(re.findall(r"^\d{1,2}$", str(el))[0]) for el in lane_string if el.isdigit()][:2]
+    # lane is either the number that is not the rank (i+1) or it is equal to the rank
     if len(nums) == 1:
-        return nums[0]
+        return nums
     elif len(nums) == 2:
         num1, num2 = nums
         if num1 == i + 1:
@@ -178,6 +144,12 @@ def check_extracted_data(data: dict) -> dict:
     for el in data.values():
         if "athletes" in el:
             el["athletes"] = el["athletes"][:max_len]
+    # restrict number of intermediate ranks to n - 1 ranks where n is the number of distances
+    inter_ranks_len = [len(v["times"]) for v in data.values() if "times" in v]
+    max_inter_len = max(set(inter_ranks_len), key=lens.count)-1
+    for el in data.values():
+        if "inter_ranks" in el:
+            el["inter_ranks"] = el["inter_ranks"][:max_inter_len]
     return data
 
 
@@ -195,7 +167,7 @@ def extract_result_data(urls: list) -> tuple[list, list]:
 
     for url in tqdm(urls):
         try:
-            tables = camelot.read_pdf(url, flavor="stream", pages="all")
+            tables = camelot.read_pdf(url, flavor="stream", pages="all", column_tol=2)
 
             # prepare df
             df = clean(handle_table_partitions(tables=tables, results=True))
@@ -203,37 +175,21 @@ def extract_result_data(urls: list) -> tuple[list, list]:
             # remove everything above the rank row
             df = df.iloc[rank_row:].copy()
             df = clean_df(df)
-
             # get distance and country locations
             dist_locs = get_string_loc(df, *DISTS)["str"]["col"]
-
             # get country locations
             cntry_locs = get_string_loc(df, country=True, results=True)["cntry"]
-            country_rows, country_cols = cntry_locs["row"], cntry_locs["col"]
-
-            # get names column index
-            n_loc = get_string_loc(df, "Name")["str"]["col"]
-
-            assert len(country_rows) > 0, "No countries found"
+            country_rows, _ = cntry_locs["row"], cntry_locs["col"]
 
             extraction_result = {}
             for idx, row in enumerate(country_rows):
-                # extract lane, country, athletes and times via dedicated functions
-                lane = get_lane(df, row=row, i=idx, cols=country_cols)
-                country_code = get_country_code(
-                    df, row=row, cols=country_cols)
-                athletes = get_athletes(
-                    df=df, rows=country_rows, i=idx, n_loc=n_loc)
-                times = get_times(df, row=row, cols=dist_locs)
-                inter_ranks = get_intermediate_ranks(df, row=row)
-
                 extraction_result[idx] = {
-                    "country": country_code,
+                    "country": get_country_code(df=df, row=row),
                     "rank": idx + 1,
-                    "lane": lane,
-                    "athletes": athletes,
-                    "times": times,
-                    "inter_ranks": inter_ranks
+                    "lane": get_lane(df=df, row=row, i=idx),
+                    "athletes": get_athletes(df=df, rows=country_rows, i=idx),
+                    "times": get_times(df=df, row=row, cols=dist_locs),
+                    "inter_ranks": get_intermediate_ranks(df=df, row=row)
                 }
 
             if not extraction_result:
@@ -257,14 +213,14 @@ def extract_result_data(urls: list) -> tuple[list, list]:
     return result_data, failed_requests
 
 
-for year in range(2012, 2022):
+complete_data, all_failed = [], []
+for year in range(2011, 2012):
     competition_ids = get_competition_ids(years=year)
     pdf_urls = get_pdf_urls(comp_ids=competition_ids,
-                            comp_limit=NO_OF_COMPETITIONS, results=True)[::12]
+                            comp_limit=1000, results=True)[:5]
     pdf_data, failed_req = extract_result_data(urls=pdf_urls)
-
-# TODO: Append event/race id to final dict to match corresponding API data
+    complete_data.append(pdf_data)
 
 # write results to file
-write_to_json(data=pdf_data, filename="result_data")
-write_to_json(data=failed_req, filename="result_data_failed")
+write_to_json(data=complete_data, filename="result_data")
+write_to_json(data=all_failed, filename="result_data_failed")

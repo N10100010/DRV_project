@@ -324,32 +324,22 @@ def get_string_loc(df: pd.DataFrame, *args: str, country: bool = False, rank: bo
             row_lst = []
             for col in df.columns:
                 contains_code = df[col].str.contains('|'.join(codes), na=False)
-                occurence = df.loc[contains_code]
-                row = int(occurence.index[0]) if occurence.size > 0 else None
+                occurrence = df.loc[contains_code]
+                row = int(occurrence.index[0]) if occurrence.size > 0 else None
                 if isinstance(row, int):
                     row_lst.append(row)
             if row_lst:
                 locs["cntry"]["row"] = [max(set(row_lst), key=row_lst.count)]
 
     elif country and results:
-
-        # For for results pdfs we want to find all row-wise occurrences of country codes
-        # even if they are in multiple columns
-        i, row_idxs, country_codes = 0, [], '|'.join(codes)
-        # from col 0 upwards check where country codes can be found
-        while len(row_idxs) == 0 and i < df.shape[1] - 1:
-            find_row_idxs = df[i].str.contains(country_codes) == True
-            row_idxs = df.index[find_row_idxs].tolist()
-            # only check the following column if there are no athlete names
-            next_col = df[i + 1].isin([country_codes]).any()
-            if next_col:
-                locs["cntry"]["col"].extend([i, i + 1])
-                next_row_idxs = df.index[next_col].tolist()
-                locs["cntry"]["row"].extend(next_row_idxs)
-            else:
-                locs["cntry"]["col"].append(i)
-            i += 1
-        locs["cntry"]["row"].extend(row_idxs)
+        # for results pdfs find all row-wise occurrences of country codes even if in multiple columns
+        country_rows, country_codes = [], '|'.join(codes)
+        for row in range(df.shape[0]):
+            row_data = df.iloc[row].values.reshape(-1)
+            data_el = list(filter(None, [re.findall(r"(?<![A-Z])[A-Z]{3}(?![A-Z])", str(data)) for data in row_data]))
+            if any([str(el[0]) in country_codes for el in data_el if el]):
+                country_rows.append(row)
+        locs["cntry"]["row"] = country_rows
 
     if rank and not column == -1 and not df.empty:
         ranks_contained = df[column].str.contains(rank_str, na=False)
@@ -408,70 +398,88 @@ def handle_table_partitions(tables, results: bool = 0):
     This function should aggregate all tables to a single df.
     ----------
     Parameters:
-    * tables:       Table list from camelot-py
+    * tables:       table list from camelot-py
     * results:      0 = race_data.pdf, 1 = results.pdf
     ----------
-    Returns: Single pd.DataFrame
+    Returns:        pd.DataFrame containing all subframes
     """
     df = pd.DataFrame()
-    # store interval and previous table end to keep track of how to merge the data
+    # store interval and previous table end to keep track of where to join the data frames
     interval = tab_end = 0
-    # edge case check, only keep useful dataframes
+    # edge case check, only keep dataframes that contain relevant data
     checked_dfs = []
     for idx, tab in enumerate(tables):
         checked_df = handle_edge_cases(tab.df, results=results)
         if not checked_df.empty:
             checked_dfs.append(checked_df)
-        elif tables[idx].df.equals(tables[idx - 1].df):
+        # if consecutive dataframes contain the same data, only the last one is appended
+        elif idx > 0 and tables[idx].df.equals(tables[idx - 1].df):
             checked_dfs.append(tables[idx])
 
-    for idx, table in enumerate(checked_dfs):
-        # When there is only one table the df can just be appended to main df
+    # if no relevant data is extracted return empty dataframe
+    if not checked_dfs:
+        return df
+
+    raw_dataframes = [split_column_at_string(dataframe) for dataframe in checked_dfs]
+
+    # iterate over dataframes and apply merging logic
+    for idx, table in enumerate(raw_dataframes):
+        # first table
         if idx == 0:
             first_df = table
             # if edge case error, empty df is returned only continue if df is not empty
             if not first_df.empty:
-                if results == 0:  # only apply on race data pdfs
+                # handle race data pdfs; result pdfs can just be appended
+                if results == 0:
                     # get distance interval, e.g. 25, 50 depending on scale
                     first_tab = first_df.apply(pd.to_numeric, errors='coerce')
                     interval = first_tab[0].diff().mode()[0].astype("int")
+                    last_dist_index = last_num_idx(first_df)
                     # set table_end to current last value of df
-                    tab_end_data = first_df.iat[last_num_idx(first_df), 0]
+                    tab_end_data = first_df.iat[last_dist_index, 0]
                     tab_end = int(tab_end_data)
-                df = pd.concat([df, first_df], ignore_index=True)
-                # TODO: Handle linebreaks
-                '''
-                tab_end_data = re.sub(r"\d*\.\d+", "", tab_end_data)
-                tab_end_data = re.sub(r"\n", "", tab_end_data)
-                '''
+                    # drop rows below
+                    first_df = first_df.drop(first_df.index[last_dist_index + 1:])
+                    # remove columns that contain no data
+                    data_start = get_data_loc(first_df)[0]
+                    data_row_len = first_df[0].shape[0]
+                    empty_cols = []
+                    for col in first_df.columns:
+                        if all(first_df[col].iloc[data_start:data_row_len].values == ""):
+                            empty_cols.append(col)
+                    for column in empty_cols:
+                        first_df[column - 1] = first_df[int(column) - 1] + first_df[int(column)]
+                    first_df = reset_axis(first_df.drop(empty_cols, axis=1), axes=[1])
 
-        # When there are more tables (and for race data pdfs final value for table_end (2000) is not reached)
+                df = pd.concat([df, first_df], ignore_index=True)
+
+        # when there are more tables (and for race data pdfs final value for table_end (2000) is not reached)
         elif idx > 0 if results else (idx > 0 and tab_end != int(RACE_DIST)):
             next_df = table
             if not next_df.empty:
                 if results == 0:
                     next_start = tab_end + interval
-                    next_loc = get_data_loc(
-                        df=next_df, cust_str=str(next_start))
+                    next_loc = get_data_loc(df=next_df, cust_str=str(next_start))
+                    last_dist_idx = last_num_idx(next_df)
                     # set table_end to current last value of df
-                    tab_end = int(next_df.iat[last_num_idx(next_df), 0])
+                    tab_end = int(next_df.iat[last_dist_idx, 0])
+                    next_df = next_df.drop(next_df.index[last_dist_idx + 1:])
+                    next_df = next_df.dropna(how='all', axis=1)
                     next_df = next_df.iloc[next_loc[0]:next_loc[1] + 1]
                     # append next_df part to main df
                     df = pd.concat([df, next_df], ignore_index=True)
                 else:
-                    rank_row = get_string_loc(next_df, rank=True, column=0)[
-                        "rank"]["row"]
+                    rank_row = get_string_loc(next_df, rank=True, column=0)["rank"]["row"]
                     # remove everything above the rank row
                     next_df = next_df.iloc[rank_row:].copy()
                     df = pd.concat([df, next_df], ignore_index=True)
-
     return df
 
 
-def apply_regex_sub(regexs: list, repl: str = '', input: str = ''):
+def apply_regex_sub(regular_expressions: list, repl: str = '', input_string: str = ''):
     """ applies regex sub on input string and returns resulting string. """
-    new_str = input
-    for regex in regexs:
+    new_str = input_string
+    for regex in regular_expressions:
         new_str = re.sub(regex, repl, new_str)
     return new_str
 
@@ -487,19 +495,23 @@ def clean_str(str_list: list, style: str):
     """
     type_dict = {
         "time": [r"\(.*?\)", r"[^0-9.:]"],
-        "name": [r"[0-9.:]", r"\(.*?\)", r"[A-Z]{3}$"],
+        "name": [r"[0-9.:]", r"\(.*?\)", r"[A-Z]{3}$", r"^\s[A-Z][a-z]+"],
         "country": [r"\(.*?\)", r"[0-9]", r"[A-Z]{1,2}[a-z]+", r"[A-Z]{4,}"],
         "number": [r"\d+$", r"\D"],
         "dist": [r"\d*\.\d+", r"\n", r"[^0-9,]", r"\n.*"]
     }
     final = []
     for el in str_list:
-        final.append(apply_regex_sub(
-            regexs=type_dict.get(style), repl='', input=str(el)))
+        final.append(apply_regex_sub(regular_expressions=type_dict.get(style), repl='', input_string=str(el)))
     filter_list = [None, "0", ""]
-    final_list = list(filter(lambda el: el not in filter_list, final))
+    final_list = list(filter(lambda x: x not in filter_list, final))
     if style == "dist":
         final_list = list(map(int, final_list))
+    if style == "country":
+        codes = '|'.join(COUNTRY_CODES.keys())
+        [final_list] = [country for country in final_list if country in codes]
+    if style == "name":
+        final_list = list(filter(lambda x: x not in [None, 0, "0", "", " "], final_list))
     return final_list
 
 
@@ -509,12 +521,15 @@ def handle_edge_cases(df: pd.DataFrame, results=0) -> pd.DataFrame:
     Parameters:
     * results:     0 = race_data.pdf | 1 = results.pdf
     """
-    cnty_idx = get_string_loc(df, country=True)["cntry"]["row"]
-    rank_idx = get_string_loc(df, rank=True, column=0)["rank"]["row"]
+    country_row_idx = get_string_loc(df, country=True)["cntry"]["row"]
+    rank_row_idx = get_string_loc(df, rank=True, column=0)["rank"]["row"]
+    data_row_idx = get_data_loc(df)
 
     # Edge Case 1: Dataframe contains no country and no rank (often the table head)
     # if no country found and no rank found discard table by returning empty dataframe
-    if cnty_idx and (rank_idx if results else True):
+    if results and country_row_idx and rank_row_idx:
+        return df
+    elif not results and country_row_idx and data_row_idx[0] != 0:
         return df
     return pd.DataFrame()
 
@@ -528,7 +543,6 @@ Pandas Utils
 
 def last_num_idx(df: pd.DataFrame, col: int = 0) -> int:
     """ Finds and returns index of last numeric value in DataFrame."""
-    df = df[col].str.split('\n', expand=True)
     values = list(reversed(df[col].values))
     for idx, el in enumerate(values):
         if el.isdigit() and len(el) > 2:
@@ -536,20 +550,27 @@ def last_num_idx(df: pd.DataFrame, col: int = 0) -> int:
     return 0
 
 
+def reset_axis(df: pd.DataFrame, axes: list) -> pd.DataFrame:
+    for axis in axes:
+        df = df.set_axis(list(np.arange(0, df.shape[axis])), axis=axis)
+    return df
+
+
 def clean_df(df: pd.DataFrame):
-    """ Returns cleaned DataFrame and a list with indices of columns, that
-        were removed because no relevant information was contained.
-    """
     df.replace(r"^\s*$", np.nan, regex=True, inplace=True)
-    # store names of empty columns
     df = df.dropna(axis=1, how='all')
     df = df.fillna(0)
-    df = df.set_axis(list(np.arange(0, df.shape[1])), axis=1)
-    df = df.set_axis(list(np.arange(0, df.shape[0])), axis=0)
-    return df  # empties_list
-
-
-def reset_axis(df: pd.DataFrame, axes: list) -> pd.DataFrame:
-    for el in axes:
-        df.set_axis(list(np.arange(0, df.shape[el])), axis=el)
+    df = reset_axis(df, axes=[0, 1])
     return df
+
+
+def split_column_at_string(df: pd.DataFrame, split_str: str = '\n'):
+    placeholder_df = pd.DataFrame()
+    for col in df.columns:
+        if isinstance(df[col], pd.Series) and df[col].astype(str).str.contains(split_str).any():
+            new_cols = df[col].astype(str).str.split('\n', expand=True)
+        else:
+            new_cols = df[col]
+        placeholder_df = pd.concat([placeholder_df, new_cols], axis=1)
+    new_df = reset_axis(df=placeholder_df, axes=[1])
+    return new_df
