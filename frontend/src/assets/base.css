@@ -62,7 +62,7 @@
 @font-face {
   font-family: "TheSansOffice";
   src: local("TheSansOffice"),
-    url(./fonts/TheSansOffice/TSaOf5.tff) format("truetype");
+    url('../assets/fonts/TheSansOffice5.ttf') format("truetype");
 }
 
 body {
