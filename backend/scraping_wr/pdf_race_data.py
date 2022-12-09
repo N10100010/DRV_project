@@ -47,7 +47,7 @@ def df_to_json(df: pd.DataFrame) -> dict:
     top_df = reset_axis(top_part, axes=[0])
 
     # extract country codes
-    country_data = top_df.iloc[0:1, ].values.flatten().tolist()
+    country_data = top_df.iloc[0:1, 1:].values.flatten().tolist()
     # special codes for the country line, which could affect the detection --> must be excluded
     special_codes = ["NPC", "NOC"]
     country_list = [x.split('\n') for x in country_data if x and x not in special_codes]
@@ -55,9 +55,8 @@ def df_to_json(df: pd.DataFrame) -> dict:
     countries = clean_str(countries, style="country")
 
     # handle ranks data
-    ranks = None
-    if rank_found:
-        ranks = [x for x in np.concatenate(top_df.iloc[1:2, 1:].to_numpy()) if x]
+    ranks = [x for x in np.concatenate(top_df.iloc[1:2, 1:].to_numpy()) if x] if rank_found else None
+    ranks = ranks if ranks and len(ranks) == len(countries) else [None] * len(countries)
 
     # Handle data part (incl. wrong column assignments where \n occurs)
     data_range = get_data_loc(df)
@@ -81,21 +80,30 @@ def df_to_json(df: pd.DataFrame) -> dict:
     for idx, country in enumerate(countries):
         speed_data = data_df.iloc[:, (idx + 1) + offset: (idx + 2) + offset]
         stroke_data = data_df.iloc[:, (idx + 2) + offset: (idx + 3) + offset]
-        speeds = check_speed_stroke(speed_data, lb=0.01, ub=10.)
-        strokes = check_speed_stroke(stroke_data, lb=15., ub=100.)
-        rank = ranks[idx] if ranks else None
 
         data[idx] = {
             "country": country,
-            "rank": rank,
+            "rank": ranks[idx] if ranks else None,
             "data": {
                 "dist [m]": dist,
-                "speed [m/s]": speeds,
-                "stroke": strokes
+                "speed [m/s]": check_speed_stroke(speed_data, lb=0.01, ub=10.),
+                "stroke": check_speed_stroke(stroke_data, lb=15., ub=100.)
             }
         }
         offset += 1
     return data
+
+
+def check_extracted_data(data: dict) -> dict:
+    if data:
+        gps_data_len = [len(v["data"]["speed [m/s]"]) for v in data.values() if "data" in v]
+        if all(list(map(lambda x: x >= 5, gps_data_len))):
+            return data
+        else:
+            logger.warning(" Found less than 5 GPS data values per country. Ignore file.")
+            return {}
+    else:
+        return {}
 
 
 def extract_table_data(pdf_urls: list) -> tuple[list, list]:
@@ -117,10 +125,10 @@ def extract_table_data(pdf_urls: list) -> tuple[list, list]:
             tables = camelot.read_pdf(url, flavor="stream", pages="all")
             df = handle_table_partitions(tables=tables, results=False)
             json_data = None if df.empty else df_to_json(df)
-
-            if json_data:
-                json_data["url"] = url
-                data.append(json_data)
+            res = check_extracted_data(json_data)
+            if res:
+                res["url"] = url
+                data.append(res)
                 logging.info(f"Extract of {url.split('/').pop()} successful.")
             else:
                 empty_files += 1
@@ -129,7 +137,7 @@ def extract_table_data(pdf_urls: list) -> tuple[list, list]:
         except Exception as e:
             errors += 1
             failed_requests.append(url)
-            logging.error(f"Error at {url}:\n{traceback.print_exc()}.\nErrors so far: {errors}.")
+            logging.error(f"Error at {url}:\n{e}.\nErrors so far: {errors}.")
 
     # create extraction statistics
     total = len(pdf_urls) - empty_files
@@ -139,12 +147,14 @@ def extract_table_data(pdf_urls: list) -> tuple[list, list]:
     return data, failed_requests
 
 
+complete_data, complete_failed = [], []
 for year in range(2010, 2022):
+    print(f"Start with year: {year}")
     competition_ids = get_competition_ids(years=year)
-    pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=1000, results=False)[::7]
+    pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=1000, results=False)[::20]
     race_data, failed_req = extract_table_data(pdf_urls=pdf_urls)
+    complete_data.append(race_data)
+    complete_failed.append(failed_req)
 
-# TODO: Append event/race id to final dict to match corresponding API data
-
-#write_to_json(data=race_data, filename="race_data")
-#write_to_json(data=failed_req, filename="race_data_failed")
+write_to_json(data=complete_data, filename="race_data")
+write_to_json(data=complete_failed, filename="race_data_failed")

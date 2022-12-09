@@ -11,10 +11,10 @@ Contains utility functions for pandas and the extraction of world rowing data fr
 import re
 import pandas as pd
 import numpy as np
-
 import logging
-
 logger = logging.getLogger(__name__)
+from itertools import groupby
+from operator import itemgetter
 
 # General constants
 COUNTRY_CODES = {
@@ -364,7 +364,7 @@ def get_data_loc(df: pd.DataFrame, cust_str: str = '') -> tuple[int, int]:
     * cust_str:     If provided: Search for individual start and end.
     *               If not provided: Final data value is expected to be at 2000.
     -------------
-    Returns: tuple of row indices (start, end) of race data.
+    Returns:        tuple of row indices (start, end) of race data.
     """
     start, end = 0, 0
     first_column = df[0].values.flatten().tolist()
@@ -445,12 +445,13 @@ def handle_table_partitions(tables, results: bool = 0):
                     data_row_len = first_df[0].shape[0]
                     empty_cols = []
                     for col in first_df.columns:
-                        if all(first_df[col].iloc[data_start:data_row_len].values == ""):
+                        if set(first_df[col].iloc[data_start:data_row_len].values).issubset(["", None]):
                             empty_cols.append(col)
-                    for column in empty_cols:
-                        first_df[column - 1] = first_df[int(column) - 1] + first_df[int(column)]
+                    for k, g in groupby(enumerate(empty_cols), lambda x: x[0] - x[1]):
+                        group = list(map(int, (map(itemgetter(1), g))))
+                        new_cols = first_df.iloc[:, group[0]:group[-1]+1]
+                        first_df[group[0]-1] = first_df[group[0]-1].str.cat(new_cols, na_rep=" ")
                     first_df = reset_axis(first_df.drop(empty_cols, axis=1), axes=[1])
-
                 df = pd.concat([df, first_df], ignore_index=True)
 
         # when there are more tables (and for race data pdfs final value for table_end (2000) is not reached)
@@ -509,7 +510,7 @@ def clean_str(str_list: list, style: str):
         final_list = list(map(int, final_list))
     if style == "country":
         codes = '|'.join(COUNTRY_CODES.keys())
-        [final_list] = [country for country in final_list if country in codes]
+        final_list = [country for country in final_list if country in codes]
     if style == "name":
         final_list = list(filter(lambda x: x not in [None, 0, "0", "", " "], final_list))
     return final_list
@@ -566,11 +567,19 @@ def clean_df(df: pd.DataFrame):
 
 def split_column_at_string(df: pd.DataFrame, split_str: str = '\n'):
     placeholder_df = pd.DataFrame()
+
     for col in df.columns:
+        # find indices of linebreak ('\n') occurrences
+        lb_idx = df.index[df[col].str.contains(split_str, regex=False)].to_numpy()
+        if lb_idx.any():
+            row_indices = [x for x in range(len(df.index)) if x not in lb_idx]
+            df.iloc[row_indices, col] = split_str + df.iloc[row_indices, col].astype(str)
+
         if isinstance(df[col], pd.Series) and df[col].astype(str).str.contains(split_str).any():
-            new_cols = df[col].astype(str).str.split('\n', expand=True)
+            new_cols = df[col].astype(str).str.split(split_str, expand=True)
         else:
             new_cols = df[col]
+
         placeholder_df = pd.concat([placeholder_df, new_cols], axis=1)
     new_df = reset_axis(df=placeholder_df, axes=[1])
     return new_df

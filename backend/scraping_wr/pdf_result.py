@@ -15,20 +15,20 @@ import itertools
 from tqdm import tqdm
 import camelot
 import re
-
-from utils_pdf import (clean, clean_df, get_string_loc,
-                       handle_table_partitions, clean_str, convert_string_to_sec, print_stats)
+from utils_pdf import (clean, clean_df, get_string_loc, handle_table_partitions,
+                       clean_str, convert_string_to_sec, print_stats)
 from utils_general import write_to_json
 from api import get_competition_ids, get_pdf_urls
-
 import logging
 logger = logging.getLogger(__name__)
 
 # dist includes basic 500m interval and 250m para intervals
 DISTS = ["250", "500", "750", "1000", "1500", "2000"]
-SPECIAL_VALUES = ["dna", "DNS", "DNF", "BUW"]
+SPECIAL_VALUES = ["dna", "DNA", "dns", "DNS", "dnf", "DNF", "BUW"]
+# mean values and standard deviation for distances 500, 1000, 1500 and 2000
 MEANS = [102.73, 209.96, 314.81, 424.03]
 STDS = [17.7, 31.9, 37.7, 103.9]
+# TODO: Add means and stds for women and para classes?
 
 
 def get_athletes(df: pd.DataFrame, rows: list, i: int) -> list:
@@ -59,15 +59,20 @@ def get_times(df: pd.DataFrame, row: int, cols: list) -> dict:
     * row:  row index of country
     * cols: list of columns containing intermediate times, e.g. 500m, 1000m
     """
+
     vals, times = [], {}
+    time_regex = r"(?:\d{1,2}:)?\d{2}\.\d{2}"
     for col in cols:
         [time] = df.iloc[row:row + 1, col - 2:col + 2].values
+        if all(v == 0 for v in time):
+            [time] = df.iloc[row-1:row, col - 2:col + 2].values
         for el in time:
             if str(el) in SPECIAL_VALUES:
                 logger.warning(' Special value (e.g. DNS, DNF, BUW) found.')
-        vals.extend(re.findall(r"(?:\d{1,2}:)?\d{2}\.\d{2}", str(time)))
-    # remove duplicates
+        vals.extend(re.findall(time_regex, str(time)))
+
     time_strings = list(dict.fromkeys(clean_str(vals, style='time')))
+
     # Check how many time values have to be extracted
     data_list = df.values.tolist()
     data = ''.join(str(el) for el in data_list)
@@ -92,12 +97,11 @@ def get_times(df: pd.DataFrame, row: int, cols: list) -> dict:
     for key, time in enumerate(time_strings):
         dict_key = (key + 1) * intermediate_interval
         times[dict_key] = time
-
     return times
 
 
 def get_intermediate_ranks(df: pd.DataFrame, row: int) -> list:
-    times_row = df.iloc[row:row + 1, :].values.tolist()
+    times_row = df.iloc[row-1:row + 1, :].values.tolist()
     ranks = re.findall(r"\((\d)\)", str(times_row))
     return [int(rank) for rank in ranks if rank]
 
@@ -134,7 +138,7 @@ def get_lane(df: pd.DataFrame, row: int, i: int) -> tuple[int: int]:
         elif num2 == i + 1:
             return num1
         else:
-            return i + 1
+            return None
 
 
 def check_extracted_data(data: dict) -> dict:
@@ -168,7 +172,6 @@ def extract_result_data(urls: list) -> tuple[list, list]:
     for url in tqdm(urls):
         try:
             tables = camelot.read_pdf(url, flavor="stream", pages="all", column_tol=2)
-
             # prepare df
             df = clean(handle_table_partitions(tables=tables, results=True))
             rank_row = get_string_loc(df, rank=True, column=0)["rank"]["row"]
@@ -216,10 +219,10 @@ def extract_result_data(urls: list) -> tuple[list, list]:
 complete_data, all_failed = [], []
 for year in range(2011, 2012):
     competition_ids = get_competition_ids(years=year)
-    pdf_urls = get_pdf_urls(comp_ids=competition_ids,
-                            comp_limit=1000, results=True)[:5]
+    pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=1000, results=True)[:10]
     pdf_data, failed_req = extract_result_data(urls=pdf_urls)
     complete_data.append(pdf_data)
+
 
 # write results to file
 write_to_json(data=complete_data, filename="result_data")
