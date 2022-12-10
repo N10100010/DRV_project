@@ -37,11 +37,13 @@ export default {
 
 <template>
   <div class="header-box">
-    <header v-bind:style='{"padding-top" : (mobile? "0.1em" : "2.7em" )}' :class="{ 'scrolled-nav': scrollPosition }">
-      <nav class>
-        
+    <header v-bind:style='{"padding-top" : (mobile? "0em" : "1.7em" )}' :class="{ 'scrolled-nav': scrollPosition }">
+      <p id="desktop-title" v-show="!mobile">U ->- Row
+        <li><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></li>
+      </p>
+      <nav>
         <div class="branding">
-          <img alt="DRV Logo" class="logo" src="@/assets/DRV_Logo_white.svg" width="100" height="70"/>
+          <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/DRV_Logo_white.svg" width="100" height="70"/></RouterLink>
         </div>
         <ul v-show="!mobile" class="navigation">
           <li><RouterLink to="/">Allgemein</RouterLink>
@@ -52,12 +54,14 @@ export default {
           <li><RouterLink to="">Men</RouterLink></li>
           <li><RouterLink to="">Sonstiges</RouterLink></li>
         </ul>
+        <p v-show="mobile" id="mobile-title">U ->- Row</p>
         
-        <div class="icon">
-          <i @click="toggleMobileNav" v-show="mobile" class="far fa-bars" :class="{ 'icon-active': mobileNav }"></i>
+        <div v-show="mobile" class="icon">
+          <i @click="toggleMobileNav" class="far fa-bars" :class="{ 'icon-active': mobileNav }"></i>
         </div>
         <transition name="mobile-nav">
           <ul v-show="mobileNav" class="dropdown-nav">
+            <li id="nav-header"><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></li>
             <li @click="toggleMobileNav"><RouterLink to="/">Allgemein</RouterLink>
               <!--<li>test</li>-->
             </li>
@@ -76,7 +80,7 @@ header {
   background-color: #5cc5ed;
   width: 100%;
   z-index: 99;
-  padding-bottom: 0.5em;
+  padding-bottom: 0.76em;
 
   nav {
     position: relative;
@@ -121,8 +125,10 @@ header {
       align-items: center;
       position: absolute;
       top: 0;
-      right: 24px;
+      right: 16px;
       height: 100%;
+
+      
 
       i {
         cursor: pointer;
@@ -130,6 +136,13 @@ header {
         color: #fff;
         transition: 0.8s ease all;
       }
+    }
+
+    #mobile-title {
+      margin-left: auto;
+      margin-right: auto;
+      width: 12em;
+      align-self: center;
     }
 
     .icon-active {
@@ -143,16 +156,22 @@ header {
       flex-direction: column;
       position: fixed;
       width: 100%;
-      max-width: 250px;
+      max-width: 260px;
       height: 100%;
       background-color: #000000;
       top: 0;
-      left: 0;
+      left: -2em;
 
       li {
         margin-left: 0;
         color: #fff;
+
+        
       }
+
+      #nav-header {
+          font-size: 12px;
+        }
     }
 
     .mobile-nav-enter-active,
@@ -168,35 +187,47 @@ header {
     .mobile-nav-enter-to {
       transform: translateX(0);
     }
-
-    
-
-
   }
+
   header::after {
   content: '';
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  border-top: 0.5em solid #008000;
-  border-bottom: 1em solid #1369b0;
+  border-top: 0.55em solid #008000;
+  border-bottom: 1.1em solid #1369b0;
   }
 
   
 }
 
-
-
-.branding {
-  padding-left: 0em;
-}
-
 p {
-  padding-top: 16px;
-  padding: 16px;
+  font-size: 14px;
+  text-transform: uppercase;
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  transition: 0.5s ease all;
+  width: 90%;
+  margin: 0 auto;
+  @media(min-width: 1140px) {
+    max-width: 1140px;
+  }
   color: #d6f0fa;
   font-style: italic;
-  font-size: 14px;
+
+  a {
+    color: #d6f0fa;
+  }
+
+  a:hover {
+    color: #1369b0;
+  }
+
+  li {
+    list-style: none;
+    margin-left: auto;
+  }
 }
 </style>
