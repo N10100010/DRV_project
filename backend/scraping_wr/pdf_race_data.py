@@ -1,7 +1,7 @@
 """
 ####################################################################################################
 
-This module extracts race data (speed[m/s] and stroke[1/m]) for each country per race and writes them to a json file.
+This module extracts race data (speed[m/s] and stroke[1/min]) for each country per race and writes them to a json file.
 Those files for which the extraction process fails, the corresponding URLs are written to a failed_requests.json file.
 
 Basic stats:
@@ -13,77 +13,79 @@ Basic stats:
 ####################################################################################################
 """
 
-import matplotlib.pyplot as plt
-import collections
-import traceback
-import logging
-from statistics import mean, stdev
 import camelot  # on Mac via 'pip install camelot-py[cv]'
 from tqdm import tqdm
 import itertools
-import numpy as np
 import pandas as pd
+from typing import Union
 
 from utils_general import write_to_json
 from api import get_competition_ids, get_pdf_urls
 from utils_pdf import (handle_table_partitions, get_data_loc, print_stats,
                        clean_df, get_string_loc, check_speed_stroke, reset_axis, clean_str)
-
 import logging
 
 logger = logging.getLogger(__name__)
 
+# constants
+COMPETITION_LIMIT = 1000  # max limit of world rowing API is 1000 in total --> not relevant for per year extraction
+EVERY_NTH_DOCUMENT = 25  # testwise extraction --> only consider every nth document
+START_YEAR = 2016
+END_YEAR = 2018
+# special codes for the country line, which could affect the detection --> list contains values that are excluded
+SPECIAL_NAMES_FOR_COUNTRY_ROW = ["NPC", "NOC"]
 
-def df_to_json(df: pd.DataFrame) -> dict:
+
+def read_race_data(df: pd.DataFrame) -> Union[dict, None]:
     """
-    Extracts data (countries, ranks, data) from final dataframe and return json-like structure.
+    Extracts countries, ranks, speeds and strokes from final dataframe and return json structure.
     """
-    # Handle top part with countries and ranks
+    if df.empty:
+        return None
     df = clean_df(df)
-    country_idx = get_string_loc(df, country=True)["cntry"]["row"]
-    country_idx = country_idx[0] if country_idx else None
+
+    # handle top part with countries and ranks: get index of country code row, check if ranks are present
+    country_idx = next(iter(get_string_loc(df, country=True)["cntry"]["row"]), None)
     rank_found = bool(get_string_loc(df, rank=True, column=0)["rank"]["row"])
-    top_part = df.iloc[country_idx:country_idx + (2 if rank_found else 1)]
-    top_df = reset_axis(top_part, axes=[0])
+    # create df for table head, and reset row axis, if ranks present include ranks row else only take country row
+    table_head_df = reset_axis(df.iloc[country_idx:country_idx + (2 if rank_found else 1)], axes=[0])
 
     # extract country codes
-    country_data = top_df.iloc[0:1, 1:].values.flatten().tolist()
-    # special codes for the country line, which could affect the detection --> must be excluded
-    special_codes = ["NPC", "NOC"]
-    country_list = [x.split('\n') for x in country_data if x and x not in special_codes]
+    country_data = table_head_df.iloc[0:1, 1:].values.flatten().tolist()
+    country_list = [x.split('\n') for x in country_data if x and x not in SPECIAL_NAMES_FOR_COUNTRY_ROW]
     countries = list(itertools.chain(*country_list))
     countries = clean_str(countries, style="country")
 
-    # handle ranks data
-    ranks = [x for x in np.concatenate(top_df.iloc[1:2, 1:].to_numpy()) if x] if rank_found else None
-    ranks = ranks if ranks and len(ranks) == len(countries) else [None] * len(countries)
+    # handle ranks data; if ranks are found they are present in the row below the county code
+    ranks = None
+    if rank_found:
+        ranks_data = next(iter(table_head_df.iloc[1:2, 1:].values), None)
+        ranks = [rank for rank in ranks_data if rank]
+        # assumption for each country a rank is provided
+        if ranks and len(ranks) == len(countries):
+            ranks = ranks
+        # if num of ranks and countries not equal, mapping cannot be guaranteed --> return None for all
+        else:
+            ranks = [None] * len(countries)
 
-    # Handle data part (incl. wrong column assignments where \n occurs)
+    # Handle actual race data part
     data_range = get_data_loc(df)
     data_df = df.iloc[data_range[0]:data_range[1] + 1]
 
-    # split columns that are accidentally combined via linebreaks
-    placeholder_df = pd.DataFrame()
-    for col in data_df.columns:
-        if data_df[col].astype(str).str.contains('\n').any():
-            new_cols = data_df[col].astype(str).str.split('\n', expand=True)
-        else:
-            new_cols = data_df[col]
-        placeholder_df = pd.concat([placeholder_df, new_cols], axis=1)
-    data_df = placeholder_df.loc[:, (placeholder_df != 0).any(axis=0)].copy()
-    data_df = reset_axis(clean_df(data_df), axes=[0, 1])
-
-    # Create dict with relevant data and return as list of dicts.
-    data, offset = {}, 0
+    # get distance values
     dist = clean_str(data_df[0].values, style="dist")
 
-    for idx, country in enumerate(countries):
-        speed_data = data_df.iloc[:, (idx + 1) + offset: (idx + 2) + offset]
-        stroke_data = data_df.iloc[:, (idx + 2) + offset: (idx + 3) + offset]
-
-        data[idx] = {
+    # map race data and ranks to countries
+    boat_data, offset = {}, 0
+    for index, country in enumerate(countries):
+        # Idea here: As speed and stroke data occur in pairs we can shift 2-column window over dataframe
+        # to read speed-stroke pairs per country. Offset is added to correct column alignment.
+        speed_data = data_df.iloc[:, (index + 1) + offset: (index + 2) + offset]
+        stroke_data = data_df.iloc[:, (index + 2) + offset: (index + 3) + offset]
+        # write to boat data dict that represents one boat in a race
+        boat_data[index] = {
             "country": country,
-            "rank": ranks[idx] if ranks else None,
+            "rank": ranks[index] if ranks else None,
             "data": {
                 "dist [m]": dist,
                 "speed [m/s]": check_speed_stroke(speed_data, lb=0.01, ub=10.),
@@ -91,70 +93,89 @@ def df_to_json(df: pd.DataFrame) -> dict:
             }
         }
         offset += 1
-    return data
+    return boat_data
 
 
-def check_extracted_data(data: dict) -> dict:
+def exclude_empty_files(data: dict, limit: int = 5) -> dict:
+    """
+    Excludes files that do not contain a specified limit of data values.
+    Background: If there are only very few values, e.g. 2-3 per country, mapping the values
+    to a certain column tends to be inaccurate.
+    """
     if data:
-        gps_data_len = [len(v["data"]["speed [m/s]"]) for v in data.values() if "data" in v]
-        if all(list(map(lambda x: x >= 5, gps_data_len))):
+        num_of_speed_values = [len(v["data"]["speed [m/s]"]) for v in data.values() if "data" in v]
+        num_of_stroke_values = [len(v["data"]["stroke"]) for v in data.values() if "data" in v]
+        more_than_limit_speeds = all(list(map(lambda x: x >= limit, num_of_speed_values)))
+        more_than_limit_strokes = all(list(map(lambda x: x >= limit, num_of_stroke_values)))
+
+        if more_than_limit_speeds and more_than_limit_strokes:
             return data
         else:
-            logger.warning(" Found less than 5 GPS data values per country. Ignore file.")
+            logger.warning(f" Found less than {limit} GPS data values per country. Ignore file.")
             return {}
-    else:
-        return {}
+    return {}
 
 
-def extract_table_data(pdf_urls: list) -> tuple[list, list]:
+def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
     """
-    Extracts data from given pdf urls using camelot-py.
+    Extracts data from given pdf urls using camelot-py
     -----------------------
     Parameters:
-    * pdf_urls:     List containing all urls linking to pdf files
+    * urls:     list containing all urls for pdf files
     -----------------------
     Returns: tuple
-    * List with json-like objects (final structure needs to be discussed) for each team per race
-    * List containing the urls of all failed requests
+    * list with json objects (final structure needs to be discussed) for each team per race
+    * list containing the urls of all failed requests
     """
-    data, failed_requests, = [], []
+    data, failed_reqs, = [], []
     errors, empty_files = 0, 0
 
-    for url in tqdm(pdf_urls):
+    for url in tqdm(urls):
         try:
+            # read data via camelot
             tables = camelot.read_pdf(url, flavor="stream", pages="all")
+            # handle data that is spread across multiple pages, linebreaks and empty columns
             df = handle_table_partitions(tables=tables, results=False)
-            json_data = None if df.empty else df_to_json(df)
-            res = check_extracted_data(json_data)
-            if res:
-                res["url"] = url
-                data.append(res)
+            # extract relevant data and return dict
+            data_dict = read_race_data(df=df)
+            # exclude files that are below a specific limit of relevant data values
+            race_data_dict = exclude_empty_files(data=data_dict, limit=5)
+
+            if race_data_dict:
+                race_data_dict["url"] = url
+                data.append(race_data_dict)
                 logging.info(f"Extract of {url.split('/').pop()} successful.")
             else:
                 empty_files += 1
-                logging.info(f"Empty file found: {url.split('/').pop()}.")
+                logging.warning(f"Empty file found: {url.split('/').pop()}.")
 
         except Exception as e:
             errors += 1
-            failed_requests.append(url)
-            logging.error(f"Error at {url}:\n{e}.\nErrors so far: {errors}.")
+            failed_reqs.append(url)
+            logging.error(f"\nError at {url}: {e}.\nErrors so far: {errors}.")
 
     # create extraction statistics
     total = len(pdf_urls) - empty_files
-    rate = "{:.2f}".format(100 - ((errors / total if total else 0) * 100))
-    print_stats(total=total, errors=errors, empties=empty_files, rate=rate)
+    extraction_rate = "{:.2f}".format(100-((errors/total if total else 0)*100))
+    print_stats(total=total, errors=errors, empties=empty_files, rate=extraction_rate)
 
-    return data, failed_requests
+    return data, failed_reqs
 
 
-complete_data, complete_failed = [], []
-for year in range(2010, 2022):
-    print(f"Start with year: {year}")
+# extract data per year and write data and failed requests to respective json files
+final_extracted_data, final_failed_requests = [], []
+
+for year in range(START_YEAR, END_YEAR):
+    logger.info(f"Start extraction for year: {year}")
+    # get competition ids for current year
     competition_ids = get_competition_ids(years=year)
-    pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=1000, results=False)[::20]
-    race_data, failed_req = extract_table_data(pdf_urls=pdf_urls)
-    complete_data.append(race_data)
-    complete_failed.append(failed_req)
+    # fetch pdf urls for given competition ids
+    pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=COMPETITION_LIMIT, results=False)[::EVERY_NTH_DOCUMENT]
+    # extract race data and get list of failed requests
+    race_data, failed_requests = extract_table_data_from_pdf(urls=pdf_urls)
+    # append to final list
+    final_extracted_data.append(race_data)
+    final_failed_requests.append(failed_requests)
 
-write_to_json(data=complete_data, filename="race_data")
-write_to_json(data=complete_failed, filename="race_data_failed")
+write_to_json(data=final_extracted_data, filename="race_data")
+write_to_json(data=final_failed_requests, filename="race_data_failed")

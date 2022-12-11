@@ -217,9 +217,9 @@ def extract_result_data(urls: list) -> tuple[list, list]:
 
 
 complete_data, all_failed = [], []
-for year in range(2011, 2012):
+for year in range(2010, 2012):
     competition_ids = get_competition_ids(years=year)
-    pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=1000, results=True)[:10]
+    pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=1000, results=True)[:4]
     pdf_data, failed_req = extract_result_data(urls=pdf_urls)
     complete_data.append(pdf_data)
 
