@@ -4,12 +4,16 @@
   </div>
 </template>
 
-<style>
+<style scoped lang="scss">
 @media (min-width: 1024px) {
   .about {
     min-height: 100vh;
     display: flex;
     align-items: center;
   }
+}
+
+h1 {
+  font-family: "Arial";
 }
 </style>
