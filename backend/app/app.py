@@ -11,10 +11,6 @@ def home():
     return render_template("./NO_TEMPLATE.html")
 
 
-@app.route('/')
-def home():
-    return render_template("./NO_TEMPLATE.html")
-
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))

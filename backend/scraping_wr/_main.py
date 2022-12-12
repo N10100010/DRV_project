@@ -1,3 +1,4 @@
+from backend.scraping_wr.api import get_competition_ids, get_by_competition_id
 from utils_wr import load_json
 import requests
 
@@ -6,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 import utils_wr as ut_wr
-
+import api as api
 ########################################################################################################################
 # NOTE:
 # This main.py is just for rapid testing
@@ -16,15 +17,15 @@ if __name__ == '__main__':
     ### KEEP FOR TESTING
     # todo: write tests for the functions below?
     # the current result is always 1000 rows long. Why is that?
-    # races = api.get_races()
-    # events = api.get_events()
-    ##comps = api.get_competitions(kwargs={'extend_by': {'venue': True, 'country': True}})
-    # comps = api.get_competitions()
-    # stats = api.get_statistics()
-    # comp_types = api.get_competitiontype()
-    # boat_classes = api.get_boatclasses()
-    # venues = api.get_venues()
-    # countries = api.get_countries()
+    #races = api.get_races()
+    #events = api.get_events()
+    #comps = api.get_competitions(kwargs={'extend_by': {'venue': True, 'country': True}})
+    #comps = api.get_competitions()
+    #stats = api.get_statistics()
+    #comp_types = api.get_competitiontype()
+    #boat_classes = api.get_boatclasses()
+    #venues = api.get_venues()
+    #countries = api.get_countries()
     ## --> countries can
     # merged = api.merge_race_event_competitions(races, events, comps)
 
@@ -50,7 +51,12 @@ if __name__ == '__main__':
     #    _ids_all.extend(get_competition_ids(y))
 
     # SMALL TEST FOR THE GET_PDF_URLS FUNCTION
-    #ids_2010 = get_competition_ids(years=2010)
-    #result_urls = get_pdf_urls(comp_ids=ids_2010, results=True)
+
+    #ids_2010 = api.get_competition_ids(years=2022)
+    #result_urls = api.get_pdf_urls(comp_ids=ids_2010, results=True)
+
+    ids = ['b56cf9a5-a7d3-4e64-9571-38218f39413b']
+
+    ret = api.get_by_competition_id(ids, ['events', 'races', 'raceBoats', 'raceBoatAthletes', 'raceBoatIntermediates'])
 
     print()
