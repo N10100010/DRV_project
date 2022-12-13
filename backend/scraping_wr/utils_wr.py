@@ -22,13 +22,60 @@ WR_FILTER_MAPPING = {
 }
 
 
+def procedure_init():
+    """
+    TODO:
+     -
+    @return:
+    """
+
+    pass
+
+
+def procedure_update():
+    """
+    TODO:
+     - check, for races and events, what the biggest dates are
+     - query (big, combined query string for endpoint) data from the endpoint with respective filters for
+        races-dates and event-dates
+     - build connection to the database? should we do that here?
+
+    @return:
+    """
+
+    pass
+
+
+def get_all(data: Union[dict, list], key: str):
+    """
+    Gets every value of occurrences of the key and yields it.
+    @param data: dict|list
+    @param key: some string like 'events', 'races', ...
+    @return: generator
+    """
+    sub_iter = []
+    if isinstance(data, dict):
+        if key in data:
+            yield data[key]
+        # we ensured the type of data is dict
+        #  values() is an internal function of the dict class
+        sub_iter = data.values()
+    if isinstance(data, list):
+        sub_iter = data
+
+    # iterate over all values
+    for x in sub_iter:
+        for y in get_all(x, key):
+            yield y
+
+
 @retry(wait=wait_exponential(max=5), stop=stop_after_attempt(5))
 def load_json(url: str, params=None, timeout=20., **kwargs):
     """
     Loads any json from any URL.
     The function will be retried, if the endpoint might not be reachable atm.
     ------------
-    :param url: str - A url to an endpoint, that might contain a filter string.
+    :param url: str - A url to an endpoint, that might contain a filter string
     :param params: not used
     :param timeout: should stay at default (most of the time)
     :param kwargs: mostly not used
