@@ -415,7 +415,44 @@ def remove_empty_columns(df: pd.DataFrame, data_loc: str = "") -> pd.DataFrame:
     return df
 
 
-def handle_table_partitions(tables, results: bool = 0):
+def preprocess_raw_race_data_df(df: pd.DataFrame, nxt: int = 0):
+    """
+    Preprocessing includes:
+    * find column with distance values and get distance interval
+    * find last value as start point for subsequent tables
+    * remove rows below data values, e.g. sponsorship information etc.
+    ---------------------------
+    Returns:
+    * df:               processed dataframe
+    * last_dist_value:  int of last distance value that occurred in the file
+    * dist_interval:    interval of distances, i.e. 10, 25, 50
+    """
+    # identify column containing distance values
+    df_numeric = df.apply(pd.to_numeric, errors='coerce')
+    dist_col_idx = 1 if df_numeric[0].isnull().values.all() else 0
+
+    # get distance interval, i.e. 10, 25 or 50
+    dist_interval = int(df_numeric[dist_col_idx].diff().mode()[0])
+
+    # get index of last distance value and last distance value
+    last_dist_idx = last_num_idx(df, col=dist_col_idx)
+    last_dist_value = df.iat[last_dist_idx, dist_col_idx]
+    last_dist_value = int(last_dist_value) if last_dist_value.isdigit() else 0
+
+    # drop all rows below last distance value and remove empty columns
+    df = df.drop(df.index[last_dist_idx + 1:])
+    df = remove_empty_columns(df, data_loc=str(nxt if nxt != 0 else ''))
+
+    # only apply the following if not first dataframe
+    if nxt != 0:
+        next_loc = get_data_loc(df=df, cust_str=str(nxt))
+        # exclude table head for subsequent dataframes
+        df = df.iloc[next_loc[0]:next_loc[1] + 1]
+
+    return df, last_dist_value, dist_interval
+
+
+def handle_table_partitions(tables, results: bool = False):
     """ Camelot may create multiple table objects, e.g. when data is spread across multiple pages.
     This function should aggregate all tables to a single df.
     ----------
@@ -427,7 +464,7 @@ def handle_table_partitions(tables, results: bool = 0):
     """
     df = pd.DataFrame()
     # store interval and previous table end to keep track of where to join the data frames
-    interval = tab_end = 0
+    interval, table_end = 0, 0
     # edge case check, only keep dataframes that contain relevant data
     checked_dfs = []
     for idx, tab in enumerate(tables):
@@ -443,53 +480,31 @@ def handle_table_partitions(tables, results: bool = 0):
 
     raw_dataframes = [split_column_at_string(dataframe) for dataframe in checked_dfs]
 
-    # iterate over dataframes and apply merging logic
-    for idx, table in enumerate(raw_dataframes):
-        # first table
-        if idx == 0:
-            first_df = table
-            # if edge case error, empty df is returned only continue if df is not empty
-            if not first_df.empty:
-                # handle race data pdfs; result pdfs can just be appended
-                if results == 0:
-                    # get distance interval, e.g. 10, 25, 50
-                    first_tab = first_df.apply(pd.to_numeric, errors='coerce')
-                    column = 0
-                    if first_tab[column].isnull().values.all():
-                        column = 1
-                    first_num_col = first_tab[column]
-                    interval = int(first_num_col.diff().mode()[0])
-                    last_dist_index = last_num_idx(first_df, col=column)
-                    # set table_end to current last value of df
-                    last_distance_value = first_df.iat[last_dist_index, column]
-                    tab_end = int(last_distance_value) if last_distance_value.isdigit() else 0
-                    # drop rows below
-                    first_df = first_df.drop(first_df.index[last_dist_index + 1:])
-                    first_df = remove_empty_columns(first_df)
-                df = pd.concat([df, first_df], ignore_index=True)
+    # loop over dataframes and apply merging logic
+    for idx, data_frame in enumerate(raw_dataframes):
+        # if first table and dataframe is not empty
+        if idx == 0 and not data_frame.empty:
+            if results:
+                # TODO: Add multi page functionality for result pdfs
+                pass  # result pdfs can just be appended
+            else:  # race data pdfs have to be preprocessed
+                data_frame, table_end, interval = preprocess_raw_race_data_df(data_frame)
+            # append (sub)dataframe to main dataframe
+            df = pd.concat([df, data_frame], ignore_index=True)
 
         # when there are more tables (and for race data pdfs final value for table_end (2000) is not reached)
-        elif idx > 0 if results else (idx > 0 and tab_end != int(RACE_DIST)):
-            next_df = table
-            if not next_df.empty:
-                if results == 0:
-                    next_start = tab_end + interval
-                    next_loc = get_data_loc(df=next_df, cust_str=str(next_start))
-                    last_dist_idx = last_num_idx(next_df)
-                    # set table_end to current last value of df
-                    last_distance_value = next_df.iat[last_dist_idx, 0]
-                    tab_end = int(last_distance_value) if last_distance_value.isdigit() else 0
-                    next_df = next_df.drop(next_df.index[last_dist_idx + 1:])
-                    next_df = next_df.dropna(how='all', axis=1)
-                    next_df = next_df.iloc[next_loc[0]:next_loc[1] + 1]
-                    next_df = remove_empty_columns(next_df, data_loc=str(next_start))
-                    # append next_df part to main df
-                    df = pd.concat([df, next_df], ignore_index=True)
+        elif idx > 0 if results else (idx > 0 and table_end != int(RACE_DIST)):
+
+            if not data_frame.empty:
+                if results:
+                    # table head can be ignored --> remove everything above the rank row
+                    rank_row = get_string_loc(data_frame, rank=True, column=0)["rank"]["row"]
+                    data_frame = data_frame.iloc[rank_row:]
                 else:
-                    rank_row = get_string_loc(next_df, rank=True, column=0)["rank"]["row"]
-                    # remove everything above the rank row
-                    next_df = next_df.iloc[rank_row:].copy()
-                    df = pd.concat([df, next_df], ignore_index=True)
+                    next_start = table_end + interval
+                    data_frame, table_end, interval = preprocess_raw_race_data_df(data_frame, nxt=next_start)
+                # append (sub)dataframe to main dataframe
+                df = pd.concat([df, data_frame], ignore_index=True)
     return df
 
 
@@ -512,7 +527,7 @@ def clean_str(str_list: list, style: str):
     """
     type_dict = {
         "time": [r"\(.*?\)", r"[^0-9.:]"],
-        "name": [r"[0-9.:]", r"\(.*?\)", r"[A-Z]{3}$", r"^\s[A-Z][a-z]+", r"^dna$"],
+        "name": [r"[0-9.:]", r"\(.*?\)", r"[A-Z]{3}$", r"^\s[A-Z][a-z]+", r"^dna$", r"^\*$"],
         "country": [r"\(.*?\)", r"[0-9]", r"[A-Z]{1,2}[a-z]+", r"[A-Z]{4,}"],
         "number": [r"\d+$", r"\D"],
         "dist": [r"\d*\.\d+", r"\n", r"[^0-9,]", r"\n.*"]
@@ -607,5 +622,5 @@ def split_column_at_string(df: pd.DataFrame, split_str: str = '\n'):
         placeholder_df = pd.concat([placeholder_df, new_cols], axis=1)
 
     new_df = reset_axis(df=placeholder_df, axes=[1])
-    new_df = new_df.replace(r'^\s*$', '0', regex=True)
+
     return new_df

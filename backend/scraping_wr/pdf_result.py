@@ -15,6 +15,7 @@ import itertools
 from tqdm import tqdm
 import camelot
 import re
+from typing import Union
 from utils_pdf import (clean, clean_df, get_string_loc, handle_table_partitions,
                        clean_str, print_stats)
 from utils_general import write_to_json
@@ -23,13 +24,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# dist includes basic 500m interval and 250m para intervals
-DISTS = ["250", "500", "750", "1000", "1500", "2000"]
-SPECIAL_VALUES = ["dna", "DNA", "dns", "DNS", "dnf", "DNF", "BUW", "-"]
+# constants
+DISTS = ["250", "500", "750", "1000", "1500", "2000"]  # includes basic 500m interval and 250m para intervals
+SPECIAL_VALUES = ["dna", "DNA", "dns", "DNS", "dnf", "DNF", "BUW", "-"]  # special codes that imply missing values
 COMPETITION_LIMIT = 1000
-START_YEAR = 2010
-END_YEAR = 2023
-EVERY_NTH_DOCUMENT = 35
+START_YEAR = 2017
+END_YEAR = 2019
+EVERY_NTH_DOCUMENT = 10
 
 
 def get_athletes(df: pd.DataFrame, rows: list, i: int) -> list:
@@ -110,12 +111,13 @@ def get_country_code(df: pd.DataFrame, row: int) -> str:
     return next(iter(clean_str(country, style="country")), None)
 
 
-def get_lane(df: pd.DataFrame, row: int, i: int) -> tuple[int: int]:
+def get_lane(df: pd.DataFrame, row: int, i: int) -> Union[int, None]:
     lane_data = df.iloc[row:row + 1, 0:df.shape[1] - 1].values.reshape(-1)
     lane_string = ''.join(str(el) for el in lane_data)
     # get first two numbers in country row
-    nums = [int(re.findall(r"^\d{1,2}$", str(el))[0]) for el in lane_string if el.isdigit()][:2]
-    # lane is either the number that is not the rank (i+1) or it is equal to the rank
+    lane_regex = r"^\d{1,2}$"
+    nums = [int(re.findall(lane_regex, str(el))[0]) for el in lane_string if el.isdigit()][:2]
+    # lane is either the number that is not the rank or it is equal to the rank
     if len(nums) == 1:
         return nums[0]
     elif len(nums) == 2:
@@ -124,8 +126,7 @@ def get_lane(df: pd.DataFrame, row: int, i: int) -> tuple[int: int]:
             return num2
         elif num2 == i + 1:
             return num1
-        else:
-            return None
+        return None
 
 
 def check_extracted_data(data: dict) -> dict:
@@ -146,6 +147,7 @@ def check_extracted_data(data: dict) -> dict:
 
 class EmptyFileException(Exception):
     pass
+
 
 def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
     """
@@ -221,6 +223,7 @@ def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
 # extract data per year and write data and failed requests to respective json files
 final_extracted_data, final_failed_requests = [], []
 
+
 for year in range(START_YEAR, END_YEAR):
     logger.info(f"Start extraction for year: {year}")
     # get competition ids for current year
@@ -232,6 +235,12 @@ for year in range(START_YEAR, END_YEAR):
     final_extracted_data.append(pdf_data)
     final_failed_requests.append(failed_req)
 
+'''
+pdf_urls = [
+    "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/JWCH_2017_1/JWCH_2017_1_ROWMSCULL4--J---------HEAT000200--_C73X1681.pdf"
+]
+pdf_data, failed_req = extract_table_data_from_pdf(urls=pdf_urls)
+'''
 # write results to file
 write_to_json(data=final_extracted_data, filename="result_data")
 write_to_json(data=final_failed_requests, filename="result_data_failed")

@@ -28,9 +28,9 @@ logger = logging.getLogger(__name__)
 
 # constants
 COMPETITION_LIMIT = 1000  # max limit of world rowing API is 1000 in total --> not relevant for per year extraction
-EVERY_NTH_DOCUMENT = 15  # testwise extraction --> only consider every nth document
+EVERY_NTH_DOCUMENT = 7  # testwise extraction --> only consider every nth document
 START_YEAR = 2010
-END_YEAR = 2023
+END_YEAR = 2022
 # special codes for the country line, which could affect the detection --> list contains values that are excluded
 SPECIAL_NAMES_FOR_COUNTRY_ROW = ["NPC", "NOC"]
 
@@ -128,8 +128,7 @@ def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
     * list with json objects (final structure needs to be discussed) for each team per race
     * list containing the urls of all failed requests
     """
-    data, failed_reqs, = [], []
-    errors, empty_files = 0, 0
+    data, failed_reqs, errors, empty_files = [], [], 0, 0
 
     for url in tqdm(urls):
         try:
@@ -177,6 +176,10 @@ for year in range(START_YEAR, END_YEAR):
     # append to final list
     final_extracted_data.append(race_data)
     final_failed_requests.append(failed_requests)
+
+#pdf_urls = ["https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCH_2017/WCH_2017_ROWXCOXED4--PR3-------PREL000100--_MGPSX7872.pdf"]
+#print(pdf_urls)
+#race_data, failed_requests = extract_table_data_from_pdf(urls=pdf_urls)
 
 write_to_json(data=final_extracted_data, filename="race_data")
 write_to_json(data=final_failed_requests, filename="race_data_failed")
