@@ -14,6 +14,7 @@ import numpy as np
 from itertools import groupby
 from operator import itemgetter
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -248,25 +249,17 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
 
 def print_stats(total: int, errors: int, empties: int, rate: str) -> None:
     """ Prints basic statistics for the pdf reading process. """
-    # replace by logger.info
     print("{txt:-^25}".format(txt=f"\nRead: {total - errors}/{total} PDFs | ({rate}%)"))
     print("{txt:-^25}".format(txt=f" Empty Files: {empties} "))
 
 
 def check_speed_stroke(df: pd.DataFrame, lb: float = 0.0, ub: float = float('inf')) -> list:
-    """ Removes linebreaks, fills non numeric values with 0, returns: list """
+    """ Removes linebreaks, fills non-numeric values with 0, returns: list """
+    if df.empty:
+        return []
     df = df.replace('\\n', ' ', regex=True)
     df = df.apply(pd.to_numeric, errors='coerce').astype(float).fillna(0)
     return [x if (lb <= x <= ub) else 0 for x in list(np.concatenate(np.array(df)))]
-
-
-def convert_string_to_sec(string: str) -> int:
-    if ':' in string:
-        minutes = re.findall(r"(\d+):", string)[0]
-        seconds = re.findall(r"(\d+)\.", string)[0]
-        return round(int(60 * int(minutes) + int(seconds)), 2)
-    else:
-        return int(re.findall(r"(\d+)\.", string)[0])
 
 
 '''
@@ -313,7 +306,7 @@ def get_string_loc(df: pd.DataFrame, *args: str, country: bool = False, rank: bo
                 locs["str"]["col"] = col_list[0] if first else col_list
         else:
             assert args[0] in df.values, "First arg not in DataFrame"
-            locs["str"]["row"] = df.index[df[column] == args[0]].values[0]
+            locs["str"]["row"] = df.index[df[column] == args[0]].values[:1]
 
     if country and not results:
         # For race data pdfs we want to find either the row that contains the word "Country"
@@ -337,18 +330,19 @@ def get_string_loc(df: pd.DataFrame, *args: str, country: bool = False, rank: bo
         country_rows, country_codes = [], '|'.join(codes)
         for row in range(df.shape[0]):
             row_data = df.iloc[row].values.reshape(-1)
-            data_el = list(filter(None, [re.findall(r"(?<![A-Z])[A-Z]{3}(?![A-Z])", str(data)) for data in row_data]))
+            country_code_regex = r"(?<![A-Z])[A-Z]{3}(?![A-Z])(?!\s)"
+            data_el = list(filter(None, [re.findall(country_code_regex, str(data)) for data in row_data]))
             if any([str(el[0]) in country_codes for el in data_el if el]):
                 country_rows.append(row)
         locs["cntry"]["row"] = country_rows
 
     if rank and not column == -1 and not df.empty:
-        ranks_contained = df[column].str.contains(rank_str, na=False)
-        ranks_str_found = ranks_contained.any()
-        if ranks_str_found:
-            rank_row = df.index[ranks_contained][0]
-            locs["rank"]["row"] = rank_row
-            locs["rank"]["col"] = 0
+        rank_loc = df[column].str.contains(rank_str, na=False)
+        if not rank_loc.any() and df.shape[1] > 1:
+            rank_loc = df[column+1].str.contains(rank_str, na=False)
+        if rank_loc.any():
+            rank_row = df.index[rank_loc][0]
+            locs["rank"]["row"], locs["rank"]["col"] = rank_row, 0
 
     country_row_data = list(set(locs["cntry"]["row"]))
     country_row_data.sort()
@@ -367,38 +361,45 @@ def get_data_loc(df: pd.DataFrame, cust_str: str = '') -> tuple[int, int]:
     Returns:        tuple of row indices (start, end) of race data.
     """
     start, end = 0, 0
-    first_column = df[0].values.flatten().tolist()
+    differences = df.apply(pd.to_numeric, errors="coerce").diff().mode().fillna(0).astype(int).astype(str)
+    mask = [differences[col].str.contains("|".join(DIST_INTERVALS)) for col in differences]
+    dist_list = [el.name for el in mask if any(el)]
+    distance_column = int(dist_list[0]) if dist_list else 0
+
+    first_column = df[distance_column].values.flatten().tolist()
     dists = [re.sub(r"\n.*", "", str(x)) for x in first_column]
 
     try:
         if cust_str and cust_str in df.values:
-            start = get_string_loc(df, cust_str, column=0)["str"]["row"]
+            start = get_string_loc(df, cust_str, column=distance_column)["str"]["row"]
         elif cust_str and cust_str in dists:
             start = dists.index(cust_str)
         else:
             for i in DIST_INTERVALS:
                 if i in df.values:
-                    start = get_string_loc(df, i, column=0)["str"]["row"]
+                    start = get_string_loc(df, i, column=distance_column)["str"]["row"]
                     break
             if start == 0 and end == 0:
                 for i in DIST_INTERVALS:
                     if i in dists:
                         start = dists.index(i)
                         break
-        end = last_num_idx(df)
+        end = last_num_idx(df, col=distance_column)
 
     except Exception as e:
         logging.error(f"Error finding data start/end: \n{e}")
 
-    return start, end
+    return int(start), int(end)
 
 
 def remove_empty_columns(df: pd.DataFrame, data_loc: str = "") -> pd.DataFrame:
     """
     Remove columns that contain no data values.
     """
-    data_start = get_data_loc(df, cust_str=data_loc)[0]
-    data_row_len = df[0].shape[0]
+    data_start = int(get_data_loc(df, cust_str=data_loc)[0])
+    if not data_start:
+        return pd.DataFrame()
+    data_row_len = df.shape[0]
     # find empty columns, i.e. the ones that contain no relevant information
     empty_cols = []
     for col in df.columns:
@@ -408,7 +409,8 @@ def remove_empty_columns(df: pd.DataFrame, data_loc: str = "") -> pd.DataFrame:
     for k, g in groupby(enumerate(empty_cols), lambda x: x[0] - x[1]):
         group = list(map(int, (map(itemgetter(1), g))))
         new_cols = df.iloc[:, group[0]:group[-1] + 1]
-        df[group[0] - 1] = df[group[0] - 1].str.cat(new_cols, na_rep=" ")
+        if group[0] != 0:
+            df[group[0] - 1] = df[group[0] - 1].str.cat(new_cols, na_rep=" ")
     df = reset_axis(df.drop(empty_cols, axis=1), axes=[1])
     return df
 
@@ -434,8 +436,7 @@ def handle_table_partitions(tables, results: bool = 0):
             checked_dfs.append(checked_df)
         # if consecutive dataframes contain the same data, only the last one is appended
         elif idx > 0 and tables[idx].df.equals(tables[idx - 1].df):
-            checked_dfs.append(tables[idx])
-
+            checked_dfs.append(tables[idx].df)
     # if no relevant data is extracted return empty dataframe
     if not checked_dfs:
         return df
@@ -451,13 +452,17 @@ def handle_table_partitions(tables, results: bool = 0):
             if not first_df.empty:
                 # handle race data pdfs; result pdfs can just be appended
                 if results == 0:
-                    # get distance interval, e.g. 25, 50 depending on scale
+                    # get distance interval, e.g. 10, 25, 50
                     first_tab = first_df.apply(pd.to_numeric, errors='coerce')
-                    interval = first_tab[0].diff().mode()[0].astype("int")
-                    last_dist_index = last_num_idx(first_df)
+                    column = 0
+                    if first_tab[column].isnull().values.all():
+                        column = 1
+                    first_num_col = first_tab[column]
+                    interval = int(first_num_col.diff().mode()[0])
+                    last_dist_index = last_num_idx(first_df, col=column)
                     # set table_end to current last value of df
-                    tab_end_data = first_df.iat[last_dist_index, 0]
-                    tab_end = int(tab_end_data)
+                    last_distance_value = first_df.iat[last_dist_index, column]
+                    tab_end = int(last_distance_value) if last_distance_value.isdigit() else 0
                     # drop rows below
                     first_df = first_df.drop(first_df.index[last_dist_index + 1:])
                     first_df = remove_empty_columns(first_df)
@@ -472,11 +477,12 @@ def handle_table_partitions(tables, results: bool = 0):
                     next_loc = get_data_loc(df=next_df, cust_str=str(next_start))
                     last_dist_idx = last_num_idx(next_df)
                     # set table_end to current last value of df
-                    tab_end = int(next_df.iat[last_dist_idx, 0])
+                    last_distance_value = next_df.iat[last_dist_idx, 0]
+                    tab_end = int(last_distance_value) if last_distance_value.isdigit() else 0
                     next_df = next_df.drop(next_df.index[last_dist_idx + 1:])
                     next_df = next_df.dropna(how='all', axis=1)
                     next_df = next_df.iloc[next_loc[0]:next_loc[1] + 1]
-                    next_df = remove_empty_columns(next_df, data_loc=next_start)
+                    next_df = remove_empty_columns(next_df, data_loc=str(next_start))
                     # append next_df part to main df
                     df = pd.concat([df, next_df], ignore_index=True)
                 else:
@@ -506,7 +512,7 @@ def clean_str(str_list: list, style: str):
     """
     type_dict = {
         "time": [r"\(.*?\)", r"[^0-9.:]"],
-        "name": [r"[0-9.:]", r"\(.*?\)", r"[A-Z]{3}$", r"^\s[A-Z][a-z]+"],
+        "name": [r"[0-9.:]", r"\(.*?\)", r"[A-Z]{3}$", r"^\s[A-Z][a-z]+", r"^dna$"],
         "country": [r"\(.*?\)", r"[0-9]", r"[A-Z]{1,2}[a-z]+", r"[A-Z]{4,}"],
         "number": [r"\d+$", r"\D"],
         "dist": [r"\d*\.\d+", r"\n", r"[^0-9,]", r"\n.*"]
@@ -538,14 +544,15 @@ def handle_edge_cases(df: pd.DataFrame, results=0) -> pd.DataFrame:
     """
     country_row_idx = get_string_loc(df, country=True)["cntry"]["row"]
     rank_row_idx = get_string_loc(df, rank=True, column=0)["rank"]["row"]
-    data_start, data_end = get_data_loc(df)
 
     # Edge Case 1: Dataframe contains no country and no rank (often the table head)
     # if no country found and no rank found discard table by returning empty dataframe
     if results and country_row_idx and rank_row_idx:
         return df
-    elif not results and country_row_idx and (data_start != 0 or data_end != 0):
-        return df
+    elif not results and country_row_idx:
+        data_start, data_end = get_data_loc(df)
+        if data_start != 0 or data_end != 0:
+            return df
     return pd.DataFrame()
 
 
@@ -560,7 +567,7 @@ def last_num_idx(df: pd.DataFrame, col: int = 0, min_len: int = 3) -> int:
     """ Finds index of last numeric value of a minimum length in dataframe"""
     values = list(reversed(df[col].values))
     for idx, el in enumerate(values):
-        if el.isdigit() and len(el) >= min_len:
+        if el and el.isdigit() and len(el) >= min_len:
             return (len(values) - 1) - idx
     return 0
 
@@ -598,6 +605,7 @@ def split_column_at_string(df: pd.DataFrame, split_str: str = '\n'):
             new_cols = df[col]
         # add columns to placeholder dataframe
         placeholder_df = pd.concat([placeholder_df, new_cols], axis=1)
-    new_df = reset_axis(df=placeholder_df, axes=[1])
 
+    new_df = reset_axis(df=placeholder_df, axes=[1])
+    new_df = new_df.replace(r'^\s*$', '0', regex=True)
     return new_df

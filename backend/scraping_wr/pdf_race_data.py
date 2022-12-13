@@ -8,7 +8,6 @@ Basic stats:
 * For the 1000 competition IDs provided by the API, there are approximately 11.700 race data pdfs.
 * Processing time per pdf: approx. 1.8 - 2.5s
 * Time to process 11.7k pdfs: approx. 7 hours
-* Last test - successful extractions: 11092/11509 PDFs | (96,38%)
 
 ####################################################################################################
 """
@@ -29,9 +28,9 @@ logger = logging.getLogger(__name__)
 
 # constants
 COMPETITION_LIMIT = 1000  # max limit of world rowing API is 1000 in total --> not relevant for per year extraction
-EVERY_NTH_DOCUMENT = 25  # testwise extraction --> only consider every nth document
-START_YEAR = 2016
-END_YEAR = 2018
+EVERY_NTH_DOCUMENT = 15  # testwise extraction --> only consider every nth document
+START_YEAR = 2010
+END_YEAR = 2023
 # special codes for the country line, which could affect the detection --> list contains values that are excluded
 SPECIAL_NAMES_FOR_COUNTRY_ROW = ["NPC", "NOC"]
 
@@ -41,13 +40,15 @@ def read_race_data(df: pd.DataFrame) -> Union[dict, None]:
     Extracts countries, ranks, speeds and strokes from final dataframe and return json structure.
     """
     if df.empty:
-        return None
+        return
     df = clean_df(df)
-
     # handle top part with countries and ranks: get index of country code row, check if ranks are present
     country_idx = next(iter(get_string_loc(df, country=True)["cntry"]["row"]), None)
     rank_found = bool(get_string_loc(df, rank=True, column=0)["rank"]["row"])
     # create df for table head, and reset row axis, if ranks present include ranks row else only take country row
+    if country_idx is None:
+        logger.warning("No country found – ignore file...")
+        return
     table_head_df = reset_axis(df.iloc[country_idx:country_idx + (2 if rank_found else 1)], axes=[0])
 
     # extract country codes
@@ -73,7 +74,7 @@ def read_race_data(df: pd.DataFrame) -> Union[dict, None]:
     data_df = df.iloc[data_range[0]:data_range[1] + 1]
 
     # get distance values
-    dist = clean_str(data_df[0].values, style="dist")
+    dist = clean_str(data_df.iloc[:, 0:2].values, style="dist")
 
     # map race data and ranks to countries
     boat_data, offset = {}, 0
@@ -152,7 +153,7 @@ def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
         except Exception as e:
             errors += 1
             failed_reqs.append(url)
-            logging.error(f"\nError at {url}: {e}.\nErrors so far: {errors}.")
+            logging.error(f"\nError at {url}:\n{e}.\nErrors so far: {errors}.")
 
     # create extraction statistics
     total = len(pdf_urls) - empty_files

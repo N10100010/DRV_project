@@ -16,19 +16,20 @@ from tqdm import tqdm
 import camelot
 import re
 from utils_pdf import (clean, clean_df, get_string_loc, handle_table_partitions,
-                       clean_str, convert_string_to_sec, print_stats)
+                       clean_str, print_stats)
 from utils_general import write_to_json
 from api import get_competition_ids, get_pdf_urls
 import logging
+
 logger = logging.getLogger(__name__)
 
 # dist includes basic 500m interval and 250m para intervals
 DISTS = ["250", "500", "750", "1000", "1500", "2000"]
-SPECIAL_VALUES = ["dna", "DNA", "dns", "DNS", "dnf", "DNF", "BUW"]
-# mean values and standard deviation for distances 500, 1000, 1500 and 2000
-MEANS = [102.73, 209.96, 314.81, 424.03]
-STDS = [17.7, 31.9, 37.7, 103.9]
-# TODO: Add means and stds for women and para classes?
+SPECIAL_VALUES = ["dna", "DNA", "dns", "DNS", "dnf", "DNF", "BUW", "-"]
+COMPETITION_LIMIT = 1000
+START_YEAR = 2010
+END_YEAR = 2023
+EVERY_NTH_DOCUMENT = 35
 
 
 def get_athletes(df: pd.DataFrame, rows: list, i: int) -> list:
@@ -45,56 +46,40 @@ def get_athletes(df: pd.DataFrame, rows: list, i: int) -> list:
     # rows: starts at row of current country, ends at row of following country
     start_row = rows[i]
     end_row = rows[i + 1] if (i + 1 < len(rows)) else df.shape[0]
-    athlete_df = df.iloc[start_row:end_row, 0:df.shape[1] - 1]
-    names = athlete_df.dropna().values.reshape(-1)
-    return clean_str(names, style='name')
+    raw_athlete_data = df.iloc[start_row:end_row, 0:df.shape[1] - 1].dropna().values.reshape(-1)
+    filtered_athletes = clean_str(raw_athlete_data, style="name")
+    return clean_str(filtered_athletes, style='name')
 
 
 def get_times(df: pd.DataFrame, row: int, cols: list) -> dict:
     """
-    Handles extraction of intermediate times.
+    Handles extraction of intermediate times
     ----------------------
     Parameters:
     * df:   dataframe
-    * row:  row index of country
-    * cols: list of columns containing intermediate times, e.g. 500m, 1000m
+    * row:  row index of current country
     """
+    # Check intermediate distances that are present in df
+    distance_data = ''.join(str(el) for el in df.values)
+    distances = [dist for dist in DISTS if dist in distance_data]
 
-    vals, times = [], {}
-    time_regex = r"(?:\d{1,2}:)?\d{2}\.\d{2}"
-    for col in cols:
-        [time] = df.iloc[row:row + 1, col - 2:col + 2].values
-        if all(v == 0 for v in time):
-            [time] = df.iloc[row-1:row, col - 2:col + 2].values
-        for el in time:
-            if str(el) in SPECIAL_VALUES:
-                logger.warning(' Special value (e.g. DNS, DNF, BUW) found.')
-        vals.extend(re.findall(time_regex, str(time)))
+    # get raw time values from dataframe row and find all time patterns in row for current country/row
+    raw_t_values = df.iloc[row:row+1, cols[0]:].values
+    time_regex = r"(?:\d{1,2}:)?\d{2}\.\d{2}|" + "|".join(SPECIAL_VALUES)
+    [extracted_time_values] = [re.findall(time_regex, str(raw_t_val)) for raw_t_val in raw_t_values]
 
-    time_strings = list(dict.fromkeys(clean_str(vals, style='time')))
-
-    # Check how many time values have to be extracted
-    data_list = df.values.tolist()
-    data = ''.join(str(el) for el in data_list)
-    distances = [x for x in DISTS if x in data]
-    num_of_times = len(distances)
-
-    # if time values are missing categorize times to distance after standard deviation
-    if len(time_strings) != num_of_times:
-        logger.warning(" Time values missing – place times w.r.t. stdv of data.")
-        time_str_list = [None] * num_of_times
-        for idx, mean in enumerate(MEANS):
-            min_val, max_val = mean - 1.2 * STDS[idx], mean + 1.2 * STDS[idx]
-            for el in time_strings:
-                time_val = convert_string_to_sec(el)
-                if min_val <= time_val <= max_val and idx < num_of_times:
-                    time_str_list[idx] = el
-        time_strings = time_str_list
+    # if time values are missing
+    if len(extracted_time_values) != len(distances):
+        # when there are special values, e.g. DNF, DNA
+        special_vals_included = set(extracted_time_values).intersection(set(SPECIAL_VALUES))
+        if special_vals_included:
+            extracted_time_values = [next(iter(special_vals_included or []), None)] * len(distances)
 
     # check interval and place time values according to distance
     dist_diffs = [int(j) - int(i) for i, j in zip(distances[:-1], distances[1:])]
     intermediate_interval = max(set(dist_diffs), key=dist_diffs.count)
-    for key, time in enumerate(time_strings):
+    times = {}
+    for key, time in enumerate(extracted_time_values):
         dict_key = (key + 1) * intermediate_interval
         times[dict_key] = time
     return times
@@ -102,7 +87,8 @@ def get_times(df: pd.DataFrame, row: int, cols: list) -> dict:
 
 def get_intermediate_ranks(df: pd.DataFrame, row: int) -> list:
     times_row = df.iloc[row-1:row + 1, :].values.tolist()
-    ranks = re.findall(r"\((\d)\)", str(times_row))
+    ranks_regex = r"\((\d)\)"
+    ranks = re.findall(ranks_regex, str(times_row))
     return [int(rank) for rank in ranks if rank]
 
 
@@ -121,19 +107,20 @@ def get_country_code(df: pd.DataFrame, row: int) -> str:
     country_data = country_df.values.reshape(-1)
     reg = r"(?<![A-Z])[A-Z]{3}(?![A-Z])(?!\s)"
     country = list(itertools.chain(*[re.findall(reg, str(x)) for x in country_data]))
-    return clean_str(country, style="country")
+    return next(iter(clean_str(country, style="country")), None)
 
 
 def get_lane(df: pd.DataFrame, row: int, i: int) -> tuple[int: int]:
     lane_data = df.iloc[row:row + 1, 0:df.shape[1] - 1].values.reshape(-1)
     lane_string = ''.join(str(el) for el in lane_data)
+    # get first two numbers in country row
     nums = [int(re.findall(r"^\d{1,2}$", str(el))[0]) for el in lane_string if el.isdigit()][:2]
     # lane is either the number that is not the rank (i+1) or it is equal to the rank
     if len(nums) == 1:
-        return nums
+        return nums[0]
     elif len(nums) == 2:
         num1, num2 = nums
-        if num1 == i + 1:
+        if num1 == i + 1 or num1 == 0:
             return num2
         elif num2 == i + 1:
             return num1
@@ -157,7 +144,10 @@ def check_extracted_data(data: dict) -> dict:
     return data
 
 
-def extract_result_data(urls: list) -> tuple[list, list]:
+class EmptyFileException(Exception):
+    pass
+
+def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
     """
     This function extracts relevant data from the result data pdfs.
     --------------
@@ -167,63 +157,81 @@ def extract_result_data(urls: list) -> tuple[list, list]:
     Returns: list with extracted data
     """
     logger.info(f"Extracting data from {pdf_urls} pdfs.")
-    result_data, failed_requests, errors, empty_files = [], [], 0, 0
+    data, failed_requests, errors, empty_files = [], [], 0, 0
 
     for url in tqdm(urls):
+        extraction_result, tables = {}, []
         try:
             tables = camelot.read_pdf(url, flavor="stream", pages="all", column_tol=2)
-            # prepare df
-            df = clean(handle_table_partitions(tables=tables, results=True))
-            rank_row = get_string_loc(df, rank=True, column=0)["rank"]["row"]
-            # remove everything above the rank row
-            df = df.iloc[rank_row:].copy()
-            df = clean_df(df)
-            # get distance and country locations
-            dist_locs = get_string_loc(df, *DISTS)["str"]["col"]
-            # get country locations
-            cntry_locs = get_string_loc(df, country=True, results=True)["cntry"]
-            country_rows, _ = cntry_locs["row"], cntry_locs["col"]
+        except Exception:
+            logger.error(f" PDF not accessible – ignore file...")
 
-            extraction_result = {}
-            for idx, row in enumerate(country_rows):
-                extraction_result[idx] = {
-                    "country": get_country_code(df=df, row=row),
-                    "rank": idx + 1,
-                    "lane": get_lane(df=df, row=row, i=idx),
-                    "athletes": get_athletes(df=df, rows=country_rows, i=idx),
-                    "times": get_times(df=df, row=row, cols=dist_locs),
-                    "inter_ranks": get_intermediate_ranks(df=df, row=row)
-                }
+        if tables:
+            try:
+                # prepare df
+                df = clean(handle_table_partitions(tables=tables, results=True))
+                if df.empty:
+                    raise EmptyFileException
+                rank_row = get_string_loc(df, rank=True, column=0)["rank"]["row"]
+                # remove everything above the rank row
+                df = df.iloc[rank_row:].copy()
+                df = clean_df(df)
+                # get columns for intermediate times
+                dist_locs = get_string_loc(df, *DISTS)["str"]["col"]
+                # get country locations
+                cntry_locs = get_string_loc(df, country=True, results=True)["cntry"]
+                country_rows, _ = cntry_locs["row"], cntry_locs["col"]
 
-            if not extraction_result:
+                for idx, row in enumerate(country_rows):
+                    extraction_result[idx] = {
+                        "country": get_country_code(df=df, row=row),
+                        "rank": idx + 1,
+                        "lane": get_lane(df=df, row=row, i=idx),
+                        "athletes": get_athletes(df=df, rows=country_rows, i=idx),
+                        "times": get_times(df=df, row=row, cols=dist_locs),
+                        "inter_ranks": get_intermediate_ranks(df=df, row=row)
+                    }
+
+                result_data = check_extracted_data(extraction_result)
+
+                if result_data:
+                    extraction_result["url"] = url
+                    data.append(result_data)
+                    logger.info(f"Extract of {url.split('/').pop()} successful.")
+                else:
+                    empty_files += 1
+                    logger.warning(f"Empty file found: {url.split('/').pop()}.")
+
+            except EmptyFileException:
                 empty_files += 1
-            else:
-                extraction_result["url"] = url
-                # do sanity check on extracted data here
-                res = check_extracted_data(extraction_result)
-                result_data.append(res)
-                logger.info(f"Extract of {url.split('/').pop()} successful.")
+                logger.exception("No table found – ignore file.")
 
-        except Exception as e:
-            errors += 1
-            failed_requests.append(url)
-            logger.exception(f"Error at {url}: {e}.")
+            except Exception as e:
+                errors += 1
+                failed_requests.append(url)
+                logger.exception(f"Error at {url}: {e}.")
 
     total = len(urls) - empty_files
     rate = "{:.2f}".format(100 - ((errors / total if total else 0) * 100))
     print_stats(total=total, errors=errors, empties=empty_files, rate=rate)
 
-    return result_data, failed_requests
+    return data, failed_requests
 
 
-complete_data, all_failed = [], []
-for year in range(2010, 2012):
+# extract data per year and write data and failed requests to respective json files
+final_extracted_data, final_failed_requests = [], []
+
+for year in range(START_YEAR, END_YEAR):
+    logger.info(f"Start extraction for year: {year}")
+    # get competition ids for current year
     competition_ids = get_competition_ids(years=year)
-    pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=1000, results=True)[:4]
-    pdf_data, failed_req = extract_result_data(urls=pdf_urls)
-    complete_data.append(pdf_data)
-
+    pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=COMPETITION_LIMIT, results=True)[::EVERY_NTH_DOCUMENT]
+    # extract result data and get list of failed requests
+    pdf_data, failed_req = extract_table_data_from_pdf(urls=pdf_urls)
+    # append to final list
+    final_extracted_data.append(pdf_data)
+    final_failed_requests.append(failed_req)
 
 # write results to file
-write_to_json(data=complete_data, filename="result_data")
-write_to_json(data=all_failed, filename="result_data_failed")
+write_to_json(data=final_extracted_data, filename="result_data")
+write_to_json(data=final_failed_requests, filename="result_data_failed")
