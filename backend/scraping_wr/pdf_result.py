@@ -28,9 +28,9 @@ logger = logging.getLogger(__name__)
 DISTS = ["250", "500", "750", "1000", "1500", "2000"]  # includes basic 500m interval and 250m para intervals
 SPECIAL_VALUES = ["dna", "DNA", "dns", "DNS", "dnf", "DNF", "BUW", "-"]  # special codes that imply missing values
 COMPETITION_LIMIT = 1000
-START_YEAR = 2017
-END_YEAR = 2019
-EVERY_NTH_DOCUMENT = 10
+START_YEAR = 2011
+END_YEAR = 2021
+EVERY_NTH_DOCUMENT = 25
 
 
 def get_athletes(df: pd.DataFrame, rows: list, i: int) -> list:
@@ -65,7 +65,7 @@ def get_times(df: pd.DataFrame, row: int, cols: list) -> dict:
     distances = [dist for dist in DISTS if dist in distance_data]
 
     # get raw time values from dataframe row and find all time patterns in row for current country/row
-    raw_t_values = df.iloc[row:row+1, cols[0]:].values
+    raw_t_values = df.iloc[row:row+1, cols[0]-1:].values
     time_regex = r"(?:\d{1,2}:)?\d{2}\.\d{2}|" + "|".join(SPECIAL_VALUES)
     [extracted_time_values] = [re.findall(time_regex, str(raw_t_val)) for raw_t_val in raw_t_values]
 
@@ -145,10 +145,6 @@ def check_extracted_data(data: dict) -> dict:
     return data
 
 
-class EmptyFileException(Exception):
-    pass
-
-
 def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
     """
     This function extracts relevant data from the result data pdfs.
@@ -165,36 +161,39 @@ def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
         extraction_result, tables = {}, []
         try:
             tables = camelot.read_pdf(url, flavor="stream", pages="all", column_tol=2)
-        except Exception:
+        except NotImplementedError:
             logger.error(f" PDF not accessible – ignore file...")
+        except Exception as e:
+            logger.error(f" Error occurred: {e}")
 
         if tables:
+            result_data = {}
             try:
                 # prepare df
                 df = clean(handle_table_partitions(tables=tables, results=True))
-                if df.empty:
-                    raise EmptyFileException
-                rank_row = get_string_loc(df, rank=True, column=0)["rank"]["row"]
-                # remove everything above the rank row
-                df = df.iloc[rank_row:].copy()
-                df = clean_df(df)
-                # get columns for intermediate times
-                dist_locs = get_string_loc(df, *DISTS)["str"]["col"]
-                # get country locations
-                cntry_locs = get_string_loc(df, country=True, results=True)["cntry"]
-                country_rows, _ = cntry_locs["row"], cntry_locs["col"]
+                if not df.empty:
+                    rank_row = get_string_loc(df, rank=True, column=0)["rank"]["row"]
+                    # remove everything above the rank row
+                    df = df.iloc[rank_row:].copy()
+                    df = clean_df(df)
+                    # get columns for intermediate times
+                    dist_locs = get_string_loc(df, *DISTS)["str"]["col"]
+                    # get country locations
+                    cntry_locs = get_string_loc(df, country=True, results=True)["cntry"]
+                    country_rows, _ = cntry_locs["row"], cntry_locs["col"]
 
-                for idx, row in enumerate(country_rows):
-                    extraction_result[idx] = {
-                        "country": get_country_code(df=df, row=row),
-                        "rank": idx + 1,
-                        "lane": get_lane(df=df, row=row, i=idx),
-                        "athletes": get_athletes(df=df, rows=country_rows, i=idx),
-                        "times": get_times(df=df, row=row, cols=dist_locs),
-                        "inter_ranks": get_intermediate_ranks(df=df, row=row)
-                    }
-
-                result_data = check_extracted_data(extraction_result)
+                    for idx, row in enumerate(country_rows):
+                        extraction_result[idx] = {
+                            "country": get_country_code(df=df, row=row),
+                            "rank": idx + 1,
+                            "lane": get_lane(df=df, row=row, i=idx),
+                            "athletes": get_athletes(df=df, rows=country_rows, i=idx),
+                            "times": get_times(df=df, row=row, cols=dist_locs),
+                            "inter_ranks": get_intermediate_ranks(df=df, row=row)
+                        }
+                    result_data = check_extracted_data(extraction_result)
+                elif df.empty:
+                    result_data = {}
 
                 if result_data:
                     extraction_result["url"] = url
@@ -203,10 +202,6 @@ def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
                 else:
                     empty_files += 1
                     logger.warning(f"Empty file found: {url.split('/').pop()}.")
-
-            except EmptyFileException:
-                empty_files += 1
-                logger.exception("No table found – ignore file.")
 
             except Exception as e:
                 errors += 1
@@ -235,12 +230,17 @@ for year in range(START_YEAR, END_YEAR):
     final_extracted_data.append(pdf_data)
     final_failed_requests.append(failed_req)
 
-'''
-pdf_urls = [
-    "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/JWCH_2017_1/JWCH_2017_1_ROWMSCULL4--J---------HEAT000200--_C73X1681.pdf"
-]
-pdf_data, failed_req = extract_table_data_from_pdf(urls=pdf_urls)
-'''
 # write results to file
 write_to_json(data=final_extracted_data, filename="result_data")
 write_to_json(data=final_failed_requests, filename="result_data_failed")
+
+'''
+# Use this to test selected files
+pdf_urls = [
+    "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCH_2014/WCH_2014_ROWXSCULL2--TA--------FNL-000100--_C73X2402.pdf",
+]
+pdf_data, failed_req = extract_table_data_from_pdf(urls=pdf_urls)
+write_to_json(data=pdf_data, filename="result_data")
+write_to_json(data=failed_req, filename="result_data_failed")
+'''
+

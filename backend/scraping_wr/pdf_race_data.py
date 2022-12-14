@@ -6,8 +6,8 @@ Those files for which the extraction process fails, the corresponding URLs are w
 
 Basic stats:
 * For the 1000 competition IDs provided by the API, there are approximately 11.700 race data pdfs.
-* Processing time per pdf: approx. 1.8 - 2.5s
-* Time to process 11.7k pdfs: approx. 7 hours
+* Processing time per pdf: approx. 1.2 - 1.8s
+* Time to process 12k pdfs: approx. 4 hours
 
 ####################################################################################################
 """
@@ -89,8 +89,9 @@ def read_race_data(df: pd.DataFrame) -> Union[dict, None]:
             "rank": ranks[index] if ranks else None,
             "data": {
                 "dist [m]": dist,
-                "speed [m/s]": check_speed_stroke(speed_data, lb=0.01, ub=10.),
-                "stroke": check_speed_stroke(stroke_data, lb=15., ub=100.)
+                # info for speed upper bound: highest occurring speed value in dataset was 9.8
+                "speed [m/s]": check_speed_stroke(speed_data, lb=0.01, ub=9.9),
+                "stroke": check_speed_stroke(stroke_data, lb=10., ub=100.)
             }
         }
         offset += 1
@@ -177,9 +178,16 @@ for year in range(START_YEAR, END_YEAR):
     final_extracted_data.append(race_data)
     final_failed_requests.append(failed_requests)
 
-#pdf_urls = ["https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCH_2017/WCH_2017_ROWXCOXED4--PR3-------PREL000100--_MGPSX7872.pdf"]
-#print(pdf_urls)
-#race_data, failed_requests = extract_table_data_from_pdf(urls=pdf_urls)
-
 write_to_json(data=final_extracted_data, filename="race_data")
 write_to_json(data=final_failed_requests, filename="race_data_failed")
+
+'''
+# Use this to test selected files
+pdf_urls = [
+    "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCH_2017/WCH_2017_ROWXCOXED4--PR3-------PREL000100--_MGPSX7872.pdf"
+]
+race_data, failed_requests = extract_table_data_from_pdf(urls=pdf_urls)
+
+write_to_json(data=race_data, filename="race_data")
+write_to_json(data=failed_requests, filename="race_data_failed")
+'''

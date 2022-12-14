@@ -249,12 +249,17 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
 
 def print_stats(total: int, errors: int, empties: int, rate: str) -> None:
     """ Prints basic statistics for the pdf reading process. """
-    print("{txt:-^25}".format(txt=f"\nRead: {total - errors}/{total} PDFs | ({rate}%)"))
-    print("{txt:-^25}".format(txt=f" Empty Files: {empties} "))
+    logger.warning("{txt:-^25}".format(txt=f"\nRead: {total - errors}/{total} PDFs | ({rate}%)"))
+    logger.warning("{txt:-^25}".format(txt=f" Empty Files: {empties} "))
 
 
 def check_speed_stroke(df: pd.DataFrame, lb: float = 0.0, ub: float = float('inf')) -> list:
-    """ Removes linebreaks, fills non-numeric values with 0, returns: list """
+    """
+    Removes linebreaks, fills non-numeric values with 0, returns: list
+    Parameters:
+    * lb:   defines lower bound for given float values
+    * ub:   defines upper bound for given float values
+    """
     if df.empty:
         return []
     df = df.replace('\\n', ' ', regex=True)
@@ -485,7 +490,6 @@ def handle_table_partitions(tables, results: bool = False):
         # if first table and dataframe is not empty
         if idx == 0 and not data_frame.empty:
             if results:
-                # TODO: Add multi page functionality for result pdfs
                 pass  # result pdfs can just be appended
             else:  # race data pdfs have to be preprocessed
                 data_frame, table_end, interval = preprocess_raw_race_data_df(data_frame)
