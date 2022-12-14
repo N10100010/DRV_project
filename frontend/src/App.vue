@@ -3,28 +3,22 @@ import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
 import Navigation from './components/Navigation.vue'
 import BarChart from './components/charts/BarChart.vue';
+import FooterVue from './components/Footer.vue';
 </script>
 
 <template>
   <header>
     <div>
-
-      
       <div><Navigation/></div>
-      
-
-
-     
     </div>
   </header>
   <body>
-    <div ><BarChart/></div>
     <RouterView />
+    <FooterVue />
   </body>
 </template>
 
 <style lang="scss" scoped>
-
 .logo {
   display: block;
   margin: 0 auto 2rem;
@@ -56,6 +50,7 @@ nav a:first-of-type {
 }
 
 body {
+  margin: 0;
   display: flex;
   flex-direction: column;
   align-items: stretch;

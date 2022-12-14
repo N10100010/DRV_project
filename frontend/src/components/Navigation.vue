@@ -23,13 +23,17 @@ export default {
       this.windowWidth = window.innerWidth;
       if(this.windowWidth <= 750){
         this.mobile = true;
+        document.querySelector('body').style.paddingTop = '6.5em';
         return;
       }
       this.mobile = false;
       this.mobileNav = false;
+      document.querySelector('body').style.paddingTop = '11em';
       return;
     }
   }
+
+  
 }
   
 
@@ -42,8 +46,11 @@ export default {
         <li><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></li>
       </p>
       <nav>
-        <div class="branding">
+        <div v-show="!mobile" class="branding">
           <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/DRV_Logo_white.svg" width="100" height="70"/></RouterLink>
+        </div>
+        <div v-show="mobile" class="branding-mobile">
+          <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/DRV_Logo_white.svg" width="50" height="50"/></RouterLink>
         </div>
         <ul v-show="!mobile" class="navigation">
           <li><RouterLink to="/">Allgemein</RouterLink>
@@ -51,8 +58,8 @@ export default {
             <!--<li>Test</li>-->
           </li>
           <li><RouterLink to="/about">Women</RouterLink></li>
-          <li><RouterLink to="">Men</RouterLink></li>
-          <li><RouterLink to="">Sonstiges</RouterLink></li>
+          <li><RouterLink to="/test">Men</RouterLink></li>
+          <li><RouterLink to="/test">Sonstiges</RouterLink></li>
         </ul>
         <p v-show="mobile" id="mobile-title">U ->- Row</p>
         
@@ -62,12 +69,12 @@ export default {
         <transition name="mobile-nav">
           <ul v-show="mobileNav" class="dropdown-nav">
             <li id="nav-header"><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></li>
-            <li @click="toggleMobileNav"><RouterLink to="/">Allgemein</RouterLink>
+            <li><RouterLink to="/" @click="toggleMobileNav">Allgemein</RouterLink>
               <!--<li>test</li>-->
             </li>
-            <li @click="toggleMobileNav"><RouterLink to="/about">Women</RouterLink></li>
-            <li @click="toggleMobileNav"><RouterLink to="">Men</RouterLink></li>
-            <li @click="toggleMobileNav"><RouterLink to="">Sonstiges</RouterLink></li>
+            <li><RouterLink to="/about" @click="toggleMobileNav">Women</RouterLink></li>
+            <li><RouterLink to="/test" @click="toggleMobileNav">Men</RouterLink></li>
+            <li><RouterLink to="/test" @click="toggleMobileNav">Sonstiges</RouterLink></li>
           </ul>
         </transition>
       </nav>
@@ -77,13 +84,20 @@ export default {
   
 <style lang="scss" scoped>
 header {
+  top: 0;
+  left: 0;
+  right: 0;
+  position: fixed;
   background-color: #5cc5ed;
   width: 100%;
-  z-index: 99;
   padding-bottom: 0.76em;
+  z-index: 99;
+
+  a.router-link-exact-active {
+  color: rgb(226, 107, 107);
+}
 
   nav {
-    position: relative;
     display: flex;
     flex-direction: row;
     padding: 12px 0;
@@ -124,7 +138,7 @@ header {
       display: flex;
       align-items: center;
       position: absolute;
-      top: 0;
+      top: -0.25em;
       right: 16px;
       height: 100%;
 
@@ -141,8 +155,9 @@ header {
     #mobile-title {
       margin-left: auto;
       margin-right: auto;
-      width: 12em;
+      width: 8em;
       align-self: center;
+      color: #fff;
     }
 
     .icon-active {

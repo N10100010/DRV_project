@@ -5,12 +5,18 @@ import ToolingIcon from './icons/IconTooling.vue'
 import EcosystemIcon from './icons/IconEcosystem.vue'
 import CommunityIcon from './icons/IconCommunity.vue'
 import SupportIcon from './icons/IconSupport.vue'
+import BarChartVue from './charts/BarChart.vue'
 </script>
 
 <template>
+  <div class="barchart">
+      <BarChartVue />
+  </div>
+
   <WelcomeItem>
     <template #icon>
       <DocumentationIcon />
+      
     </template>
     <template #heading>Documentation</template>
 
@@ -20,6 +26,7 @@ import SupportIcon from './icons/IconSupport.vue'
   </WelcomeItem>
 
   <WelcomeItem>
+    
     <template #icon>
       <ToolingIcon />
     </template>
@@ -84,3 +91,8 @@ import SupportIcon from './icons/IconSupport.vue'
     <a href="https://vuejs.org/sponsor/" target="_blank" rel="noopener">becoming a sponsor</a>.
   </WelcomeItem>
 </template>
+
+<styles lang="scss" scoped>
+  .barchart {
+  }
+</styles>
