@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# DS Stores
+*.DS_Store
+
+# jsons in the scraping backend
+backend/scraping_wr/*.json

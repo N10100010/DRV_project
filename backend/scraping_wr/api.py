@@ -94,29 +94,36 @@ def _extract(nested: iter, successor_filter: str = None) -> list:
     return _l
 
 
-def get_by_competition_id(ids: Union[str, list[str]], keys_of_interest: list[str], verbose: bool = False) -> dict:
+def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Union[str, list[str]], verbose: bool = False) -> dict:
     """
     Get the entities of interest (passed by keys_of_interest) for the id's passed.
     @param verbose: if or if not verbose
-    @param ids: Union[str, list[str]]: a singe OR a list of competition id's
-    @param keys_of_interest: list[str]: a list of keys you are interested in. Possible keys: ['events', 'races', 'raceBoats', 'raceBoatAthletes', 'raceBoatIntermediates']
+    @param comp_ids: Union[str, list[str]]: a singe OR a list of competition id's
+    @param keys_of_interest: Union[str, list[str]]: a string = 'everything' OR a list of keys you are interested in.
+        Possible keys: ['events', 'races', 'raceBoats', 'raceBoatAthletes', 'raceBoatIntermediates']
     @return: dict[str]:
     """
+
     allowed_keys = {'events', 'races', 'raceBoats', 'raceBoatAthletes', 'raceBoatIntermediates'}
+
+    if isinstance(keys_of_interest, str) and keys_of_interest == 'everything':
+        keys_of_interest = list(allowed_keys)
+    else:
+        logger.error("The passed string for 'keys_of_interest' does not match the string 'everything'. Check fct-call.")
 
     if not set(keys_of_interest).issubset(allowed_keys):
         logger.error(f"Some of the passed keys are not allowed: {set(keys_of_interest) - allowed_keys}")
         raise KeyError()
 
-    if isinstance(ids, str):
-        ids = [ids]
+    if isinstance(comp_ids, str):
+        comp_ids = [comp_ids]
 
     if verbose:
-        _len = len(ids)
+        _len = len(comp_ids)
 
     ret_val = {koi: [] for koi in keys_of_interest}
 
-    for i, _id in enumerate(ids):
+    for i, _id in enumerate(comp_ids):
         everything = ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_COMPETITION + _id + WR_INCLUDE_EVERYTHING)
         for koi in keys_of_interest:
             ret_val[koi].extend(
@@ -161,7 +168,9 @@ def get_competition_ids(years: Optional[Union[list, int]] = None) -> list[str]:
 
 
 def get_pdf_urls(comp_ids: list, results: bool, comp_limit: Optional[int] = None) -> list:
-    """ Fetches URLs to pdf files on https://d3fpn4c9813ycf.cloudfront.net/.
+    """
+     todo: rewrite to not having to use the endpoint....
+     Fetches URLs to pdf files on https://d3fpn4c9813ycf.cloudfront.net/.
     ---------
     Parameters:
     * base_url:     for world rowing this is https://world-rowing-api.soticcloud.net/stats/api/competition/
