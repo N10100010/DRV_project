@@ -23,34 +23,30 @@ export default {
       this.windowWidth = window.innerWidth;
       if(this.windowWidth <= 750){
         this.mobile = true;
-        document.querySelector('body').style.paddingTop = '6.5em';
+        document.querySelector('body').style.paddingTop = '4.5em';
         return;
       }
       this.mobile = false;
       this.mobileNav = false;
-      document.querySelector('body').style.paddingTop = '11em';
+      document.querySelector('body').style.paddingTop = '10.6em';
       return;
     }
   }
-
-  
 }
-  
-
 </script>
 
 <template>
   <div class="header-box">
-    <header v-bind:style='{"padding-top" : (mobile? "0em" : "1.7em" )}' :class="{ 'scrolled-nav': scrollPosition }">
+    <header v-bind:style='{"padding-top" : (mobile? "0em" : "1.5em" )}' :class="{ 'scrolled-nav': scrollPosition }">
       <p id="desktop-title" v-show="!mobile">U ->- Row
         <li><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></li>
       </p>
-      <nav>
+      <nav v-bind:style='{"padding-top" : (!mobile? "2.1em" : "15px"), "padding-bottom" : (!mobile? "12px" : "5px")}'>
         <div v-show="!mobile" class="branding">
-          <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/DRV_Logo_white.svg" width="100" height="70"/></RouterLink>
+          <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="105" height="45"/></RouterLink>
         </div>
         <div v-show="mobile" class="branding-mobile">
-          <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/DRV_Logo_white.svg" width="50" height="50"/></RouterLink>
+          <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="64" height="30"/></RouterLink>
         </div>
         <ul v-show="!mobile" class="navigation">
           <li><RouterLink to="/">Allgemein</RouterLink>
@@ -90,11 +86,11 @@ header {
   position: fixed;
   background-color: #5cc5ed;
   width: 100%;
-  padding-bottom: 0.76em;
+  padding-bottom: 0.7em;
   z-index: 99;
 
   a.router-link-exact-active {
-  color: rgb(226, 107, 107);
+  color: #1369b0;
 }
 
   nav {
@@ -138,8 +134,8 @@ header {
       display: flex;
       align-items: center;
       position: absolute;
-      top: -0.25em;
-      right: 16px;
+      top: 0;
+      right: 10px;
       height: 100%;
 
       
@@ -155,7 +151,7 @@ header {
     #mobile-title {
       margin-left: auto;
       margin-right: auto;
-      width: 8em;
+      width: 9em;
       align-self: center;
       color: #fff;
     }
@@ -210,11 +206,13 @@ header {
   bottom: 0;
   left: 0;
   right: 0;
-  border-top: 0.55em solid #008000;
-  border-bottom: 1.1em solid #1369b0;
+  @media(min-width: 750px) {
+    border-top: 0.5rem solid #008000;
+    border-bottom: 1rem solid #1369b0;
   }
-
-  
+  border-top: 0.25rem solid #008000;
+  border-bottom: 0.5rem solid #1369b0;
+  }
 }
 
 p {

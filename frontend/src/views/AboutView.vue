@@ -4,10 +4,8 @@
 </script>
 
 <template>
-  
   <div class="about">
     <h1>This is an about page</h1>
-    
   </div>
   <div>
     <LineChart />
@@ -16,8 +14,6 @@
 </template>
 
 <style scoped lang="scss">
-
-
 h1 {
   font-family: "Arial";
 }

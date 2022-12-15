@@ -2,19 +2,16 @@
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
 import Navigation from './components/Navigation.vue'
-import BarChart from './components/charts/BarChart.vue';
-import FooterVue from './components/Footer.vue';
+import FooterC from './components/Footer.vue';
 </script>
 
 <template>
   <header>
-    <div>
-      <div><Navigation/></div>
-    </div>
+    <Navigation />
   </header>
   <body>
     <RouterView />
-    <FooterVue />
+    <FooterC />
   </body>
 </template>
 

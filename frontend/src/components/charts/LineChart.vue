@@ -30,7 +30,7 @@ export default {
     return {
         chartData: {
           labels: [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August'],
-          datasets: [ { label: 'one', data: [40, 20, 12, 22, 455, 122, 533, 32] } ]
+          datasets: [ { label: 'one', backgroundColor: '#fc0000', borderColor: '#f5bd00', data: [40, 20, 12, 22, 455, 122, 533, 32] } ]
         },
         chartOptions: {
           responsive: true,
