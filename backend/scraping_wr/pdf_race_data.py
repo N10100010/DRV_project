@@ -20,7 +20,7 @@ from typing import Union
 
 from utils_general import write_to_json
 from api import get_competition_ids, get_pdf_urls
-from utils_pdf import (handle_table_partitions, get_data_loc, print_stats,
+from utils_pdf import (handle_table_partitions, get_data_loc, print_stats, find_distance_column,
                        clean_df, get_string_loc, check_speed_stroke, reset_axis, clean_str)
 import logging
 
@@ -28,9 +28,9 @@ logger = logging.getLogger(__name__)
 
 # constants
 COMPETITION_LIMIT = 1000  # max limit of world rowing API is 1000 in total --> not relevant for per year extraction
-EVERY_NTH_DOCUMENT = 7  # testwise extraction --> only consider every nth document
+EVERY_NTH_DOCUMENT = 20  # testwise extraction --> only consider every nth document
 START_YEAR = 2010
-END_YEAR = 2022
+END_YEAR = 2023
 # special codes for the country line, which could affect the detection --> list contains values that are excluded
 SPECIAL_NAMES_FOR_COUNTRY_ROW = ["NPC", "NOC"]
 
@@ -51,11 +51,20 @@ def read_race_data(df: pd.DataFrame) -> Union[dict, None]:
         return
     table_head_df = reset_axis(df.iloc[country_idx:country_idx + (2 if rank_found else 1)], axes=[0])
 
-    # extract country codes
-    country_data = table_head_df.iloc[0:1, 1:].values.flatten().tolist()
-    country_list = [x.split('\n') for x in country_data if x and x not in SPECIAL_NAMES_FOR_COUNTRY_ROW]
-    countries = list(itertools.chain(*country_list))
-    countries = clean_str(countries, style="country")
+    # extract country codes including location
+    country_row_df = table_head_df.iloc[0:1, 1:]
+    country_bins, idx = {}, 0
+    for col in country_row_df:
+        if col % 2 != 0:
+            country_data = country_row_df.loc[:, col:col+1].values
+            country_list = [x for x in country_data if x.any() not in SPECIAL_NAMES_FOR_COUNTRY_ROW]
+            country_bins[idx] = clean_str(list(itertools.chain(*country_list)), style="country")
+            idx += 1
+
+    countries = list(itertools.chain.from_iterable(x for x in country_bins.values() if x))
+    # find column pairs that do not contain a country code
+    cols_with_no_cc = [((((key+1)*2)-1), (key+1)*2) for key, value in country_bins.items() if not value]
+    cols_to_drop = list(itertools.chain.from_iterable(cols_with_no_cc))
 
     # handle ranks data; if ranks are found they are present in the row below the county code
     ranks = None
@@ -72,9 +81,14 @@ def read_race_data(df: pd.DataFrame) -> Union[dict, None]:
     # Handle actual race data part
     data_range = get_data_loc(df)
     data_df = df.iloc[data_range[0]:data_range[1] + 1]
+    data_df = data_df.drop(cols_to_drop, axis=1)
+
+    # assumption here: for each country there are two respective data columns: speed and stroke
+    assert len(countries)*2 == data_df.shape[1]-1, print("Data set and country mismatch...")
 
     # get distance values
-    dist = clean_str(data_df.iloc[:, 0:2].values, style="dist")
+    dist_col = find_distance_column(data_df)
+    dist = clean_str(data_df.iloc[:, 0:dist_col+1].values, style="dist")
 
     # map race data and ranks to countries
     boat_data, offset = {}, 0
@@ -184,7 +198,8 @@ write_to_json(data=final_failed_requests, filename="race_data_failed")
 '''
 # Use this to test selected files
 pdf_urls = [
-    "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCH_2017/WCH_2017_ROWXCOXED4--PR3-------PREL000100--_MGPSX7872.pdf"
+    "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/AR_2010/AR_2010_ROWMSCULL1--AS--------FNL-000200--_MGPSX8791.pdf",
+"https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCH_2015/WCH_2015_ROWXCOXED4--LTA-------SFNL000200--_MGPSX8988.pdf"
 ]
 race_data, failed_requests = extract_table_data_from_pdf(urls=pdf_urls)
 

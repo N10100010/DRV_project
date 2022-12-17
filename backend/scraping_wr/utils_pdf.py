@@ -356,6 +356,13 @@ def get_string_loc(df: pd.DataFrame, *args: str, country: bool = False, rank: bo
     return locs
 
 
+def find_distance_column(df: pd.DataFrame) -> int:
+    differences = df.apply(pd.to_numeric, errors="coerce").diff().mode().fillna(0).astype(int).astype(str)
+    mask = [differences[col].str.contains("|".join(DIST_INTERVALS)) for col in differences]
+    dist_list = [el.name for el in mask if any(el)]
+    return int(dist_list[0]) if dist_list else 0
+
+
 def get_data_loc(df: pd.DataFrame, cust_str: str = '') -> tuple[int, int]:
     """ Find indices of race data (only speed and stroke in the table).
     --------------
@@ -366,11 +373,8 @@ def get_data_loc(df: pd.DataFrame, cust_str: str = '') -> tuple[int, int]:
     Returns:        tuple of row indices (start, end) of race data.
     """
     start, end = 0, 0
-    differences = df.apply(pd.to_numeric, errors="coerce").diff().mode().fillna(0).astype(int).astype(str)
-    mask = [differences[col].str.contains("|".join(DIST_INTERVALS)) for col in differences]
-    dist_list = [el.name for el in mask if any(el)]
-    distance_column = int(dist_list[0]) if dist_list else 0
 
+    distance_column = find_distance_column(df)
     first_column = df[distance_column].values.flatten().tolist()
     dists = [re.sub(r"\n.*", "", str(x)) for x in first_column]
 
@@ -410,11 +414,16 @@ def remove_empty_columns(df: pd.DataFrame, data_loc: str = "") -> pd.DataFrame:
     for col in df.columns:
         if set(df[col].iloc[data_start:data_row_len].values).issubset(["", None]):
             empty_cols.append(col)
-    # get groups of consecutive cols and copy values (especially country codes) to col to the left of the group
+    # get groups of consecutive cols
     for k, g in groupby(enumerate(empty_cols), lambda x: x[0] - x[1]):
         group = list(map(int, (map(itemgetter(1), g))))
-        new_cols = df.iloc[:, group[0]:group[-1] + 1]
-        if group[0] != 0:
+
+        # if there are two consecutive empty columns delete columns
+        if len(group) == 2:
+            df.drop(df.iloc[:, group[0]:group[-1]+1], axis=1)
+
+        elif not len(group) == 2 and group[0] != 0:
+            new_cols = df.iloc[:, group[0]:group[-1] + 1]
             df[group[0] - 1] = df[group[0] - 1].str.cat(new_cols, na_rep=" ")
     df = reset_axis(df.drop(empty_cols, axis=1), axes=[1])
     return df
