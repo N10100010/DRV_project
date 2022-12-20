@@ -23,7 +23,19 @@ WR_ENDPOINT_STATS = "statistic/"
 WR_ENDPOINT_VENUE = "venue/"
 WR_ENDPOINT_BOATCLASSES = "boatClass/"
 WR_ENDPOINT_COUNTIRES = "country/"
-WR_INCLUDE_EVERYTHING = "?include=events.races,events.races.racePhase,events.races.raceStatus,events.races.racePhase,events.races.raceBoats.boat,events.races.raceBoats.raceBoatIntermediates.raceBoat,events.races.raceBoats.raceBoatAthletes.person,events.races.raceBoats.raceBoatIntermediates.distance,events.races.raceBoats.raceBoatIntermediates.distance"
+WR_INCLUDE_EVERYTHING = "?include=" + ','.join([
+    "events.pdfUrls",
+    "events.races",
+    "events.races.pdfUrls.orisCode",
+    "events.races.racePhase",
+    "events.races.raceStatus",
+    "events.races.racePhase",
+    "events.races.raceBoats.boat",
+    "events.races.raceBoats.raceBoatIntermediates.raceBoat",
+    "events.races.raceBoats.raceBoatAthletes.person",
+    "events.races.raceBoats.raceBoatIntermediates.distance",
+    "events.races.raceBoats.raceBoatIntermediates.distance"
+    ])
 
 # SELECTION FILTERS
 OLYMPIC_BOATCLASS = [
