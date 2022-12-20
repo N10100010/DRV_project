@@ -30,14 +30,23 @@ Base = declarative_base()
 
 """
 TODO:
+    - world-rowing GUIDs -> As String or Postgres UUID ?
     - race data (high res)
     - Specify Not Null Columns
     - add backref / back_populates for easy access
+    - add athlete names
+    - add progression string
     - Consider foreign key checking via constraints
-    - Deifne Indexes
+    - Define Indexes
+    - Ask DRV: Time resolution (milli, micro) !!! -> seems to be millisec -> research what res postgres' INTERVAL has
+    - No data source hints are written into db (?)
+    - INCLUDE PDFs!!! -> More maximalist apporach
 
+
+https://worldrowing.com/event/2022-world-rowing-cup-iii
 https://world-rowing-api.soticcloud.net/stats/api/race/?include=racePhase%2Cevent.competition.competitionType%2Cevent.competition.competitionType.competitionCategory%2Cevent.boatClass&filter%5Bevent.competitionId%5D=b56cf9a5-a7d3-4e64-9571-38218f39413b&sort%5Bdate%5D=asc
 """
+
 
 class Athletes(Base):
     __tablename__ = "athletes"
@@ -47,9 +56,6 @@ class Athletes(Base):
     full_name = Column(String)
     birthdate = Column(Date)
     gender_id = Column(Integer) # TODO: gender table
-
-    height_cm = Column(Integer)
-    weight_kg = Column(Integer)
 
     # TODO: country?
 
@@ -107,22 +113,27 @@ class Races(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0ea
     name = Column(String) # e.g. "FA", "H3", "SA/B1", etc...
     phase = Column(String) # e.g. "Heat", "Final" // TODO: normalize?
 
+    # TODO: add RscCode?
+
 
 class Boats(Base):
     __tablename__ = "boats"
 
     id = Column(Integer, primary_key=True)
     race_id = Column(Integer, ForeignKey("races.id"))
-
-
-class Results(Base):
-    __tablename__ = "results"
-
-    id = Column(Integer, primary_key=True)
-    boat_id = Column(Integer, ForeignKey("boats.id"))
-
-    data_source = Column(String) # e.g. "WorldRowing|PDF", "WorldRowing|API"
     result_time = Column(Interval) # TODO: Simply milliseconds as Integer?
+
+
+class Race_Data(Base):
+    __tablename__ = "race_data"
+
+    id = Column(Integer, primary_key=True) # ? needed?
+    # TODO: Unique: (boat_id && distance_meter)
+    boat_id = Column(Integer, ForeignKey("boats.id"))
+    distance_meter = Column(Integer)
+
+    speed_meter_per_sec = Column(Integer)
+    stroke = Column(Integer)
 
 
 # create all tables (init) if they don't exist
