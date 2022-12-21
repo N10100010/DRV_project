@@ -11,6 +11,7 @@ Basic stats:
 
 ####################################################################################################
 """
+import traceback
 
 import camelot  # on Mac via 'pip install camelot-py[cv]'
 from tqdm import tqdm
@@ -28,9 +29,9 @@ logger = logging.getLogger(__name__)
 
 # constants
 COMPETITION_LIMIT = 1000  # max limit of world rowing API is 1000 in total --> not relevant for per year extraction
-EVERY_NTH_DOCUMENT = 20  # testwise extraction --> only consider every nth document
-START_YEAR = 2010
-END_YEAR = 2023
+EVERY_NTH_DOCUMENT = 1  # testwise extraction --> only consider every nth document
+START_YEAR = 2018
+END_YEAR = 2019
 # special codes for the country line, which could affect the detection --> list contains values that are excluded
 SPECIAL_NAMES_FOR_COUNTRY_ROW = ["NPC", "NOC"]
 
@@ -58,12 +59,13 @@ def read_race_data(df: pd.DataFrame) -> Union[dict, None]:
         if col % 2 != 0:
             country_data = country_row_df.loc[:, col:col+1].values
             country_list = [x for x in country_data if x.any() not in SPECIAL_NAMES_FOR_COUNTRY_ROW]
-            country_bins[idx] = clean_str(list(itertools.chain(*country_list)), style="country")
+            country_codes = list(itertools.chain(*country_list))
+            country_bins[idx] = clean_str(country_codes, style="country")
             idx += 1
 
-    countries = list(itertools.chain.from_iterable(x for x in country_bins.values() if x))
+    countries = [next(iter(value), None) for value in country_bins.values() if value]
     # find column pairs that do not contain a country code
-    cols_with_no_cc = [((((key+1)*2)-1), (key+1)*2) for key, value in country_bins.items() if not value]
+    cols_with_no_cc = [(i*2-1, i*2) for i, value in country_bins.items() if not value]
     cols_to_drop = list(itertools.chain.from_iterable(cols_with_no_cc))
 
     # handle ranks data; if ranks are found they are present in the row below the county code
@@ -159,10 +161,10 @@ def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
             if race_data_dict:
                 race_data_dict["url"] = url
                 data.append(race_data_dict)
-                logging.info(f"Extract of {url.split('/').pop()} successful.")
+                logging.info(f"Extract of {url} successful.")
             else:
                 empty_files += 1
-                logging.warning(f"Empty file found: {url.split('/').pop()}.")
+                logging.warning(f"Empty file found: {url}.")
 
         except Exception as e:
             errors += 1
@@ -181,7 +183,7 @@ def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
 final_extracted_data, final_failed_requests = [], []
 
 for year in range(START_YEAR, END_YEAR):
-    logger.info(f"Start extraction for year: {year}")
+    print(f"Start extraction for year: {year}")
     # get competition ids for current year
     competition_ids = get_competition_ids(years=year)
     # fetch pdf urls for given competition ids
@@ -198,8 +200,7 @@ write_to_json(data=final_failed_requests, filename="race_data_failed")
 '''
 # Use this to test selected files
 pdf_urls = [
-    "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/AR_2010/AR_2010_ROWMSCULL1--AS--------FNL-000200--_MGPSX8791.pdf",
-"https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCH_2015/WCH_2015_ROWXCOXED4--LTA-------SFNL000200--_MGPSX8988.pdf"
+    "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCp3_2017_1/WCP3_2017_1_ROWMNOCOX4-L----------FNL-000100--_MGPSX3538.pdf"
 ]
 race_data, failed_requests = extract_table_data_from_pdf(urls=pdf_urls)
 

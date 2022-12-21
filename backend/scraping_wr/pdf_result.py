@@ -28,9 +28,9 @@ logger = logging.getLogger(__name__)
 DISTS = ["250", "500", "750", "1000", "1500", "2000"]  # includes basic 500m interval and 250m para intervals
 SPECIAL_VALUES = ["dna", "DNA", "dns", "DNS", "dnf", "DNF", "BUW", "-"]  # special codes that imply missing values
 COMPETITION_LIMIT = 1000
-START_YEAR = 2011
-END_YEAR = 2021
-EVERY_NTH_DOCUMENT = 25
+START_YEAR = 2017
+END_YEAR = 2018
+EVERY_NTH_DOCUMENT = 1
 
 
 def get_athletes(df: pd.DataFrame, rows: list, i: int) -> list:
@@ -198,10 +198,10 @@ def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
                 if result_data:
                     extraction_result["url"] = url
                     data.append(result_data)
-                    logger.info(f"Extract of {url.split('/').pop()} successful.")
+                    logger.info(f"Extract of {url} successful.")
                 else:
                     empty_files += 1
-                    logger.warning(f"Empty file found: {url.split('/').pop()}.")
+                    logger.warning(f"Empty file found: {url}.")
 
             except Exception as e:
                 errors += 1

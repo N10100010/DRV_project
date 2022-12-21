@@ -15,6 +15,7 @@ from itertools import groupby
 from operator import itemgetter
 import logging
 
+#logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -183,7 +184,7 @@ COUNTRY_CODES = {
     "SAM": "Samoa",
     "SEN": "Senegal",
     "SEY": "Seychellen",
-    "SGP": "Singapur",
+    "SGP|SIN": "Singapur",  # also SIN could occur: http://www.rowing-memorabilia.de/index.php/ioc-country-codes
     "SKN": "St. Kitts und Nevis",
     "SLE": "Sierra Leone",
     "SLO": "Slowenien",
@@ -207,7 +208,7 @@ COUNTRY_CODES = {
     "TKM": "Turkmenistan",
     "TLS": "Osttimor",
     "TOG": "Togo",
-    "TPE": "Taiwan",
+    "TPE|ROC": "Taiwan",
     "TTO": "Trinidad und Tobago",
     "TUN": "Tunesien",
     "TUR": "Türkei",
@@ -224,7 +225,9 @@ COUNTRY_CODES = {
     "VIN": "St. Vincent und die Grenadinen",
     "YEM": "Jemen",
     "ZAM": "Sambia",
-    "ZIM": "Simbabwe"
+    "ZIM": "Simbabwe",
+    # the following codes are not defined
+    "RPC": None
 }
 # Constants for race_data pdfs
 DIST_INTERVALS = ["10", "25", "50"]
@@ -446,7 +449,7 @@ def preprocess_raw_race_data_df(df: pd.DataFrame, nxt: int = 0):
     dist_col_idx = 1 if df_numeric[0].isnull().values.all() else 0
 
     # get distance interval, i.e. 10, 25 or 50
-    dist_interval = int(df_numeric[dist_col_idx].diff().mode()[0])
+    dist_interval = int(df_numeric[dist_col_idx].diff().mode().get(0, 0))
 
     # get index of last distance value and last distance value
     last_dist_idx = last_num_idx(df, col=dist_col_idx)
@@ -478,21 +481,15 @@ def handle_table_partitions(tables, results: bool = False):
     """
     df = pd.DataFrame()
     # store interval and previous table end to keep track of where to join the data frames
-    interval, table_end = 0, 0
+    interval, table_end, previous_table_end = 0, 0, 0
     # edge case check, only keep dataframes that contain relevant data
-    checked_dfs = []
-    for idx, tab in enumerate(tables):
-        checked_df = handle_edge_cases(tab.df, results=results)
-        if not checked_df.empty:
-            checked_dfs.append(checked_df)
-        # if consecutive dataframes contain the same data, only the last one is appended
-        elif idx > 0 and tables[idx].df.equals(tables[idx - 1].df):
-            checked_dfs.append(tables[idx].df)
-    # if no relevant data is extracted return empty dataframe
-    if not checked_dfs:
-        return df
 
-    raw_dataframes = [split_column_at_string(dataframe) for dataframe in checked_dfs]
+    raw_dataframes = [split_column_at_string(handle_edge_cases(table.df, results=results)) for table in tables
+                      if not handle_edge_cases(table.df, results=results).empty]
+
+    # if no relevant data is extracted return empty dataframe
+    if not raw_dataframes:
+        return df
 
     # loop over dataframes and apply merging logic
     for idx, data_frame in enumerate(raw_dataframes):
@@ -502,6 +499,7 @@ def handle_table_partitions(tables, results: bool = False):
                 pass  # result pdfs can just be appended
             else:  # race data pdfs have to be preprocessed
                 data_frame, table_end, interval = preprocess_raw_race_data_df(data_frame)
+                previous_table_end = table_end
             # append (sub)dataframe to main dataframe
             df = pd.concat([df, data_frame], ignore_index=True)
 
@@ -514,8 +512,11 @@ def handle_table_partitions(tables, results: bool = False):
                     rank_row = get_string_loc(data_frame, rank=True, column=0)["rank"]["row"]
                     data_frame = data_frame.iloc[rank_row:]
                 else:
+                    previous_table_end = table_end
                     next_start = table_end + interval
                     data_frame, table_end, interval = preprocess_raw_race_data_df(data_frame, nxt=next_start)
+                    if previous_table_end == table_end:
+                        data_frame = pd.DataFrame()
                 # append (sub)dataframe to main dataframe
                 df = pd.concat([df, data_frame], ignore_index=True)
     return df
@@ -609,8 +610,8 @@ def reset_axis(df: pd.DataFrame, axes: list) -> pd.DataFrame:
 
 def clean_df(df: pd.DataFrame):
     df.replace(r"^\s*$", np.nan, regex=True, inplace=True)
-    df = df.dropna(axis=1, how='all')
-    df = df.fillna(0)
+    df.dropna(axis=1, how='all', inplace=True)
+    df.fillna(0, inplace=True)
     df = reset_axis(df, axes=[0, 1])
     return df
 
