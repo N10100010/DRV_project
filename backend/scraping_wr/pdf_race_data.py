@@ -19,7 +19,6 @@ import pandas as pd
 from typing import Union
 
 from utils_general import write_to_json
-from api import get_competition_ids, get_pdf_urls
 from utils_pdf import (handle_table_partitions, get_data_loc, print_stats,
                        clean_df, get_string_loc, check_speed_stroke, reset_axis, clean_str)
 import logging
@@ -131,7 +130,7 @@ def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
     """
     data, failed_reqs, errors, empty_files = [], [], 0, 0
 
-    for url in tqdm(urls):
+    for url in urls:
         try:
             # read data via camelot
             tables = camelot.read_pdf(url, flavor="stream", pages="all")
@@ -156,9 +155,9 @@ def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
             logging.error(f"\nError at {url}:\n{e}.\nErrors so far: {errors}.")
 
     # create extraction statistics
-    total = len(pdf_urls) - empty_files
-    extraction_rate = "{:.2f}".format(100-((errors/total if total else 0)*100))
-    print_stats(total=total, errors=errors, empties=empty_files, rate=extraction_rate)
+    #total = len(pdf_urls) - empty_files
+    #extraction_rate = "{:.2f}".format(100-((errors/total if total else 0)*100))
+    #print_stats(total=total, errors=errors, empties=empty_files, rate=extraction_rate)
 
     return data, failed_reqs
 
@@ -166,20 +165,20 @@ def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
 # extract data per year and write data and failed requests to respective json files
 final_extracted_data, final_failed_requests = [], []
 
-for year in range(START_YEAR, END_YEAR):
-    logger.info(f"Start extraction for year: {year}")
-    # get competition ids for current year
-    competition_ids = get_competition_ids(years=year)
-    # fetch pdf urls for given competition ids
-    pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=COMPETITION_LIMIT, results=False)[::EVERY_NTH_DOCUMENT]
-    # extract race data and get list of failed requests
-    race_data, failed_requests = extract_table_data_from_pdf(urls=pdf_urls)
-    # append to final list
-    final_extracted_data.append(race_data)
-    final_failed_requests.append(failed_requests)
-
-write_to_json(data=final_extracted_data, filename="race_data")
-write_to_json(data=final_failed_requests, filename="race_data_failed")
+# for year in range(START_YEAR, END_YEAR):
+#     logger.info(f"Start extraction for year: {year}")
+#     # get competition ids for current year
+#     competition_ids = get_competition_ids(years=year)
+#     # fetch pdf urls for given competition ids
+#     pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=COMPETITION_LIMIT, results=False)[::EVERY_NTH_DOCUMENT]
+#     # extract race data and get list of failed requests
+#     race_data, failed_requests = extract_table_data_from_pdf(urls=pdf_urls)
+#     # append to final list
+#     final_extracted_data.append(race_data)
+#     final_failed_requests.append(failed_requests)
+#
+# write_to_json(data=final_extracted_data, filename="race_data")
+# write_to_json(data=final_failed_requests, filename="race_data_failed")
 
 '''
 # Use this to test selected files
