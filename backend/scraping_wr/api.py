@@ -7,7 +7,7 @@ import json as jsn
 import numpy as np
 from tqdm import tqdm
 
-import utils_wr as ut_wr
+import backend.scraping_wr.utils_wr as ut_wr
 import backend.scraping_wr.pdf_race_data as pdf_race_data
 import backend.scraping_wr.pdf_result as pdf_result_data
 
@@ -27,7 +27,19 @@ WR_ENDPOINT_STATS = "statistic/"
 WR_ENDPOINT_VENUE = "venue/"
 WR_ENDPOINT_BOATCLASSES = "boatClass/"
 WR_ENDPOINT_COUNTIRES = "country/"
-WR_INCLUDE_EVERYTHING = "?include=events.boatClass,venue,events.races,events.races.racePhase,events.races.raceStatus,events.races.racePhase,events.races.raceBoats.boat,events.races.raceBoats.raceBoatIntermediates.raceBoat,events.races.raceBoats.raceBoatAthletes.person,events.races.raceBoats.raceBoatIntermediates.distance,events.races.raceBoats.raceBoatIntermediates.distance,pdfUrls.orisCode,events.pdfUrls,events.races.pdfUrls.orisCode"
+WR_INCLUDE_EVERYTHING = "?include=" + ",".join(["events.boatClass",
+                                                "venue",
+                                                "events.races",
+                                                "events.races.racePhase",
+                                                "events.races.raceStatus",
+                                                "events.races.racePhase",
+                                                "events.races.raceBoats.boat",
+                                                "events.races.raceBoats.raceBoatIntermediates.raceBoat",
+                                                "events.races.raceBoats.raceBoatAthletes.person",
+                                                "events.races.raceBoats.raceBoatIntermediates.distance",
+                                                "pdfUrls.orisCode",
+                                                "events.pdfUrls",
+                                                "events.races.pdfUrls.orisCode"])
 
 # SELECTION FILTERS
 OLYMPIC_BOATCLASS = [
@@ -107,12 +119,12 @@ def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Uni
     @param verbose: if or if not verbose
     @param comp_ids: Union[str, list[str]]: a singe OR a list of competition id's
     @param keys_of_interest: Union[str, list[str]]: a string = 'everything' OR a list of keys you are interested in.
-        Possible keys: ['events', 'races', 'raceBoats', 'raceBoatAthletes', 'raceBoatIntermediates']
-    @return: dict[str]:
+        Possible keys are denoted blow
+    @return: dict[str]: list[dict]
     """
 
     allowed_keys = {
-        'events', 'races',
+        'events', 'races', 'pdfs',
         'raceBoats', 'raceBoatAthletes',
         'raceBoatIntermediates',
         'venue', 'boatClass'
@@ -135,7 +147,7 @@ def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Uni
 
     ret_val = {koi: [] for koi in keys_of_interest}
 
-    for i, _id in enumerate(comp_ids):
+    for i, _id in tqdm(enumerate(comp_ids), desc='Aggregating WR endpoint data'):
         everything = ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_COMPETITION + _id + WR_INCLUDE_EVERYTHING)
         for koi in keys_of_interest:
             ret_val[koi].extend(
@@ -143,14 +155,14 @@ def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Uni
                     ut_wr.get_all(everything, koi)
                 )
             )
-        # verbose will break the condition before _len could not be defined
-        if verbose and _len % (_len / 5):
-            logger.info(f"Scraped {i / _len * 100} %")
+        ## verbose will break the condition before _len could not be defined
+        #if verbose and _len % (_len / 5):
+        #    logger.info(f"Scraped {i / _len * 100} %")
 
     # if race is in the koi's, we want to aggregate the data from the pdf
-    if 'races' in keys_of_interest:
+    if 'races' in keys_of_interest and 'pdfs' in keys_of_interest:
         races = []
-        for race in tqdm(ret_val['races']):
+        for race in tqdm(ret_val['races'], desc='Aggregating PDF data'):
             race['pdfUrls'] = extract_pdf_urls(race['pdfUrls'])
 
             results_data = pdf_result_data.extract_table_data_from_pdf(race['pdfUrls']['results'])[0]
@@ -169,7 +181,6 @@ def get_competition_ids(years: Optional[Union[list, int]] = None) -> list[str]:
     TODO: can we ask ONLY for the comp id, without overhead
     Gets the competition ids - optional by year.
     IF years is None aka not passed, the returned competition ids will be over the entire timeframe.
-    --
     @param years: list or int, filtering the result
     @return: list[str] - a list of strings containing the competition ids for the years contained in the years argument
     """
@@ -195,12 +206,9 @@ def get_competition_ids(years: Optional[Union[list, int]] = None) -> list[str]:
 
 def extract_pdf_urls(race_urls: list[dict]) -> dict:
     """
-     Fetches URLs to pdf files on https://d3fpn4c9813ycf.cloudfront.net/
-    ---------
-    Parameters:
-    * race_urls: child-dict of the races result
-    ---------
-    Returns: dict of urls for 'race_data' and 'results'
+    Fetches URLs to pdf files on https://d3fpn4c9813ycf.cloudfront.net/
+    @param race_urls: child-dict of the races result
+    @return: dict of urls for 'race_data' and 'results'
     """
 
     ret_val = {
