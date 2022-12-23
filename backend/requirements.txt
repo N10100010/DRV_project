@@ -6,3 +6,4 @@ SQLAlchemy
 psycopg2-binary
 requests
 tenacity
+jsbeautifier # TODO: get rid of this dependency; see https://stackoverflow.com/a/9105143
