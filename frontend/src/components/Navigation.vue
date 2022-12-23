@@ -6,7 +6,25 @@ export default {
       scrollPosition: null,
       mobile: null,
       mobileNav: null,
-      windowWidth: null
+      windowWidth: null,
+      navigationLinks: [
+        {
+          displayName: "Allgemein",
+          to: "/"
+        },
+        {
+          displayName: "Women",
+          to: "/women",
+        },
+        {
+          displayName: "Men",
+          to: "/men",
+        },
+        {
+          displayName: "Sonstiges",
+          to: "/sonstiges",
+        }
+      ]
     };
   },
   created() {
@@ -28,7 +46,7 @@ export default {
       }
       this.mobile = false;
       this.mobileNav = false;
-      document.querySelector('body').style.paddingTop = '10.6em';
+      document.querySelector('body').style.paddingTop = '12em';
       return;
     }
   }
@@ -48,30 +66,20 @@ export default {
         <div v-show="mobile" class="branding-mobile">
           <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="64" height="30"/></RouterLink>
         </div>
-        <ul v-show="!mobile" class="navigation">
-          <li><RouterLink to="/">Allgemein</RouterLink>
-            <!--<li>Test</li>-->
-            <!--<li>Test</li>-->
-          </li>
-          <li><RouterLink to="/about">Women</RouterLink></li>
-          <li><RouterLink to="/test">Men</RouterLink></li>
-          <li><RouterLink to="/test">Sonstiges</RouterLink></li>
+        <ul v-show="!mobile" class="navigation" v-for="link in navigationLinks">
+          <li><RouterLink :to="link.to">{{ link.displayName }}</RouterLink></li>
         </ul>
         <p v-show="mobile" id="mobile-title">U ->- Row</p>
-        
         <div v-show="mobile" class="icon">
           <i @click="toggleMobileNav" class="far fa-bars" :class="{ 'icon-active': mobileNav }"></i>
         </div>
         <transition name="mobile-nav">
-          <ul v-show="mobileNav" class="dropdown-nav">
-            <li id="nav-header"><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></li>
-            <li><RouterLink to="/" @click="toggleMobileNav">Allgemein</RouterLink>
-              <!--<li>test</li>-->
-            </li>
-            <li><RouterLink to="/about" @click="toggleMobileNav">Women</RouterLink></li>
-            <li><RouterLink to="/test" @click="toggleMobileNav">Men</RouterLink></li>
-            <li><RouterLink to="/test" @click="toggleMobileNav">Sonstiges</RouterLink></li>
-          </ul>
+          <div v-show="mobileNav" class="dropdown-nav">
+            <h2 id="nav-header"><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></h2>
+            <ul v-for="link in navigationLinks">
+              <li><RouterLink :to="link.to" @click="toggleMobileNav">{{ link.displayName }}</RouterLink></li>
+            </ul>
+          </div>
         </transition>
       </nav>
     </header>
@@ -112,8 +120,7 @@ header {
       text-transform: uppercase;
       font-size: large;
       font-style: italic;
-      padding: 16px;
-      margin-left: 16px;
+      padding: 1.5em;
     }
 
     a {
@@ -138,13 +145,11 @@ header {
       right: 10px;
       height: 100%;
 
-      
-
       i {
         cursor: pointer;
         font-size: 24px;
         color: #fff;
-        transition: 0.8s ease all;
+        transition: 0.5s ease all;
       }
     }
 
@@ -171,23 +176,22 @@ header {
       height: 100%;
       background-color: #000000;
       top: 0;
-      left: -2em;
+      left: 0;
 
       li {
         margin-left: 0;
         color: #fff;
-
-        
       }
 
       #nav-header {
           font-size: 12px;
+          padding: 1.5em;
         }
     }
 
     .mobile-nav-enter-active,
     .mobile-nav-leave-active {
-      transition: 1s ease all;
+      transition: 0.5s ease all;
     }
 
     .mobile-nav-enter-from,
