@@ -1,7 +1,14 @@
 <script>
+  import {
+    Chart as ChartJS,
+    Title,
+    Tooltip,
+    Legend,
+    BarElement,
+    CategoryScale,
+    LinearScale } from 'chart.js'
   import { Bar } from 'vue-chartjs'
-  import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
-  
+
   ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
   
   export default {
@@ -18,17 +25,28 @@
         },
         chartOptions: {
           responsive: true,
-          maintainAspectRatio: false
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: "Bar Plot example title"
+            }
+          }
         }
       }
     }
   }
-  </script>
+</script>
 
 <template>
+  <div class="chart-container">
     <Bar
       id="my-chart-id"
       :options="chartOptions"
       :data="chartData"
     />
-  </template>
+  </div>
+</template>
+
+<style scoped src="@/assets/chart.css">
+</style>
