@@ -5,8 +5,12 @@ import json as jsn
 
 
 import numpy as np
+from tqdm import tqdm
 
 import utils_wr as ut_wr
+import backend.scraping_wr.pdf_race_data as pdf_race_data
+import backend.scraping_wr.pdf_result as pdf_result_data
+
 
 logger = logging.getLogger(__name__)
 
@@ -23,19 +27,7 @@ WR_ENDPOINT_STATS = "statistic/"
 WR_ENDPOINT_VENUE = "venue/"
 WR_ENDPOINT_BOATCLASSES = "boatClass/"
 WR_ENDPOINT_COUNTIRES = "country/"
-WR_INCLUDE_EVERYTHING = "?include=" + ','.join([
-    "events.pdfUrls",
-    "events.races",
-    "events.races.pdfUrls.orisCode",
-    "events.races.racePhase",
-    "events.races.raceStatus",
-    "events.races.racePhase",
-    "events.races.raceBoats.boat",
-    "events.races.raceBoats.raceBoatIntermediates.raceBoat",
-    "events.races.raceBoats.raceBoatAthletes.person",
-    "events.races.raceBoats.raceBoatIntermediates.distance",
-    "events.races.raceBoats.raceBoatIntermediates.distance"
-    ])
+WR_INCLUDE_EVERYTHING = "?include=events.boatClass,venue,events.races,events.races.racePhase,events.races.raceStatus,events.races.racePhase,events.races.raceBoats.boat,events.races.raceBoats.raceBoatIntermediates.raceBoat,events.races.raceBoats.raceBoatAthletes.person,events.races.raceBoats.raceBoatIntermediates.distance,events.races.raceBoats.raceBoatIntermediates.distance,pdfUrls.orisCode,events.pdfUrls,events.races.pdfUrls.orisCode"
 
 # SELECTION FILTERS
 OLYMPIC_BOATCLASS = [
@@ -101,7 +93,10 @@ def _extract(nested: iter, successor_filter: str = None) -> list:
             _l.extend([_item[successor_filter] for _item in item])
     else:
         for item in list(nested):
-            _l.extend(item)
+            if isinstance(item, dict):
+                _l.append(item)
+            else:
+                _l.extend(item)
 
     return _l
 
@@ -116,7 +111,12 @@ def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Uni
     @return: dict[str]:
     """
 
-    allowed_keys = {'events', 'races', 'raceBoats', 'raceBoatAthletes', 'raceBoatIntermediates'}
+    allowed_keys = {
+        'events', 'races',
+        'raceBoats', 'raceBoatAthletes',
+        'raceBoatIntermediates',
+        'venue', 'boatClass'
+    }
 
     if isinstance(keys_of_interest, str) and keys_of_interest == 'everything':
         keys_of_interest = list(allowed_keys)
@@ -146,6 +146,20 @@ def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Uni
         # verbose will break the condition before _len could not be defined
         if verbose and _len % (_len / 5):
             logger.info(f"Scraped {i / _len * 100} %")
+
+    # if race is in the koi's, we want to aggregate the data from the pdf
+    if 'races' in keys_of_interest:
+        races = []
+        for race in tqdm(ret_val['races']):
+            race['pdfUrls'] = extract_pdf_urls(race['pdfUrls'])
+
+            results_data = pdf_result_data.extract_table_data_from_pdf(race['pdfUrls']['results'])[0]
+            race_data = pdf_race_data.extract_table_data_from_pdf(race['pdfUrls']['race_data'])[0]
+            race['results_data'] = results_data
+            race['race_data'] = race_data
+            races.append(race)
+
+        ret_val['races'] = races
 
     return ret_val
 
@@ -179,37 +193,33 @@ def get_competition_ids(years: Optional[Union[list, int]] = None) -> list[str]:
     return comp_ids
 
 
-def get_pdf_urls(comp_ids: list, results: bool, comp_limit: Optional[int] = None) -> list:
+def extract_pdf_urls(race_urls: list[dict]) -> dict:
     """
-     todo: rewrite to not having to use the endpoint....
-     Fetches URLs to pdf files on https://d3fpn4c9813ycf.cloudfront.net/.
+     Fetches URLs to pdf files on https://d3fpn4c9813ycf.cloudfront.net/
     ---------
     Parameters:
-    * base_url:     for world rowing this is https://world-rowing-api.soticcloud.net/stats/api/competition/
-    * comp_ids:     list of competition ids
-    * comp_limit:   limit amount of competitions
-    * filter_str:   filter parameter and values as string, e.g. '?include=events.races<...>'
-    * results:      0 = "Race Data" | 1 = "Results"
+    * race_urls: child-dict of the races result
     ---------
-    Returns: list of urls for specified criteria
+    Returns: dict of urls for 'race_data' and 'results'
     """
-    include_str = '/?include=pdfUrls.orisCode,events.pdfUrls,events.races.pdfUrls.orisCode'
 
-    if comp_limit:
-        comp_ids = comp_ids[0:comp_limit]
+    ret_val = {
+        'results': [],
+        'race_data': []
+    }
 
-    urls = []
-    doc_type = "Results" if results else "Race Data"
+    for race_url in race_urls:
+        if race_url['title'] == 'Results':
+            ret_val['results'].append(race_url.get('url', None))
+        elif race_url['title'] == 'Race Data':
+            ret_val['race_data'].append(race_url.get('url', None))
 
-    for comp_id in comp_ids:
-        url = WR_BASE_URL + WR_ENDPOINT_COMPETITION + comp_id + include_str
-        events = ut_wr.load_json(url)["events"]
-        pdfs = _extract(ut_wr.get_all(events, "pdfUrls"))
-        for pdf in pdfs:
-            if pdf["title"] == doc_type:
-                urls.append(pdf["url"])
+    # sanity checking
+    if len(ret_val['race_data']) != len(ret_val['results']):
+        # todo: do we have to do smth about that?
+        logger.warning("Unequal number of pdf-urls for race data and results data")
 
-    return urls
+    return ret_val
 
 
 def get_competitiontype(kwargs: dict = {}):
@@ -222,16 +232,6 @@ def get_countries(kwargs: dict = {}):
     return _json_dict
 
 
-def get_boatclasses(kwargs: dict = {}):
-    _json_dict = ut_wr.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_BOATCLASSES}', **kwargs)
-    return _json_dict
-
-
 def get_statistics(kwargs: dict = {}):
     _json_dict = ut_wr.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_STATS}', **kwargs)
-    return _json_dict
-
-
-def get_venues(kwargs: dict = {}):
-    _json_dict = ut_wr.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_VENUE}', **kwargs)
     return _json_dict

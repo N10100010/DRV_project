@@ -26,14 +26,10 @@ def init():
     # get all ids by not passing a year
     ids = wr.get_competition_ids()
     by_comp = wr.get_by_competition_id(comp_ids=ids, keys_of_interest='everything')
-    pdfs_result = wr.get_pdf_urls(comp_ids=ids, results=True)
-    pdfs_race = wr.get_pdf_urls(comp_ids=ids, results=False)
+    pdfs_result = wr.extract_pdf_urls(comp_ids=ids, results=True)
+    pdfs_race = wr.extract_pdf_urls(comp_ids=ids, results=False)
 
     # retrieve data from pdfs
-
-
-
-
 
 
 def update():
@@ -104,7 +100,3 @@ def restore():
 
     else:
         logger.error(f"No file found at path: {DB_BACKUP_FILE_PATH.__str__()}")
-
-
-
-
