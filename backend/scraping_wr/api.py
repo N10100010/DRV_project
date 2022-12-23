@@ -7,9 +7,9 @@ import json as jsn
 import numpy as np
 from tqdm import tqdm
 
-import utils_wr as ut_wr
-import backend.scraping_wr.pdf_race_data as pdf_race_data
-import backend.scraping_wr.pdf_result as pdf_result_data
+from . import utils_wr as ut_wr
+from . import pdf_race_data
+from . import pdf_result as pdf_result_data
 
 
 logger = logging.getLogger(__name__)
