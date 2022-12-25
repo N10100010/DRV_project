@@ -6,23 +6,69 @@ export default {
       scrollPosition: null,
       mobile: null,
       mobileNav: null,
+      currentSubMenu: {},
+      showSubMenu: false,
       windowWidth: null,
       navigationLinks: [
-        {
-          displayName: "Allgemein",
-          to: "/"
+          {
+            displayName: "Allgemein",
+            link: "/",
+            subPages: [
+              {
+                subPageName: "Lorem ipsum dolor",
+                linkTo: "/"
+              },
+              {
+                subPageName: "Sit amet",
+                linkTo: "/"
+              }
+            ]
         },
         {
           displayName: "Women",
-          to: "/women",
+          link: "/women",
+          subPages: [
+            {
+              subPageName: "Consetetur sadipscing",
+              linkTo: "/"
+            },
+            {
+              subPageName: "Sed diam",
+              linkTo: "/"
+            },
+            {
+              subPageName: "Tempor invidunt",
+              linkTo: "/"
+            },
+          ]
         },
         {
           displayName: "Men",
-          to: "/men",
+          link: "/men",
+          subPages: [
+            {
+              subPageName: "Nonumy eirmod",
+              linkTo: "/"
+            },
+            {
+              subPageName: "Tempor invidunt",
+              linkTo: "/"
+            }
+          ]
         },
         {
           displayName: "Sonstiges",
-          to: "/sonstiges",
+          link: "/sonstiges",
+          subPages: [
+            {
+              subPageName: "Ut labore",
+              linkTo: "/"
+            },
+            {
+              subPageName: "Et dolore magna ",
+              linkTo: "/"
+            }
+          ]
         }
       ]
     };
@@ -36,7 +82,16 @@ export default {
     toggleMobileNav() {
       this.mobileNav = !this.mobileNav;
     },
-
+    expandSubPageMenu(linkData) {
+      this.currentSubMenu = linkData.subPages
+      this.showSubMenu = true;
+    },
+    onMouseOverSubMenu() {
+      this.showSubMenu = true;
+    },
+    onMouseLeaveNav() {
+      this.showSubMenu = false;
+    },
     checkScreen() {
       this.windowWidth = window.innerWidth;
       if(this.windowWidth <= 750){
@@ -46,7 +101,7 @@ export default {
       }
       this.mobile = false;
       this.mobileNav = false;
-      document.querySelector('body').style.paddingTop = '12em';
+      document.querySelector('body').style.paddingTop = '10.6em';
       return;
     }
   }
@@ -55,20 +110,37 @@ export default {
 
 <template>
   <div class="header-box">
-    <header v-bind:style='{"padding-top" : (mobile? "0em" : "1.5em" )}' :class="{ 'scrolled-nav': scrollPosition }">
-      <p id="desktop-title" v-show="!mobile">U ->- Row
-        <li><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></li>
-      </p>
-      <nav v-bind:style='{"padding-top" : (!mobile? "2.1em" : "15px"), "padding-bottom" : (!mobile? "12px" : "5px")}'>
-        <div v-show="!mobile" class="branding">
-          <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="105" height="45"/></RouterLink>
+    <header v-bind:style='{"padding-top" : (mobile? "0em" : "18px" )}' :class="{ 'scrolled-nav': scrollPosition }">
+
+      <!-- Title element -->
+      <div id="desktop-title" class="title-container" v-show="!mobile">
+        <p>U ->- Row</p>
+        <p><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></p>
+      </div>
+
+      <!-- navbar incl. mobile navbar -->
+      <nav v-bind:style='{"padding-top" : (!mobile? "2.5em" : "15px"), "padding-bottom" : (!mobile? "15px" : "5px")}'
+           @mouseleave="onMouseLeaveNav">
+        <div class="nav-links-wrapper">
+          <div v-show="!mobile" class="branding">
+            <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="105" height="45"/></RouterLink>
+          </div>
+          <div v-show="mobile" class="branding-mobile">
+            <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="64" height="30"/></RouterLink>
+          </div>
+          <ul v-show="!mobile" class="navigation" :class="{'collapsed-nav': !showSubMenu, 'expanded': showSubMenu}">
+            <li v-for="navEntry in navigationLinks">
+              <RouterLink :to="navEntry.link" @mouseover="expandSubPageMenu(navEntry)">{{ navEntry.displayName }}</RouterLink>
+            </li>
+          </ul>
         </div>
-        <div v-show="mobile" class="branding-mobile">
-          <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="64" height="30"/></RouterLink>
+        <div id="sub-menu" v-show="showSubMenu" @mouseover="onMouseOverSubMenu">
+          <ul>
+            <li v-for="subMenuLink in currentSubMenu">
+              <RouterLink :to="subMenuLink.linkTo"> {{ subMenuLink.subPageName }}</RouterLink>
+            </li>
+          </ul>
         </div>
-        <ul v-show="!mobile" class="navigation" v-for="link in navigationLinks">
-          <li><RouterLink :to="link.to">{{ link.displayName }}</RouterLink></li>
-        </ul>
         <p v-show="mobile" id="mobile-title">U ->- Row</p>
         <div v-show="mobile" class="icon">
           <i @click="toggleMobileNav" class="far fa-bars" :class="{ 'icon-active': mobileNav }"></i>
@@ -76,8 +148,10 @@ export default {
         <transition name="mobile-nav">
           <div v-show="mobileNav" class="dropdown-nav">
             <h2 id="nav-header"><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></h2>
-            <ul v-for="link in navigationLinks">
-              <li><RouterLink :to="link.to" @click="toggleMobileNav">{{ link.displayName }}</RouterLink></li>
+            <ul>
+              <li v-for="navEntry in navigationLinks">
+                <RouterLink :to="navEntry.link" @click="toggleMobileNav">{{ navEntry.displayName }}</RouterLink>
+              </li>
             </ul>
           </div>
         </transition>
@@ -85,7 +159,7 @@ export default {
     </header>
   </div>
 </template>
-  
+
 <style lang="scss" scoped>
 header {
   top: 0;
@@ -94,7 +168,7 @@ header {
   position: fixed;
   background-color: #5cc5ed;
   width: 100%;
-  padding-bottom: 0.7em;
+  padding-bottom: 0.95em;
   z-index: 99;
 
   a.router-link-exact-active {
@@ -103,28 +177,30 @@ header {
 
   nav {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     padding: 12px 0;
     transition: 0.5s ease all;
     width: 90%;
     margin: 0 auto;
-    @media(min-width: 1140px) {
-      max-width: 1140px;
+    max-width: 1140px;
+    @media (max-width: 750px) {
+      flex-direction: row;
     }
 
     ul {
       list-style: none;
     }
-    
+
     li {
       text-transform: uppercase;
-      font-size: large;
+      letter-spacing: 0.05em;
       font-style: italic;
-      padding: 1.5em;
+      padding: 0 0.625rem;
     }
 
     a {
       color: #fff;
+      font-weight: 500;
     }
 
     a:hover {
@@ -135,6 +211,7 @@ header {
       display: flex;
       align-items: center;
       flex: 1;
+      padding: 0 16px;
     }
 
     .icon {
@@ -149,7 +226,7 @@ header {
         cursor: pointer;
         font-size: 24px;
         color: #fff;
-        transition: 0.5s ease all;
+        transition: 0.8s ease all;
       }
     }
 
@@ -181,6 +258,7 @@ header {
       li {
         margin-left: 0;
         color: #fff;
+        padding: 0.6rem 1rem;
       }
 
       #nav-header {
@@ -226,8 +304,6 @@ p {
   display: flex;
   flex-direction: row;
   transition: 0.5s ease all;
-  width: 90%;
-  margin: 0 auto;
   @media(min-width: 1140px) {
     max-width: 1140px;
   }
@@ -247,4 +323,39 @@ p {
     margin-left: auto;
   }
 }
+
+.title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 90%;
+  margin: 0 auto;
+  max-width: 1140px;
+}
+
+#sub-menu {
+  display: block;
+  clear: both;
+  margin-top: 20px;
+  padding: 15px 0;
+}
+
+#sub-menu a {
+  color: white;
+}
+
+#sub-menu li {
+  font-style: normal;
+  text-transform: none;
+  padding: 5px 0;
+}
+
+#sub-menu li a:hover {
+    color: #1369b0;
+}
+
+.nav-links-wrapper {
+  display: flex;
+}
+
 </style>
