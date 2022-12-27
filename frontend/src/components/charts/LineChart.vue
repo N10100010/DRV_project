@@ -29,12 +29,25 @@ export default {
   data() {
     return {
         chartData: {
-          labels: [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August'],
-          datasets: [ { label: 'one', backgroundColor: '#fc0000', borderColor: '#f5bd00', data: [40, 20, 12, 22, 455, 122, 533, 32] } ]
+          labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August'],
+          datasets: [
+              {
+                label: 'one',
+                backgroundColor: '#f5bd00',
+                borderColor: '#f5bd00',
+                data: [40, 20, 12, 22, 455, 122, 533, 32]
+              }
+          ]
         },
         chartOptions: {
           responsive: true,
-          maintainAspectRatio: false
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: "Line Plot example title"
+            }
+          }
         }
       }
   }
@@ -42,9 +55,14 @@ export default {
 </script>
 
 <template>
-    <Line
-      id="my-chart-id2"
-      :options="chartOptions"
-      :data="chartData"
-    />
-  </template>
+    <div class="chart-container">
+      <Line
+        id="my-chart-id2"
+        :options="chartOptions"
+        :data="chartData"
+      />
+    </div>
+</template>
+
+<style scoped src="@/assets/chart.css">
+</style>

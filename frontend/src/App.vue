@@ -1,6 +1,5 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { RouterView } from 'vue-router'
 import Navigation from './components/Navigation.vue'
 import FooterC from './components/Footer.vue';
 </script>
@@ -9,10 +8,10 @@ import FooterC from './components/Footer.vue';
   <header>
     <Navigation />
   </header>
-  <body>
-    <RouterView />
-    <FooterC />
-  </body>
+  <v-container>
+      <RouterView />
+  </v-container>
+  <FooterC />
 </template>
 
 <style lang="scss" scoped>
