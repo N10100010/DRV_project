@@ -27,6 +27,7 @@ WR_ENDPOINT_STATS = "statistic/"
 WR_ENDPOINT_VENUE = "venue/"
 WR_ENDPOINT_BOATCLASSES = "boatClass/"
 WR_ENDPOINT_COUNTIRES = "country/"
+
 WR_INCLUDE_EVERYTHING = "?include=" + ",".join(["events.boatClass",
                                                 "venue",
                                                 "events.races",
