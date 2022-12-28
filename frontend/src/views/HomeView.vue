@@ -1,8 +1,10 @@
-<script setup>
-import BarChart from "@/components/charts/BarChart.vue";
-</script>
-
 <template>
   <h1>Allgemeines</h1>
-  <BarChart/>
+  <v-divider></v-divider>
+  <v-container class="pa-0 mt-8" style="min-height: 500px">
+    <h2>TODO: Allgemeine Informationen zur Seite, Funktionen, Kurzanleitung und Aufbau der Seite...</h2>
+    <v-alert color="warning" icon="$info" class="mt-8">
+    Hinweis: Filterfunktion ist derzeit nur auf der Seite Rennstrukturanalyse integriert.
+    </v-alert>
+  </v-container>
 </template>

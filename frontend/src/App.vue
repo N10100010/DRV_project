@@ -1,17 +1,7 @@
 <template>
-  <header>
-    <Navigation />
-  </header>
-  <main-filter/>
+  <Navigation />
   <v-container class="pa-10">
     <RouterView />
-
-    <!-- added test for pinia store api response -->
-    <v-container class="ma-4">
-      <p><b>Test-Abfrage für Pinia-State-Management Store:</b></p>
-      <p>{{ getData }}</p>
-    </v-container>
-
   </v-container>
   <FooterC />
 </template>
@@ -21,20 +11,6 @@
 import { RouterView } from 'vue-router'
 import Navigation from './components/Navigation.vue'
 import FooterC from './components/Footer.vue';
-
-/* get data via pinia store */
-import { onMounted, computed } from "vue";
-import { useTestState } from "./stores/baseStore";
-import MainFilter from "@/components/filters/mainFilter.vue";
-const store = useTestState();
-
-const getData = computed(() => {
-  return store.getTestData;
-});
-
-onMounted(() => {
-  store.fetchData();
-});
 </script>
 
 <style lang="scss" scoped>
