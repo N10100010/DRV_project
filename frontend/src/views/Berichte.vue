@@ -3,7 +3,7 @@ import LineChart from '../components/charts/LineChart.vue';
 </script>
 
 <template>
-  <h1>Women | Test for LineChart</h1>
+  <h1>Berichte</h1>
   <LineChart />
 </template>
 

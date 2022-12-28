@@ -3,6 +3,6 @@ import BarChart from "@/components/charts/BarChart.vue";
 </script>
 
 <template>
-  <h1>Home | Test for BarChart</h1>
+  <h1>Allgemeines</h1>
   <BarChart/>
 </template>
