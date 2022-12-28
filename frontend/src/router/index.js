@@ -1,8 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import MenView from '../views/MenView.vue'
-import WomenView from '../views/WomenView.vue'
-import SonstigesView from "@/views/SonstigesView.vue";
+import Berichte from "@/views/Berichte.vue";
+import Wettkampfresultate from "@/views/WettkampfresultateView.vue";
+import Rennstrukturanalyse from "@/views/Rennstrukturanalyse.vue";
+import AthletenView from "@/views/AthletenView.vue";
+import TeamsView from "@/views/TeamsView.vue";
+import MedallienspiegelView from "@/views/MedallienspiegelView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,22 +13,37 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView
+      component: () => HomeView
     },
     {
-      path: '/women',
-      name: 'women',
-      component: () => WomenView
+      path: '/berichte',
+      name: 'berichte',
+      component: () => Berichte
     },
     {
-      path: '/men',
-      name: 'men',
-      component: () => MenView
+      path: '/wettkampfresultate',
+      name: 'wettkampfresultate',
+      component: () => Wettkampfresultate
     },
     {
-      path: '/sonstiges',
-      name: 'sonstiges',
-      component: () => SonstigesView
+      path: '/rennstrukturanalyse',
+      name: 'rennstrukturanalyse',
+      component: () => Rennstrukturanalyse
+    },
+    {
+      path: '/athleten',
+      name: 'athleten',
+      component: () => AthletenView
+    },
+    {
+      path: '/teams',
+      name: 'teams',
+      component: () => TeamsView
+    },
+    {
+      path: '/medallienspiegel',
+      name: 'medallienspiegel',
+      component: () => MedallienspiegelView
     }
   ]
 })

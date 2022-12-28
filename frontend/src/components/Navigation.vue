@@ -11,7 +11,7 @@ export default {
       windowWidth: null,
       navigationLinks: [
           {
-            displayName: "Allgemein",
+            displayName: "Allgemeines",
             link: "/",
             subPages: [
               {
@@ -25,50 +25,28 @@ export default {
             ]
         },
         {
-          displayName: "Women",
-          link: "/women",
-          subPages: [
-            {
-              subPageName: "Consetetur sadipscing",
-              linkTo: "/"
-            },
-            {
-              subPageName: "Sed diam",
-              linkTo: "/"
-            },
-            {
-              subPageName: "Tempor invidunt",
-              linkTo: "/"
-            },
-          ]
+          displayName: "Berichte",
+          link: "/berichte",
         },
         {
-          displayName: "Men",
-          link: "/men",
-          subPages: [
-            {
-              subPageName: "Nonumy eirmod",
-              linkTo: "/"
-            },
-            {
-              subPageName: "Tempor invidunt",
-              linkTo: "/"
-            }
-          ]
+          displayName: "Wettkampfresultate",
+          link: "/wettkampfresultate",
         },
         {
-          displayName: "Sonstiges",
-          link: "/sonstiges",
-          subPages: [
-            {
-              subPageName: "Ut labore",
-              linkTo: "/"
-            },
-            {
-              subPageName: "Et dolore magna ",
-              linkTo: "/"
-            }
-          ]
+          displayName: "Rennstrukturanalyse",
+          link: "/rennstrukturanalyse",
+        },
+        {
+          displayName: "Athleten",
+          link: "/athleten",
+        },
+        {
+          displayName: "Teams",
+          link: "/teams",
+        },
+        {
+          displayName: "Medallienspiegel",
+          link: "/medallienspiegel",
         }
       ]
     };

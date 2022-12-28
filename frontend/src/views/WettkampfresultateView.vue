@@ -3,12 +3,6 @@
 </script>
 
 <template>
-  <h1>Men | Test for ScatterChart</h1>
+  <h1>Wettkampfresultate</h1>
   <ScatterChart/>
 </template>
-
-<style scoped lang="scss">
-h1 {
-  font-family: "Arial";
-}
-</style>
