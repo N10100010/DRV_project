@@ -1,7 +1,5 @@
 /* color palette from <https://github.com/vuejs/theme> */
 :root {
-
-
 }
 
 /* semantic color variables for this project */
@@ -19,7 +17,7 @@
   box-sizing: border-box;
   margin: 0;
   position: relative;
-  font-weight: normal;
+  /* font-weight: normal; */
 }
 
 @font-face {
@@ -31,7 +29,7 @@
 body {
   transition: color 0.5s, background-color 0.5s;
   line-height: 1.6;
-  font-family: "TheSansOffice", Helvetica, Arial;
+  font-family: "TheSansOffice", Helvetica, Arial, sans-serif;
   font-size: 15px;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

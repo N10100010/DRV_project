@@ -1,9 +1,8 @@
 <script setup>
-import TheWelcome from '../components/TheWelcome.vue'
+import BarChart from "@/components/charts/BarChart.vue";
 </script>
 
 <template>
-  <main>
-    <TheWelcome />
-  </main>
+  <h1>Home | Test for BarChart</h1>
+  <BarChart/>
 </template>

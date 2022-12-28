@@ -16,10 +16,8 @@ from tqdm import tqdm
 import camelot
 import re
 from typing import Union
-from utils_pdf import (clean, clean_df, get_string_loc, handle_table_partitions,
+from backend.scraping_wr.utils_pdf import (clean, clean_df, get_string_loc, handle_table_partitions,
                        clean_str, print_stats)
-from utils_general import write_to_json
-from api import get_competition_ids, get_pdf_urls
 import logging
 
 logger = logging.getLogger(__name__)
@@ -154,10 +152,10 @@ def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
     --------------
     Returns: list with extracted data
     """
-    logger.info(f"Extracting data from {pdf_urls} pdfs.")
+
     data, failed_requests, errors, empty_files = [], [], 0, 0
 
-    for url in tqdm(urls):
+    for url in urls:
         extraction_result, tables = {}, []
         try:
             tables = camelot.read_pdf(url, flavor="stream", pages="all", column_tol=2)
@@ -219,20 +217,20 @@ def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
 final_extracted_data, final_failed_requests = [], []
 
 
-for year in range(START_YEAR, END_YEAR):
-    logger.info(f"Start extraction for year: {year}")
-    # get competition ids for current year
-    competition_ids = get_competition_ids(years=year)
-    pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=COMPETITION_LIMIT, results=True)[::EVERY_NTH_DOCUMENT]
-    # extract result data and get list of failed requests
-    pdf_data, failed_req = extract_table_data_from_pdf(urls=pdf_urls)
-    # append to final list
-    final_extracted_data.append(pdf_data)
-    final_failed_requests.append(failed_req)
-
-# write results to file
-write_to_json(data=final_extracted_data, filename="result_data")
-write_to_json(data=final_failed_requests, filename="result_data_failed")
+# for year in range(START_YEAR, END_YEAR):
+#     logger.info(f"Start extraction for year: {year}")
+#     # get competition ids for current year
+#     competition_ids = get_competition_ids(years=year)
+#     pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=COMPETITION_LIMIT, results=True)[::EVERY_NTH_DOCUMENT]
+#     # extract result data and get list of failed requests
+#     pdf_data, failed_req = extract_table_data_from_pdf(urls=pdf_urls)
+#     # append to final list
+#     final_extracted_data.append(pdf_data)
+#     final_failed_requests.append(failed_req)
+#
+# # write results to file
+# write_to_json(data=final_extracted_data, filename="result_data")
+# write_to_json(data=final_failed_requests, filename="result_data_failed")
 
 '''
 # Use this to test selected files

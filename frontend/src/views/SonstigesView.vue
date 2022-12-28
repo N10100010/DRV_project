@@ -1,32 +1,25 @@
 <script setup>
-import WelcomeItem from './WelcomeItem.vue'
-import DocumentationIcon from './icons/IconDocumentation.vue'
-import ToolingIcon from './icons/IconTooling.vue'
-import EcosystemIcon from './icons/IconEcosystem.vue'
-import CommunityIcon from './icons/IconCommunity.vue'
-import SupportIcon from './icons/IconSupport.vue'
-import BarChartVue from './charts/BarChart.vue'
+import WelcomeItem from "@/components/WelcomeItem.vue";
+import DocumentationIcon from '@/components/icons/IconDocumentation.vue'
+import ToolingIcon from '@/components/icons/IconTooling.vue'
+import EcosystemIcon from '@/components/icons/IconEcosystem.vue'
+import CommunityIcon from '@/components/icons/IconCommunity.vue'
+import SupportIcon from '@/components/icons/IconSupport.vue'
 </script>
 
-<template>
-  <div class="barchart">
-      <BarChartVue />
-  </div>
 
+<template>
   <WelcomeItem>
     <template #icon>
       <DocumentationIcon />
-      
     </template>
     <template #heading>Documentation</template>
-
     Vue’s
     <a href="https://vuejs.org/" target="_blank" rel="noopener">official documentation</a>
     provides you with all information you need to get started.
   </WelcomeItem>
 
   <WelcomeItem>
-    
     <template #icon>
       <ToolingIcon />
     </template>
@@ -40,8 +33,7 @@ import BarChartVue from './charts/BarChart.vue'
     you need to test your components and web pages, check out
     <a href="https://www.cypress.io/" target="_blank" rel="noopener">Cypress</a> and
     <a href="https://on.cypress.io/component" target="_blank">Cypress Component Testing</a>.
-
-    <br />
+    <br/>
 
     More instructions are available in <code>README.md</code>.
   </WelcomeItem>
@@ -91,8 +83,3 @@ import BarChartVue from './charts/BarChart.vue'
     <a href="https://vuejs.org/sponsor/" target="_blank" rel="noopener">becoming a sponsor</a>.
   </WelcomeItem>
 </template>
-
-<styles lang="scss" scoped>
-  .barchart {
-  }
-</styles>
