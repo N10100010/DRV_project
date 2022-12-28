@@ -101,6 +101,61 @@ def _extract(nested: iter, successor_filter: str = None) -> list:
     return _l
 
 
+
+def select_pdf_(pdfUrls: list, title: str) -> Union[dict, None]:
+    for pdf_info in pdfUrls:
+        if pdf_info['title'].lower() == title.lower():
+            return pdf_info
+
+    return None # or raise error?
+
+def get_by_competition_id_(comp_ids: Union[str, list[str]], keys_of_interest: Union[str, list[str]], verbose: bool = False, parse_pdf=True) -> dict:
+    """
+    Stripped down version of get_by_competition_id()
+    """
+
+    comp_id = comp_ids if isinstance(comp_ids, str) else comp_ids[0]
+
+    comp_data = ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_COMPETITION + comp_id + WR_INCLUDE_EVERYTHING)
+
+    for event_idx, event in tqdm( enumerate(comp_data.get('events', [])) ):
+        for race_idx, race in enumerate(event.get('races', [])):
+            logger.info(f"event_idx {event_idx} race_idx {race_idx}")
+
+            pdf_info_race_data = select_pdf_(race.get('pdfUrls', []), 'race data')
+            pdf_info_results = select_pdf_(race.get('pdfUrls', []), 'results')
+
+            if parse_pdf and pdf_info_results:
+                logger.info(f"pdf_info_results {pdf_info_results.get('url')}")
+                # TODO
+
+            if parse_pdf and pdf_info_race_data:
+                pdf_url = pdf_info_race_data.get('url')
+                logger.info(f"pdf_info_race_data {pdf_url}")
+                race_data = pdf_race_data.extract_table_data_from_pdf([pdf_url])[0]
+                race['raceData_'] = race_data
+
+            # print("race_data_pdf_info", race_data_pdf_info['url'])
+
+    """
+    # if race is in the koi's, we want to aggregate the data from the pdf
+    if 'races' in keys_of_interest:
+        races = []
+        for race in tqdm(ret_val['races']):
+            race['pdfUrls'] = extract_pdf_urls(race['pdfUrls'])
+
+            results_data = pdf_result_data.extract_table_data_from_pdf(race['pdfUrls']['results'])[0]
+            race_data = pdf_race_data.extract_table_data_from_pdf(race['pdfUrls']['race_data'])[0]
+            race['results_data'] = results_data
+            race['race_data'] = race_data
+            races.append(race)
+
+        ret_val['races'] = races
+    """
+
+    return comp_data
+
+
 def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Union[str, list[str]], verbose: bool = False) -> dict:
     """
     Get the entities of interest (passed by keys_of_interest) for the id's passed.
