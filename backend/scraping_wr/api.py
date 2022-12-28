@@ -83,13 +83,13 @@ RACE_STATUSES = {
 
 
 def save(data: dict, fn: str):
-    with open(fn, 'w') as file:
-        jsn.dump(jsn.dumps(data), file)
+    with open(fn, 'w', encoding='ascii') as file:
+        jsn.dump(data, file)
 
 
 def load(fn: str) -> dict:
-    with open(fn, 'r') as file:
-        j = jsn.loads(jsn.load(file))
+    with open(fn, 'r', encoding='ascii') as file:
+        j = jsn.load(file)
 
     return j
 
@@ -156,11 +156,8 @@ def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Uni
                     ut_wr.get_all(everything, koi)
                 )
             )
-        ## verbose will break the condition before _len could not be defined
-        #if verbose and _len % (_len / 5):
-        #    logger.info(f"Scraped {i / _len * 100} %")
 
-    # if race is in the koi's, we want to aggregate the data from the pdf
+    # if race and pdfs is in the koi's, we want to aggregate the data from the pdf
     if 'races' in keys_of_interest and 'pdfs' in keys_of_interest:
         races = []
         for race in tqdm(ret_val['races'], desc='Aggregating PDF data'):
@@ -226,7 +223,7 @@ def extract_pdf_urls(race_urls: list[dict]) -> dict:
     # sanity checking
     if len(ret_val['race_data']) != len(ret_val['results']):
         # todo: do we have to do smth about that?
-        logger.warning("Unequal number of pdf-urls for race data and results data")
+        logger.warning("\nUnequal number of pdf-urls for race data and results data")
 
     return ret_val
 

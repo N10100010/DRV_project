@@ -24,9 +24,9 @@ if __name__ == '__main__':
 
 
     # _ids_all = []
-    # for y in np.arange(2018, 2020):
+    # for y in np.arange(2010, 2020):
     #     _ids_all.extend(get_competition_ids(y))
-    #
+#
     # ret = api.get_by_competition_id(_ids_all, ['races'])
     #
     #
@@ -38,15 +38,17 @@ if __name__ == '__main__':
     # tuple_set__rsc_racePhase = set()
     # for race in ret['races']:
     #     rsc = race['RscCode'].split('---')
-    #
+#
     #     rsc_0 = rsc[0].strip('--')
     #     rsc_1 = rsc[-1].strip('--')
     #     rpdn = ' '.join(race['DisplayName'].split(' ')[-3:-1])
     #     rp = race['racePhase']['DisplayName']
-    #
+#
     #     tuple_set__rsc_racePhase.add((rp, rsc_1))
-    #
+#
     # tuple_set__rsc_racePhase = sorted(tuple_set__rsc_racePhase)
+
+    print()
     #
     # # extract race phases
     # race_phases = set()
