@@ -51,22 +51,30 @@ Liefert JSON mit Competitions (DisplayName, ID, Location, Start/End Date, Alters
 ```json
 [
   {
-    "id": 395871,    // competition id
+    "id": 395871,
     "display_name": "2022 World Rowing Cup II",
     "venue": "Malta/Poznan, Poland",
     "start_date": "2022-06-16 00:00:00",
     "competition_category": "World Rowing Cup",
     "events": [
       {
-        "id": 734839,    // event id
+        "id": 734839,
         "display_name": "Lightweight Women's Single Sculls",
         "races": [
-          { "id": 187573, "display_name": "LW Women's Single Sculls Final FB" },
-          { "id": 424754, "display_name": "LW Women's Single Sculls Heat 1" }
-          // ...
+          { "id": 187573, "display_name": "Final FB" },
+          { "id": 424754, "display_name": "Heat 1" }
         ]
       },
-      // ...
+      {
+        "id": 748394,
+        "display_name": "Men's Four",
+        "races": [
+          { "id": 195638, "display_name": "Men's Eight Heat 1" },
+          { "id": 823759, "display_name": "Men's Eight Final FA" },
+          { "id": 748394, "display_name": "Men's Eight Repechage" },
+          { "id": 839473, "display_name": "Men's Eight Heat 2" }
+        ]
+      }
     ]
   }
 ]
