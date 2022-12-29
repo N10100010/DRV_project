@@ -80,6 +80,88 @@ Liefert JSON mit Competitions (DisplayName, ID, Location, Start/End Date, Alters
 ]
 ```
 
+**Request** (nachdem einzelnes Rennen ausgewählt ist)
+
+```http
+POST /get_race/<race_id>
+```
+
+**Response**
+* bestTimeBoatClassCurrentOZ (noch unklar, was das genau sein soll)
+* Rückstand über Distanz [m] fehlt noch; auf welcher Grundlage sollen wir das berechnen können? Haben ja nur 
+Speed/Stroke in GPS Daten und keine genauen Strecken. Auch das zurückrechnen via s = v * t wäre schwierig, weil Werte fehlen.
+* propulsion soll Vortrieb heißen; wer ein besseres englisches Wort dafür kennt, gerne her damit :D
+* lag = Rückstand
+```json
+[
+  {
+    "race_id": 195638,
+    "displayName": "Men's Eight Heat 1",
+    "startDate": "2022-06-16 00:00:00",
+    "venue": "Malta/Poznan, Poland",
+    "boatClass": "M8",
+    "worldBestTimeBoatClass": "00:05:58,36",
+    "bestTimeBoatClassCurrentOZ": "00:05:58,36",
+    "data": [
+      {
+        "nation_ioc": "DEU",
+        "lane": 3,
+        "rank": 1,
+        "run": "FA",
+        "athletes": [
+          {
+            "firstName": "Athlete first name",
+            "lastName": "Athlete last name"
+          }
+        ],
+        "intermediates": {
+            "500": {
+              "time [t]": "00:02:24,12",
+              "pace [t]": "00:02:24,12",
+              "rank": 2,
+              "lag [s]": "00:00:03,12",
+              "relDiffToAvgSpeed [%]": -1.3
+            },
+            "1000": {
+              "time [t]": "00:04:15,82",
+              "pace [t]": "00:01:50,72",
+              "rank": 1,
+              "lag [s]": "00:00:00,00",
+              "relDiffToAvgSpeed [%]": 4.3
+            }
+        },
+        "gpsData": {
+          "distance": {
+            "50": {
+              "speed [m/s]": 5.2,
+              "stroke [1/min]": 34.1,
+              "propulsion [m/stroke]": 8.3
+            }, 
+            "100": {
+              "speed [m/s]": 4.9,
+              "stroke [1/min]": 33.4,
+              "propulsion [m/stroke]": 8.8
+            }, 
+            "150": {
+              "speed [m/s]": 4.8,
+              "stroke [1/min]": 34.0,
+              "propulsion [m/stroke]": 8.1
+            }
+          }
+        }
+      }
+    ]
+  }
+]
+```
+
+
+
+
+
+
+
+
 # User Story für Berichte
 
 Als User möchte ich Zusammenfassungen von Fahrzeiten als statistisches Maß über einen gegebenen Zeitraum betrachten.
