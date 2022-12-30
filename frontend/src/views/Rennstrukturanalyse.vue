@@ -1,16 +1,30 @@
 <template>
-  <rennstruktur-filter></rennstruktur-filter>
-
-  <!-- Placeholder for initial page -->
+  <v-btn color="blue"
+         @click="drawer = !drawer" v-show="!drawer"
+         style="position: fixed; z-index: 999; left: 0; border-radius: 0"
+         class="mt-8"
+  >
+    <v-icon>mdi-filter</v-icon>
+  </v-btn>
+  <v-card style="box-shadow: none; z-index: 1">
+      <v-layout>
+        <v-navigation-drawer
+      v-model="drawer"
+      temporary
+      style="margin-top: 160px; background-color: white; border: none"
+      width="500">
+    <rennstruktur-filter/>
+  </v-navigation-drawer>
+  <v-container class="pa-10" style="max-width: 1024px">
   <v-breadcrumbs style="color: grey" class="pa-0" :items="['Competition', 'Event', 'Race']"></v-breadcrumbs>
-  <h1>Rennstrukturanalyse (Platzhalter initiale Seite)</h1>
+  <h1>Rennstrukturanalyse</h1>
   <v-divider></v-divider>
   <v-container class="pa-0 mt-8">
     <v-row>
       <v-col cols="12">
         <h2>Results</h2>
         <v-container class="pa-0" style="min-height: 500px">
-          <v-col cols="6">
+          <v-col cols="6" class="pa-0">
             <v-list density="compact">
               <v-list-item
                   style="background-color: whitesmoke; border-radius: 5px"
@@ -28,9 +42,7 @@
     </v-row>
   </v-container>
 
-  <!-- Placeholder for final site, including data and plots -->
-  <h1>Rennstrukturanalyse (Platzhalter für finale Seite)</h1>
-
+  <h1>Rennstrukturanalyse</h1>
   <v-container class="pa-0">
     <v-row>
       <v-col cols="6">
@@ -54,10 +66,12 @@
     </v-row>
   </v-container>
 
-  <!-- added test for pinia store api response -->
   <p><b>Test-Abfrage für Pinia-State-Management Store:</b></p>
   <p>{{ getData }}</p>
 
+    </v-container>
+      </v-layout>
+</v-card>
 </template>
 
 
@@ -81,6 +95,8 @@ onMounted(() => {
 export default {
   data() {
     return {
+      drawer: true,
+      mobile: false,
         chartData: {
           labels: ['500m', '1000m', '1500m', '2000m'],
           datasets: [

@@ -3,32 +3,47 @@
   <h2>Filter</h2>
     <v-divider></v-divider>
     <v-form class="mt-2">
+      <v-label>Geschlecht</v-label>
+      <v-chip-group filter color="blue" multiple>
+        <v-chip>männlich</v-chip>
+        <v-chip>weiblich</v-chip>
+      </v-chip-group>
+      <v-label class="pt-2">Altersklasse</v-label>
+      <v-chip-group filter color="blue" multiple>
+        <v-chip>Open</v-chip>
+        <v-chip>U19</v-chip>
+        <v-chip>U23</v-chip>
+        <v-chip>Elite</v-chip>
+        <v-chip>Para</v-chip>
+      </v-chip-group>
+      <v-label class="pt-2">Zeitraum</v-label>
+      <v-container class="pa-0 d-flex">
+        <v-col cols="6" class="pa-0">
+          <v-select
+            clearable
+            label="Von"
+            :items="auswahlYear"
+            variant="underlined"
+          ></v-select>
+        </v-col>
+        <v-col cols="6" class="pa-0">
+          <v-select
+            clearable
+            label="Bis"
+            :items="auswahlYear"
+            variant="underlined"
+          ></v-select>
+        </v-col>
+      </v-container>
       <v-select class="pt-2"
-        clearable
-        label="Year"
-        :items="auswahlYear"
-        variant="underlined"
-      ></v-select>
-      <v-select class="pt-2"
+        clearable chips multiple
                 color="blue"
-        clearable
         label="Wettkampfklassen"
         :items="auswahlWettkampfklassen"
         variant="underlined"
       ></v-select>
-      <v-label class="pt-2">Geschlecht (optional)</v-label>
-      <v-chip-group filter color="blue" mandatory>
-        <v-chip>männlich</v-chip>
-        <v-chip>weiblich</v-chip>
-      </v-chip-group>
-      <v-label class="pt-2">Altersklasse (optional)</v-label>
-      <v-chip-group filter color="blue" mandatory>
-        <v-chip>Open</v-chip>
-        <v-chip>U19</v-chip>
-        <v-chip>U23</v-chip>
-      </v-chip-group>
       <v-label class="pt-2">Lauf (optional)</v-label>
-      <v-chip-group filter color="blue">
+      <v-chip-group filter color="blue" multiple>
         <v-chip>Finale</v-chip>
         <v-chip>Halbfinale</v-chip>
         <v-chip>Viertelfinale</v-chip>
@@ -36,12 +51,20 @@
         <v-chip>Vorläufe</v-chip>
       </v-chip-group>
       <v-select
-          class="pt-2"
-          clearable
-          label="Lauf"
-          :items="auswahlLauf"
-          variant="underlined"
+        label="Lauf"
+        clearable
+        :items="auswahlLauf"
+        variant="underlined"
       ></v-select>
+
+      <v-label class="pt-2">Platzierung (optional)</v-label>
+      <v-chip-group filter color="blue" multiple>
+        <v-chip>1</v-chip>
+        <v-chip>2</v-chip>
+        <v-chip>3</v-chip>
+        <v-chip>4-6</v-chip>
+      </v-chip-group>
+
       <v-container class="pa-0 pt-6 text-right">
         <v-btn color="grey" class="mx-2"><v-icon>mdi-backspace-outline</v-icon></v-btn>
         <v-btn color="blue" class="mx-2" type="submit">Übernehmen</v-btn>
@@ -70,7 +93,7 @@ export default {
         'World Rowing Cup'
       ],
       auswahlLauf: [
-          'FA', 'FB', 'FC', 'FD', 'F...'
+          'Alle'
       ],
       auswahlErgebnisse: [
         { id: 1, name: '1. Plätze (Gold-Standard, GS)', selected: false },

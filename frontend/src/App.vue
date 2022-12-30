@@ -1,8 +1,6 @@
 <template>
   <Navigation />
-  <v-container class="pa-10">
     <RouterView />
-  </v-container>
   <FooterC />
 </template>
 
