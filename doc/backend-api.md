@@ -95,23 +95,31 @@ Speed/Stroke in GPS Daten und keine genauen Strecken. Auch das zurückrechnen vi
 ```json
 [
   {
-    "race_id": 195638,
+    "raceId": 195638,
     "displayName": "Men's Eight Heat 1",
-    "startDate": "2022-06-16 00:00:00",
+    "startDate": "2022-06-16 14:12:00",
     "venue": "Malta/Poznan, Poland",
-    "boatClass": "M8",
+    "boatClass": "Men's Eight",
     "worldBestTimeBoatClass": "00:05:58,36",
     "bestTimeBoatClassCurrentOZ": "00:05:58,36",
     "data": [
       {
-        "nation_ioc": "DEU",
-        "lane": 3,
+        "nationIoc": "CZE",
+        "nationDisplayName": "Tschechien",
+        "lane": 2,
         "rank": 1,
-        "run": "FA",
+        "run": "FB",
+        "progressionCode": "1-3SA/B 4..SC/D",
         "athletes": [
           {
-            "firstName": "Athlete first name",
-            "lastName": "Athlete last name"
+            "id": 98245435,
+            "firstName": "Lukas",
+            "lastName": "Helesic"
+          },
+          {
+            "id": 954345365,
+            "firstName": "S Jakub",
+            "lastName": "Podrazil"
           }
         ],
         "intermediates": {
@@ -123,12 +131,26 @@ Speed/Stroke in GPS Daten und keine genauen Strecken. Auch das zurückrechnen vi
               "relDiffToAvgSpeed [%]": -1.3
             },
             "1000": {
-              "time [t]": "00:04:15,82",
+              "time [t]": "00:03:13,82",
               "pace [t]": "00:01:50,72",
               "rank": 1,
               "lag [s]": "00:00:00,00",
               "relDiffToAvgSpeed [%]": 4.3
-            }
+            },
+            "1500": {
+                "time [t]": "00:04:52,00",
+                "pace [t]": "00:01:50,72",
+                "rank": 1,
+                "lag [s]": "00:00:00,00",
+                "relDiffToAvgSpeed [%]": 2.3
+              },
+            "2000": {
+                  "time [t]": "00:06:29,14",
+                  "pace [t]": "00:01:50,72",
+                  "rank": 1,
+                  "lag [s]": "00:00:00,00",
+                  "relDiffToAvgSpeed [%]": 1.3
+                }
         },
         "gpsData": {
           "distance": {
@@ -136,16 +158,26 @@ Speed/Stroke in GPS Daten und keine genauen Strecken. Auch das zurückrechnen vi
               "speed [m/s]": 5.2,
               "stroke [1/min]": 34.1,
               "propulsion [m/stroke]": 8.3
-            }, 
+            },
             "100": {
               "speed [m/s]": 4.9,
               "stroke [1/min]": 33.4,
               "propulsion [m/stroke]": 8.8
-            }, 
+            },
             "150": {
-              "speed [m/s]": 4.8,
-              "stroke [1/min]": 34.0,
+              "speed [m/s]": 4.7,
+              "stroke [1/min]": 35.0,
+              "propulsion [m/stroke]": 7.1
+            },
+            "200": {
+              "speed [m/s]": 4.6,
+              "stroke [1/min]": 38.0,
               "propulsion [m/stroke]": 8.1
+            },
+            "250": {
+              "speed [m/s]": 4.9,
+              "stroke [1/min]": 32.0,
+              "propulsion [m/stroke]": 7.2
             }
           }
         }
