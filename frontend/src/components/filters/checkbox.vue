@@ -4,7 +4,8 @@
       <v-checkbox
           v-model="item.selected"
           :label="item.name"
-          hide-details />
+          hide-details
+      />
     </v-list-item>
   </v-list>
 </template>
@@ -18,6 +19,6 @@ export default {
 <style scoped>
 .v-list-item--density-compact.v-list-item--one-line {
   min-height: 20px !important;
-  height: 30px;
+  height: 40px;
 }
 </style>

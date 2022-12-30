@@ -1,4 +1,4 @@
 .chart-container {
     position: relative;
-    height: 45vh;
+    min-height: 250px;
 }
