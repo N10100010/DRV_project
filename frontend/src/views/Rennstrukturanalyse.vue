@@ -16,24 +16,47 @@
     <rennstruktur-filter/>
   </v-navigation-drawer>
   <v-container class="pa-10" style="max-width: 1024px">
-  <v-breadcrumbs style="color: grey" class="pa-0" :items="['Competition', 'Event', 'Race']"></v-breadcrumbs>
+  <v-breadcrumbs style="color: grey; height: 22px" class="pa-0" :items="breadCrumbs"></v-breadcrumbs>
   <h1>Rennstrukturanalyse</h1>
   <v-divider></v-divider>
-  <v-container class="pa-0 mt-8">
+  <v-container class="pa-0 mt-8" v-if="!displayRaceDataAnalysis">
     <v-row>
       <v-col cols="12">
         <h2>Results</h2>
         <v-container class="pa-0" style="min-height: 500px">
           <v-col cols="6" class="pa-0">
-            <v-list density="compact">
+            <!-- competition list -->
+            <v-list density="compact" v-show="displayCompetitions">
               <v-list-item
                   style="background-color: whitesmoke; border-radius: 5px"
                   class="pa-2 my-2"
-                  v-for="item in 6"
-                  :key="item"
-                  title="Competition DisplayName"
-                  subtitle="2020"
-                  href="/rennstrukturanalyse"
+                  v-for="competition in getAnalysis"
+                  :key="competition"
+                  :title="competition.display_name"
+                  :subtitle="competition.start_date+' | '+competition.venue"
+                  @click="getEvents(competition.events)"
+              ></v-list-item>
+            </v-list>
+            <!-- events list -->
+            <v-list density="compact" v-show="displayEvents">
+              <v-list-item
+                  style="background-color: whitesmoke; border-radius: 5px"
+                  class="pa-2 my-2"
+                  v-for="event in events"
+                  :key="event"
+                  :title="event.display_name"
+                  @click="getRaces(event.races)"
+              ></v-list-item>
+            </v-list>
+            <!-- races list -->
+            <v-list density="compact" v-show="displayRaces">
+              <v-list-item
+                  style="background-color: whitesmoke; border-radius: 5px"
+                  class="pa-2 my-2"
+                  v-for="race in races"
+                  :key="race"
+                  :title="race.display_name"
+                  @click="loadRaceAnalysis(race.display_name)"
               ></v-list-item>
             </v-list>
           </v-col>
@@ -42,95 +65,96 @@
     </v-row>
   </v-container>
 
-  <h1>Rennstrukturanalyse</h1>
-  <v-container class="pa-0">
-    <v-row>
-      <v-col cols="6">
-        <h2>Tabellen</h2>
-        <v-container style="background-color: whitesmoke; height: 80%">
-          <p>Placeholder for Table(s)</p>
+      <v-container v-if="displayRaceDataAnalysis" class="pa-0">
+        <v-container class="pa-0 d-flex">
+          <v-col cols="6" class="pa-0">
+        </v-col>
+          <v-col cols="6" class="pa-0 text-right">
+        </v-col>
         </v-container>
-      </v-col>
-      <v-col cols="6">
-        <h2>Plots</h2>
-        <v-container>
-          <LineChart :data="chartData" :chartOptions="chartOptions"></LineChart>
-        </v-container>
-        <v-container>
-          <LineChart :data="chartData" :chartOptions="chartOptions"></LineChart>
-        </v-container>
-        <v-container>
-          <LineChart :data="chartData" :chartOptions="chartOptions"></LineChart>
-        </v-container>
-      </v-col>
-    </v-row>
-  </v-container>
-
-  <p><b>Test-Abfrage für Pinia-State-Management Store:</b></p>
-  <p>{{ getData }}</p>
-
+        <v-row>
+          <v-col cols="6">
+            <h2>Tabellen</h2>
+            <v-container style="background-color: whitesmoke; height: 80%">
+              <p>Placeholder for Table(s)</p>
+            </v-container>
+          </v-col>
+          <v-col cols="6">
+            <h2>Plots</h2>
+            <v-container>
+              <LineChart :data="speedChartData" :chartOptions="chartOptions"></LineChart>
+            </v-container>
+            <v-container>
+              <LineChart :data="strokeChartData" :chartOptions="chartOptions"></LineChart>
+            </v-container>
+          </v-col>
+        </v-row>
+      </v-container>
     </v-container>
       </v-layout>
 </v-card>
 </template>
 
-
 <script setup>
 import RennstrukturFilter from "@/components/filters/rennstrukturFilter.vue";
 import LineChart from "@/components/charts/LineChart.vue";
-import { useTestState } from "@/stores/baseStore";
-const store = useTestState();
-import {computed, onMounted} from "vue";
-
-const getData = computed(() => {
-  return store.getTestData;
-});
-
-onMounted(() => {
-  store.fetchData();
-});
 </script>
 
 <script>
+import { useRennstrukturAnalyseState } from "@/stores/baseStore";
+import { mapState } from "pinia";
+
 export default {
+  computed: {
+    ...mapState(useRennstrukturAnalyseState, {
+      getAnalysis: "getAnalysisData"
+    }),
+    ...mapState(useRennstrukturAnalyseState, {
+      speedChartData: "getSpeedChartData"
+    }),
+    ...mapState(useRennstrukturAnalyseState, {
+      strokeChartData: "getStrokeChartData"
+    })
+  },
   data() {
     return {
       drawer: true,
-      mobile: false,
-        chartData: {
-          labels: ['500m', '1000m', '1500m', '2000m'],
-          datasets: [
-              {
-                label: 'DEU',
-                backgroundColor: '#f5bd00',
-                borderColor: '#f5bd00',
-                data: [140, 134, 146, 143]
-              },
-              {
-                label: 'FRA',
-                backgroundColor: '#000033',
-                borderColor: '#000033',
-                data: [138, 143, 153, 142]
-              },
-              {
-                label: 'GBR',
-                backgroundColor: '#440000',
-                borderColor: '#440000',
-                data: [134, 141, 140, 142]
-              }
-          ]
-        },
-        chartOptions: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            title: {
-              display: true,
-              text: "Intermediate Times"
-            }
+      breadCrumbs: [],
+      displayRaceDataAnalysis: false,
+      displayCompetitions: true,
+      displayEvents: false,
+      displayRaces: false,
+      events: {},
+      races: {},
+      chartOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          title: {
+            display: true,
+            text: "Intermediate Times"
           }
         }
       }
+    }
+  },
+  methods: {
+    getEvents(competition) {
+      this.events = competition
+      this.breadCrumbs.push('Competition')
+      this.displayCompetitions = false
+      this.displayEvents = true
+    },
+    getRaces(events) {
+      this.races = events
+      this.breadCrumbs.push('Event')
+      this.displayEvents = false
+      this.displayRaces = true
+    },
+    loadRaceAnalysis(raceName) {
+      this.displayRaceDataAnalysis = true
+      this.breadCrumbs.push(raceName)
+    }
   }
 }
 </script>
