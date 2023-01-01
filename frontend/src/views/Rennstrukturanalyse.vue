@@ -81,11 +81,8 @@
           </v-col>
           <v-col cols="6">
             <h2>Plots</h2>
-            <v-container>
-              <LineChart :data="speedChartData" :chartOptions="chartOptions"></LineChart>
-            </v-container>
-            <v-container>
-              <LineChart :data="strokeChartData" :chartOptions="chartOptions"></LineChart>
+            <v-container v-for="(data, idx) in getGPsData">
+              <LineChart :data="data" :chartOptions="chartOptions[idx]"></LineChart>
             </v-container>
           </v-col>
         </v-row>
@@ -110,10 +107,7 @@ export default {
       getAnalysis: "getAnalysisData"
     }),
     ...mapState(useRennstrukturAnalyseState, {
-      speedChartData: "getSpeedChartData"
-    }),
-    ...mapState(useRennstrukturAnalyseState, {
-      strokeChartData: "getStrokeChartData"
+      getGPsData: "getGPSChartData"
     })
   },
   data() {
@@ -126,28 +120,59 @@ export default {
       displayRaces: false,
       events: {},
       races: {},
-      chartOptions: {
+      chartOptions: [{
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
           title: {
             display: true,
-            text: "Intermediate Times"
+            text: "Geschwindigkeit über Distanz [m/sek]"
           }
         }
-      }
+        },
+        {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: "Schlagfrequenz über Distanz [1/min]"
+            }
+          }
+        }, {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: "Vortrieb über Distanz [m/Schlag]"
+            }
+          }
+        }
+      ]
     }
   },
   methods: {
     getEvents(competition) {
       this.events = competition
-      this.breadCrumbs.push('Competition')
+      this.breadCrumbs.push({
+        title: 'Competition',
+        disabled: false,
+        href: '#',
+        onclick: () => {
+          this.displayCompetitions = true
+          this.displayEvents = false
+          this.breadCrumbs.pop()
+        }
+      })
       this.displayCompetitions = false
       this.displayEvents = true
     },
     getRaces(events) {
       this.races = events
-      this.breadCrumbs.push('Event')
+      this.breadCrumbs.push({
+        title: 'Event',
+      })
       this.displayEvents = false
       this.displayRaces = true
     },
