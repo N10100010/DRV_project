@@ -88,10 +88,10 @@ POST /get_race/<race_id>
 
 **Response**
 * bestTimeBoatClassCurrentOZ (noch unklar, was das genau sein soll)
-* Rückstand über Distanz [m] fehlt noch; auf welcher Grundlage sollen wir das berechnen können? Haben ja nur 
+* Rückstand über Distanz [m] fehlt noch; auf welcher Grunddeficite sollen wir das berechnen können? Haben ja nur 
 Speed/Stroke in GPS Daten und keine genauen Strecken. Auch das zurückrechnen via s = v * t wäre schwierig, weil Werte fehlen.
 * propulsion soll Vortrieb heißen; wer ein besseres englisches Wort dafür kennt, gerne her damit :D
-* lag = Rückstand
+* deficit = Rückstand
 ```json
 [
   {
@@ -127,28 +127,28 @@ Speed/Stroke in GPS Daten und keine genauen Strecken. Auch das zurückrechnen vi
               "time [t]": "00:02:24,12",
               "pace [t]": "00:02:24,12",
               "rank": 2,
-              "lag [s]": "00:00:03,12",
+              "deficit [s]": "00:00:03,12",
               "relDiffToAvgSpeed [%]": -1.3
             },
             "1000": {
               "time [t]": "00:03:13,82",
               "pace [t]": "00:01:50,72",
               "rank": 1,
-              "lag [s]": "00:00:00,00",
+              "deficit [s]": "00:00:00,00",
               "relDiffToAvgSpeed [%]": 4.3
             },
             "1500": {
                 "time [t]": "00:04:52,00",
                 "pace [t]": "00:01:50,72",
                 "rank": 1,
-                "lag [s]": "00:00:00,00",
+                "deficit [s]": "00:00:00,00",
                 "relDiffToAvgSpeed [%]": 2.3
               },
             "2000": {
                   "time [t]": "00:06:29,14",
                   "pace [t]": "00:01:50,72",
                   "rank": 1,
-                  "lag [s]": "00:00:00,00",
+                  "deficit [s]": "00:00:00,00",
                   "relDiffToAvgSpeed [%]": 1.3
                 }
         },
