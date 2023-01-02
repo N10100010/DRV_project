@@ -82,7 +82,10 @@
           <v-col cols="6">
             <h2>Plots</h2>
             <v-container v-for="(data, idx) in getGPsData">
-              <LineChart :data="data" :chartOptions="chartOptions[idx]"></LineChart>
+              <LineChart :data="data" :chartOptions="gpsChartOptions[idx]"></LineChart>
+            </v-container>
+            <v-container v-for="(data, idx) in getIntermediateData">
+              <LineChart :data="data" :chartOptions="intermediateChartOptions[idx]"></LineChart>
             </v-container>
           </v-col>
         </v-row>
@@ -108,6 +111,9 @@ export default {
     }),
     ...mapState(useRennstrukturAnalyseState, {
       getGPsData: "getGPSChartData"
+    }),
+    ...mapState(useRennstrukturAnalyseState, {
+      getIntermediateData: "getIntermediateChartData"
     })
   },
   data() {
@@ -120,35 +126,127 @@ export default {
       displayRaces: false,
       events: {},
       races: {},
-      chartOptions: [{
+      gpsChartOptions: [{
         responsive: true,
         maintainAspectRatio: false,
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Strecke [m]'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Geschwindigkeit [m/sek]'
+            }
+          }
+        },
         plugins: {
           title: {
             display: true,
-            text: "Geschwindigkeit über Distanz [m/sek]"
+            text: "Geschwindigkeit über Distanz"
           }
         }
         },
         {
           responsive: true,
           maintainAspectRatio: false,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Strecke [m]'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Schlagfrequenz [1/min]'
+              }
+            }
+          },
           plugins: {
             title: {
               display: true,
-              text: "Schlagfrequenz über Distanz [1/min]"
+              text: "Schlagfrequenz über Distanz"
             }
           }
         }, {
           responsive: true,
           maintainAspectRatio: false,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Strecke [m]'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Vortrieb [m/Schlag]'
+              }
+            }
+          },
           plugins: {
             title: {
               display: true,
-              text: "Vortrieb über Distanz [m/Schlag]"
+              text: "Vortrieb über Distanz "
             }
           }
         }
+      ],
+      intermediateChartOptions: [{
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Strecke [m]'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Platzierung'
+              }
+            }
+          },
+        plugins: {
+          title: {
+            display: true,
+            text: "Platzierung über Distanz"
+          }
+        }
+        },
+        {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Strecke [m]'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Rückstand [sek]'
+              }
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: "Rückstand über Distanz [sek]"
+            }
+          }
+        }
+
       ]
     }
   },

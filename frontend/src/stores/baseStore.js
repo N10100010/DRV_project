@@ -1,6 +1,8 @@
 import axios from "axios";
 import { defineStore } from "pinia";
 
+
+const COLORS = ['#1E90FF', '#EE7621', '#66CD00', '#CD0000', '#7A67EE', '#32ffff'];
 export const useRennstrukturAnalyseState = defineStore({
   id: "base",
   state: () => ({
@@ -267,21 +269,38 @@ export const useRennstrukturAnalyseState = defineStore({
     },
     getGPSChartData(state) {
       const chartDataKeys = ['speed [m/s]', 'stroke [1/min]', 'propulsion [m/stroke]'];
-      const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff'];
-
       return chartDataKeys.map(key => {
         const datasets = [];
         let colorIndex = 0;
         state.data.raceData[0].data.forEach(dataObj => {
           const label = dataObj.nation_ioc;
-          const backgroundColor = colors[colorIndex % 6];
-          const borderColor = colors[colorIndex % 6];
+          const backgroundColor = COLORS[colorIndex % 6];
+          const borderColor = COLORS[colorIndex % 6];
           const data = Object.values(dataObj.gpsData.distance).map(distanceObj => distanceObj[key]);
           datasets.push({label, backgroundColor, borderColor, data});
           colorIndex++;
         });
         return {
           labels: Object.keys(state.data.raceData[0].data[0].gpsData.distance),
+          datasets
+        };
+      })
+    },
+    getIntermediateChartData(state) {
+      const intermediateDataKeys = ["rank", "lag [s]"];
+      return intermediateDataKeys.map(key => {
+        const datasets = [];
+        let colorIndex = 0;
+        state.data.raceData[0].data.forEach(dataObj => {
+          const label = dataObj.nation_ioc;
+          const backgroundColor = COLORS[colorIndex % 6];
+          const borderColor = COLORS[colorIndex % 6];
+          const data = Object.values(dataObj.intermediates).map(distanceObj => distanceObj[key]);
+          datasets.push({label, backgroundColor, borderColor, data});
+          colorIndex++;
+        });
+        return {
+          labels: Object.keys(state.data.raceData[0].data[0].intermediates),
           datasets
         };
       })
