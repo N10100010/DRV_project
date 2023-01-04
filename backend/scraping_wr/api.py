@@ -63,12 +63,6 @@ OLYMPIC_BOATCLASSES = [
     "W4-",
 ]
 
-
-"PR2 Mix2x", "PR2 Mixed Double Sculls"
-"PR3 Mix2x", "PR3 Mixed Double Sculls"
-"PR3 Mix4+", "PR3 Mixed Coxed Four"
-
-
 BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
     'men': {
         'junior': {
