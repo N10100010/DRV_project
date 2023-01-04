@@ -3,8 +3,8 @@ import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from sqlalchemy.orm import declarative_base
-from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, Date, Interval
+from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy import Table, Column, ForeignKey, Integer, String, Boolean, Date, Interval
 
 # logging stuff
 import logging
@@ -61,7 +61,24 @@ https://worldrowing.com/event/2022-world-rowing-cup-iii
 https://world-rowing-api.soticcloud.net/stats/api/race/?include=racePhase%2Cevent.competition.competitionType%2Cevent.competition.competitionType.competitionCategory%2Cevent.boatClass&filter%5Bevent.competitionId%5D=b56cf9a5-a7d3-4e64-9571-38218f39413b&sort%5Bdate%5D=asc
 """
 
-class Countries(Base):
+# Many-To-Many Association Tables
+# -------------------------------
+
+# https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#many-to-many
+
+boat_athlete_association_table = Table(
+    "boat_athlete_association",
+    Base.metadata,
+    Column("raceboat_id", ForeignKey("raceboats.id"), primary_key=True),
+    Column("athlete_id", ForeignKey("athletes.id"), primary_key=True),
+)
+# TODO: add boatPosition # Pattern: https://stackoverflow.com/a/62378982
+
+
+# ORM Classes
+# -----------
+
+class Country(Base):
     __tablename__ = "countries"
 
     id = Column(Integer, primary_key=True)
@@ -75,7 +92,7 @@ class Countries(Base):
     is_noc_ = Column(String)
 
 
-class Venues(Base):
+class Venue(Base):
     """
     https://world-rowing-api.soticcloud.net/stats/api/competition/b56cf9a5-a7d3-4e64-9571-38218f39413b?include=venue,venue.country
     """
@@ -91,7 +108,7 @@ class Venues(Base):
     is_world_rowing_venue = Column(Boolean)
 
 
-class Genders(Base):
+class Gender(Base):
     __tablename__ = "genders"
 
     id = Column(Integer, primary_key=True)
@@ -100,18 +117,25 @@ class Genders(Base):
     name = Column(String)
 
 
-class Athletes(Base):
+class Athlete(Base):
     __tablename__ = "athletes"
 
     id = Column(Integer, primary_key=True)
     additional_id_ = Column(String)
 
     full_name = Column(String)
+    first_name_ = Column(String)
+    last_name = Column(String)
     birthdate = Column(Date)
+
+    height_cm_ = Column(Integer)
+    weight_kg_ = Column(Integer)
+
+    country_id = Column(Integer, ForeignKey("countries.id"))
     # TODO: gender? already contained in Event entity
+    # OVRCode?
 
-
-class Boat_Classes(Base):
+class Boat_Class(Base):
     __tablename__ = "boat_classes"
 
     id = Column(Integer, primary_key=True)
@@ -131,7 +155,7 @@ class Competition_Category(Base):
     name = Column(String)
 
 
-class Competitions(Base):
+class Competition(Base):
     """https://world-rowing-api.soticcloud.net/stats/api/competition/718b3256-e778-4003-88e9-832c4aad0cc2?include=venue,competitionType"""
     __tablename__ = "competitions"
 
@@ -148,7 +172,7 @@ class Competitions(Base):
     is_fisa_ = Column(Boolean)
     
 
-class Events(Base):
+class Event(Base):
     """https://world-rowing-api.soticcloud.net/stats/api/event/05ad5e77-c337-4700-bd9b-a2e0fc7e5fc2?include=boatClass"""
     __tablename__ = "events"
 
@@ -163,7 +187,7 @@ class Events(Base):
     rsc_code_ = Column(String)
 
 
-class Races(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae369-8d05-4b8e-9a2e-7de5871715b7?include=racePhase%2CraceBoats.raceBoatAthletes.person%2CraceBoats.invalidMarkResultCode%2CraceBoats.raceBoatIntermediates.distance&sortInclude%5BraceBoats.raceBoatIntermediates.ResultTime%5D=asc
+class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae369-8d05-4b8e-9a2e-7de5871715b7?include=racePhase%2CraceBoats.raceBoatAthletes.person%2CraceBoats.invalidMarkResultCode%2CraceBoats.raceBoatIntermediates.distance&sortInclude%5BraceBoats.raceBoatIntermediates.ResultTime%5D=asc
     __tablename__ = "races"
 
     id = Column(Integer, primary_key=True)
@@ -188,13 +212,16 @@ class Races(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0ea
     race_status = Column(String) # e.g. DisplayName "Official" id "182f6f15-8e78-41c3-95b3-8b006af2c6a1"
 
 
-class RaceBoats(Base):
+class Race_Boat(Base):
     __tablename__ = "raceboats"
 
     id = Column(Integer, primary_key=True)
     additional_id_ = Column(String)
     race_id = Column(Integer, ForeignKey("races.id"))
     country_id = Column(Integer, ForeignKey("countries.id"))
+
+    # many-to-many relationship
+    athletes = relationship("Athletes", secondary=boat_athlete_association_table)
 
     name = Column(String) # e.g. "GER2" for one of the German boats
 
@@ -215,13 +242,21 @@ class RaceBoats(Base):
 class Race_Data(Base):
     __tablename__ = "race_data"
 
-    id = Column(Integer, primary_key=True) # ? needed?
-    # TODO: Unique: (boat_id && distance_meter)
-    boat_id = Column(Integer, ForeignKey("boats.id"))
-    distance_meter = Column(Integer)
+    # TODO: Unique: (boat_id && distance_meter) # https://stackoverflow.com/q/10059345
+    # Multi Column Primary Key: https://stackoverflow.com/a/9036128
+    raceboat_id = Column(Integer, ForeignKey("raceboats.id"), primary_key=True, autoincrement=False)
+    distance_meter = Column(Integer, primary_key=True, autoincrement=False)
 
+    # Data fields from JSON Web API
+    rank = Column(Integer)
+    result_time_ms = Column(Integer) # in milliseconds // TODO: as String?
+    difference__ = Column(String)
+    start_position__ = Column(String)
+
+    # Data fields from race data PDFs
     speed_meter_per_sec = Column(Integer)
     stroke = Column(Integer)
+
 
 if False:
     # create all tables (init) if they don't exist
