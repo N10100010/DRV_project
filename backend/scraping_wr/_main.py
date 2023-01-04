@@ -21,32 +21,36 @@ import json as jsn
 if __name__ == '__main__':
     ### KEEP FOR TESTING
 
-
-
-    # _ids_all = []
-    # for y in np.arange(2018, 2020):
-    #     _ids_all.extend(get_competition_ids(y))
-    #
+    #_ids_all = []
+    #for y in np.arange(2023, 2024):
+    #    _ids_all.extend(get_competition_ids(y))
+#
     # ret = api.get_by_competition_id(_ids_all, ['races'])
     #
     #
     # #api.save(ret, '2000_2020.json')
     # # load local json
     # #ret = api.load('2019_2020.json')
-    # #ret = api.load('2000_2020.json')
-    #
+    ret = api.load('one_comp_id.json')
+    # #
     # tuple_set__rsc_racePhase = set()
     # for race in ret['races']:
     #     rsc = race['RscCode'].split('---')
-    #
+##
     #     rsc_0 = rsc[0].strip('--')
     #     rsc_1 = rsc[-1].strip('--')
     #     rpdn = ' '.join(race['DisplayName'].split(' ')[-3:-1])
     #     rp = race['racePhase']['DisplayName']
-    #
-    #     tuple_set__rsc_racePhase.add((rp, rsc_1))
-    #
-    # tuple_set__rsc_racePhase = sorted(tuple_set__rsc_racePhase)
+##
+    # #     tuple_set__rsc_racePhase.add((rp, rsc_1))
+##
+    # # tuple_set__rsc_racePhase = sorted(tuple_set__rsc_racePhase)
+    # competition_types = api.get_competition_categories()
+
+    comp_categories = api.get_competition_categories()
+    comp_types = api.get_competition_types()
+    boat_classes = api.get_boatclasses()
+    print()
     #
     # # extract race phases
     # race_phases = set()
@@ -61,7 +65,8 @@ if __name__ == '__main__':
     #
 
 
-    ret = api.get_by_competition_id('718b3256-e778-4003-88e9-832c4aad0cc2', 'everything')
+    #ret = api.get_by_competition_id('718b3256-e778-4003-88e9-832c4aad0cc2', 'everything')
+    #ret = api.load('./one_comp_id.json')
 
 
     print()  # breakpoint me
