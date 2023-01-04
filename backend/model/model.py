@@ -1,10 +1,8 @@
-import sqlalchemy
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy import Table, Column, ForeignKey, Integer, Float, String, Boolean, Date, Interval
+from sqlalchemy import Table, Column, ForeignKey, Integer, Float, String, Boolean, Date
 
 # logging stuff
 import logging
@@ -89,8 +87,8 @@ class Country(Base):
     name = Column(String)
 
     # TODO: Clarify meaning and types
-    is_former_country_ = Column(String)
-    is_noc_ = Column(String)
+    is_former_country__ = Column(String)
+    is_noc__ = Column(String)
 
 
 class Venue(Base):
@@ -128,13 +126,13 @@ class Athlete(Base):
     id = Column(Integer, primary_key=True)
     additional_id_ = Column(String)
 
-    full_name = Column(String)
-    first_name_ = Column(String)
-    last_name = Column(String)
+    name = Column(String)
+    first_name__ = Column(String)
+    last_name__ = Column(String)
     birthdate = Column(Date)
 
-    height_cm_ = Column(Integer)
-    weight_kg_ = Column(Integer)
+    height_cm__ = Column(Integer)
+    weight_kg__ = Column(Integer)
 
     country_id = Column(Integer, ForeignKey("countries.id"))
     # TODO: gender? already contained in Event entity
@@ -184,8 +182,8 @@ class Competition(Base):
     name = Column(String)
     start_date = Column(Date)
     end_date = Column(Date)
-    competition_code_ = Column(String)
-    is_fisa_ = Column(Boolean)
+    competition_code__ = Column(String)
+    is_fisa__ = Column(Boolean)
 
     # relationships
     events = relationship("Event", back_populates="competition")
@@ -206,7 +204,7 @@ class Event(Base):
     gender_id = Column(Integer, ForeignKey("genders.id"))
     gender    = relationship("Gender")
 
-    rsc_code_ = Column(String) # RSC-Codes of races contain more information
+    rsc_code__ = Column(String) # RSC-Codes of races contain more information
 
     # relationships
     races = relationship("Race", back_populates="event")
@@ -226,7 +224,7 @@ class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae
     phase = Column(String) # e.g. "FA", "H3", "SA/B1", etc...
 
     progression = Column(String) # e.g. "1-2->SA/B, 3..->R"
-    rsc_code_ = Column(String)
+    rsc_code__ = Column(String)
 
     pdf_url_results = Column(String)
     pdf_url_race_data = Column(String)
