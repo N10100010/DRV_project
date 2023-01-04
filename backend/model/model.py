@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy import Table, Column, ForeignKey, Integer, String, Boolean, Date, Interval
+from sqlalchemy import Table, Column, ForeignKey, Integer, Float, String, Boolean, Date, Interval
 
 # logging stuff
 import logging
@@ -209,7 +209,7 @@ class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae
     race_nr__ = Column(String) # e.g. "103"
     rescheduled__ = Column(Integer) # e.g. 0 # maybe map to bool?
     rescheduled_from__ = Column(String) # low-prio TODO: Type unclear
-    race_status = Column(String) # e.g. DisplayName "Official" id "182f6f15-8e78-41c3-95b3-8b006af2c6a1"
+    race_status__ = Column(String) # e.g. DisplayName "Official" id "182f6f15-8e78-41c3-95b3-8b006af2c6a1"
 
 
 class Race_Boat(Base):
@@ -247,18 +247,20 @@ class Race_Data(Base):
     raceboat_id = Column(Integer, ForeignKey("raceboats.id"), primary_key=True, autoincrement=False)
     distance_meter = Column(Integer, primary_key=True, autoincrement=False)
 
-    # Data fields from JSON Web API
+    # Data fields from JSON Web API aka "Intermediates"
     rank = Column(Integer)
     result_time_ms = Column(Integer) # in milliseconds // TODO: as String?
     difference__ = Column(String)
     start_position__ = Column(String)
 
     # Data fields from race data PDFs
-    speed_meter_per_sec = Column(Integer)
-    stroke = Column(Integer)
+    speed_meter_per_sec = Column(Float)
+    stroke = Column(Float)
 
 
-if False:
+#----------------------------------------------------------------------
+
+def create_tables():
     # create all tables (init) if they don't exist
     Base.metadata.create_all(engine, checkfirst=True)
 
