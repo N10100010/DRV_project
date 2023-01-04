@@ -148,7 +148,11 @@ BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
             '3': ("PR3 W2-", "PR3 Women's Pair")
         }
     },
-    'mixed': {}
+    'mixed': {
+        'double_2': ("PR2 Mix2x", "PR2 Mixed Double Sculls"),
+        'double_3': ("PR3 Mix2x", "PR3 Mixed Double Sculls"),
+        'four': ("PR3 Mix4+", "PR3 Mixed Coxed Four"),
+    }
 }
 
 
