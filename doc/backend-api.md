@@ -59,7 +59,7 @@ Liefert JSON mit Competitions (DisplayName, ID, Location, Start/End Date, Alters
     "events": [
       {
         "id": 734839,
-        "display_name": "Lightweight Women's Single Sculls",
+        "display_name": "Lightweight Women"s Single Sculls",
         "races": [
           { "id": 187573, "display_name": "Final FB" },
           { "id": 424754, "display_name": "Heat 1" }
@@ -67,12 +67,12 @@ Liefert JSON mit Competitions (DisplayName, ID, Location, Start/End Date, Alters
       },
       {
         "id": 748394,
-        "display_name": "Men's Four",
+        "display_name": "Men"s Four",
         "races": [
-          { "id": 195638, "display_name": "Men's Eight Heat 1" },
-          { "id": 823759, "display_name": "Men's Eight Final FA" },
-          { "id": 748394, "display_name": "Men's Eight Repechage" },
-          { "id": 839473, "display_name": "Men's Eight Heat 2" }
+          { "id": 195638, "display_name": "Men"s Eight Heat 1" },
+          { "id": 823759, "display_name": "Men"s Eight Final FA" },
+          { "id": 748394, "display_name": "Men"s Eight Repechage" },
+          { "id": 839473, "display_name": "Men"s Eight Heat 2" }
         ]
       }
     ]
@@ -96,10 +96,10 @@ Speed/Stroke in GPS Daten und keine genauen Strecken. Auch das zurückrechnen vi
 [
   {
     "raceId": 195638,
-    "displayName": "Men's Eight Heat 1",
+    "displayName": "Men"s Eight Heat 1",
     "startDate": "2022-06-16 14:12:00",
     "venue": "Malta/Poznan, Poland",
-    "boatClass": "Men's Eight",
+    "boatClass": "Men"s Eight",
     "worldBestTimeBoatClass": "00:05:58,36",
     "bestTimeBoatClassCurrentOZ": "00:05:58,36",
     "data": [
@@ -256,37 +256,220 @@ Nation IOC eher optional (?) Sonst müsste man komplette Liste mit allen Code/Kl
 GET /get_report
 ```
 JSON mit Filtern
+Hier nur mal sinngemäß: Es sollen jeweils Listen übergeben, die alle ausgewählten Filtermöglichkeiten abbilden.
+Per default sind vorraussichtlich einige Kriterien gesetzt: z.B. alle möglichen competition_category_ids.
+Bei groups (meint Altersgruppen bzw. elite, para etc.) und runs macht es ggf. auch Sinn mit IDs anstelle der Klarnamen zu arbeiten.
 ```json
 {
-  "boat_class": null // default: alle (z.B. wenn null) oder einzelne z.B. Men Single Sculls (wahrscheinlich als ID)
-  "year": [
-    { "start_year": 2010 },
-    { "end_year": 2016 }
-  ],
-  "competition_category_ids": ["5", "3", "6"] // default: alle außer Qualifications
-  "runs": ["FA", "FB", "FC", "FD", "SA/B" ...] // default: analog zu u-row
-  "rank": "1" // Hier mal Typ string weil laut DRV Excel auch "4-6" angegeben werden können soll
+  "years": [{ "start_year": 2010 }, { "end_year": 2016 }],
+  "competition_category_ids": ["5", "3", "6"],
+  "boat_classes": ["9845666", "83947534", "839405354"],
+  "groups": ["U19", "U23", "Elite", "Para"],
+  "runs": ["FA", "FB", "FC", "FD", "SA/B"],
+  "rank": ["1", "2", "3", "4-6"]
 }
 ```
 
-**Response**
+Damit wir den Fall abgebildet haben, in dem alle Bootsklassen ausgewählt werden brauchen wir 
+wahrscheinlich eine Fallunterscheidung, die wie folgt aussehen könnte...
 
-JSON mit allen Daten, die für Tabelle relevant sind
+**Response (Fall Einzelne Bootsklasse ausgewählt)**
+
+* results = Anzahl der Treffer (n)
+
 ```json
-{
-  "boat_class": null,
-  "world_best_time_boat_class": "00:05:02,67",
-  "mean": 42,
-  "standard_deviation": 5.2,
-  ...
-  "filter_selection": {
-    "year": [
-    { "start_year": 2010 },
-    { "end_year": 2016 }
-  ],
-  "competition_category_ids": ["5", "3", "6"],
-  "runs": ["FA", "FB", "FC", "FD", "SA/B"],
-  "rank": "1" 
+[
+  {
+    "filter_selection": {
+      "start_date": "2020-06-16 14:12:00",
+      "end_date": "2022-06-16 14:12:00"
+    },
+    "data": [
+      {
+        "results": 872,
+        "boat_class": "Men's Eight",
+        "world_best_time_boat_class": "00:05:58,36",
+        "best_in_period": "00:05:58,36",
+        "mean": {
+          "mm:ss,00": "00:05:58,36",
+          "m/s": 4.54,
+          "pace 500m": "00:02:05,40",
+          "pace 1000m": "00:02:05,40"
+        },
+        "std_dev": "00:00:23,42",
+        "median": "00:05:32,36",
+        "gradation_fastest": {
+          "no_of_samples": 345,
+          "time": "00:06:06,36"
+        },
+        "gradation_medium": {
+          "no_of_samples": 239,
+          "time": "00:06:13,52"
+        },
+        "gradation_slow": {
+          "no_of_samples": 167,
+          "time": "00:07:52,37"
+        },
+        "gradation_slowest": {
+          "no_of_samples": 463,
+          "time": "00:08:04,62"
+        },
+        "plot_data": {
+          "histogram": {
+            "labels": [
+              "00:06:34",
+              "00:06:36",
+              "00:06:38",
+              "00:06:40",
+              "00:06:42",
+              "00:06:44",
+              "00:06:46",
+              "00:06:48",
+              "00:06:50",
+              "00:06:52",
+              "00:06:54",
+              "00:06:56",
+              "00:06:58",
+              "00:07:00",
+              "00:07:02",
+              "00:07:04",
+              "00:07:06",
+              "00:07:08"
+            ],
+            "data": [
+              20,
+              26,
+              45,
+              180,
+              503,
+              98,
+              55,
+              23,
+              16,
+              4,
+              2,
+              3,
+              1,
+              3,
+              1,
+              4,
+              3,
+              2
+            ]
+          },
+          "scatterPlot": {
+            "labels": [
+              "1930-01-01",
+              "1940-01-01",
+              "1950-01-01",
+              "1960-01-01",
+              "1970-01-01",
+              "1980-01-01",
+              "1990-01-01",
+              "2000-01-01",
+              "2010-01-01",
+              "2020-01-01"
+            ],
+            "data": [
+              "00:06:54",
+              "00:06:53",
+              "00:06:55",
+              "00:06:50",
+              "00:06:48",
+              "00:06:43",
+              "00:06:46",
+              "00:06:40",
+              "00:06:39",
+              "00:06:40"
+            ]
+          }
+        }
+      }
+    ]
   }
-}
+]
+```
+
+**Response (Generischer Fall: Alle Bootsklassen ausgewählt)**
+
+* results = Anzahl der Treffer (n)
+* Nur Tabelle, daher keine Plot Daten
+* im Data Key kommen dann für jede Bootsklasse jeweils ein Objekt mit den Daten
+
+```json
+[
+  {
+    "filter_selection": {
+      "start_date": "2020-06-16 14:12:00",
+      "end_date": "2022-06-16 14:12:00"
+    },
+    "data": [
+      {
+      "results": 872,
+      "boat_class": {
+        "id": 98345325,
+        "display_name": "M8"
+      },
+      "world_best_time_boat_class": "00:05:58,36",
+      "best_in_period": "00:05:58,36",
+      "mean": {
+        "mm:ss,00": "00:05:58,36",
+        "m/s": 4.54,
+        "pace 500m": "00:02:05,40",
+        "pace 1000m": "00:02:05,40"
+      },
+      "std_dev": "00:00:23,42",
+      "median": "00:05:32,36",
+      "gradation_fastest": {
+        "no_of_samples": 345,
+        "time": "00:06:06,36"
+      },
+      "gradation_medium": {
+        "no_of_samples": 239,
+        "time": "00:06:13,52"
+      },
+      "gradation_slow": {
+        "no_of_samples": 167,
+        "time": "00:07:52,37"
+      },
+      "gradation_slowest": {
+        "no_of_samples": 463,
+        "time": "00:08:04,62"
+      }
+    },
+      {
+    "results": 672,
+    "boat_class": {
+      "id": 53245325,
+      "display_name": "M2+"
+    },
+    "world_best_time_boat_class": "00:05:58,36",
+    "best_in_period": "00:05:58,36",
+    "mean": {
+      "mm:ss,00": "00:05:58,36",
+      "m/s": 4.54,
+      "pace 500m": "00:02:05,40",
+      "pace 1000m": "00:02:05,40"
+    },
+    "std_dev": "00:00:23,42",
+    "median": "00:05:32,36",
+    "gradation_fastest": {
+      "no_of_samples": 345,
+      "time": "00:06:06,36"
+    },
+    "gradation_medium": {
+      "no_of_samples": 239,
+      "time": "00:06:13,52"
+    },
+    "gradation_slow": {
+      "no_of_samples": 167,
+      "time": "00:07:52,37"
+    },
+    "gradation_slowest": {
+      "no_of_samples": 463,
+      "time": "00:08:04,62"
+    }
+  }]
+  }
+]
 ```
