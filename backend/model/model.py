@@ -88,7 +88,7 @@ class Country(Base):
     __tablename__ = "countries"
 
     id = Column(Integer, primary_key=True)
-    additional_id_ = Column(String)
+    additional_id_ = Column(String, index=True, unique=True)
 
     country_code = Column(String(length=3))
     name = Column(String)
@@ -105,7 +105,7 @@ class Venue(Base):
     __tablename__ = "venues"
 
     id = Column(Integer, primary_key=True)
-    additional_id_ = Column(String)
+    additional_id_ = Column(String, index=True, unique=True)
     country_id = Column(Integer, ForeignKey("countries.id"))
     country    = relationship("Country")
 
@@ -122,7 +122,7 @@ class Gender(Base):
     __tablename__ = "genders"
 
     id = Column(Integer, primary_key=True)
-    additional_id_ = Column(String)
+    additional_id_ = Column(String, index=True, unique=True)
 
     name = Column(String)
 
@@ -131,7 +131,7 @@ class Athlete(Base):
     __tablename__ = "athletes"
 
     id = Column(Integer, primary_key=True)
-    additional_id_ = Column(String)
+    additional_id_ = Column(String, index=True, unique=True)
 
     name = Column(String)
     first_name__ = Column(String)
@@ -153,7 +153,7 @@ class Boat_Class(Base):
     __tablename__ = "boat_classes"
 
     id = Column(Integer, primary_key=True)
-    additional_id_ = Column(String)
+    additional_id_ = Column(String, index=True, unique=True)
 
     abbreviation = Column(String, nullable=False)
     name = Column(String)
@@ -167,7 +167,7 @@ class Competition_Category(Base):
     __tablename__ = "competition_category"
 
     id = Column(Integer, primary_key=True)
-    additional_id_ = Column(String)
+    additional_id_ = Column(String, index=True, unique=True)
 
     name = Column(String)
 
@@ -180,7 +180,7 @@ class Competition(Base):
     __tablename__ = "competitions"
 
     id = Column(Integer, primary_key=True)
-    additional_id_ = Column(String)
+    additional_id_ = Column(String, index=True, unique=True)
 
     competition_category_id = Column(Integer, ForeignKey("competition_category.id"))
     competition_category    = relationship("Competition_Category", back_populates="competitions")
@@ -202,7 +202,7 @@ class Event(Base):
     __tablename__ = "events"
 
     id = Column(Integer, primary_key=True)
-    additional_id_ = Column(String)
+    additional_id_ = Column(String, index=True, unique=True)
     name = Column(String)
 
     competition_id = Column(Integer, ForeignKey("competitions.id"))
@@ -222,7 +222,7 @@ class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae
     __tablename__ = "races"
 
     id = Column(Integer, primary_key=True)
-    additional_id_ = Column(String)
+    additional_id_ = Column(String, index=True, unique=True)
     event_id = Column(Integer, ForeignKey("events.id"))
     event    = relationship("Event", back_populates="races")
 
@@ -251,7 +251,7 @@ class Race_Boat(Base):
     __tablename__ = "race_boats"
 
     id = Column(Integer, primary_key=True)
-    additional_id_ = Column(String)
+    additional_id_ = Column(String, index=True, unique=True)
     race_id = Column(Integer, ForeignKey("races.id"))
     race    = relationship("Race", back_populates="race_boats")
     country_id = Column(Integer, ForeignKey("countries.id"))
