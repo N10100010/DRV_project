@@ -16,13 +16,18 @@
     <rennstruktur-filter/>
   </v-navigation-drawer>
   <v-container class="pa-10" style="max-width: 1024px">
-  <v-breadcrumbs style="color: grey; height: 22px" class="pa-0" :items="breadCrumbs"></v-breadcrumbs>
+
+
+
+
+
   <h1>Rennstrukturanalyse</h1>
   <v-divider></v-divider>
+    <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 mt-4" :items="breadCrumbs"></v-breadcrumbs>
   <v-container class="pa-0 mt-8" v-if="!displayRaceDataAnalysis">
     <v-row>
       <v-col cols="12">
-        <h2>Results</h2>
+        <h2>Suchergebnisse</h2>
         <v-container class="pa-0" style="min-height: 500px">
           <v-col cols="6" class="pa-0">
             <!-- competition list -->
@@ -65,7 +70,7 @@
     </v-row>
   </v-container>
 
-      <v-container v-if="displayRaceDataAnalysis" class="pa-0">
+      <v-container v-if="displayRaceDataAnalysis" class="pa-0 mt-8">
         <v-container class="pa-0 d-flex">
           <v-col cols="6" class="pa-0">
         </v-col>
@@ -246,7 +251,6 @@ export default {
             }
           }
         }
-
       ]
     }
   },
@@ -259,8 +263,10 @@ export default {
         href: '#',
         onclick: () => {
           this.displayCompetitions = true
+          this.displayRaceDataAnalysis = false
           this.displayEvents = false
-          this.breadCrumbs.pop()
+          this.displayRaces = false
+          this.breadCrumbs.splice(0)
         }
       })
       this.displayCompetitions = false
@@ -270,6 +276,15 @@ export default {
       this.races = events
       this.breadCrumbs.push({
         title: 'Event',
+        disabled: false,
+        href: '#',
+        onclick: () => {
+          this.displayCompetitions = false
+          this.displayRaceDataAnalysis = false
+          this.displayEvents = true
+          this.displayRaces = false
+          this.breadCrumbs.splice(1)
+        }
       })
       this.displayEvents = false
       this.displayRaces = true
