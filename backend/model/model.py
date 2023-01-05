@@ -285,7 +285,7 @@ class Race_Data(Base):
     # TODO: Unique: (boat_id && distance_meter) # https://stackoverflow.com/q/10059345
     # Multi Column Primary Key: https://stackoverflow.com/a/9036128
     race_boat_id = Column(Integer, ForeignKey("race_boats.id"), primary_key=True, autoincrement=False)
-    race_boat    = relationship("Race", back_populates="race_boats")
+    race_boat    = relationship("Race_Boat", back_populates="race_data")
     distance_meter = Column(Integer, primary_key=True, autoincrement=False)
 
     # Data fields from JSON Web API aka "Intermediates"
