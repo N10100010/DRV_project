@@ -63,18 +63,17 @@ https://world-rowing-api.soticcloud.net/stats/api/race/?include=racePhase%2Ceven
 # Many-To-Many Association Tables
 # -------------------------------
 
-# https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#many-to-many
-# TODO: add boatPosition # Pattern: https://stackoverflow.com/a/62378982
-# https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#association-object
-
 class Association_Race_Boat_Athlete(Base):
     """Many-To-Many Pattern with extra data:
-    https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#association-object"""
+    https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#association-object
+    https://stackoverflow.com/a/62378982"""
 
-    __tablename__ = "boat_athlete_association"
+    __tablename__ = "association_raceboat_athlete"
 
     race_boat_id = Column(ForeignKey("race_boats.id"), primary_key=True)
     athlete_id = Column(ForeignKey("athletes.id"), primary_key=True)
+
+    # extra data fields
     boat_position = Column(String)
 
     # relationships
