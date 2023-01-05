@@ -64,14 +64,22 @@ https://world-rowing-api.soticcloud.net/stats/api/race/?include=racePhase%2Ceven
 # -------------------------------
 
 # https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#many-to-many
-
-boat_athlete_association_table = Table(
-    "boat_athlete_association",
-    Base.metadata,
-    Column("raceboat_id", ForeignKey("raceboats.id"), primary_key=True),
-    Column("athlete_id", ForeignKey("athletes.id"), primary_key=True),
-)
 # TODO: add boatPosition # Pattern: https://stackoverflow.com/a/62378982
+# https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#association-object
+
+class Association_Race_Boat_Athlete(Base):
+    """Many-To-Many Pattern with extra data:
+    https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#association-object"""
+
+    __tablename__ = "boat_athlete_association"
+
+    race_boat_id = Column(ForeignKey("race_boats.id"), primary_key=True)
+    athlete_id = Column(ForeignKey("athletes.id"), primary_key=True)
+    boat_position = Column(String)
+
+    # relationships
+    race_boat = relationship("Race_Boat", back_populates="athletes")
+    athlete = relationship("Athlete", back_populates="race_boats")
 
 
 # ORM Classes
@@ -140,6 +148,7 @@ class Athlete(Base):
 
     # relationships
     country = relationship("Country")
+    race_boats = relationship("Association_Race_Boat_Athlete", back_populates="athlete")
 
 class Boat_Class(Base):
     __tablename__ = "boat_classes"
@@ -240,7 +249,7 @@ class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae
 
 
 class Race_Boat(Base):
-    __tablename__ = "raceboats"
+    __tablename__ = "race_boats"
 
     id = Column(Integer, primary_key=True)
     additional_id_ = Column(String)
@@ -250,7 +259,7 @@ class Race_Boat(Base):
     country    = relationship("Country")
 
     # many-to-many relationship
-    athletes = relationship("Athletes", secondary=boat_athlete_association_table)
+    athletes = relationship("Association_Race_Boat_Athlete", back_populates="race_boat")
 
     name = Column(String) # e.g. "GER2" for one of the German boats
 
@@ -268,7 +277,7 @@ class Race_Boat(Base):
     # worldBestTimeId, OVRCode ?
 
     # relationships
-    race_data = relationship("Race_Data", back_populates="raceboat")
+    race_data = relationship("Race_Data", back_populates="race_boat")
 
 
 class Race_Data(Base):
@@ -276,8 +285,8 @@ class Race_Data(Base):
 
     # TODO: Unique: (boat_id && distance_meter) # https://stackoverflow.com/q/10059345
     # Multi Column Primary Key: https://stackoverflow.com/a/9036128
-    raceboat_id = Column(Integer, ForeignKey("raceboats.id"), primary_key=True, autoincrement=False)
-    raceboat    = relationship("Race", back_populates="race_boats")
+    race_boat_id = Column(Integer, ForeignKey("race_boats.id"), primary_key=True, autoincrement=False)
+    race_boat    = relationship("Race", back_populates="race_boats")
     distance_meter = Column(Integer, primary_key=True, autoincrement=False)
 
     # Data fields from JSON Web API aka "Intermediates"
