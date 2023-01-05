@@ -317,6 +317,14 @@ export const useRennstrukturAnalyseState = defineStore({
       } catch (error) {
         console.error(error);
       }
+    },
+    async postFormData(formData) {
+      await axios.post('https://jsonplaceholder.typicode.com/users',{ formData })
+          .then(response => {
+            // Bearbeite die Antwort des Backends hier
+          }).catch(error => {
+            // Bearbeite den Fehler hier
+      });
     }
   }
 });
