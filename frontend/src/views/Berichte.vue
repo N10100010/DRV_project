@@ -2,12 +2,16 @@
 import ScatterChart from '@/components/charts/ScatterChart.vue';
 import BarChart from "@/components/charts/BarChart.vue";
 import BerichteFilter from "@/components/filters/berichteFilter.vue";
+import 'chartjs-adapter-moment';
+import {Chart as ChartJS, LinearScale, PointElement, Tooltip, Legend, TimeScale} from "chart.js";
+ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
+
 </script>
 
 <template>
    <v-btn color="blue"
          @click="drawer = !drawer" v-show="!drawer"
-         style="position: fixed; z-index: 999; left: 0; border-radius: 0"
+         style="position: fixed; z-index: 10; left: 0; border-radius: 0"
          class="mt-8"
   >
     <v-icon>mdi-filter</v-icon>
@@ -29,18 +33,16 @@ import BerichteFilter from "@/components/filters/berichteFilter.vue";
     <v-container class="pa-0 mt-8">
       <v-row>
         <v-col cols="12">
-          <h2>Tabellen</h2>
           <v-container style="background-color: whitesmoke; min-height: 200px;">
             <p>Placeholder for Table(s)</p>
           </v-container>
         </v-col>
         <v-col cols="12">
-          <h2>Plots</h2>
           <v-container>
-            <BarChart :data="getBarChartData" :chartOptions="barChartOptions"></BarChart>
+            <BarChart :height="400" :data="getBarChartData" :chartOptions="barChartOptions"></BarChart>
           </v-container>
           <v-container>
-            <ScatterChart :data="getScatterChartData" :chartOptions="scatterChartOptions"></ScatterChart>
+            <ScatterChart :height="400" :data="getScatterChartData" :chartOptions="scatterChartOptions"></ScatterChart>
           </v-container>
           <v-container>
           </v-container>
@@ -71,8 +73,20 @@ export default {
     return {
       drawer: false,
       barChartOptions: {
-        responsive: true,
-        maintainAspectRatio: false,
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Zeit [mm:ss]'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Anzahl Rennen'
+            }
+          }
+        },
         plugins: {
           title: {
             display: true,
@@ -81,8 +95,35 @@ export default {
         }
       },
       scatterChartOptions: {
-        responsive: true,
-        maintainAspectRatio: false,
+        scales: {
+            x: {
+                type: 'time',
+                time: {
+                  unit: 'year',
+                  parser: 'yyyy-mm-dd'
+                },
+                title: {
+                display: true,
+                text: 'Jahr'
+              }
+            },
+            y: {
+              type: 'time',
+              time: {
+                parser: 'HH:mm:ss',
+                    unit: "seconds",
+                    tooltipFormat: 'HH:mm:ss',
+                    displayFormats: {
+                        'seconds': "mm:ss"
+                    },
+                    unitStepSize: 30
+              },
+              title: {
+                display: true,
+                text: 'Zeit [mm:ss]'
+              }
+            }
+        },
         plugins: {
           title: {
             display: true,

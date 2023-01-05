@@ -49,7 +49,14 @@ export const useBerichteState = defineStore({
                     "data": [20, 26, 45, 180, 503, 98, 55, 23, 16, 4, 2, 3, 1, 3, 1, 4, 3, 2]
                 },
                 "scatterPlot": {
-
+                    "labels": [
+                        '1930-01-01', '1940-01-01', '1950-01-01', '1960-01-01','1970-01-01',
+                        '1980-01-01', '1990-01-01', '2000-01-01', '2010-01-01', '2020-01-01',
+                    ],
+                    "data": [
+                        "00:06:54", "00:06:53", "00:06:55", "00:06:50", "00:06:48",
+                        "00:06:43", "00:06:46", "00:06:40", "00:06:39", "00:06:40"
+                    ]
                 }
             }
         }]
@@ -61,35 +68,37 @@ export const useBerichteState = defineStore({
                 datasets: [
                     {
                         type: 'bar',
-                        label: "Histogram Component",
-                        backgroundColor: "blue",
+                        label: "Anzahl Rennen",
+                        backgroundColor: '#1E90FF',
                         data: state.data[0].plot_data.histogram.data
                     },
                     {
                         type: 'line',
-                        label: 'Line Component',
+                        label: 'Anzahl Rennen',
                         backgroundColor: "red",
+                        borderColor: "red",
                         data: state.data[0].plot_data.histogram.data,
                     }
                     ]
             }
         },
         getScatterChartData(state) {
+            const plotData = [];
+            const scatterData = state.data[0].plot_data.scatterPlot;
+            for (let i = 0; i < scatterData.labels.length; i++) {
+                plotData.push({
+                    x: scatterData.labels[i],
+                    y: scatterData.data[i]
+                });
+            }
             return {
                 datasets: [
                     {
                         type: 'scatter',
                         label: 'Scatter Dataset',
-                        data: [
-                            {x: 3, y: 6},
-                            {x: 4, y: 4.5},
-                            {x: 5, y: 6},
-                            {x: 6, y: 4.8},
-                            {x: 7, y: 7},
-                            {x: 8, y: 4},
-                        ],
-                        backgroundColor: 'blue',
-                        borderColor: 'blue'
+                        data: plotData,
+                        backgroundColor: '#1E90FF',
+                        borderColor: '#1E90FF'
                     }
                 ]
             }

@@ -1,7 +1,7 @@
 <template>
   <v-btn color="blue"
          @click="drawer = !drawer" v-show="!drawer"
-         style="position: fixed; z-index: 999; left: 0; border-radius: 0"
+         style="position: fixed; z-index: 10; left: 0; border-radius: 0"
          class="mt-8"
   >
     <v-icon>mdi-filter</v-icon>
