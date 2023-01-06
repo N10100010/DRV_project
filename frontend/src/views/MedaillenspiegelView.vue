@@ -1,5 +1,5 @@
 <template>
-  <v-container class="pa-10" style="max-width: 1024px">
+  <v-container class="pa-10">
   <h1>Medallienspiegel</h1>
   <v-divider></v-divider>
   <v-container class="pa-0 mt-8" style="min-height: 500px">

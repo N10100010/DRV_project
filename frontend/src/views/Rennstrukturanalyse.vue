@@ -139,12 +139,14 @@
                 </tbody>
               </v-table>
           </v-col>
+          <v-divider class="mt-8"></v-divider>
           <v-col cols="6">
-            <h2>Plots</h2>
             <v-container v-for="(data, idx) in getGPsData">
               <LineChart :data="data" :chartOptions="gpsChartOptions[idx]"></LineChart>
             </v-container>
-            <v-container v-for="(data, idx) in getIntermediateData">
+          </v-col>
+          <v-col cols="6">
+          <v-container v-for="(data, idx) in getIntermediateData">
               <LineChart :data="data" :chartOptions="intermediateChartOptions[idx]"></LineChart>
             </v-container>
           </v-col>
