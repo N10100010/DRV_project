@@ -27,7 +27,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
   </v-navigation-drawer>
 
 
-  <v-container class="pa-10" style="max-width: 1024px">
+  <v-container class="pa-10">
     <h1>Berichte</h1>
     <v-divider></v-divider>
     <v-container class="pa-0 mt-8">

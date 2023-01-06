@@ -342,7 +342,7 @@ export const useRennstrukturAnalyseState = defineStore({
             if(objectKeys.includes(intermediateDistance)) {
               speedValues.push(gpsData[intermediateDistance]["speed [m/s]"] + "[m/s]")
               strokeValues.push(gpsData[intermediateDistance]["stroke [1/min]"] + "[1/min]")
-              propulsionValues.push(gpsData[intermediateDistance]["propulsion [m/stroke]"] + "[m/Vortrieb]")
+              propulsionValues.push(gpsData[intermediateDistance]["propulsion [m/stroke]"] + "[m/Schlag]")
             }
           }
         }
