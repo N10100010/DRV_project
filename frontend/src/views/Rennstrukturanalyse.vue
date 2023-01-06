@@ -15,12 +15,7 @@
       width="500">
     <rennstruktur-filter/>
   </v-navigation-drawer>
-  <v-container class="pa-10" style="max-width: 1024px">
-
-
-
-
-
+  <v-container class="pa-10">
   <h1>Rennstrukturanalyse</h1>
   <v-divider></v-divider>
     <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 mt-4" :items="breadCrumbs"></v-breadcrumbs>
@@ -71,18 +66,78 @@
   </v-container>
 
       <v-container v-if="displayRaceDataAnalysis" class="pa-0 mt-8">
+        <v-row no-gutters>
+      <v-col>
+        <v-table>
+          <tbody>
+            <tr>
+              <td><b>Wettkampf:</b></td>
+              <td>{{ competitionData.displayName }}</td>
+            </tr>
+            <tr>
+              <td><b>Austragungsort:</b></td>
+              <td>{{ competitionData.venue }}</td>
+            </tr>
+            <tr>
+              <td><b>Datum & Startzeit:</b></td>
+              <td>{{ competitionData.startDate }}</td>
+            </tr>
+          </tbody>
+        </v-table>
+      </v-col>
+      <v-col>
+        <v-table>
+          <tbody>
+            <tr>
+              <td><b>Bootsklasse:</b></td>
+              <td>{{ competitionData.boatClass }}</td>
+            </tr>
+            <tr>
+              <td><b>Weltbestzeit Bootsklasse:</b></td>
+              <td>{{ competitionData.worldBestTimeBoatClass }}</td>
+            </tr>
+            <tr>
+              <td><b>Bestzeit Bootsklasse laufender OZ/Jahr:</b></td>
+              <td>{{ competitionData.bestTimeBoatClassCurrentOZ }}</td>
+            </tr>
+          </tbody>
+        </v-table>
+      </v-col>
+    </v-row>
+
         <v-container class="pa-0 d-flex">
           <v-col cols="6" class="pa-0">
         </v-col>
           <v-col cols="6" class="pa-0 text-right">
         </v-col>
         </v-container>
+
         <v-row>
-          <v-col cols="6">
+          <v-col cols="12">
             <h2>Tabellen</h2>
-            <v-container style="background-color: whitesmoke; height: 80%">
-              <p>Placeholder for Table(s)</p>
-            </v-container>
+              <v-table>
+                <thead>
+                  <tr>
+                    <th v-for="tableHead in tableData[0]">{{ tableHead }}</th>
+                  </tr>
+                </thead>
+                <tbody class="nth-grey">
+                  <tr v-for="country in tableData.slice(1)">
+                    <td v-for="item in country">
+                      <template v-if="Array.isArray(item)">
+                        <p v-for="element in item" class="py-1"  style="font-size: 12px">
+                          {{ element }}
+                        </p>
+                      </template>
+                      <template v-else>
+                        <p>
+                          {{ item }}
+                        </p>
+                      </template>
+                    </td>
+                  </tr>
+                </tbody>
+              </v-table>
           </v-col>
           <v-col cols="6">
             <h2>Plots</h2>
@@ -113,6 +168,15 @@ export default {
   computed: {
     ...mapState(useRennstrukturAnalyseState, {
       getAnalysis: "getAnalysisData"
+    }),
+    ...mapState(useRennstrukturAnalyseState, {
+      competitionData: 'getCompetitionData'
+    }),
+    ...mapState(useRennstrukturAnalyseState, {
+      oldTableData: "getOldTableData"
+    }),
+    ...mapState(useRennstrukturAnalyseState, {
+      tableData: "getTableData"
     }),
     ...mapState(useRennstrukturAnalyseState, {
       getGPsData: "getGPSChartData"
@@ -296,3 +360,11 @@ export default {
   }
 }
 </script>
+
+<style>
+.nth-grey tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, .05);
+}
+
+
+</style>
