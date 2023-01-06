@@ -13,37 +13,37 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: () => HomeView
+      component: HomeView
     },
     {
       path: '/berichte',
       name: 'berichte',
-      component: () => Berichte
+      component: Berichte
     },
     {
       path: '/wettkampfresultate',
       name: 'wettkampfresultate',
-      component: () => Wettkampfresultate
+      component: Wettkampfresultate
     },
     {
       path: '/rennstrukturanalyse',
       name: 'rennstrukturanalyse',
-      component: () => Rennstrukturanalyse
+      component: Rennstrukturanalyse
     },
     {
       path: '/athleten',
       name: 'athleten',
-      component: () => AthletenView
+      component: AthletenView
     },
     {
       path: '/teams',
       name: 'teams',
-      component: () => TeamsView
+      component: TeamsView
     },
     {
       path: '/medaillenspiegel',
       name: 'medaillenspiegel',
-      component: () => MedaillenspiegelView
+      component: MedaillenspiegelView
     }
   ]
 })
