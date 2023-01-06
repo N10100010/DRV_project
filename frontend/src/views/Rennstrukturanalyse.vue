@@ -160,6 +160,9 @@
 <script setup>
 import RennstrukturFilter from "@/components/filters/rennstrukturFilter.vue";
 import LineChart from "@/components/charts/LineChart.vue";
+import 'chartjs-adapter-moment';
+import {Chart as ChartJS, Tooltip, Legend, TimeScale} from "chart.js";
+ChartJS.register(Tooltip, Legend, TimeScale);
 </script>
 
 <script>
@@ -304,6 +307,17 @@ export default {
               }
             },
             y: {
+              type: 'time',
+              time: {
+                parser: 'hh:mm:ss.SSS',
+                displayFormats: {
+                  second: 'ss.SSS',
+                  tooltip: 'mm:ss.SSS'
+                }
+              },
+              min: '00:00:00,000',
+              max: '00:00:20,000',
+              unitTimeSteps: 100,
               title: {
                 display: true,
                 text: 'Rückstand [sek]'
@@ -367,6 +381,4 @@ export default {
 .nth-grey tr:nth-of-type(odd) {
   background-color: rgba(0, 0, 0, .05);
 }
-
-
 </style>

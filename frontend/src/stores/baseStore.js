@@ -39,28 +39,28 @@ export const useRennstrukturAnalyseState = defineStore({
                     "time [t]": "00:02:24,12",
                     "pace [t]": "00:02:24,12",
                     "rank": 2,
-                    "deficit [s]": "00:00:03,12",
+                    "deficit [s]": "00:00:03,120",
                     "relDiffToAvgSpeed [%]": -1.3
                   },
                   "1000": {
                     "time [t]": "00:03:13,82",
                     "pace [t]": "00:01:50,72",
                     "rank": 1,
-                    "deficit [s]": "00:00:00,00",
+                    "deficit [s]": "00:00:00,000",
                     "relDiffToAvgSpeed [%]": 4.3
                   },
                   "1500": {
                     "time [t]": "00:04:52,00",
                     "pace [t]": "00:01:50,72",
                     "rank": 1,
-                    "deficit [s]": "00:00:00,00",
+                    "deficit [s]": "00:00:00,000",
                     "relDiffToAvgSpeed [%]": 2.3
                   },
                   "2000": {
                     "time [t]": "00:06:29,14",
                     "pace [t]": "00:01:50,72",
                     "rank": 1,
-                    "deficit [s]": "00:00:00,00",
+                    "deficit [s]": "00:00:00,000",
                     "relDiffToAvgSpeed [%]": 1.3
                   }
                 },
@@ -152,29 +152,29 @@ export const useRennstrukturAnalyseState = defineStore({
                   "500": {
                     "time [t]": "00:01:24,12",
                     "pace [t]": "00:02:24,12",
-                    "rank": 2,
-                    "deficit [s]": "00:00:03,12",
+                    "rank": 1,
+                    "deficit [s]": "00:00:00,000",
                     "relDiffToAvgSpeed [%]": -1.3
                   },
                   "1000": {
                     "time [t]": "00:03:13,82",
                     "pace [t]": "00:01:50,72",
-                    "rank": 1,
-                    "deficit [s]": "00:00:00,00",
+                    "rank": 2,
+                    "deficit [s]": "00:00:04,000",
                     "relDiffToAvgSpeed [%]": 4.3
                   },
                   "1500": {
                     "time [t]": "00:04:52,00",
                     "pace [t]": "00:01:50,72",
-                    "rank": 1,
-                    "deficit [s]": "00:00:00,00",
+                    "rank": 2,
+                    "deficit [s]": "00:00:06,670",
                     "relDiffToAvgSpeed [%]": 2.3
                   },
                   "2000": {
                     "time [t]": "00:06:29,14",
                     "pace [t]": "00:01:50,72",
-                    "rank": 1,
-                    "deficit [s]": "00:00:00,00",
+                    "rank": 2,
+                    "deficit [s]": "00:00:02,340",
                     "relDiffToAvgSpeed [%]": 1.3
                   }
                 },
