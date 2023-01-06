@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy import Table, Column, ForeignKey, Integer, Float, String, Boolean, Date
+from sqlalchemy import Column, ForeignKey, Integer, Float, String, Boolean, Date, DateTime
 
 # logging stuff
 import logging
@@ -58,6 +58,10 @@ TODO:
         - Query case insensiive https://stackoverflow.com/a/47642360
 https://worldrowing.com/event/2022-world-rowing-cup-iii
 https://world-rowing-api.soticcloud.net/stats/api/race/?include=racePhase%2Cevent.competition.competitionType%2Cevent.competition.competitionType.competitionCategory%2Cevent.boatClass&filter%5Bevent.competitionId%5D=b56cf9a5-a7d3-4e64-9571-38218f39413b&sort%5Bdate%5D=asc
+
+    - Efficiency of relationship fields:
+        - https://stackoverflow.com/q/34186225
+        - https://docs.sqlalchemy.org/en/14/orm/loading_relationships.html
 """
 
 # Many-To-Many Association Tables
@@ -188,8 +192,8 @@ class Competition(Base):
     venue    = relationship("Venue", back_populates="competitions")
 
     name = Column(String)
-    start_date = Column(Date)
-    end_date = Column(Date)
+    start_date = Column(DateTime)
+    end_date = Column(DateTime)
     competition_code__ = Column(String)
     is_fisa__ = Column(Boolean)
 
@@ -227,7 +231,7 @@ class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae
     event    = relationship("Event", back_populates="races")
 
     name = Column(String)
-    date = Column(Date)
+    date = Column(DateTime)
     phase_type = Column(String) # e.g. "Heat", "Final" // TODO: normalize?
     phase = Column(String) # e.g. "FA", "H3", "SA/B1", etc...
 

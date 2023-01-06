@@ -3,6 +3,8 @@ import model
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
+import datetime as dt
+
 # logging stuff
 import logging
 logging.basicConfig()
@@ -44,7 +46,7 @@ def query_by_uuid_(session, Entity_Class, uuid):
 def wr_insert_country(session, data):
     """Creates or queries entity with given data and returns entity object."""
     Entity_Class = model.Country
-    uuid = data['id']
+    uuid = data['id'].lower()
     entity = query_by_uuid_(session, Entity_Class, uuid)
     if not entity:
         entity = Entity_Class()
@@ -56,6 +58,24 @@ def wr_insert_country(session, data):
         entity.is_noc__ = repr(data.get('IsNOC'))
 
     return entity
+
+
+def wr_insert_event(session, data):
+    """Creates or queries entity with given data and returns entity object."""
+    Entity_Class = model.Country
+    uuid = data['id'].lower()
+    entity = query_by_uuid_(session, Entity_Class, uuid)
+    if not entity:
+        entity = Entity_Class()
+        entity.additional_id_ = uuid
+        entity.country_code = data.get('CountryCode')
+        entity.name = data.get('DisplayName')
+
+        entity.is_former_country__ = repr(data.get('IsFormerCountry'))
+        entity.is_noc__ = repr(data.get('IsNOC'))
+
+    return entity
+
 
 def wr_insert_competition(competition_data):
     session = Session()
@@ -93,11 +113,17 @@ def wr_insert_competition(competition_data):
     if not competition:
         competition = model.Competition()
     competition.additional_id_ = uuid
-    competition.name = competition_data.get('DisplayName')
     competition.competition_category = competition_category
     competition.venue = venue
+    competition.name = competition_data.get('DisplayName')
+    competition.start_date = dt.datetime.fromisoformat(competition_data['StartDate'])
+    competition.end_date = dt.datetime.fromisoformat(competition_data['EndDate'])
 
+    competition.competition_code__ = competition_data.get('CompetitionCode')
+    competition.is_fisa__ = competition_data.get('IsFisa')
 
+    # Events
+    # Insert 1:m https://stackoverflow.com/q/16433338
 
     session.add(competition)
     session.commit()
