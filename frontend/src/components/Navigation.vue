@@ -45,8 +45,8 @@ export default {
           link: "/teams",
         },
         {
-          displayName: "Medallienspiegel",
-          link: "/medallienspiegel",
+          displayName: "Medaillenspiegel",
+          link: "/medaillenspiegel",
         }
       ]
     };

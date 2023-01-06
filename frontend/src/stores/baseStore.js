@@ -39,28 +39,28 @@ export const useRennstrukturAnalyseState = defineStore({
                     "time [t]": "00:02:24,12",
                     "pace [t]": "00:02:24,12",
                     "rank": 2,
-                    "lag [s]": "00:00:03,12",
+                    "deficit [s]": "00:00:03,12",
                     "relDiffToAvgSpeed [%]": -1.3
                   },
                   "1000": {
                     "time [t]": "00:03:13,82",
                     "pace [t]": "00:01:50,72",
                     "rank": 1,
-                    "lag [s]": "00:00:00,00",
+                    "deficit [s]": "00:00:00,00",
                     "relDiffToAvgSpeed [%]": 4.3
                   },
                   "1500": {
                     "time [t]": "00:04:52,00",
                     "pace [t]": "00:01:50,72",
                     "rank": 1,
-                    "lag [s]": "00:00:00,00",
+                    "deficit [s]": "00:00:00,00",
                     "relDiffToAvgSpeed [%]": 2.3
                   },
                   "2000": {
                     "time [t]": "00:06:29,14",
                     "pace [t]": "00:01:50,72",
                     "rank": 1,
-                    "lag [s]": "00:00:00,00",
+                    "deficit [s]": "00:00:00,00",
                     "relDiffToAvgSpeed [%]": 1.3
                   }
                 },
@@ -105,7 +105,27 @@ export const useRennstrukturAnalyseState = defineStore({
                       "speed [m/s]": 4.9,
                       "stroke [1/min]": 32.0,
                       "propulsion [m/stroke]": 7.2
-                    }
+                    },
+                    "500": {
+                      "speed [m/s]": 3.9,
+                      "stroke [1/min]": 43.0,
+                      "propulsion [m/stroke]": 3.6
+                    },
+                    "1000": {
+                      "speed [m/s]": 5.9,
+                      "stroke [1/min]": 43.0,
+                      "propulsion [m/stroke]": 3.6
+                    },
+                    "1500": {
+                      "speed [m/s]": 5.9,
+                      "stroke [1/min]": 43.0,
+                      "propulsion [m/stroke]": 3.6
+                    },
+                    "2000": {
+                      "speed [m/s]": 5.9,
+                      "stroke [1/min]": 43.0,
+                      "propulsion [m/stroke]": 3.6
+                    },
                   }
                 }
 
@@ -130,31 +150,31 @@ export const useRennstrukturAnalyseState = defineStore({
                 ],
                 "intermediates": {
                   "500": {
-                    "time [t]": "00:02:24,12",
+                    "time [t]": "00:01:24,12",
                     "pace [t]": "00:02:24,12",
                     "rank": 2,
-                    "lag [s]": "00:00:03,12",
+                    "deficit [s]": "00:00:03,12",
                     "relDiffToAvgSpeed [%]": -1.3
                   },
                   "1000": {
                     "time [t]": "00:03:13,82",
                     "pace [t]": "00:01:50,72",
                     "rank": 1,
-                    "lag [s]": "00:00:00,00",
+                    "deficit [s]": "00:00:00,00",
                     "relDiffToAvgSpeed [%]": 4.3
                   },
                   "1500": {
                     "time [t]": "00:04:52,00",
                     "pace [t]": "00:01:50,72",
                     "rank": 1,
-                    "lag [s]": "00:00:00,00",
+                    "deficit [s]": "00:00:00,00",
                     "relDiffToAvgSpeed [%]": 2.3
                   },
                   "2000": {
                     "time [t]": "00:06:29,14",
                     "pace [t]": "00:01:50,72",
                     "rank": 1,
-                    "lag [s]": "00:00:00,00",
+                    "deficit [s]": "00:00:00,00",
                     "relDiffToAvgSpeed [%]": 1.3
                   }
                 },
@@ -199,7 +219,27 @@ export const useRennstrukturAnalyseState = defineStore({
                       "speed [m/s]": 4.9,
                       "stroke [1/min]": 37.0,
                       "propulsion [m/stroke]": 4.6
-                    }
+                    },
+                    "500": {
+                      "speed [m/s]": 5.9,
+                      "stroke [1/min]": 43.0,
+                      "propulsion [m/stroke]": 3.6
+                    },
+                    "1000": {
+                      "speed [m/s]": 5.9,
+                      "stroke [1/min]": 43.0,
+                      "propulsion [m/stroke]": 3.6
+                    },
+                    "1500": {
+                      "speed [m/s]": 5.9,
+                      "stroke [1/min]": 43.0,
+                      "propulsion [m/stroke]": 3.6
+                    },
+                    "2000": {
+                      "speed [m/s]": 5.9,
+                      "stroke [1/min]": 43.0,
+                      "propulsion [m/stroke]": 3.6
+                    },
                   }
                 }
               }
@@ -267,6 +307,69 @@ export const useRennstrukturAnalyseState = defineStore({
     getAnalysisData(state) {
       return state.data.analysis
     },
+    getCompetitionData(state) {
+      return state.data.raceData[0]
+    },
+    getOldTableData(state) {
+      return state.data.raceData[0].data
+    },
+    getTableData(state) {
+      const tableHead = ['Platz', 'Bahn', 'Nation', 'Mannschaft'];
+      const intermediateDistances = state.data.raceData[0].data[0].intermediates
+      for(const key in intermediateDistances) {
+        tableHead.push(key + "m", "Position")
+      }
+
+      const tableData = [];
+      tableData.push(tableHead);
+      state.data.raceData[0].data.forEach(dataObj => {
+        const rowData = [];
+        const athleteNames = [];
+        rowData.push(dataObj.rank, dataObj.lane, dataObj.nation_ioc);
+        for(const [key, athlete] of Object.entries(dataObj.athletes)) {
+          athleteNames.push(athlete.firstName.concat(" ", athlete.lastName))
+        }
+        const firstArray = [];
+        const secondArray = [];
+
+        const speedValues = [];
+        const strokeValues = [];
+        const propulsionValues = [];
+          
+        for(const [key, gpsData] of Object.entries(dataObj.gpsData)) {
+          for(const intermediateDistance in intermediateDistances) {
+            const objectKeys = Object.keys(gpsData);
+            if(objectKeys.includes(intermediateDistance)) {
+              speedValues.push(gpsData[intermediateDistance]["speed [m/s]"] + "[m/s]")
+              strokeValues.push(gpsData[intermediateDistance]["stroke [1/min]"] + "[1/min]")
+              propulsionValues.push(gpsData[intermediateDistance]["propulsion [m/stroke]"] + "[m/Vortrieb]")
+            }
+          }
+        }
+
+        rowData.push(athleteNames);
+        for(const [index,[key, intermediate]] of Object.entries(dataObj.intermediates).entries()) {
+          firstArray.push(intermediate["time [t]"], intermediate["pace [t]"], intermediate["deficit [s]"])
+          secondArray.push(["("+ intermediate["rank"] + ")", speedValues[index], strokeValues[index], propulsionValues[index]])
+        }
+
+        const chunkSize = 3;
+        const tempArray = [];
+        for (let i = 0; i < firstArray.length; i += chunkSize) {
+          tempArray.push(firstArray.slice(i, i + chunkSize));
+          
+        }
+        
+        tempArray.forEach((value, index) => {
+          rowData.push(value)
+          rowData.push(secondArray[index])
+        })
+          
+        tableData.push(rowData);
+      })
+
+      return tableData;
+    },
     getGPSChartData(state) {
       const chartDataKeys = ['speed [m/s]', 'stroke [1/min]', 'propulsion [m/stroke]'];
       return chartDataKeys.map(key => {
@@ -287,7 +390,7 @@ export const useRennstrukturAnalyseState = defineStore({
       })
     },
     getIntermediateChartData(state) {
-      const intermediateDataKeys = ["rank", "lag [s]"];
+      const intermediateDataKeys = ["rank", "deficit [s]"];
       return intermediateDataKeys.map(key => {
         const datasets = [];
         let colorIndex = 0;

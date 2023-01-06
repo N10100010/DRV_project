@@ -5,7 +5,7 @@ import Wettkampfresultate from "@/views/WettkampfresultateView.vue";
 import Rennstrukturanalyse from "@/views/Rennstrukturanalyse.vue";
 import AthletenView from "@/views/AthletenView.vue";
 import TeamsView from "@/views/TeamsView.vue";
-import MedallienspiegelView from "@/views/MedallienspiegelView.vue";
+import MedaillenspiegelView from "@/views/MedaillenspiegelView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -41,9 +41,9 @@ const router = createRouter({
       component: () => TeamsView
     },
     {
-      path: '/medallienspiegel',
-      name: 'medallienspiegel',
-      component: () => MedallienspiegelView
+      path: '/medaillenspiegel',
+      name: 'medaillenspiegel',
+      component: () => MedaillenspiegelView
     }
   ]
 })

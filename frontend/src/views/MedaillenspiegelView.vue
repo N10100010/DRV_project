@@ -1,5 +1,5 @@
 <template>
-  <h1>Medallienspiegel</h1>
+  <h1>Medaillenspiegel</h1>
   <v-divider></v-divider>
   <v-container class="pa-0 mt-8" style="min-height: 500px">
  <v-alert color="info" icon="$info" class="mt-8">
