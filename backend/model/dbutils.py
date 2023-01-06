@@ -25,14 +25,14 @@ def drop_all_tables():
     model.Base.metadata.drop_all(engine)
 
 
-def query_by_uuid_(session, entity_class, uuid):
+def query_by_uuid_(session, Entity_Class, uuid):
     """Helper function.
     If an entity with given uuid exists:
         returns ORM object linked to db
     If not existing:
         returns None
     """
-    statement = select(entity_class).where(entity_class.additional_id_ == uuid.lower())
+    statement = select(Entity_Class).where(Entity_Class.additional_id_ == uuid.lower())
     result_list = session.execute(statement).first()
 
     if result_list:
@@ -43,11 +43,11 @@ def query_by_uuid_(session, entity_class, uuid):
 
 def wr_insert_country(session, data):
     """Creates or queries entity with given data and returns entity object."""
-    entity_class = model.Country
+    Entity_Class = model.Country
     uuid = data['id']
-    entity = query_by_uuid_(session, entity_class, uuid)
+    entity = query_by_uuid_(session, Entity_Class, uuid)
     if not entity:
-        entity = entity_class()
+        entity = Entity_Class()
         entity.additional_id_ = uuid
         entity.country_code = data.get('CountryCode')
         entity.name = data.get('DisplayName')
