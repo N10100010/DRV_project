@@ -55,7 +55,7 @@ TODO:
         https://codeofmatt.com/please-dont-call-it-epoch-time/#:~:text=Unix%20timestamps%20are%20always%20based,without%20any%20leaps%20ever%20occurring.
 
     - Query ORM Examples: https://docs.sqlalchemy.org/en/14/orm/queryguide.html#select-statements
-
+        - Query case insensiive https://stackoverflow.com/a/47642360
 https://worldrowing.com/event/2022-world-rowing-cup-iii
 https://world-rowing-api.soticcloud.net/stats/api/race/?include=racePhase%2Cevent.competition.competitionType%2Cevent.competition.competitionType.competitionCategory%2Cevent.boatClass&filter%5Bevent.competitionId%5D=b56cf9a5-a7d3-4e64-9571-38218f39413b&sort%5Bdate%5D=asc
 """
