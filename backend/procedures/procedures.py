@@ -9,6 +9,7 @@
 import gzip
 import logging
 from pathlib import Path
+from datetime import datetime
 
 import sh  # shell - allows calling terminal-commands as python function. ATTENTION: THE PACKAGES HAVE TO BE INSTALLED!
 
@@ -21,27 +22,12 @@ DB_BACKUP_FOLDER_PATH = './../'
 DB_BACKUP_FILE_PATH = Path(DB_BACKUP_FOLDER_PATH) / DB_BACKUP_FILE_NAME
 
 
-def init():
-    # todo: make a wrapper that allows to do the below, in dependence of a year and put it in wr-api
-    # get all ids by not passing a year
-    ids = wr.get_competition_ids()
-    by_comp = wr.get_by_competition_id(comp_ids=ids, keys_of_interest='everything')
-    pdfs_result = wr.extract_pdf_urls(comp_ids=ids, results=True)
-    pdfs_race = wr.extract_pdf_urls(comp_ids=ids, results=False)
-
-    # retrieve data from pdfs
-
-
-def update():
-    pass
-
-
-def fetch_data(_update: bool = True):
+def fetch_data(initialize: bool = False):
     """
 
     """
     # TODO: create connection to the database
-    if _update:
+    if initialize:
         #  The update procedure shall be triggered.
         #  This means, we only have to get data newer than out last entry
         #  So, read from the db, get the highest date occurring and read from the endpoints respectively.
@@ -53,10 +39,24 @@ def fetch_data(_update: bool = True):
         #     - as a result, we get the data, including the race with the id 99. Since the id-field in the race table
         #       is used as a PK, we can add everything we received "mindlessly".
         #   --> if done correctly, we can do the above for every entity, without having to care to much
-        update()
+        logger.info("INITIALIZING - All data will be aggregated.\nAggregation in progress...")
+        # get all ids by not passing a year
+        ids = wr.get_competition_ids()
+
     else:
+        logger.info("UPDATING - All data will be aggregated.\nAggregation in progress...")
         # the initialization procedure shall be triggered.
-        init()
+        ids = wr.get_competition_ids(years=datetime.now().year)
+
+    # get the data for the ids created above
+    by_comp = wr.get_by_competition_id(comp_ids='718b3256-e778-4003-88e9-832c4aad0cc2', keys_of_interest='everything')
+
+    print()
+
+if __name__ == '__main__':
+    ### KEEP FOR TESTING
+
+    fetch_data()
 
 
 db_settings = {

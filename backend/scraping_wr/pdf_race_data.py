@@ -18,8 +18,8 @@ import itertools
 import pandas as pd
 from typing import Union
 
-from utils_general import write_to_json
-from utils_pdf import (handle_table_partitions, get_data_loc, print_stats,
+from backend.scraping_wr.utils_general import write_to_json
+from backend.scraping_wr.utils_pdf import (handle_table_partitions, get_data_loc, print_stats,
                        clean_df, get_string_loc, check_speed_stroke, reset_axis, clean_str)
 import logging
 
@@ -89,7 +89,7 @@ def read_race_data(df: pd.DataFrame) -> Union[dict, None]:
             "data": {
                 "dist [m]": dist,
                 # info for speed upper bound: highest occurring speed value in dataset was 9.8
-                "speed [m/s]": check_speed_stroke(speed_data, lb=0.01, ub=9.9),
+                "speed": check_speed_stroke(speed_data, lb=0.01, ub=9.9),
                 "stroke": check_speed_stroke(stroke_data, lb=10., ub=100.)
             }
         }
@@ -104,7 +104,7 @@ def exclude_empty_files(data: dict, limit: int = 5) -> dict:
     to a certain column tends to be inaccurate.
     """
     if data:
-        num_of_speed_values = [len(v["data"]["speed [m/s]"]) for v in data.values() if "data" in v]
+        num_of_speed_values = [len(v["data"]["speed"]) for v in data.values() if "data" in v]
         num_of_stroke_values = [len(v["data"]["stroke"]) for v in data.values() if "data" in v]
         more_than_limit_speeds = all(list(map(lambda x: x >= limit, num_of_speed_values)))
         more_than_limit_strokes = all(list(map(lambda x: x >= limit, num_of_stroke_values)))
@@ -117,7 +117,7 @@ def exclude_empty_files(data: dict, limit: int = 5) -> dict:
     return {}
 
 
-def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
+def extract_data_from_pdf_url(urls: list) -> tuple[list, list]:
     """
     Extracts data from given pdf urls using camelot-py
     -----------------------

@@ -12,13 +12,11 @@ Basic stats:
 
 import pandas as pd
 import itertools
-from tqdm import tqdm
 import camelot
 import re
 from typing import Union
-from utils_pdf import (clean, clean_df, get_string_loc, handle_table_partitions,
+from backend.scraping_wr.utils_pdf import (clean, clean_df, get_string_loc, handle_table_partitions,
                        clean_str, print_stats)
-from utils_general import write_to_json
 import logging
 
 logger = logging.getLogger(__name__)
@@ -144,7 +142,7 @@ def check_extracted_data(data: dict) -> dict:
     return data
 
 
-def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
+def extract_data_from_pdf_urls(urls: list) -> tuple[list, list]:
     """
     This function extracts relevant data from the result data pdfs.
     --------------
@@ -215,7 +213,7 @@ def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
 
 
 # extract data per year and write data and failed requests to respective json files
-final_extracted_data, final_failed_requests = [], []
+# final_extracted_data, final_failed_requests = [], []
 
 
 # for year in range(START_YEAR, END_YEAR):
