@@ -43,105 +43,58 @@ def query_by_uuid_(session, Entity_Class, uuid):
     return None
 
 
-def wr_insert_country(session, data):
-    """Creates or queries entity with given data and returns entity object."""
-    Entity_Class = model.Country
+def wr_insert(session, Entity_Class, map_func, data):
+    """Proxy function to fetch or create an entity.
+    Usage: wr_insert(session, model.Country, wr_map_country, data_dict)"""
     uuid = data['id'].lower()
     entity = query_by_uuid_(session, Entity_Class, uuid)
-    if not entity:
+    create_entity = entity == None
+
+    if create_entity:
         entity = Entity_Class()
         entity.additional_id_ = uuid
-        entity.country_code = data.get('CountryCode')
-        entity.name = data.get('DisplayName')
 
-        entity.is_former_country__ = repr(data.get('IsFormerCountry'))
-        entity.is_noc__ = repr(data.get('IsNOC'))
+    map_func(session, entity, data)
 
+    if create_entity:
         session.add(entity)
+
     return entity
 
 
-def wr_insert_boat_class(session, data):
-    """Creates or queries entity with given data and returns entity object."""
-    Entity_Class = model.Boat_Class
-    uuid = data['id'].lower()
-    
-    entity = query_by_uuid_(session, Entity_Class, uuid)
-    if not entity:
-        entity = Entity_Class()
-        entity.additional_id_ = uuid
-        entity.abbreviation = data.get('DisplayName')
-        # TODO: entity.name // full name not in API data
+def wr_map_country(session, entity, data):
+    entity.country_code = data.get('CountryCode')
+    entity.name = data.get('DisplayName')
 
-        session.add(entity)
-    return entity
+    entity.is_former_country__ = repr(data.get('IsFormerCountry'))
+    entity.is_noc__ = repr(data.get('IsNOC'))
 
 
-
-def wr_insert_gender(session, data):
-    """Creates or queries entity with given data and returns entity object."""
-    Entity_Class = model.Gender
-    uuid = data['id'].lower()
-    
-    entity = query_by_uuid_(session, Entity_Class, uuid)
-    if not entity:
-        entity = Entity_Class()
-        entity.additional_id_ = uuid
-        entity.name = data.get('DisplayName')
-
-        session.add(entity)
-    return entity
+def wr_map_boat_class(session, entity, data):
+    entity.abbreviation = data.get('DisplayName')
+    # TODO: entity.name // full name not in API data
 
 
-def wr_insert_event(session, data):
-    """Creates or queries entity with given data and returns entity object."""
-    Entity_Class = model.Event
-    uuid = data['id'].lower()
-    
-    entity = query_by_uuid_(session, Entity_Class, uuid)
-    if not entity:
-        entity = Entity_Class()
-        entity.additional_id_ = uuid
-        entity.name = data.get('DisplayName')
-        entity.boat_class = wr_insert_boat_class(session, data['boatClass'])
-        entity.gender = wr_insert_gender(session, data['gender'])
-        entity.rsc_code__ = data.get('RscCode')
-
-        session.add(entity)
-    return entity
+def wr_map_gender(session, entity, data):
+    entity.name = data.get('DisplayName')
 
 
-def wr_insert_competition_category(session, data):
-    """Creates or queries entity with given data and returns entity object."""
-    Entity_Class = model.Competition_Category
-    uuid = data['id'].lower()
-    
-    entity = query_by_uuid_(session, Entity_Class, uuid)
-    if not entity:
-        entity = Entity_Class()
-        entity.additional_id_ = uuid
-        entity.name = data.get('DisplayName')
-
-        session.add(entity)
-    return entity
+def wr_map_event(session, entity, data):
+    entity.name = data.get('DisplayName')
+    entity.boat_class = wr_insert(session, model.Boat_Class, wr_map_boat_class, data['boatClass'])
+    entity.gender = wr_insert(session, model.Gender, wr_map_gender, data['gender'])
+    entity.rsc_code__ = data.get('RscCode')
 
 
-def wr_insert_venue(session, data):
-    """Creates or queries entity with given data and returns entity object."""
-    Entity_Class = model.Venue
-    uuid = data['id'].lower()
-    
-    entity = query_by_uuid_(session, Entity_Class, uuid)
-    if not entity:
-        entity = Entity_Class()
-        entity.additional_id_ = uuid
-        entity.country = wr_insert_country(session, data['country'])
-        entity.city = data.get('RegionCity')
-        entity.site = data.get('Site')
-        entity.is_world_rowing_venue = data.get('IsWorldRowingVenue')
+def wr_map_competition_category(session, entity, data):
+    entity.name = data.get('DisplayName')
 
-        session.add(entity)
-    return entity
+
+def wr_map_venue(session, entity, data):
+    entity.country = wr_insert(session, model.Country, wr_map_country, data['country'])
+    entity.city = data.get('RegionCity')
+    entity.site = data.get('Site')
+    entity.is_world_rowing_venue = data.get('IsWorldRowingVenue')
 
 
 def wr_insert_competition(competition_data):
@@ -154,13 +107,15 @@ def wr_insert_competition(competition_data):
         competition = model.Competition()
 
     # Competition_Category
-    competition_category = wr_insert_competition_category(
+    competition_category = wr_insert(
         session,
+        model.Competition_Category,
+        wr_map_competition_category,
         competition_data['competitionType']['competitionCategory']
     )
 
     # Venue
-    venue = wr_insert_venue(session, competition_data['venue'])
+    venue = wr_insert(session, model.Venue, wr_map_venue, competition_data['venue'])
 
     competition.additional_id_ = uuid
     competition.competition_category = competition_category
@@ -174,7 +129,10 @@ def wr_insert_competition(competition_data):
 
     # Events
     # Insert 1:m https://stackoverflow.com/q/16433338
-    events = list(map(lambda i : wr_insert_event(session, i), competition_data['events']))
+    events = map(
+        lambda i : wr_insert(session, model.Event, wr_map_event, i),
+        competition_data['events']
+    )
     competition.events.extend(events)
 
     session.add(competition)
