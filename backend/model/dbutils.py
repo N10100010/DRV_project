@@ -57,61 +57,111 @@ def wr_insert_country(session, data):
         entity.is_former_country__ = repr(data.get('IsFormerCountry'))
         entity.is_noc__ = repr(data.get('IsNOC'))
 
+        session.add(entity)
+    return entity
+
+
+def wr_insert_boat_class(session, data):
+    """Creates or queries entity with given data and returns entity object."""
+    Entity_Class = model.Boat_Class
+    uuid = data['id'].lower()
+    
+    entity = query_by_uuid_(session, Entity_Class, uuid)
+    if not entity:
+        entity = Entity_Class()
+        entity.additional_id_ = uuid
+        entity.abbreviation = data.get('DisplayName')
+        # TODO: entity.name // full name not in API data
+
+        session.add(entity)
+    return entity
+
+
+
+def wr_insert_gender(session, data):
+    """Creates or queries entity with given data and returns entity object."""
+    Entity_Class = model.Gender
+    uuid = data['id'].lower()
+    
+    entity = query_by_uuid_(session, Entity_Class, uuid)
+    if not entity:
+        entity = Entity_Class()
+        entity.additional_id_ = uuid
+        entity.name = data.get('DisplayName')
+
+        session.add(entity)
     return entity
 
 
 def wr_insert_event(session, data):
     """Creates or queries entity with given data and returns entity object."""
-    Entity_Class = model.Country
+    Entity_Class = model.Event
     uuid = data['id'].lower()
+    
     entity = query_by_uuid_(session, Entity_Class, uuid)
     if not entity:
         entity = Entity_Class()
         entity.additional_id_ = uuid
-        entity.country_code = data.get('CountryCode')
+        entity.name = data.get('DisplayName')
+        entity.boat_class = wr_insert_boat_class(session, data['boatClass'])
+        entity.gender = wr_insert_gender(session, data['gender'])
+        entity.rsc_code__ = data.get('RscCode')
+
+        session.add(entity)
+    return entity
+
+
+def wr_insert_competition_category(session, data):
+    """Creates or queries entity with given data and returns entity object."""
+    Entity_Class = model.Competition_Category
+    uuid = data['id'].lower()
+    
+    entity = query_by_uuid_(session, Entity_Class, uuid)
+    if not entity:
+        entity = Entity_Class()
+        entity.additional_id_ = uuid
         entity.name = data.get('DisplayName')
 
-        entity.is_former_country__ = repr(data.get('IsFormerCountry'))
-        entity.is_noc__ = repr(data.get('IsNOC'))
+        session.add(entity)
+    return entity
 
+
+def wr_insert_venue(session, data):
+    """Creates or queries entity with given data and returns entity object."""
+    Entity_Class = model.Venue
+    uuid = data['id'].lower()
+    
+    entity = query_by_uuid_(session, Entity_Class, uuid)
+    if not entity:
+        entity = Entity_Class()
+        entity.additional_id_ = uuid
+        entity.country = wr_insert_country(session, data['country'])
+        entity.city = data.get('RegionCity')
+        entity.site = data.get('Site')
+        entity.is_world_rowing_venue = data.get('IsWorldRowingVenue')
+
+        session.add(entity)
     return entity
 
 
 def wr_insert_competition(competition_data):
     session = Session()
 
-    # Competition_Category
-    comp_cat = competition_data['competitionType']['competitionCategory']
-    uuid = comp_cat['id'].lower()
-
-    competition_category = query_by_uuid_(session, model.Competition_Category, uuid)
-    if not competition_category:
-        competition_category = model.Competition_Category()
-        competition_category.additional_id_ = uuid
-        competition_category.name = comp_cat.get('DisplayName')
-
-    # Country (Venue)
-    venue_country = wr_insert_country(session, competition_data['venue']['country'])
-
-    # Venue
-    venue_data = competition_data['venue']
-    uuid = venue_data['id'].lower()
-
-    venue = query_by_uuid_(session, model.Venue, uuid)
-    if not venue:
-        venue = model.Venue()
-        venue.additional_id_ = uuid
-        venue.country = venue_country
-        venue.city = venue_data.get('RegionCity')
-        venue.site = venue_data.get('Site')
-        venue.is_world_rowing_venue = venue_data.get('IsWorldRowingVenue')
-
-
     # Competition
     uuid = competition_data['id'].lower()
     competition = query_by_uuid_(session, model.Competition, uuid)
     if not competition:
         competition = model.Competition()
+
+    # Competition_Category
+    competition_category = wr_insert_competition_category(
+        session,
+        competition_data['competitionType']['competitionCategory']
+    )
+
+    # Venue
+    venue = wr_insert_venue(session, competition_data['venue'])
+
     competition.additional_id_ = uuid
     competition.competition_category = competition_category
     competition.venue = venue
@@ -124,6 +174,8 @@ def wr_insert_competition(competition_data):
 
     # Events
     # Insert 1:m https://stackoverflow.com/q/16433338
+    events = list(map(lambda i : wr_insert_event(session, i), competition_data['events']))
+    competition.events.extend(events)
 
     session.add(competition)
     session.commit()
