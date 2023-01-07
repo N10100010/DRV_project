@@ -160,7 +160,7 @@ class Boat_Class(Base):
     additional_id_ = Column(String, index=True, unique=True)
 
     abbreviation = Column(String, nullable=False)
-    name = Column(String)
+    # name = Column(String) # TODO: full name not in API data
 
     # relationships
     events = relationship("Event", back_populates="boat_class")
