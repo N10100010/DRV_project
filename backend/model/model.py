@@ -236,14 +236,14 @@ class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae
     phase = Column(String) # e.g. "FA", "H3", "SA/B1", etc...
 
     progression = Column(String) # e.g. "1-2->SA/B, 3..->R"
-    rsc_code__ = Column(String)
+    rsc_code = Column(String)
 
     pdf_url_results = Column(String)
     pdf_url_race_data = Column(String)
 
     # Meaning and importance not exactly clear
     race_nr__ = Column(String) # e.g. "103"
-    rescheduled__ = Column(Integer) # e.g. 0 # maybe map to bool?
+    rescheduled__ = Column(String) # e.g. 0 # maybe map to bool?
     rescheduled_from__ = Column(String) # low-prio TODO: Type unclear
     race_status__ = Column(String) # e.g. DisplayName "Official" id "182f6f15-8e78-41c3-95b3-8b006af2c6a1"
 
