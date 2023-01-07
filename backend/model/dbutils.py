@@ -79,11 +79,47 @@ def wr_map_gender(session, entity, data):
     entity.name = data.get('DisplayName')
 
 
+def wr_map_race_boat(session, entity, data):
+    pass
+
+
+def wr_map_race(session, entity, data):
+    entity.name = data.get('DisplayName')
+    entity.date = dt.datetime.fromisoformat(data['Date'])
+    entity.phase_type = data.get('racePhase', {}).get('DisplayName','').lower()
+    entity.phase = data.get('FB') # !!! TODO !!!
+    entity.progression = data.get('Progression')
+    entity.rsc_code = data.get('RscCode')
+
+    # TODO: PDF URLs from pdf parser output?
+    entity.pdf_url_results = "https://dummy.url/race_results.pdf"
+    entity.pdf_url_race_data = "https://dummy.url/race_data.pdf"
+
+    entity.race_nr__ = repr( data.get('RaceNr') )
+    entity.rescheduled__ = repr( data.get('Rescheduled') )
+    entity.rescheduled_from__ = repr( data.get('RescheduledFrom') )
+    entity.race_status__ = repr( data.get('raceStatus', {}).get('DisplayName') )
+
+    # Race Boats
+    race_boats = map(
+        lambda d : wr_insert(session, model.Race_Boat, wr_map_race_boat, d),
+        data.get('raceBoats', [])
+    )
+    entity.race_boats.extend(race_boats)
+
+
 def wr_map_event(session, entity, data):
     entity.name = data.get('DisplayName')
     entity.boat_class = wr_insert(session, model.Boat_Class, wr_map_boat_class, data['boatClass'])
     entity.gender = wr_insert(session, model.Gender, wr_map_gender, data['gender'])
     entity.rsc_code__ = data.get('RscCode')
+
+    # Races
+    races = map(
+        lambda d : wr_insert(session, model.Race, wr_map_race, d),
+        data.get('races', [])
+    )
+    entity.races.extend(races)
 
 
 def wr_map_competition_category(session, entity, data):
@@ -121,8 +157,8 @@ def wr_map_competition(session, entity, data):
     # Events
     # Insert 1:m https://stackoverflow.com/q/16433338
     events = map(
-        lambda i : wr_insert(session, model.Event, wr_map_event, i),
-        competition_data['events']
+        lambda d : wr_insert(session, model.Event, wr_map_event, d),
+        competition_data.get('events', [])
     )
     entity.events.extend(events)
 
