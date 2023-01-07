@@ -97,35 +97,26 @@ def wr_map_venue(session, entity, data):
     entity.is_world_rowing_venue = data.get('IsWorldRowingVenue')
 
 
-def wr_insert_competition(competition_data):
-    session = Session()
-
-    # Competition
-    uuid = competition_data['id'].lower()
-    competition = query_by_uuid_(session, model.Competition, uuid)
-    if not competition:
-        competition = model.Competition()
-
+def wr_map_competition(session, entity, data):
     # Competition_Category
     competition_category = wr_insert(
         session,
         model.Competition_Category,
         wr_map_competition_category,
-        competition_data['competitionType']['competitionCategory']
+        data['competitionType']['competitionCategory']
     )
 
     # Venue
-    venue = wr_insert(session, model.Venue, wr_map_venue, competition_data['venue'])
+    venue = wr_insert(session, model.Venue, wr_map_venue, data['venue'])
 
-    competition.additional_id_ = uuid
-    competition.competition_category = competition_category
-    competition.venue = venue
-    competition.name = competition_data.get('DisplayName')
-    competition.start_date = dt.datetime.fromisoformat(competition_data['StartDate'])
-    competition.end_date = dt.datetime.fromisoformat(competition_data['EndDate'])
+    entity.competition_category = competition_category
+    entity.venue = venue
+    entity.name = data.get('DisplayName')
+    entity.start_date = dt.datetime.fromisoformat(data['StartDate'])
+    entity.end_date = dt.datetime.fromisoformat(data['EndDate'])
 
-    competition.competition_code__ = competition_data.get('CompetitionCode')
-    competition.is_fisa__ = competition_data.get('IsFisa')
+    entity.competition_code__ = data.get('CompetitionCode')
+    entity.is_fisa__ = data.get('IsFisa')
 
     # Events
     # Insert 1:m https://stackoverflow.com/q/16433338
@@ -133,9 +124,14 @@ def wr_insert_competition(competition_data):
         lambda i : wr_insert(session, model.Event, wr_map_event, i),
         competition_data['events']
     )
-    competition.events.extend(events)
+    entity.events.extend(events)
 
-    session.add(competition)
+
+def wr_insert_competition(competition_data):
+    session = Session()
+
+    wr_insert(session, model.Competition, wr_map_competition, competition_data)
+
     session.commit()
     pass
 
