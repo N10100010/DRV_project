@@ -103,15 +103,39 @@ def wr_map_gender(session, entity, data):
     entity.name = data.get('DisplayName')
 
 
-def wr_map_race_boat(session, entity, data):
+def wr_map_athlete(session, entity, data):
     pass
 
+def wr_map_race_boat(session, entity, data):
+    entity.country = wr_insert(session, model.Country, wr_map_country, data['country'])
+    
+    # Athletes # TODO: Fix raceBoatAthlete.get('person', {}) => None
+    for raceBoatAthlete in data.get('raceBoatAthletes', []):
+        association = model.Association_Race_Boat_Athlete(boat_position=raceBoatAthlete.get('boatPosition'))
+        association.athlete = wr_insert(session, model.Athlete, wr_map_athlete, raceBoatAthlete.get('person', {}))
+        session.add(association)
+        
+        entity.athletes.append(association)
+
+    entity.name = data.get('DisplayName') # e.g. "GER2" for the second German boat
+    entity.result_time_ms = parse_timedelta_( data.get('ResultTime') ) if data.get('ResultTime') else None
+    
+    entity.lane = data.get('Lane')
+    entity.rank = data.get('Rank')
+    entity.final_rank = data.get('boat', {}).get('finalRank')
+    entity.final_rank_index__ = repr( data.get('boat', {}).get('finalRankIndex') )
+    
+    entity.remark__ = repr( data.get('Remark') )
+    entity.world_cup_points__ = data.get('WorldCupPoints')
+    entity.club_name__ = data.get('boat', {}).get('clubName')
+
+    # TODO: Race Data
 
 def wr_map_race(session, entity, data):
     entity.name = data.get('DisplayName')
     entity.date = dt.datetime.fromisoformat(data['Date'])
     entity.phase_type = data.get('racePhase', {}).get('DisplayName','').lower()
-    entity.phase = data.get('FB') # !!! TODO !!!
+    entity.phase = data.get('FB') # !!! TODO: Extract from RSC Code !!!
     entity.progression = data.get('Progression')
     entity.rsc_code = data.get('RscCode')
 
