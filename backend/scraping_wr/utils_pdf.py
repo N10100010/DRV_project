@@ -631,6 +631,17 @@ def split_column_at_string(df: pd.DataFrame, split_str: str = '\n'):
             new_cols = df[col].astype(str).str.split(split_str, expand=True)
         else:
             new_cols = df[col]
+
+        # Special Edge Case: If distance values are split across multiple columns due to linebreaks ignore file:
+        # affected files:
+        # https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/ECH_2010/ECH_2010_ROWMSCULL1------------HEAT000200--_MGPSX9133.pdf
+        # https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/JWCH_2010/JWCH_2010_ROWWNOCOX2--J---------HEAT000100--_MGPSX2279.pdf
+        if not isinstance(new_cols, pd.Series) and col == 0:
+            diffs = new_cols.apply(pd.to_numeric, errors="coerce").diff().mode().fillna(0).astype(int).astype(str)
+            cols_with_dist_values = diffs.columns[diffs.isin(DIST_INTERVALS).any()].tolist()
+            if len(cols_with_dist_values) > 1:
+                break
+
         # add columns to placeholder dataframe
         placeholder_df = pd.concat([placeholder_df, new_cols], axis=1)
 
