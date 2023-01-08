@@ -132,6 +132,7 @@ class Gender(Base):
 
 
 class Athlete(Base):
+    """Entity 'person' in World Rowing API"""
     __tablename__ = "athletes"
 
     id = Column(Integer, primary_key=True)
@@ -252,6 +253,13 @@ class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae
 
 
 class Race_Boat(Base):
+    '''
+    Boat vs RaceBoat
+    For each "Race" a "Boat" participates in, a "Race Boat" entity is created.
+    Thus, a "Boat" holds final rank, while "Race Boat" holds the rank of the assigned "Race".
+    In World Rowing API a "Boat" is assigned to an "Event".
+    ===> TODO: Consider to implement this in the database model.
+    '''
     __tablename__ = "race_boats"
 
     id = Column(Integer, primary_key=True)
