@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
 import datetime as dt
+import re
 
 # logging stuff
 import logging
@@ -13,6 +14,29 @@ logging.getLogger().setLevel(logging.INFO)
 # session / connection str
 engine = create_engine("postgresql+psycopg2://postgres:postgres@localhost:5432/rowing", echo=True)
 Session = sessionmaker(bind=engine)
+
+
+
+def parse_timedelta_(delta_str):
+    """returns int in milliseconds
+    
+    Input format examples:
+    '00:01:53.920'
+    '00:07:59.75'
+    """
+    regex = re.compile( r"^(\d\d+):(\d\d):(\d\d)\.(\d{1,3})$" )
+    result = regex.match(delta_str)
+
+    if result == None:
+        raise ValueError("Timedelta string does not match the format 'HH:MM:SS.mmm'")
+    
+    hours, minutes, seconds, milliseconds = result.group(1,2,3,4)
+
+    SECOND_IN_MILLIS = 1000
+    MINUTE_IN_MILLIS = 60 * SECOND_IN_MILLIS
+    HOUR_IN_MILLIS   = 60 * MINUTE_IN_MILLIS
+
+    return int(hours)*HOUR_IN_MILLIS + int(minutes)*MINUTE_IN_MILLIS + int(seconds)*SECOND_IN_MILLIS + int(milliseconds)
 
 
 def create_tables():
