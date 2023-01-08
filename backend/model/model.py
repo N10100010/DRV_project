@@ -6,8 +6,9 @@ from sqlalchemy import Column, ForeignKey, Integer, Float, String, Boolean, Date
 
 # logging stuff
 import logging
-logging.basicConfig()
-logging.getLogger().setLevel(logging.INFO)
+# logging.basicConfig()
+# logging.getLogger().setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
 
 # In-memory
 # engine = create_engine("sqlite:///:memory:", echo=True)
@@ -59,9 +60,12 @@ TODO:
 https://worldrowing.com/event/2022-world-rowing-cup-iii
 https://world-rowing-api.soticcloud.net/stats/api/race/?include=racePhase%2Cevent.competition.competitionType%2Cevent.competition.competitionType.competitionCategory%2Cevent.boatClass&filter%5Bevent.competitionId%5D=b56cf9a5-a7d3-4e64-9571-38218f39413b&sort%5Bdate%5D=asc
 
-    - Efficiency of relationship fields:
+    - Efficiency of relationship fields / lazy loading:
         - https://stackoverflow.com/q/34186225
         - https://docs.sqlalchemy.org/en/14/orm/loading_relationships.html
+
+    - Consider BigInteger for Primary Key for races / athletes
+        - Will it map to bigserial postgres type?
 """
 
 # Many-To-Many Association Tables
