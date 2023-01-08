@@ -1,16 +1,14 @@
 import logging
+import re
 from typing import Union, Optional, Iterator
 from datetime import datetime, date
 import json as jsn
 
-
-import numpy as np
 from tqdm import tqdm
 
 import backend.scraping_wr.utils_wr as ut_wr
 import backend.scraping_wr.pdf_race_data as pdf_race_data
 import backend.scraping_wr.pdf_result as pdf_result_data
-
 
 logger = logging.getLogger(__name__)
 
@@ -65,16 +63,15 @@ OLYMPIC_BOATCLASSES = [
 
 BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
     'men': {
-        'junior': {
+        'junior': {  # also called u19
             'single': ("JM1x", "Junior Men's Single Sculls"),
             'double': ("JM2x", "Junior Men's Double Sculls"),
             'quad': ("JM4x", "Junior Men's Quadruple Sculls"),
             'pair': ("JM2-", "Junior Men's Pair"),
             'coxed_four': ("JM4+", "Junior Men's Coxed Four"),
-            'four': ("JM4-", "Junior Men's Four") ,
+            'four': ("JM4-", "Junior Men's Four"),
             'eight': ("JM8-", "Junior Men's Eight")
         },
-        'u19': {},
         'u23': {
             'single': ("BM1x", "U23 Men's Single Sculls"),
             'double': ("BM2x", "U23 Men's Double Sculls"),
@@ -88,7 +85,7 @@ BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
             'lw_quad': ("BLM4x", "U23 Lightweight Men's Quadruple Sculls"),
             'lw_pair': ("BLM2-", "U23 Lightweight Men's Pair"),
         },
-        'adult': {
+        'elite': {
             'single': ("M1x", "Men's Single Sculls"),
             'double': ("M2x", "Men's Double Sculls"),
             'quad': ("M4x", "Men's Quadruple Sculls"),
@@ -107,16 +104,15 @@ BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
         }
     },
     'women': {
-        'junior': {
+        'junior': {  # also called u19
             'single': ("JW1x", "Junior Women's Single Sculls"),
             'double': ("JW2x", "Junior Women's Double Sculls"),
             'quad': ("JW4x", "Junior Women's Quadruple Sculls"),
             'pair': ("JW2-", "Junior Women's Pair"),
             'coxed_four': ("JW4+", "Junior Women's Coxed Four"),
-            'four': ("JW4-", "Junior Women's Four") ,
+            'four': ("JW4-", "Junior Women's Four"),
             'eight': ("JW8-", "Junior Women's Eight")
         },
-        'u19': {},
         'u23': {
             'single': ("BW1x", "U23 Women's Single Sculls"),
             'double': ("BW2x", "U23 Women's Double Sculls"),
@@ -130,7 +126,7 @@ BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
             'lw_quad': ("BLW4x", "U23 Lightweight Women's Quadruple Sculls"),
             'lw_pair': ("BLW2-", "U23 Lightweight Women's Pair"),
         },
-        'adult': {
+        'elite': {
             'single': ("W1x", "Women's Single Sculls"),
             'double': ("W2x", "Women's Double Sculls"),
             'quad': ("W4x", "Women's Quadruple Sculls"),
@@ -155,17 +151,51 @@ BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
     }
 }
 
-
+# what is this?
+## This constant provides...
+## - list of race-phase-names (the keys fo the dict)
+## - ids to the respective phases (e.g. RACE_PHASES['Test Race']['id'])
+## - processes rsc_code_snippets, that occured in the past, processes by the function 'process_rsc_code' in this file
+# todo: should we make the keys short forms? Or ar least all lower?
+# todo: needed: FA must be mapped to "potentially" to FNL0001000
+## the short version is found in the pdfs, top right
 RACE_PHASES = {
-    'Test Race': '92b34c4e-af58-4e91-8f4a-22c09984a006',
-    'RoundOf16': 'ef6a596d-7de4-4646-81a7-7dbeaf515cfd',
-    'Heat': 'cd3d5ca1-5aed-4146-b39b-a192ae6533f1',
-    'Final': 'e0fc3320-cd66-43af-a5b5-97afd55b2971',
-    'Preliminary': '92b34c4e-af58-4e91-8f4a-22c09984a006',
-    'Seeding': '6c281206-2291-41bc-b9cd-5ecd82b1638c',
-    'Repechage': '0959f5e8-f85a-40fb-93ab-b6c477f6aade',
-    'Semifinal': 'e6693585-d2cf-464c-9f8e-b2e531b26400',
-    'Quarterfinal': 'a0b6ffd8-92b8-427b-a667-ac2ff640031a'
+    'Test Race': {
+        'id': '92b34c4e-af58-4e91-8f4a-22c09984a006',
+        'rsc_code_snippets': []
+    },
+    'RoundOf16': {
+        'id': 'ef6a596d-7de4-4646-81a7-7dbeaf515cfd',
+        'rsc_code_snippets': ['8FNL000100']
+    },
+    'Heat': {
+        'id': 'cd3d5ca1-5aed-4146-b39b-a192ae6533f1',
+        'rsc_code_snippets': ['HEAT000100', 'HEAT0001RR', 'HEAT000200', 'HEAT000300', 'HEAT000400', 'HEAT000500', 'HEAT000600', 'HEAT000700', 'HEAT000800', 'RND2000100', 'RND2000200', 'RND2000300', 'RND2000400', 'RND2000500', 'RND2000600', 'RND3000100', 'RND3000200', 'RND3000300', 'RND3000400', 'RND3000500', 'RND3000600']
+    },
+    'Final': {
+        'id': 'e0fc3320-cd66-43af-a5b5-97afd55b2971',
+        'rsc_code_snippets': ['FNL000100', 'FNL0001RR', 'FNL000200', 'FNL000300', 'FNL000400', 'FNL000500', 'FNL000600', 'FNL000700', 'FNL000800']
+    },
+    'Preliminary': {
+        'id': '92b34c4e-af58-4e91-8f4a-22c09984a006',
+        'rsc_code_snippets': ['PREL000100', 'PREL000200']
+    },
+    'Seeding': {
+        'id': '6c281206-2291-41bc-b9cd-5ecd82b1638c',
+        'rsc_code_snippets': ['RND1000100', 'SEED000100', 'SEED000200', 'SEED000300']
+    },
+    'Repechage': {
+        'id': '0959f5e8-f85a-40fb-93ab-b6c477f6aade',
+        'rsc_code_snippets': ['REP000100', 'REP0001RR', 'REP000200', 'REP000300', 'REP000400', 'REP000500', 'REP000600', 'REP000700', 'REP000800', 'REP005100', 'REP005200', 'REP005300', 'REP005400', 'SFNL000100']
+    },
+    'Semifinal': {
+        'id': 'e6693585-d2cf-464c-9f8e-b2e531b26400',
+        'rsc_code_snippets': ['SFNL000100', 'SFNL000200', 'SFNL000300', 'SFNL000400', 'SFNL000500', 'SFNL000600', 'SFNL000700', 'SFNL000800']
+    },
+    'Quarterfinal': {
+        'id': 'a0b6ffd8-92b8-427b-a667-ac2ff640031a',
+        'rsc_code_snippets': ['QFNL000100', 'QFNL000200', 'QFNL000300', 'QFNL000400', 'QFNL000500', 'QFNL000600', 'QFNL000700', 'QFNL000800']
+    },
 }
 
 RACE_STATUSES = {
@@ -174,7 +204,23 @@ RACE_STATUSES = {
     'Scheduled': 'f89cc288-076b-4bb6-9776-96e66820e1b8',
     'Official': '182f6f15-8e78-41c3-95b3-8b006af2c6a1'
 }
+
+
 ########################################################################################################################
+
+##  other utils
+def process_rsc_code(code: str) -> tuple[str, str]:
+    """
+    Processes the RscCode of a race to extract the phase (Lauf) of the race.
+    @param code: str - total rcs code
+    @return: str - processed rsc code
+    """
+    processed = code.split('---')
+    boat_class = processed[0].strip('--')
+    phase = processed[-1].strip('--')
+    phase = "".join(re.split("[^0-9a-zA-Z*]", phase))
+
+    return boat_class, phase
 
 
 def save(data: dict, fn: str):
@@ -209,7 +255,22 @@ def _extract(nested: iter, successor_filter: str = None) -> list:
     return _l
 
 
-def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Union[str, list[str]], verbose: bool = False) -> dict:
+# def process_item(ret_val, keys_of_interest, item_id, pbar):
+#     everything = ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_COMPETITION + item_id + WR_INCLUDE_EVERYTHING)
+#     for koi in keys_of_interest:
+#         ret_val[koi].extend(
+#             _extract(
+#                 ut_wr.get_all(everything, koi)
+#             )
+#         )
+#
+#     pbar.update()
+#
+#     return ret_val
+
+
+def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Union[str, list[str]],
+                          verbose: bool = False) -> dict:
     """
     Get the entities of interest (passed by keys_of_interest) for the id's passed.
     @param verbose: if or if not verbose
@@ -276,6 +337,7 @@ def get_competition_ids(years: Optional[Union[list, int]] = None) -> list[str]:
     IF years is None aka not passed, the returned competition ids will be over the entire timeframe.
     @param years: list or int, filtering the result
     @return: list[str] - a list of strings containing the competition ids for the years contained in the years argument
+    TODO: if years change year to a range from x-1 to x+5
     """
     # current year + 5
     #  This is to make sure we get planned comps as well
@@ -284,7 +346,7 @@ def get_competition_ids(years: Optional[Union[list, int]] = None) -> list[str]:
         filter_strings = [ut_wr.build_filter_string({'year': years})]
     else:
         filter_strings = [ut_wr.build_filter_string({'year': y}) for y in
-                          np.arange(start=1900, stop=future_year, step=1)]
+                          range(start=1900, stop=future_year, step=1)]
 
     comp_ids = []
     for fs in filter_strings:
