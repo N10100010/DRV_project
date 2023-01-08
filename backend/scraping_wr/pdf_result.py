@@ -103,7 +103,7 @@ def get_country_code(df: pd.DataFrame, row: int) -> str:
     """
     country_df = df.iloc[row:row + 1, 0:df.shape[1] - 1]
     country_data = country_df.values.reshape(-1)
-    reg = r"(?<![A-Z])[A-Z]{3}(?![A-Z])(?!\s)"
+    reg = r"(?<![A-Z])[A-Z]{3}(?![A-Z])(?!\s)[1-9]?"
     country = list(itertools.chain(*[re.findall(reg, str(x)) for x in country_data]))
     return next(iter(clean_str(country, style="country")), None)
 
