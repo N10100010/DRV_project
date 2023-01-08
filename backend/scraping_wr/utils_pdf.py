@@ -542,7 +542,7 @@ def clean_str(str_list: list, style: str):
     type_dict = {
         "time": [r"\(.*?\)", r"[^0-9.:]"],
         "name": [r"[0-9.:]", r"\(.*?\)", r"[A-Z]{3}$", r"^\s[A-Z][a-z]+", r"^dna$", r"^\*$"],
-        "country": [r"\(.*?\)", r"[0-9]", r"[A-Z]{1,2}[a-z]+", r"[A-Z]{4,}"],
+        "country": [r"\(.*?\)", r"[A-Z]{1,2}[a-z]+", r"[A-Z]{4,}"], # r"[0-9]"
         "number": [r"\d+$", r"\D"],
         "dist": [r"\d*\.\d+", r"\n", r"[^0-9,]", r"\n.*"]
     }
@@ -556,8 +556,8 @@ def clean_str(str_list: list, style: str):
         final_list = list(map(int, final_list))
     if style == "country":
         # only include valid country codes
-        codes = '|'.join(COUNTRY_CODES.keys())
-        final_list = [country for country in final_list if str(country) in codes]
+        codes_regex = '^(' + '|'.join(COUNTRY_CODES.keys()) + ')\d?$'
+        final_list = [country for country in final_list if re.match(codes_regex, str(country))]
     if style == "name":
         # remove 0 and remaining whitespaces
         final_list = list(filter(lambda x: x not in [0, " "], final_list))

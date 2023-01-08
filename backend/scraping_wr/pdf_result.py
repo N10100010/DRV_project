@@ -28,9 +28,9 @@ logger = logging.getLogger(__name__)
 DISTS = ["250", "500", "750", "1000", "1500", "2000"]  # includes basic 500m interval and 250m para intervals
 SPECIAL_VALUES = ["dna", "DNA", "dns", "DNS", "dnf", "DNF", "BUW", "-"]  # special codes that imply missing values
 COMPETITION_LIMIT = 1000
-START_YEAR = 2017
-END_YEAR = 2018
-EVERY_NTH_DOCUMENT = 1
+START_YEAR = 2012
+END_YEAR = 2020
+EVERY_NTH_DOCUMENT = 34
 
 
 def get_athletes(df: pd.DataFrame, rows: list, i: int) -> list:
@@ -106,8 +106,10 @@ def get_country_code(df: pd.DataFrame, row: int) -> str:
     """
     country_df = df.iloc[row:row + 1, 0:df.shape[1] - 1]
     country_data = country_df.values.reshape(-1)
-    reg = r"(?<![A-Z])[A-Z]{3}(?![A-Z])(?!\s)"
+    reg = r"(?<![A-Z])[A-Z]{3}(?![A-Z])(?!\s)[1-9]?"
     country = list(itertools.chain(*[re.findall(reg, str(x)) for x in country_data]))
+
+
     return next(iter(clean_str(country, style="country")), None)
 
 
@@ -237,7 +239,7 @@ write_to_json(data=final_failed_requests, filename="result_data_failed")
 '''
 # Use this to test selected files
 pdf_urls = [
-    "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCH_2014/WCH_2014_ROWXSCULL2--TA--------FNL-000100--_C73X2402.pdf",
+    "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCp3_2016/WCP3_2016_ROWMSCULL1-L----------REP-000200--_C73X6647.pdf",
 ]
 pdf_data, failed_req = extract_table_data_from_pdf(urls=pdf_urls)
 write_to_json(data=pdf_data, filename="result_data")

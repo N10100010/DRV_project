@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 # constants
 COMPETITION_LIMIT = 1000  # max limit of world rowing API is 1000 in total --> not relevant for per year extraction
-EVERY_NTH_DOCUMENT = 1  # testwise extraction --> only consider every nth document
+EVERY_NTH_DOCUMENT = 25  # testwise extraction --> only consider every nth document
 START_YEAR = 2018
 END_YEAR = 2019
 # special codes for the country line, which could affect the detection --> list contains values that are excluded
@@ -182,6 +182,7 @@ def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
 # extract data per year and write data and failed requests to respective json files
 final_extracted_data, final_failed_requests = [], []
 
+
 for year in range(START_YEAR, END_YEAR):
     print(f"Start extraction for year: {year}")
     # get competition ids for current year
@@ -198,9 +199,10 @@ write_to_json(data=final_extracted_data, filename="race_data")
 write_to_json(data=final_failed_requests, filename="race_data_failed")
 
 '''
+
 # Use this to test selected files
 pdf_urls = [
-    "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCp3_2017_1/WCP3_2017_1_ROWMNOCOX4-L----------FNL-000100--_MGPSX3538.pdf"
+    "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCp2_2012/WCP2_2012_ROWWSCULL1------------HEAT000100--_MGPSX6687.pdf"
 ]
 race_data, failed_requests = extract_table_data_from_pdf(urls=pdf_urls)
 
