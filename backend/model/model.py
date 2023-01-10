@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy import Column, ForeignKey, Integer, Float, String, Boolean, Date, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, BigInteger, Float, String, Boolean, Date, DateTime, Enum
 
 import enum
 
@@ -148,7 +148,7 @@ class Athlete(Base):
     """Entity 'person' in World Rowing API"""
     __tablename__ = "athletes"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     additional_id_ = Column(String, index=True, unique=True)
 
     name = Column(String)
@@ -197,7 +197,7 @@ class Competition(Base):
     """https://world-rowing-api.soticcloud.net/stats/api/competition/718b3256-e778-4003-88e9-832c4aad0cc2?include=venue,competitionType"""
     __tablename__ = "competitions"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     additional_id_ = Column(String, index=True, unique=True)
 
     competition_category_id = Column(Integer, ForeignKey("competition_category.id"))
@@ -219,7 +219,7 @@ class Event(Base):
     """https://world-rowing-api.soticcloud.net/stats/api/event/05ad5e77-c337-4700-bd9b-a2e0fc7e5fc2?include=boatClass"""
     __tablename__ = "events"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     additional_id_ = Column(String, index=True, unique=True)
     name = Column(String)
 
@@ -239,7 +239,7 @@ class Event(Base):
 class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae369-8d05-4b8e-9a2e-7de5871715b7?include=racePhase%2CraceBoats.raceBoatAthletes.person%2CraceBoats.invalidMarkResultCode%2CraceBoats.raceBoatIntermediates.distance&sortInclude%5BraceBoats.raceBoatIntermediates.ResultTime%5D=asc
     __tablename__ = "races"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     additional_id_ = Column(String, index=True, unique=True)
     event_id = Column(Integer, ForeignKey("events.id"))
     event    = relationship("Event", back_populates="races")
@@ -275,7 +275,7 @@ class Race_Boat(Base):
     '''
     __tablename__ = "race_boats"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     additional_id_ = Column(String, index=True, unique=True)
     race_id = Column(Integer, ForeignKey("races.id"))
     race    = relationship("Race", back_populates="race_boats")
