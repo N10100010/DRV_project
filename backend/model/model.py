@@ -4,6 +4,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy import Column, ForeignKey, Integer, Float, String, Boolean, Date, DateTime
 
+import enum
+
 # logging stuff
 import logging
 # logging.basicConfig()
@@ -67,6 +69,13 @@ https://world-rowing-api.soticcloud.net/stats/api/race/?include=racePhase%2Ceven
     - Consider BigInteger for Primary Key for races / athletes
         - Will it map to bigserial postgres type?
 """
+
+# Enums
+# -----
+class Enum_Data_Source(enum.Enum):
+    world_rowing_api = 1
+    world_rowing_pdf = 2
+
 
 # Many-To-Many Association Tables
 # -------------------------------
@@ -303,6 +312,7 @@ class Race_Data(Base):
     race_boat_id = Column(Integer, ForeignKey("race_boats.id"), primary_key=True, autoincrement=False)
     race_boat    = relationship("Race_Boat", back_populates="race_data")
     distance_meter = Column(Integer, primary_key=True, autoincrement=False)
+    data_source = Column(Integer, primary_key=True, autoincrement=False) # Use Enum_Data_Source class
 
     # Data fields from JSON Web API aka "Intermediates"
     rank = Column(Integer)
