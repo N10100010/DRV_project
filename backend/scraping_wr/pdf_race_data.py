@@ -112,7 +112,7 @@ def read_race_data(df: pd.DataFrame) -> Union[dict, None]:
     return boat_data
 
 
-def exclude_empty_files(data: dict, limit: int = 5) -> dict:
+def exclude_empty_files(data: dict, limit: int = 5) -> list:
     """
     Excludes files that do not contain a specified limit of data values.
     Background: If there are only very few values, e.g. 2-3 per country, mapping the values
@@ -125,14 +125,15 @@ def exclude_empty_files(data: dict, limit: int = 5) -> dict:
         more_than_limit_strokes = all(list(map(lambda x: x >= limit, num_of_stroke_values)))
 
         if more_than_limit_speeds and more_than_limit_strokes:
-            return data
+            return [value for value in data.values()]
         else:
             logger.warning(f" Found less than {limit} GPS data values per country. Ignore file.")
-            return {}
-    return {}
+            return []
+
+    return [value for value in data.values()]
 
 
-def extract_data_from_pdf_url(urls: list) -> tuple[list, list]:
+def extract_data_from_pdf_url(urls: list) -> tuple[dict, list]:
     """
     Extracts data from given pdf urls using camelot-py
     -----------------------
@@ -143,7 +144,7 @@ def extract_data_from_pdf_url(urls: list) -> tuple[list, list]:
     * list with json objects (final structure needs to be discussed) for each team per race
     * list containing the urls of all failed requests
     """
-    data, failed_reqs, errors, empty_files = [], [], 0, 0
+    final_data, failed_reqs, errors, empty_files = {}, [], 0, 0
 
     for url in urls:
         try:
@@ -154,11 +155,11 @@ def extract_data_from_pdf_url(urls: list) -> tuple[list, list]:
             # extract relevant data and return dict
             data_dict = read_race_data(df=df)
             # exclude files that are below a specific limit of relevant data values
-            race_data_dict = exclude_empty_files(data=data_dict, limit=5)
+            race_data_list = exclude_empty_files(data=data_dict, limit=5)
 
-            if race_data_dict:
-                race_data_dict["url"] = url
-                data.append(race_data_dict)
+            if race_data_list:
+                final_data["url"] = url
+                final_data["data"] = race_data_list
                 logging.info(f"Extract of {url.split('/').pop()} successful.")
             else:
                 empty_files += 1
@@ -174,7 +175,7 @@ def extract_data_from_pdf_url(urls: list) -> tuple[list, list]:
     # extraction_rate = "{:.2f}".format(100-((errors/total if total else 0)*100))
     # print_stats(total=total, errors=errors, empties=empty_files, rate=extraction_rate)
 
-    return data, failed_reqs
+    return final_data, failed_reqs
 
 
 # extract data per year and write data and failed requests to respective json files
@@ -199,10 +200,9 @@ final_extracted_data, final_failed_requests = [], []
 '''
 # Use this to test selected files
 pdf_urls = [
-"https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/JWCH_2010/JWCH_2010_ROWWNOCOX2--J---------HEAT000100--_MGPSX2279.pdf",
+"https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCp2_2022_1/WCp2_2022_1_ROWWSCULL1-L----------FNL-000200--_C77X1113.PDF",
 ]
 race_data, failed_requests = extract_data_from_pdf_url(urls=pdf_urls)
-
 write_to_json(data=race_data, filename="race_data")
 write_to_json(data=failed_requests, filename="race_data_failed")
 '''
