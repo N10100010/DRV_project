@@ -68,9 +68,9 @@ import RennstrukturFilter from "@/components/filters/rennstrukturFilter.vue";
           </v-row>
         </v-container>
     <v-container v-if="displayResults" class="pa-0 mt-8" style="min-height: 500px">
-      <v-alert color="info" icon="$info" class="mt-8">
-        Hinweis: Platzhalter für Wettkmapfresultate Seite
-      </v-alert>
+
+      <p>{{tableData}}</p>
+
     </v-container>
   </v-container>
       </v-layout>
@@ -79,84 +79,73 @@ import RennstrukturFilter from "@/components/filters/rennstrukturFilter.vue";
 
 
 <script>
-import { useRennstrukturAnalyseState } from "@/stores/baseStore";
 import { mapState } from "pinia";
+import { useWettkampfresultateStore } from "@/stores/wettkampfresultateStore";
 
 export default {
   computed: {
-    ...mapState(useRennstrukturAnalyseState, {
+    ...mapState(useWettkampfresultateStore, {
       getAnalysis: "getAnalysisData"
     }),
-    ...mapState(useRennstrukturAnalyseState, {
+    ...mapState(useWettkampfresultateStore, {
       competitionData: 'getCompetitionData'
     }),
-    ...mapState(useRennstrukturAnalyseState, {
-      oldTableData: "getOldTableData"
-    }),
-    ...mapState(useRennstrukturAnalyseState, {
+    ...mapState(useWettkampfresultateStore, {
       tableData: "getTableData"
-    }),
-    ...mapState(useRennstrukturAnalyseState, {
-      getGPsData: "getGPSChartData"
-    }),
-    ...mapState(useRennstrukturAnalyseState, {
-      getIntermediateData: "getIntermediateChartData"
     })
   },
-  data() {
-    return {
-      drawer: true,
-      breadCrumbs: [],
-      displayResults: false,
-      displayCompetitions: true,
-      displayEvents: false,
-      displayRaces: false,
-      events: {},
-      races: {},
-    }
-  },
-
-
-
-  methods: {
-    getEvents(competition) {
-      this.events = competition
-      this.breadCrumbs.push({
-        title: 'Competition',
-        disabled: false,
-        href: '#',
-        onclick: () => {
-          this.displayCompetitions = true
-          this.displayResults = false
-          this.displayEvents = false
-          this.displayRaces = false
-          this.breadCrumbs.splice(0)
-        }
-      })
-      this.displayCompetitions = false
-      this.displayEvents = true
+    data() {
+      return {
+        drawer: true,
+        breadCrumbs: [],
+        displayResults: false,
+        displayCompetitions: true,
+        displayEvents: false,
+        displayRaces: false,
+        events: {},
+        races: {},
+      }
     },
-    getRaces(events) {
-      this.races = events
-      this.breadCrumbs.push({
-        title: 'Event',
-        disabled: false,
-        href: '#',
-        onclick: () => {
-          this.displayCompetitions = false
-          this.displayResults = false
-          this.displayEvents = true
-          this.displayRaces = false
-          this.breadCrumbs.splice(1)
-        }
-      })
-      this.displayEvents = false
-      this.displayRaces = true
-    },
-    loadRaceAnalysis(raceName) {
-      this.displayResults = true
-      this.breadCrumbs.push(raceName)
+    methods: {
+      getEvents(competition) {
+        this.events = competition
+        this.breadCrumbs.push({
+          title: 'Competition',
+          disabled: false,
+          href: '#',
+          onclick: () => {
+            this.displayCompetitions = true
+            this.displayResults = false
+            this.displayEvents = false
+            this.displayRaces = false
+            this.breadCrumbs.splice(0)
+          }
+        })
+        this.displayCompetitions = false
+        this.displayEvents = true
+      },
+      getRaces(events) {
+        this.races = events
+        this.breadCrumbs.push({
+          title: 'Event',
+          disabled: false,
+          href: '#',
+          onclick: () => {
+            this.displayCompetitions = false
+            this.displayResults = false
+            this.displayEvents = true
+            this.displayRaces = false
+            this.breadCrumbs.splice(1)
+          }
+        })
+        this.displayEvents = false
+        this.displayRaces = true
+      },
+      loadRaceAnalysis(raceName) {
+        this.displayResults = true
+        this.breadCrumbs.push(raceName)
+      }
     }
-  }
 }
+
 </script>
