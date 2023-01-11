@@ -127,6 +127,55 @@ def extract_table_data_from_pdf(urls: list) -> tuple[list, list]:
     Returns: tuple
     * list with json objects (final structure needs to be discussed) for each team per race
     * list containing the urls of all failed requests
+
+    TODO: The first list of the return values is supposed to look like the following example:
+        {
+          "url": "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCp2_2022_1/WCp2_2022_1_ROWWSCULL1-L----------FNL-000200--_C77X1113.PDF",
+          "data": [
+            {
+              "boat_name": "THA",
+              "rank": "2",
+              "data": {
+                "dist [m]": [
+                  50,
+                  100,
+                  150
+                ],
+                "speed [m/s]": [
+                  4.7,
+                  4.8,
+                  4.7
+                ],
+                "stroke": [
+                  43.0,
+                  41.0,
+                  39.0
+                ]
+              }
+            },
+            {
+              "boat_name": "GER",
+              "rank": "1",
+              "data": {
+                "dist [m]": [
+                  50,
+                  100,
+                  150
+                ],
+                "speed [m/s]": [
+                  4.7,
+                  4.8,
+                  4.7
+                ],
+                "stroke": [
+                  43.0,
+                  41.0,
+                  39.0
+                ]
+              }
+            }
+          ]
+        }
     """
     data, failed_reqs, errors, empty_files = [], [], 0, 0
 
