@@ -4,6 +4,22 @@ import { defineStore } from "pinia";
 export const useBerichteState = defineStore({
     id: "berichte",
     state: () => ({
+        filterOptions: [{
+            "year": [{"start_year": 1950}, {"end_year": 2025}],
+            "boat_class": [
+                {"displayName": "Men Single Sculls", "id": "98132421"},
+                {"displayName": "Women Single Sculls", "id": "92348234"},
+            ],
+            "competition_category_ids": [
+                {"displayName":  "Olympics", "id": "89346342"},
+                {"displayName":  "World Rowing Championships", "id": "89346362"},
+                {"displayName":  "Qualifications", "id": "89346362"},
+            ],
+            "runs": [{"displayName":  "FA", "id": "89346342"}],
+            "ranks": ["1", "2", "3", "4-6"],
+
+            "nation_ioc": "FRA"
+        }],
         data: [{
             "results": 872,
             "boat_class": "Men's Eight",
@@ -62,6 +78,9 @@ export const useBerichteState = defineStore({
         }]
     }),
     getters: {
+        getReportFilterOptions(state) {
+            return state.filterOptions
+        },
         getBarChartData(state) {
             return {
                 labels: state.data[0].plot_data.histogram.labels,
@@ -103,5 +122,15 @@ export const useBerichteState = defineStore({
                 ]
             }
         }
+    },
+    actions: {
+        async postFormData(formData) {
+      await axios.post('https://jsonplaceholder.typicode.com/users',{ formData })
+          .then(response => {
+            // Bearbeite die Antwort des Backends hier
+          }).catch(error => {
+            // Bearbeite den Fehler hier
+      });
+    }
     }
 })
