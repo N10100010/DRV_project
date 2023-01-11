@@ -22,10 +22,11 @@
       <v-select
         label="Bootsklassen"
         clearable
-        multiple
+        multiple chips
         :items="optionsBoatClasses"
         v-model="optionsBoatClasses"
         variant="underlined"
+        hide-details
       ></v-select>
       <v-label class="pt-2">Zeitraum</v-label>
       <v-container class="pa-0 d-flex">
@@ -36,6 +37,7 @@
             :items="optionsStartYear"
             variant="underlined"
             v-model="startYear"
+            hide-details
           ></v-select>
         </v-col>
         <v-col cols="6" class="pa-0">
@@ -45,6 +47,7 @@
             :items="optionsEndYear"
             v-model="endYear"
             variant="underlined"
+            hide-details
           ></v-select>
         </v-col>
       </v-container>
@@ -55,6 +58,7 @@
                 :items="optionsCompTypes"
                 v-model="optionsCompTypes"
                 variant="underlined"
+                hide-details
       ></v-select>
       <v-label class="pt-2">Lauf (optional)</v-label>
       <v-chip-group filter color="blue" multiple v-model="runTopLevel">
@@ -69,13 +73,15 @@
         clearable
         :items="auswahlLauf"
         variant="underlined"
+        hide-details
+        chips
       ></v-select>
       <v-label class="pt-2">Platzierung (optional)</v-label>
       <v-chip-group filter color="blue" multiple v-model="ranks">
         <v-chip v-for="rankName in ranksDisplayNames">{{rankName}}</v-chip>
       </v-chip-group>
 
-      <v-container class="pa-0 pt-6 text-right">
+      <v-container class="pa-0 pt-4 text-right">
         <v-btn color="grey" class="mx-2"><v-icon>mdi-backspace-outline</v-icon></v-btn>
         <v-btn color="blue" class="mx-2" type="submit" @click="setFilterState">Übernehmen</v-btn>
       </v-container>
