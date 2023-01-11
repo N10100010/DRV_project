@@ -10,7 +10,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
 
 <template>
    <v-btn color="blue"
-         @click="drawer = !drawer" v-show="!drawer"
+         @click="computedFilterOpen = setFilterState()" v-show="!computedFilterOpen"
          style="position: fixed; z-index: 10; left: 0; border-radius: 0"
          class="mt-8"
   >
@@ -19,7 +19,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
   <v-card style="box-shadow: none; z-index: 1">
       <v-layout>
         <v-navigation-drawer
-      v-model="drawer"
+      v-model="computedFilterOpen"
       temporary
       style="margin-top: 160px; background-color: white; border: none"
       width="500">
@@ -68,10 +68,23 @@ export default {
     ...mapState(useBerichteState, {
       getScatterChartData: "getScatterChartData"
     }),
+    ...mapState(useBerichteState, {
+      filterState: "getFilterState"
+    }),
+    computedFilterOpen(){
+      return this.filterState
+  }
+  },
+  methods: {
+    setFilterState() {
+      const store = useBerichteState()
+      store.setFilterState(this.filterState)
+      return this.filterState
+    }
   },
   data() {
     return {
-      drawer: false,
+      filterOpen: this.filterState,
       barChartOptions: {
         scales: {
           x: {

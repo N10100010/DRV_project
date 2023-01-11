@@ -13,11 +13,14 @@
       </v-chip-group>
       <v-label class="pt-2">Altersklasse</v-label>
       <v-chip-group filter color="blue" multiple v-model="ageGroups">
+
         <v-chip>Open</v-chip>
         <v-chip>U19</v-chip>
         <v-chip>U23</v-chip>
         <v-chip>Elite</v-chip>
         <v-chip>Para</v-chip>
+
+
       </v-chip-group>
       <v-select
         label="Bootsklassen"
@@ -77,7 +80,7 @@
 
       <v-container class="pa-0 pt-6 text-right">
         <v-btn color="grey" class="mx-2"><v-icon>mdi-backspace-outline</v-icon></v-btn>
-        <v-btn color="blue" class="mx-2" type="submit">Übernehmen</v-btn>
+        <v-btn color="blue" class="mx-2" type="submit" @click="setFilterState">Übernehmen</v-btn>
       </v-container>
 
     </v-form>
@@ -94,7 +97,9 @@ export default {
   components: {Checkbox},
   computed: {
     ...mapState(useBerichteState, {
-      reportFilterOptions: "getReportFilterOptions"})
+      reportFilterOptions: "getReportFilterOptions"}),
+    ...mapState(useBerichteState, {
+      showFilter: "getFilterState"}),
   },
   data() {
     return {
@@ -206,7 +211,7 @@ export default {
         "runs": runs,
         "ranks": ranks
       }).then(() => {
-        alert("Form data sent...")
+        console.log("Form data sent...")
       }).catch(error => {
         console.error(error)
       })
@@ -214,6 +219,10 @@ export default {
     checkScreen() {
       this.windowWidth = window.innerWidth
       this.mobile = this.windowWidth <= 769
+    },
+    setFilterState() {
+      const store = useBerichteState()
+      store.setFilterState(this.showFilter)
     }
   }
 }

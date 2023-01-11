@@ -4,6 +4,7 @@ import { defineStore } from "pinia";
 export const useBerichteState = defineStore({
     id: "berichte",
     state: () => ({
+        filterOpen: false,
         filterOptions: [{
             "year": [{"start_year": 1950}, {"end_year": 2025}],
             "boat_class": [
@@ -78,6 +79,9 @@ export const useBerichteState = defineStore({
         }]
     }),
     getters: {
+        getFilterState(state) {
+            return state.filterOpen
+        },
         getReportFilterOptions(state) {
             return state.filterOptions
         },
@@ -125,12 +129,16 @@ export const useBerichteState = defineStore({
     },
     actions: {
         async postFormData(formData) {
-      await axios.post('https://jsonplaceholder.typicode.com/users',{ formData })
-          .then(response => {
-            // Bearbeite die Antwort des Backends hier
-          }).catch(error => {
-            // Bearbeite den Fehler hier
-      });
-    }
+            await axios.post('https://jsonplaceholder.typicode.com/users',{ formData })
+                .then(response => {
+                    // Bearbeite die Antwort des Backends hier
+
+                }).catch(error => {
+                    // Bearbeite den Fehler hier
+                })
+        },
+        setFilterState(filterState) {
+            this.filterOpen = !filterState
+        }
     }
 })
