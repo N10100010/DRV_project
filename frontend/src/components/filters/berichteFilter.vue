@@ -1,8 +1,6 @@
 <template>
   <v-container>
   <h2>Filter</h2>
-
-    <p>{{boatClassTypes}}</p>
     <v-divider></v-divider>
 
     <v-form class="mt-2" id="berichteFilterFormular" @submit.prevent="onSubmit">
@@ -19,7 +17,6 @@
         <v-chip>U23</v-chip>
         <v-chip>Elite</v-chip>
         <v-chip>Para</v-chip>
-
 
       </v-chip-group>
       <v-select
