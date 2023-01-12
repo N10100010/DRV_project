@@ -3,8 +3,8 @@ import { defineStore } from "pinia";
 
 
 const COLORS = ['#1E90FF', '#EE7621', '#66CD00', '#CD0000', '#7A67EE', '#32ffff'];
-export const useRennstrukturAnalyseState = defineStore({
-  id: "base",
+export const useWettkampfresultateStore = defineStore({
+  id: "wettkampfresultate",
   state: () => ({
     data: {
       raceData: [ {
@@ -21,7 +21,7 @@ export const useRennstrukturAnalyseState = defineStore({
                 "lane": 2,
                 "rank": 1,
                 "run": "FB",
-                "progressionCode": "SA/B",
+                "progressionCode": "1-3SA/B 4..SC/D",
                 "athletes": [
                   {
                     "id": 98245435,
@@ -135,7 +135,7 @@ export const useRennstrukturAnalyseState = defineStore({
                 "lane": 3,
                 "rank": 2,
                 "run": "FB",
-                "progressionCode": "R",
+                "progressionCode": "1-3SA/B 4..SC/D",
                 "athletes": [
                   {
                     "id": 98245435,
@@ -335,7 +335,7 @@ export const useRennstrukturAnalyseState = defineStore({
         const speedValues = [];
         const strokeValues = [];
         const propulsionValues = [];
-          
+
         for(const [key, gpsData] of Object.entries(dataObj.gpsData)) {
           for(const intermediateDistance in intermediateDistances) {
             const objectKeys = Object.keys(gpsData);
@@ -357,14 +357,14 @@ export const useRennstrukturAnalyseState = defineStore({
         const tempArray = [];
         for (let i = 0; i < firstArray.length; i += chunkSize) {
           tempArray.push(firstArray.slice(i, i + chunkSize));
-          
+
         }
-        
+
         tempArray.forEach((value, index) => {
           rowData.push(value)
           rowData.push(secondArray[index])
         })
-        
+
         tableData.push(rowData);
       })
 
