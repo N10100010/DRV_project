@@ -4,6 +4,7 @@
     <v-divider></v-divider>
 
     <v-form class="mt-2" id="berichteFilterFormular" @submit.prevent="onSubmit">
+
       <v-label class="pt-2">Zeitraum</v-label>
       <v-container class="pa-0 d-flex">
         <v-col cols="6" class="pa-0">
@@ -37,16 +38,20 @@
       <v-chip-group filter color="blue" multiple v-model="selectedMedalTypes">
         <v-chip v-for="medalType in optionsMedalTypes">{{medalType}}</v-chip>
       </v-chip-group>
-
-      <v-autocomplete
-        :items="optionsNations"
-                v-model="selectedNation"
-         variant="underlined"
-         color="blue"
-        label="Nation"
+      <v-autocomplete :items="optionsNations" v-model="selectedNation"
+          variant="underlined" color="blue" label="Nation"
       ></v-autocomplete>
-
-
+      <v-label>Geschlecht</v-label>
+      <v-chip-group filter color="blue" v-model="selectedGenders">
+        <v-chip v-for="genderType in genderTypeOptions">{{genderType}}</v-chip>
+      </v-chip-group>
+      <v-label class="pt-2">Altersklasse</v-label>
+      <v-chip-group filter color="blue" v-model="selectedAgeGroups">
+        <v-chip v-for="ageGroup in ageGroupOptions">{{ageGroup}}</v-chip>
+      </v-chip-group>
+      <v-select label="Bootsklassen" clearable chips
+                :items="optionsBoatClasses" v-model="selectedBoatClasses" variant="underlined"
+      ></v-select>
 
       <v-container class="pa-0 pt-8 text-right">
         <v-btn color="grey" class="mx-2"><v-icon>mdi-backspace-outline</v-icon></v-btn>
@@ -94,7 +99,15 @@ export default {
 
       // nations
       optionsNations: [],
-      selectedNation: null
+      selectedNation: null,
+
+      // boat classes
+      genderTypeOptions: [],
+      selectedGenders: [0],
+      ageGroupOptions: [],
+      selectedAgeGroups: 0,
+      optionsBoatClasses: [],
+      selectedBoatClasses: this.optionsBoatClasses,
     }
   },
   created() {
@@ -122,6 +135,26 @@ export default {
       finalCountryNames.push(countryCode + " (" + countryNames[idx] + ")")
     }
     this.optionsNations = finalCountryNames
+
+    // boatclasses
+    this.genderTypeOptions = Object.keys(this.filterOptions[0].boat_class)
+    let ageGroupOptions = Object.keys(this.filterOptions[0].boat_class.men)
+    ageGroupOptions.push(...Object.keys(this.filterOptions[0].boat_class.women))
+    this.ageGroupOptions = ageGroupOptions.filter((v, i, a) => a.indexOf(v) === i); // exclude non-unique values
+
+    let boatClassOptions = []
+    let values = Object.values(this.filterOptions[0].boat_class)[0]
+    Object.entries(values).forEach(([key, value], index) => {
+          if (index === 0) {
+            Object.entries(value).forEach(([, val]) => {
+              if (typeof val === "object") {
+                boatClassOptions.push(Object.values(val)[0])
+              }
+            })
+          }
+      });
+    this.selectedBoatClasses = boatClassOptions[0]
+    this.optionsBoatClasses = boatClassOptions
   },
   methods: {
     onSubmit() {
@@ -133,10 +166,12 @@ export default {
       const competitionTypes = this.compTypes.filter(item => this.optionsCompTypes.includes(item.displayName)).map(item => item.id)
       const nationCode = this.selectedNation
       const medalTypes = this.selectedMedalTypes
+      const gender = this.selectedGenders
 
       // send data via pinia store action postFormData
       return store.postFormData({
         "years": [{"start_year": startYear}, {"end_year": endYear}],
+        "gender": gender,
         "competition_category_ids": competitionTypes,
         "nation_ioc": nationCode,
         "medal_types": medalTypes
