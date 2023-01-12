@@ -114,18 +114,18 @@
 
         <v-row>
           <v-col cols="12">
-            <h2>Tabellen</h2>
-              <v-table>
+              <v-table class="tableStyles">
                 <thead>
                   <tr>
                     <th v-for="tableHead in tableData[0]">{{ tableHead }}</th>
+                    <th>Prog.<br>Code</th>
                   </tr>
                 </thead>
                 <tbody class="nth-grey">
-                  <tr v-for="country in tableData.slice(1)">
+                  <tr v-for="country, idx in tableData.slice(1)">
                     <td v-for="item in country">
                       <template v-if="Array.isArray(item)">
-                        <p v-for="element in item" class="py-1"  style="font-size: 12px">
+                        <p v-for="element in item" class="py-1">
                           {{ element }}
                         </p>
                       </template>
@@ -134,6 +134,9 @@
                           {{ item }}
                         </p>
                       </template>
+                    </td>
+                    <td>
+                      {{ competitionData.data[idx].progressionCode }}
                     </td>
                   </tr>
                 </tbody>
@@ -377,7 +380,21 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss" scoped>
+.tableStyles {
+  border: 1px solid #e0e0e0;
+
+  th {
+    border: 1px solid #e0e0e0;
+    font-size: 14px !important;
+  }
+
+  td {
+    text-align: center;
+    border: 1px solid #e0e0e0;
+  }
+}
+
 .nth-grey tr:nth-of-type(odd) {
   background-color: rgba(0, 0, 0, .05);
 }
