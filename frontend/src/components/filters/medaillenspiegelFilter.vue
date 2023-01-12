@@ -38,13 +38,14 @@
         <v-chip v-for="medalType in optionsMedalTypes">{{medalType}}</v-chip>
       </v-chip-group>
 
-      <v-select
-                color="blue"
-                label="Nation"
-                :items="optionsNations"
+      <v-autocomplete
+        :items="optionsNations"
                 v-model="selectedNation"
-                variant="underlined"
-      ></v-select>
+         variant="underlined"
+         color="blue"
+        label="Nation"
+      ></v-autocomplete>
+
 
 
       <v-container class="pa-0 pt-8 text-right">
@@ -93,7 +94,7 @@ export default {
 
       // nations
       optionsNations: [],
-      selectedNation: 'Wähle Nation'
+      selectedNation: null
     }
   },
   created() {
@@ -105,7 +106,6 @@ export default {
     this.endYear = Object.values(this.filterOptions[0].year[1])[0]
     this.optionsStartYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
     this.optionsEndYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
-    // TODO: nice to have wäre ein check der jeweils nur die gültigen Auswahlmöglichkeiten anzeigt
 
     // competition category id
     this.compTypes = this.filterOptions[0].competition_category_ids
@@ -115,7 +115,13 @@ export default {
     this.optionsMedalTypes = this.filterOptions[0].medal_types.map(item => item.displayName)
 
     // nation_code
-    this.optionsNations = this.filterOptions[0].nations.map(item => item.displayName)
+    let countryCodes = Object.keys(this.filterOptions[0].nations)
+    let countryNames = Object.values(this.filterOptions[0].nations)
+    let finalCountryNames = []
+    for (const [idx, countryCode] of countryCodes.entries()) {
+      finalCountryNames.push(countryCode + " (" + countryNames[idx] + ")")
+    }
+    this.optionsNations = finalCountryNames
   },
   methods: {
     onSubmit() {
@@ -134,7 +140,6 @@ export default {
         "competition_category_ids": competitionTypes,
         "nation_ioc": nationCode,
         "medal_types": medalTypes
-
       }).then(() => {
         console.log("Form data sent...")
       }).catch(error => {

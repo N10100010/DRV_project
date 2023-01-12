@@ -22,7 +22,7 @@
   <v-container class="pa-0 mt-8">
     <v-row>
   <v-col cols="6">
-   <v-table class="elevation-1">
+   <v-table >
       <tbody>
         <tr v-for="header in headers" :key="header">
           <th>{{ header }}</th>
