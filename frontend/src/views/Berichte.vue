@@ -21,7 +21,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
         <v-navigation-drawer
           v-model="filterOpen"
           temporary
-          v-bind:style='{"margin-top" : (mobile? "71.25px" : "160px" )}'
+          v-bind:style='{"margin-top" : (mobile? "71.25px" : "158px" )}'
           style="background-color: white; border: none"
           width="600">
          <berichte-filter/>
@@ -97,7 +97,7 @@ export default {
   data() {
     return {
       mobile: false,
-      filterOpen: this.filterState,
+      filterOpen: false,
       barChartOptions: {
         scales: {
           x: {
@@ -162,6 +162,12 @@ export default {
   watch: {
     filterState(newValue) {
       this.filterOpen = newValue;
+    },
+    filterOpen: function (newVal, oldVal) {
+      if (oldVal === true && newVal === false && this.filterState === true) {
+        const store = useBerichteState()
+        store.setFilterState(oldVal)
+      }
     }
   }
 }
