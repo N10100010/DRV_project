@@ -62,22 +62,26 @@ export const useBerichteState = defineStore({
         }]
     }),
     getters: {
+        getTableData(state) {
+            return state.data[0]
+        },
+
         getBarChartData(state) {
             return {
                 labels: state.data[0].plot_data.histogram.labels,
                 datasets: [
-                    {
-                        type: 'bar',
-                        label: "Anzahl Rennen",
-                        backgroundColor: '#1E90FF',
-                        data: state.data[0].plot_data.histogram.data
-                    },
                     {
                         type: 'line',
                         label: 'Anzahl Rennen',
                         backgroundColor: "red",
                         borderColor: "red",
                         data: state.data[0].plot_data.histogram.data,
+                    },
+                    {
+                        type: 'bar',
+                        label: "Anzahl Rennen",
+                        backgroundColor: '#1E90FF',
+                        data: state.data[0].plot_data.histogram.data
                     }
                     ]
             }

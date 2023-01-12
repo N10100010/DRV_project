@@ -21,7 +21,7 @@ export const useRennstrukturAnalyseState = defineStore({
                 "lane": 2,
                 "rank": 1,
                 "run": "FB",
-                "progressionCode": "1-3SA/B 4..SC/D",
+                "progressionCode": "SA/B",
                 "athletes": [
                   {
                     "id": 98245435,
@@ -135,7 +135,7 @@ export const useRennstrukturAnalyseState = defineStore({
                 "lane": 3,
                 "rank": 2,
                 "run": "FB",
-                "progressionCode": "1-3SA/B 4..SC/D",
+                "progressionCode": "R",
                 "athletes": [
                   {
                     "id": 98245435,
@@ -364,7 +364,7 @@ export const useRennstrukturAnalyseState = defineStore({
           rowData.push(value)
           rowData.push(secondArray[index])
         })
-          
+        
         tableData.push(rowData);
       })
 
