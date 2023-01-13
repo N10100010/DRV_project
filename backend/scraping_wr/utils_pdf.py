@@ -183,7 +183,7 @@ COUNTRY_CODES = {
     "SAM": "Samoa",
     "SEN": "Senegal",
     "SEY": "Seychellen",
-    "SGP": "Singapur",
+    "SGP|SIN": "Singapur",  # also SIN could occur: http://www.rowing-memorabilia.de/index.php/ioc-country-codes
     "SKN": "St. Kitts und Nevis",
     "SLE": "Sierra Leone",
     "SLO": "Slowenien",
@@ -207,7 +207,7 @@ COUNTRY_CODES = {
     "TKM": "Turkmenistan",
     "TLS": "Osttimor",
     "TOG": "Togo",
-    "TPE": "Taiwan",
+    "TPE|ROC": "Taiwan",
     "TTO": "Trinidad und Tobago",
     "TUN": "Tunesien",
     "TUR": "Türkei",
@@ -224,7 +224,9 @@ COUNTRY_CODES = {
     "VIN": "St. Vincent und die Grenadinen",
     "YEM": "Jemen",
     "ZAM": "Sambia",
-    "ZIM": "Simbabwe"
+    "ZIM": "Simbabwe",
+    # the following codes are not defined
+    "RPC": None
 }
 # Constants for race_data pdfs
 DIST_INTERVALS = ["10", "25", "50"]
@@ -249,8 +251,8 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
 
 def print_stats(total: int, errors: int, empties: int, rate: str) -> None:
     """ Prints basic statistics for the pdf reading process. """
-    logger.debug("{txt:-^25}".format(txt=f"\nRead: {total - errors}/{total} PDFs | ({rate}%)"))
-    logger.debug("{txt:-^25}".format(txt=f" Empty Files: {empties} "))
+    logger.warning("{txt:-^25}".format(txt=f"\nRead: {total - errors}/{total} PDFs | ({rate}%)"))
+    logger.warning("{txt:-^25}".format(txt=f" Empty Files: {empties} "))
 
 
 def check_speed_stroke(df: pd.DataFrame, lb: float = 0.0, ub: float = float('inf')) -> list:
@@ -356,6 +358,13 @@ def get_string_loc(df: pd.DataFrame, *args: str, country: bool = False, rank: bo
     return locs
 
 
+def find_distance_column(df: pd.DataFrame) -> int:
+    differences = df.apply(pd.to_numeric, errors="coerce").diff().mode().fillna(0).astype(int).astype(str)
+    mask = [differences[col].str.contains("|".join(DIST_INTERVALS)) for col in differences]
+    dist_list = [el.name for el in mask if any(el)]
+    return int(dist_list[0]) if dist_list else 0
+
+
 def get_data_loc(df: pd.DataFrame, cust_str: str = '') -> tuple[int, int]:
     """ Find indices of race data (only speed and stroke in the table).
     --------------
@@ -366,11 +375,8 @@ def get_data_loc(df: pd.DataFrame, cust_str: str = '') -> tuple[int, int]:
     Returns:        tuple of row indices (start, end) of race data.
     """
     start, end = 0, 0
-    differences = df.apply(pd.to_numeric, errors="coerce").diff().mode().fillna(0).astype(int).astype(str)
-    mask = [differences[col].str.contains("|".join(DIST_INTERVALS)) for col in differences]
-    dist_list = [el.name for el in mask if any(el)]
-    distance_column = int(dist_list[0]) if dist_list else 0
 
+    distance_column = find_distance_column(df)
     first_column = df[distance_column].values.flatten().tolist()
     dists = [re.sub(r"\n.*", "", str(x)) for x in first_column]
 
@@ -410,11 +416,16 @@ def remove_empty_columns(df: pd.DataFrame, data_loc: str = "") -> pd.DataFrame:
     for col in df.columns:
         if set(df[col].iloc[data_start:data_row_len].values).issubset(["", None]):
             empty_cols.append(col)
-    # get groups of consecutive cols and copy values (especially country codes) to col to the left of the group
+    # get groups of consecutive cols
     for k, g in groupby(enumerate(empty_cols), lambda x: x[0] - x[1]):
         group = list(map(int, (map(itemgetter(1), g))))
-        new_cols = df.iloc[:, group[0]:group[-1] + 1]
-        if group[0] != 0:
+
+        # if there are two consecutive empty columns delete columns
+        if len(group) == 2:
+            df.drop(df.iloc[:, group[0]:group[-1]+1], axis=1)
+
+        elif not len(group) == 2 and group[0] != 0:
+            new_cols = df.iloc[:, group[0]:group[-1] + 1]
             df[group[0] - 1] = df[group[0] - 1].str.cat(new_cols, na_rep=" ")
     df = reset_axis(df.drop(empty_cols, axis=1), axes=[1])
     return df
@@ -437,7 +448,7 @@ def preprocess_raw_race_data_df(df: pd.DataFrame, nxt: int = 0):
     dist_col_idx = 1 if df_numeric[0].isnull().values.all() else 0
 
     # get distance interval, i.e. 10, 25 or 50
-    dist_interval = int(df_numeric[dist_col_idx].diff().mode()[0])
+    dist_interval = int(df_numeric[dist_col_idx].diff().mode().get(0, 0))
 
     # get index of last distance value and last distance value
     last_dist_idx = last_num_idx(df, col=dist_col_idx)
@@ -469,21 +480,15 @@ def handle_table_partitions(tables, results: bool = False):
     """
     df = pd.DataFrame()
     # store interval and previous table end to keep track of where to join the data frames
-    interval, table_end = 0, 0
+    interval, table_end, previous_table_end = 0, 0, 0
     # edge case check, only keep dataframes that contain relevant data
-    checked_dfs = []
-    for idx, tab in enumerate(tables):
-        checked_df = handle_edge_cases(tab.df, results=results)
-        if not checked_df.empty:
-            checked_dfs.append(checked_df)
-        # if consecutive dataframes contain the same data, only the last one is appended
-        elif idx > 0 and tables[idx].df.equals(tables[idx - 1].df):
-            checked_dfs.append(tables[idx].df)
-    # if no relevant data is extracted return empty dataframe
-    if not checked_dfs:
-        return df
 
-    raw_dataframes = [split_column_at_string(dataframe) for dataframe in checked_dfs]
+    raw_dataframes = [split_column_at_string(handle_edge_cases(table.df, results=results)) for table in tables
+                      if not handle_edge_cases(table.df, results=results).empty]
+
+    # if no relevant data is extracted return empty dataframe
+    if not raw_dataframes:
+        return df
 
     # loop over dataframes and apply merging logic
     for idx, data_frame in enumerate(raw_dataframes):
@@ -493,6 +498,7 @@ def handle_table_partitions(tables, results: bool = False):
                 pass  # result pdfs can just be appended
             else:  # race data pdfs have to be preprocessed
                 data_frame, table_end, interval = preprocess_raw_race_data_df(data_frame)
+                previous_table_end = table_end
             # append (sub)dataframe to main dataframe
             df = pd.concat([df, data_frame], ignore_index=True)
 
@@ -505,8 +511,11 @@ def handle_table_partitions(tables, results: bool = False):
                     rank_row = get_string_loc(data_frame, rank=True, column=0)["rank"]["row"]
                     data_frame = data_frame.iloc[rank_row:]
                 else:
+                    previous_table_end = table_end
                     next_start = table_end + interval
                     data_frame, table_end, interval = preprocess_raw_race_data_df(data_frame, nxt=next_start)
+                    if previous_table_end == table_end:
+                        data_frame = pd.DataFrame()
                 # append (sub)dataframe to main dataframe
                 df = pd.concat([df, data_frame], ignore_index=True)
     return df
@@ -532,7 +541,7 @@ def clean_str(str_list: list, style: str):
     type_dict = {
         "time": [r"\(.*?\)", r"[^0-9.:]"],
         "name": [r"[0-9.:]", r"\(.*?\)", r"[A-Z]{3}$", r"^\s[A-Z][a-z]+", r"^dna$", r"^\*$"],
-        "country": [r"\(.*?\)", r"[0-9]", r"[A-Z]{1,2}[a-z]+", r"[A-Z]{4,}"],
+        "country": [r"\(.*?\)", r"[A-Z]{1,2}[a-z]+", r"[A-Z]{4,}"],
         "number": [r"\d+$", r"\D"],
         "dist": [r"\d*\.\d+", r"\n", r"[^0-9,]", r"\n.*"]
     }
@@ -546,8 +555,8 @@ def clean_str(str_list: list, style: str):
         final_list = list(map(int, final_list))
     if style == "country":
         # only include valid country codes
-        codes = '|'.join(COUNTRY_CODES.keys())
-        final_list = [country for country in final_list if str(country) in codes]
+        codes_regex = '^(' + '|'.join(COUNTRY_CODES.keys()) + ')\d?$'
+        final_list = [country for country in final_list if re.match(codes_regex, str(country))]
     if style == "name":
         # remove 0 and remaining whitespaces
         final_list = list(filter(lambda x: x not in [0, " "], final_list))
@@ -600,8 +609,8 @@ def reset_axis(df: pd.DataFrame, axes: list) -> pd.DataFrame:
 
 def clean_df(df: pd.DataFrame):
     df.replace(r"^\s*$", np.nan, regex=True, inplace=True)
-    df = df.dropna(axis=1, how='all')
-    df = df.fillna(0)
+    df.dropna(axis=1, how='all', inplace=True)
+    df.fillna(0, inplace=True)
     df = reset_axis(df, axes=[0, 1])
     return df
 
@@ -622,6 +631,17 @@ def split_column_at_string(df: pd.DataFrame, split_str: str = '\n'):
             new_cols = df[col].astype(str).str.split(split_str, expand=True)
         else:
             new_cols = df[col]
+
+        # Special Edge Case: If distance values are split across multiple columns due to linebreaks ignore file:
+        # affected files:
+        # https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/ECH_2010/ECH_2010_ROWMSCULL1------------HEAT000200--_MGPSX9133.pdf
+        # https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/JWCH_2010/JWCH_2010_ROWWNOCOX2--J---------HEAT000100--_MGPSX2279.pdf
+        if not isinstance(new_cols, pd.Series) and col == 0:
+            diffs = new_cols.apply(pd.to_numeric, errors="coerce").diff().mode().fillna(0).astype(int).astype(str)
+            cols_with_dist_values = diffs.columns[diffs.isin(DIST_INTERVALS).any()].tolist()
+            if len(cols_with_dist_values) > 1:
+                break
+
         # add columns to placeholder dataframe
         placeholder_df = pd.concat([placeholder_df, new_cols], axis=1)
 

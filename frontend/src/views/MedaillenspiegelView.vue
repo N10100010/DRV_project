@@ -17,7 +17,7 @@
          <medaillenspiegel-filter/>
         </v-navigation-drawer>
   <v-container class="pa-10">
-  <h1>Medallienspiegel</h1>
+  <h1>Medaillenspiegel</h1>
   <v-divider></v-divider>
   <v-container class="pa-0 mt-8">
     <v-row>

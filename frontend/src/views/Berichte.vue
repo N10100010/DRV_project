@@ -33,9 +33,59 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
     <v-container class="pa-0 mt-8">
       <v-row>
         <v-col cols="12">
-          <v-container style="background-color: whitesmoke; min-height: 200px;">
-            <p>Placeholder for Table(s)</p>
-          </v-container>
+          <h2>{{ tableData.boat_class }}</h2>
+          <p>Von {{ tableData.start_date }} bis {{ tableData.end_date }}</p>
+          <p>{{ tableData.results }} Datensätze gefunden.</p>
+            <v-table class="tableStyles">
+              <tbody class="nth-grey">
+                <tr>
+                  <th>Weltbestzeit</th>
+                  <td>{{ tableData.world_best_time_boat_class }}</td>
+                </tr>
+                <tr>
+                  <th>Beste im Zeitraum</th>
+                  <td>{{ tableData.best_in_period }}</td>
+                </tr>
+                <tr>
+                  <th>Mittelwert</th>
+                  <td>
+                    <p>
+                      {{ tableData["mean"]["mm:ss,00"] }}<br>
+                      {{ tableData["mean"]["m/s"] }}[m/s]<br>
+                      {{ tableData["mean"]["pace 500m"] }}[500m]<br>
+                      {{ tableData["mean"]["pace 1000m"] }}[1000m]
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Standardabweichung</th>
+                  <td>{{ tableData.std_dev }}</td>
+                </tr>
+                <tr>
+                  <th>Median</th>
+                  <td>{{ tableData.median }}</td>
+                </tr>
+                <tr>
+                  <th></th><td style="font-style: italic;">Bedingungen</td>
+                </tr>
+                <tr>
+                  <th>Abstufung schnellste</th>
+                  <td>(n={{ tableData["gradation_fastest"]["no_of_samples"] }}) {{ tableData["gradation_fastest"]["time"] }}</td>
+                </tr>
+                <tr>
+                  <th>Abstufung mittel</th>
+                  <td>(n={{ tableData["gradation_medium"]["no_of_samples"] }}) {{ tableData["gradation_medium"]["time"] }}</td>
+                </tr>
+                <tr>
+                  <th>Abstufung langsam</th>
+                  <td>(n={{ tableData["gradation_slow"]["no_of_samples"] }}) {{ tableData["gradation_slow"]["time"] }}</td>
+                </tr>
+                <tr>
+                  <th>Abstufung langsamste</th>
+                  <td>(n={{ tableData["gradation_slowest"]["no_of_samples"] }}) {{ tableData["gradation_slowest"]["time"] }}</td>
+                </tr>
+              </tbody>
+            </v-table>
         </v-col>
         <v-col cols="12">
           <v-container>
@@ -62,6 +112,9 @@ import { useBerichteState } from "@/stores/berichteStore";
 
 export default {
   computed: {
+    ...mapState(useBerichteState, {
+      tableData: "getTableData"
+    }),
     ...mapState(useBerichteState, {
       getBarChartData: "getBarChartData"
     }),
@@ -172,3 +225,23 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.tableStyles {
+  border: 1px solid #e0e0e0;
+
+  th {
+    border: 1px solid #e0e0e0;
+    font-size: 14px !important;
+  }
+
+  td {
+  text-align: center;
+  border: 1px solid #e0e0e0;
+  }
+}
+
+.nth-grey tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, .05);
+}
+</style>
