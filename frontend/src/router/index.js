@@ -6,6 +6,8 @@ import Rennstrukturanalyse from "@/views/Rennstrukturanalyse.vue";
 import AthletenView from "@/views/AthletenView.vue";
 import TeamsView from "@/views/TeamsView.vue";
 import MedaillenspiegelView from "@/views/MedaillenspiegelView.vue";
+import DatenschutzView from "@/views/DatenschutzView.vue";
+import ImpressumView from "@/views/ImpressumView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -44,6 +46,16 @@ const router = createRouter({
       path: '/medaillenspiegel',
       name: 'medaillenspiegel',
       component: MedaillenspiegelView
+    },
+      {
+      path: '/datenschutz',
+      name: 'datenschutz',
+      component: DatenschutzView
+    },
+      {
+      path: '/impressum',
+      name: 'impressum',
+      component: ImpressumView
     }
   ]
 })

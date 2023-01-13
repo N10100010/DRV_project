@@ -1,8 +1,8 @@
 <template>
   <footer class="footer">
     <v-container>
-      <RouterLink to="/" style="color: white" class="pa-2">Impressum</RouterLink>
-      <RouterLink to="/" style="color: white" class="pa-2">Datenschutz</RouterLink>
+      <RouterLink to="/impressum" style="color: white" class="pa-2">Impressum</RouterLink>
+      <RouterLink to="/datenschutz" style="color: white" class="pa-2">Datenschutz</RouterLink>
     </v-container>
   </footer>
 </template>

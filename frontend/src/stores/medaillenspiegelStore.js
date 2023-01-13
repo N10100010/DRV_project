@@ -1,8 +1,8 @@
 import axios from "axios";
 import { defineStore } from "pinia";
 
-export const useBerichteState = defineStore({
-    id: "berichte",
+export const useMedaillenspiegelState = defineStore({
+    id: "medaillenspiegel",
     state: () => ({
         filterOpen: false,
         filterOptions: [{
@@ -103,27 +103,235 @@ export const useBerichteState = defineStore({
                 {"displayName":  "World Rowing Championships", "id": "89346362"},
                 {"displayName":  "Qualifications", "id": "89346362"},
             ],
-            "runs": {
-                "finale": [
-                    {"displayName": "fa"},
-                    {"displayName": "fb"},
-                    {"displayName": "fc"},
-                    {"displayName": "fd"},
-                    {"displayName": "f..."}
-                ],
-                "halbfinale": [
-                    {"displayName": "sa/b, sa/b/c"},
-                    {"displayName": "sc/d, sd/e/f"},
-                    {"displayName": "s..."}
-                ],
-                "viertelfinale": [
-                    {"displayName": "q1-4"},
-                ],
-                "hoffnungslaeufe": null,
-                "vorlaeufe": null,
-            },
+            "runs": [{"displayName":  "FA", "id": "89346342"}],
             "ranks": ["1", "2", "3", "4-6"],
+            "nations": {
+                "AFG": "Afghanistan",
+                "ALB": "Albanien",
+                "ALG": "Algerien",
+                "AND": "Andorra",
+                "ANG": "Angola",
+                "ANT": "Antigua und Barbuda",
+                "ARG": "Argentinien",
+                "ARM": "Armenien",
+                "ARU": "Aruba",
+                "ASA": "Amerikanisch Samoa",
+                "AUS": "Australien",
+                "AUT": "Österreich",
+                "AZE": "Aserbaidschan",
+                "BAH": "Bahamas",
+                "BAN": "Bangladesch",
+                "BAR": "Barbados",
+                "BDI": "Burundi",
+                "BEL": "Belgien",
+                "BEN": "Benin",
+                "BER": "Bermuda",
+                "BHU": "Bhutan",
+                "BIH": "Bosnien und Herzegowina",
+                "BIZ": "Belize",
+                "BLR": "Belarus",
+                "BOL": "Bolivien",
+                "BOT": "Botswana",
+                "BRA": "Brasilien",
+                "BRN": "Bahrain",
+                "BRU": "Brunei",
+                "BUL": "Bulgarien",
+                "BUR": "Burkina Faso",
+                "CAF": "Zentralafrikanische Republik",
+                "CAM": "Kambodscha",
+                "CAN": "Kanada",
+                "CAY": "Kaimaninseln",
+                "CGO": "Republik Kongo",
+                "CHA": "Tschad",
+                "CHI": "Chile",
+                "CHN": "China",
+                "CIV": "Elfenbeinküste",
+                "CMR": "Kamerun",
+                "COD": "Demokratische Republik Kongo",
+                "COK": "Cookinseln",
+                "COL": "Kolumbien",
+                "COM": "Komoren",
+                "CPV": "Kap Verde",
+                "CRC": "Costa Rica",
+                "CRO": "Kroatien",
+                "CUB": "Kuba",
+                "CYP": "Zypern",
+                "CZE": "Tschechien",
+                "DEN": "Dänemark",
+                "DJI": "Dschibuti",
+                "DMA": "Dominica",
+                "DOM": "Dominikanische Republik",
+                "ECU": "Ecuador",
+                "EGY": "Ägypten",
+                "ERI": "Eritrea",
+                "ESA": "El Salvador",
+                "ESP": "Spanien",
+                "EST": "Estland",
+                "ETH": "Äthiopien",
+                "FIJ": "Fidschi",
+                "FIN": "Finnland",
+                "FRA": "Frankreich",
+                "FSM": "Föderierte Staaten von Mikronesien",
+                "GAB": "Gabun",
+                "GAM": "Gambia",
+                "GBR": "Vereinigtes Königreich",
+                "GBS": "Guinea-Bissau",
+                "GEO": "Georgien",
+                "GEQ": "Äquatorialguinea",
+                "GER": "Deutschland",
+                "GHA": "Ghana",
+                "GRE": "Griechenland",
+                "GRN": "Grenada",
+                "GUA": "Guatemala",
+                "GUI": "Guinea",
+                "GUM": "Guam",
+                "GUY": "Guyana",
+                "HAI": "Haiti",
+                "HKG": "Hongkong",
+                "HON": "Honduras",
+                "HUN": "Ungarn",
+                "INA": "Indonesien",
+                "IND": "Indien",
+                "IRI": "Iran",
+                "IRL": "Irland",
+                "IRQ": "Irak",
+                "ISL": "Island",
+                "ISR": "Israel",
+                "ISV": "Jungferninseln (US)",
+                "ITA": "Italien",
+                "IVB": "Jungferninseln (UK)",
+                "JAM": "Jamaika",
+                "JOR": "Jordanien",
+                "JPN": "Japan",
+                "KAZ": "Kasachstan",
+                "KEN": "Kenia",
+                "KGZ": "Kirgisistan",
+                "KIR": "Kiribati",
+                "KOR": "Südkorea",
+                "KOS": "Kosovo",
+                "KSA": "Saudi-Arabien",
+                "KUW": "Kuwait",
+                "LAO": "Laos",
+                "LAT": "Lettland",
+                "LBA": "Libyen",
+                "LBN": "Libanon",
+                "LBR": "Liberia",
+                "LCA": "St. Lucia",
+                "LES": "Lesotho",
+                "LIE": "Liechtenstein",
+                "LTU": "Litauen",
+                "LUX": "Luxemburg",
+                "MAD": "Madagaskar",
+                "MAR": "Marokko",
+                "MAS": "Malaysia",
+                "MAW": "Malawi",
+                "MDA": "Moldawien",
+                "MDV": "Malediven",
+                "MEX": "Mexiko",
+                "MGL": "Mongolei",
+                "MHL": "Marshallinseln",
+                "MKD": "Nordmazedonien",
+                "MLI": "Mali",
+                "MLT": "Malta",
+                "MNE": "Montenegro",
+                "MON": "Fürstentum Monaco",
+                "MOZ": "Mosambik",
+                "MRI": "Mauritius",
+                "MTN": "Mauretanien",
+                "MYA": "Myanmar",
+                "NAM": "Namibia",
+                "NCA": "Nicaragua",
+                "NED": "Niederlande",
+                "NEP": "Nepal",
+                "NGR": "Nigeria",
+                "NIG": "Niger",
+                "NOR": "Norwegen",
+                "NRU": "Nauru",
+                "NZL": "Neuseeland",
+                "OMA": "Oman",
+                "PAK": "Pakistan",
+                "PAN": "Panama",
+                "PAR": "Paraguay",
+                "PER": "Peru",
+                "PHI": "Philippinen",
+                "PLE": "Palästina",
+                "PLW": "Palau",
+                "PNG": "Papua-Neuguinea",
+                "POL": "Polen",
+                "POR": "Portugal",
+                "PRK": "Nordkorea",
+                "PUR": "Puerto Rico",
+                "QAT": "Katar",
+                "ROU": "Rumänien",
+                "RSA": "Südafrika",
+                "RUS": "Russland",
+                "RWA": "Ruanda",
+                "SAM": "Samoa",
+                "SEN": "Senegal",
+                "SEY": "Seychellen",
+                "SGP": "Singapur", /* SIN */
+                "SKN": "St. Kitts und Nevis",
+                "SLE": "Sierra Leone",
+                "SLO": "Slowenien",
+                "SMR": "San Marino",
+                "SOL": "Salomonen",
+                "SOM": "Somalia",
+                "SRB": "Serbien",
+                "SRI": "Sri Lanka",
+                "STP": "São Tomé und Príncipe",
+                "SUD": "Sudan",
+                "SUI": "Schweiz",
+                "SUR": "Suriname",
+                "SVK": "Slowakei",
+                "SWE": "Schweden",
+                "SWZ": "Eswatini",
+                "SYR": "Syrien",
+                "TAN": "Tansania",
+                "TGA": "Tonga",
+                "THA": "Thailand",
+                "TJK": "Tadschikistan",
+                "TKM": "Turkmenistan",
+                "TLS": "Osttimor",
+                "TOG": "Togo",
+                "TPE": "Taiwan", /* ROC */
+                "TTO": "Trinidad und Tobago",
+                "TUN": "Tunesien",
+                "TUR": "Türkei",
+                "TUV": "Tuvalu",
+                "UAE": "Vereinigte Arabische Emirate",
+                "UGA": "Uganda",
+                "UKR": "Ukraine",
+                "URU": "Uruguay",
+                "USA": "Vereinigte Staaten von Amerika",
+                "UZB": "Usbekistan",
+                "VAN": "Vanuatu",
+                "VEN": "Venezuela",
+                "VIE": "Vietnam",
+                "VIN": "St. Vincent und die Grenadinen",
+                "YEM": "Jemen",
+                "ZAM": "Sambia",
+                "ZIM": "Simbabwe",
+                "RPC": null
+            }
+
+            /*
+            [
+                {"displayName": "DEU", "id": "98132421"},
+                {"displayName": "FRA", "id": "92348234"},
+                {"displayName": "GBR", "id": "92348236"}
+            ]
+             */
+            ,
+            "medal_types": [
+                {"displayName": "Gesamt", "id": "0"},
+                {"displayName": "Olympisch", "id": "1"},
+                {"displayName": "Nicht-Olympisch", "id": "2"},
+            ]
         }],
+        "medal_bar_chart_data": {
+            "labels": ["Gold", "Silber", "Bronze", "Gesamt"],
+            "data": [4, 5, 1, 10]
+        },
         data: [{
             "results": 872,
             "boat_class": "Men's Eight",
@@ -185,53 +393,22 @@ export const useBerichteState = defineStore({
         getFilterState(state) {
             return state.filterOpen
         },
-        getReportFilterOptions(state) {
+        getMedaillenspiegelFilterOptions(state) {
             return state.filterOptions
-        },
-        getTableData(state) {
-            return state.data[0]
         },
         getBarChartData(state) {
             return {
-                labels: state.data[0].plot_data.histogram.labels,
+                labels: state.medal_bar_chart_data.labels,
                 datasets: [
-                    {
-                        type: 'line',
-                        label: 'Anzahl Rennen',
-                        backgroundColor: "red",
-                        borderColor: "red",
-                        data: state.data[0].plot_data.histogram.data,
-                    },
                     {
                         type: 'bar',
-                        label: "Anzahl Rennen",
-                        backgroundColor: '#1E90FF',
-                        data: state.data[0].plot_data.histogram.data
-                    }
-                    ]
-            }
-        },
-        getScatterChartData(state) {
-            const plotData = [];
-            const scatterData = state.data[0].plot_data.scatterPlot;
-            for (let i = 0; i < scatterData.labels.length; i++) {
-                plotData.push({
-                    x: scatterData.labels[i],
-                    y: scatterData.data[i]
-                });
-            }
-            return {
-                datasets: [
-                    {
-                        type: 'scatter',
-                        label: 'Scatter Dataset',
-                        data: plotData,
-                        backgroundColor: '#1E90FF',
-                        borderColor: '#1E90FF'
-                    }
+                        label: "Medaillenübersicht",
+                        backgroundColor: '#64B5F6',
+                        data: state.medal_bar_chart_data.data
+                    },
                 ]
             }
-        }
+        },
     },
     actions: {
         async postFormData(formData) {
