@@ -11,11 +11,14 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
 <template>
    <v-btn color="blue"
          @click="setFilterState()" v-show="!filterOpen"
-         style="position: fixed; z-index: 10; left: 0; border-radius: 0"
-         class="mt-8"
+         style="position: fixed; z-index: 10; left: 0;
+         border-radius: 0; border-top-right-radius: 5px;
+          border-bottom-right-radius: 5px; height: 180px"
+         size="x-small"
+         class="mt-6 pa-0 ma-0 bg-light-blue"
   >
     <v-icon>mdi-filter</v-icon>
-  </v-btn>
+   </v-btn>
   <v-card style="box-shadow: none; z-index: 1">
       <v-layout>
         <v-navigation-drawer

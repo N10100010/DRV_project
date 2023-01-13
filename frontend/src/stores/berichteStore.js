@@ -96,7 +96,10 @@ export const useBerichteState = defineStore({
                     'double_2': {"PR2 Mix2x": "PR2 Mixed Double Sculls"},
                     'double_3': {"PR3 Mix2x": "PR3 Mixed Double Sculls"},
                     'four': {"PR3 Mix4+": "PR3 Mixed Coxed Four"},
-                }
+                },
+                'all': {
+                    'all': 'all'
+                },
             },
             "competition_category_ids": [
                 {"displayName":  "Olympics", "id": "89346342"},
