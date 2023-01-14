@@ -1,7 +1,6 @@
 from . import model
 
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import select
 
 import datetime as dt
 import re
@@ -11,10 +10,6 @@ from ..scraping_wr import utils_wr
 # logging stuff
 import logging
 logger = logging.getLogger(__name__)
-
-# session / connection str
-engine = create_engine("postgresql+psycopg2://postgres:postgres@localhost:5432/rowing", echo=True)
-Session = sessionmaker(bind=engine)
 
 
 def get_(data, key, default=None):
@@ -49,15 +44,12 @@ def parse_timedelta_(delta_str):
     return int(hours)*HOUR_IN_MILLIS + int(minutes)*MINUTE_IN_MILLIS + int(seconds)*SECOND_IN_MILLIS + int(milliseconds)
 
 
-def create_tables():
+def create_tables(engine):
     # create all tables (init) if they don't exist
     model.Base.metadata.create_all(engine, checkfirst=True)
 
-    # session = Session()
-    # session.commit()
 
-
-def drop_all_tables():
+def drop_all_tables(engine):
     model.Base.metadata.drop_all(engine)
 
 
@@ -226,11 +218,8 @@ def wr_map_competition(session, entity, data):
     entity.events.extend(events)
 
 
-def wr_insert_competition(competition_data):
-    session = Session()
-
+def wr_insert_competition(session, competition_data):
     wr_insert(session, model.Competition, wr_map_competition, competition_data)
-
     session.commit()
     pass
 
@@ -241,6 +230,10 @@ if __name__ == '__main__':
     from sys import exit as sysexit
     import json
 
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
+    # Command line interface (CLI)
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--create", help="Create tables if not yet existing", action="store_true")
     parser.add_argument("-d", "--drop", help="Drop all tables described by the schema defined in model.py", action="store_true")
@@ -248,18 +241,23 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(args)
 
+    # Database: session / connection str
+    engine = create_engine("postgresql+psycopg2://postgres:postgres@localhost:5432/rowing", echo=True)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
     if args.insert:
         print("Load JSON file:", args.insert)
         with open(args.insert, mode="r", encoding="utf-8") as fp:
             competition_data = json.load(fp)
 
-        wr_insert_competition(competition_data)
+        wr_insert_competition(session, competition_data)
         sysexit()
 
     if args.drop:
         print("----- Drop All Tables -----")
-        drop_all_tables()
+        drop_all_tables(engine)
 
     if args.create:
         print("----- Create Tables -----")
-        create_tables()
+        create_tables(engine)
