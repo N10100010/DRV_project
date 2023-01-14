@@ -13,6 +13,7 @@ from . import pdf_result as pdf_result_data
 
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 ########################################################################################################################
 # GLOBALS:
@@ -109,7 +110,44 @@ def select_pdf_(pdfUrls: list, title: str) -> Union[dict, None]:
 
     return None # or raise error?
 
-def get_by_competition_id_(comp_ids: Union[str, list[str]], keys_of_interest: Union[str, list[str]], verbose: bool = False, parse_pdf=True) -> dict:
+
+def merge_intermediates(race, race_data):
+    mappings = []
+    '''mappings is a list of tuples of the form (race_idx, extra_data_idx)
+    mappings = [ (1,0), (0,1) ]
+    '''
+
+    # TODO: Consider the case where raceBoats is empty but there is PDF data available
+    for race_boat_idx, race_boat in enumerate(race.get('raceBoats', [])):
+        for rd_idx, rd_item in race_data:
+            if rd_item.get('boat_name','').strip().upper() == race_boat.get('DisplayName','').strip().upper():
+                mappings.append( (race_boat_idx, rd_idx) )
+
+    # apply the mapping
+    for mapping in mappings:
+        race_idx, race_data_idx = mapping
+        race[race_idx]['pdf_parsed_intermediates'] = race_data[race_data_idx]
+
+
+def merge_race_data(race, race_data):
+    mappings = []
+    '''mappings is a list of tuples of the form (race_idx, extra_data_idx)
+    mappings = [ (1,0), (0,1) ]
+    '''
+
+    # TODO: Consider the case where raceBoats is empty but there is PDF data available
+    for race_boat_idx, race_boat in enumerate(race.get('raceBoats', [])):
+        for rd_idx, rd_item in race_data:
+            if rd_item.get('boat_name','').strip().upper() == race_boat.get('DisplayName','').strip().upper():
+                mappings.append( (race_boat_idx, rd_idx) )
+
+    # apply the mapping
+    for mapping in mappings:
+        race_idx, race_data_idx = mapping
+        race[race_idx]['pdf_parsed_race_data'] = race_data[race_data_idx]
+
+
+def get_by_competition_id_(comp_ids: Union[str, list[str]], verbose: bool = False, parse_pdf=False) -> dict:
     """
     Stripped down version of get_by_competition_id()
     """
@@ -126,32 +164,27 @@ def get_by_competition_id_(comp_ids: Union[str, list[str]], keys_of_interest: Un
             pdf_info_results = select_pdf_(race.get('pdfUrls', []), 'results')
 
             if parse_pdf and pdf_info_results:
-                logger.info(f"pdf_info_results {pdf_info_results.get('url')}")
-                # TODO
+                pdf_url = pdf_info_results.get('url')
+                logger.info(f"pdf_info_results {pdf_url}")
+                # trigger parsing
+                results_data = pdf_result_data.extract_table_data_from_pdf([pdf_url])[0]
+
+                # TODO: merge using merge_intermediates()
+
+                # write all at race level TODO: rem
+                race['raceIntermediates_'] = results_data
 
             if parse_pdf and pdf_info_race_data:
                 pdf_url = pdf_info_race_data.get('url')
                 logger.info(f"pdf_info_race_data {pdf_url}")
                 race_data = pdf_race_data.extract_table_data_from_pdf([pdf_url])[0]
+
+                # TODO: merge using merge_race_data()
+                # merge_race_data(race, race_data[0])
+
                 race['raceData_'] = race_data
 
             # print("race_data_pdf_info", race_data_pdf_info['url'])
-
-    """
-    # if race is in the koi's, we want to aggregate the data from the pdf
-    if 'races' in keys_of_interest:
-        races = []
-        for race in tqdm(ret_val['races']):
-            race['pdfUrls'] = extract_pdf_urls(race['pdfUrls'])
-
-            results_data = pdf_result_data.extract_table_data_from_pdf(race['pdfUrls']['results'])[0]
-            race_data = pdf_race_data.extract_table_data_from_pdf(race['pdfUrls']['race_data'])[0]
-            race['results_data'] = results_data
-            race['race_data'] = race_data
-            races.append(race)
-
-        ret_val['races'] = races
-    """
 
     return comp_data
 
