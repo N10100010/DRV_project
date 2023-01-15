@@ -313,14 +313,6 @@ export const useMedaillenspiegelState = defineStore({
                 "ZIM": "Simbabwe",
                 "RPC": null
             }
-
-            /*
-            [
-                {"displayName": "DEU", "id": "98132421"},
-                {"displayName": "FRA", "id": "92348234"},
-                {"displayName": "GBR", "id": "92348236"}
-            ]
-             */
             ,
             "medal_types": [
                 {"displayName": "Gesamt", "id": "0"},

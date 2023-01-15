@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container :style="{'height': mobile ? '135%' : '100%'}">
   <h2>Filter</h2>
     <v-divider></v-divider>
 
@@ -43,7 +43,7 @@
 
       <v-container class="pa-0 pt-4 text-right">
         <v-btn color="grey" class="mx-2" @click="clearFormInputs"><v-icon>mdi-backspace-outline</v-icon></v-btn>
-        <v-btn color="blue" class="mx-2" type="submit" @click="setFilterState">Übernehmen</v-btn>
+        <v-btn color="blue" class="mx-2" type="submit">Übernehmen</v-btn>
       </v-container>
 
     </v-form>
@@ -150,6 +150,8 @@ export default {
     onSubmit() {
       // define store
       const store = useBerichteState()
+      store.setFilterState(this.showFilter) // hide filter on submit
+
       // access form data
       const startYear = this.startYear
       const endYear = this.endYear
@@ -187,10 +189,6 @@ export default {
     checkScreen() {
       this.windowWidth = window.innerWidth
       this.mobile = this.windowWidth <= 769
-    },
-    setFilterState() {
-      const store = useBerichteState()
-      store.setFilterState(this.showFilter)
     }
   },
   watch: {

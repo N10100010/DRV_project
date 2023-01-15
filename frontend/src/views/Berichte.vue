@@ -4,12 +4,13 @@ import BarChart from "@/components/charts/BarChart.vue";
 import BerichteFilter from "@/components/filters/berichteFilter.vue";
 import 'chartjs-adapter-moment';
 import {Chart as ChartJS, LinearScale, PointElement, Tooltip, Legend, TimeScale} from "chart.js";
+
 ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
 
 </script>
 
 <template>
-   <v-btn color="blue"
+  <v-btn color="blue"
          @click="setFilterState()" v-show="!filterOpen"
          style="position: fixed; z-index: 10; left: 0;
          border-radius: 0; border-top-right-radius: 5px;
@@ -18,29 +19,29 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
          class="mt-6 pa-0 ma-0 bg-light-blue"
   >
     <v-icon>mdi-filter</v-icon>
-   </v-btn>
+  </v-btn>
   <v-card style="box-shadow: none; z-index: 1">
-      <v-layout>
-        <v-navigation-drawer
+    <v-layout>
+      <v-navigation-drawer
           v-model="filterOpen"
           temporary
           v-bind:style='{"margin-top" : (mobile? "71.25px" : "158px" )}'
           style="background-color: white; border: none"
           width="600">
-         <berichte-filter/>
-        </v-navigation-drawer>
+        <berichte-filter/>
+      </v-navigation-drawer>
 
-  <v-container class="pa-10">
-    <h1>Berichte</h1>
-    <v-divider></v-divider>
-    <v-container class="pa-0 mt-8">
-      <v-row>
-        <v-col cols="12">
-          <h2>{{ tableData.boat_class }}</h2>
-          <p>Von {{ tableData.start_date }} bis {{ tableData.end_date }}</p>
-          <p>{{ tableData.results }} Datensätze gefunden.</p>
-            <v-table class="tableStyles">
-              <tbody class="nth-grey">
+      <v-container class="pa-10">
+        <h1>Berichte</h1>
+        <v-divider></v-divider>
+        <v-container class="pa-0 mt-8">
+          <v-row>
+            <v-col cols="12">
+              <h2>{{ tableData.boat_class }}</h2>
+              <p>Von {{ tableData.start_date }} bis {{ tableData.end_date }}</p>
+              <p>{{ tableData.results }} Datensätze gefunden.</p>
+              <v-table class="tableStyles">
+                <tbody class="nth-grey">
                 <tr>
                   <th>Weltbestzeit</th>
                   <td>{{ tableData.world_best_time_boat_class }}</td>
@@ -69,49 +70,61 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                   <td>{{ tableData.median }}</td>
                 </tr>
                 <tr>
-                  <th></th><td style="font-style: italic;">Bedingungen</td>
+                  <th></th>
+                  <td style="font-style: italic;">Bedingungen</td>
                 </tr>
                 <tr>
                   <th>Abstufung schnellste</th>
-                  <td>(n={{ tableData["gradation_fastest"]["no_of_samples"] }}) {{ tableData["gradation_fastest"]["time"] }}</td>
+                  <td>(n={{ tableData["gradation_fastest"]["no_of_samples"] }})
+                    {{ tableData["gradation_fastest"]["time"] }}
+                  </td>
                 </tr>
                 <tr>
                   <th>Abstufung mittel</th>
-                  <td>(n={{ tableData["gradation_medium"]["no_of_samples"] }}) {{ tableData["gradation_medium"]["time"] }}</td>
+                  <td>(n={{ tableData["gradation_medium"]["no_of_samples"] }}) {{
+                      tableData["gradation_medium"]["time"]
+                    }}
+                  </td>
                 </tr>
                 <tr>
                   <th>Abstufung langsam</th>
-                  <td>(n={{ tableData["gradation_slow"]["no_of_samples"] }}) {{ tableData["gradation_slow"]["time"] }}</td>
+                  <td>(n={{ tableData["gradation_slow"]["no_of_samples"] }}) {{
+                      tableData["gradation_slow"]["time"]
+                    }}
+                  </td>
                 </tr>
                 <tr>
                   <th>Abstufung langsamste</th>
-                  <td>(n={{ tableData["gradation_slowest"]["no_of_samples"] }}) {{ tableData["gradation_slowest"]["time"] }}</td>
+                  <td>(n={{ tableData["gradation_slowest"]["no_of_samples"] }})
+                    {{ tableData["gradation_slowest"]["time"] }}
+                  </td>
                 </tr>
-              </tbody>
-            </v-table>
-        </v-col>
-        <v-col cols="12">
-          <v-container>
-            <BarChart :height="400" :data="getBarChartData" :chartOptions="barChartOptions"></BarChart>
-          </v-container>
-          <v-container>
-            <ScatterChart :height="400" :data="getScatterChartData" :chartOptions="scatterChartOptions"></ScatterChart>
-          </v-container>
-          <v-container>
-          </v-container>
-          <v-container>
-          </v-container>
-        </v-col>
-      </v-row>
-    </v-container>
-  </v-container>
-      </v-layout>
+                </tbody>
+              </v-table>
+            </v-col>
+            <v-col cols="12">
+              <v-container>
+                <BarChart :height="400" :data="getBarChartData" :chartOptions="barChartOptions"></BarChart>
+              </v-container>
+              <v-container>
+                <ScatterChart :height="400" :data="getScatterChartData"
+                              :chartOptions="scatterChartOptions"></ScatterChart>
+              </v-container>
+              <v-container>
+              </v-container>
+              <v-container>
+              </v-container>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-container>
+    </v-layout>
   </v-card>
 </template>
 
 <script>
-import { mapState } from "pinia";
-import { useBerichteState } from "@/stores/berichteStore";
+import {mapState} from "pinia";
+import {useBerichteState} from "@/stores/berichteStore";
 
 export default {
   computed: {
@@ -136,7 +149,7 @@ export default {
     },
     checkScreen() {
       this.windowWidth = window.innerWidth;
-      if(this.windowWidth <= 750){
+      if (this.windowWidth <= 750) {
         this.mobile = true;
         document.querySelector('body').style.paddingTop = '4.5em';
         return;
@@ -178,33 +191,33 @@ export default {
       },
       scatterChartOptions: {
         scales: {
-            x: {
-                type: 'time',
-                time: {
-                  unit: 'year',
-                  parser: 'yyyy-mm-dd'
-                },
-                title: {
-                display: true,
-                text: 'Jahr'
-              }
+          x: {
+            type: 'time',
+            time: {
+              unit: 'year',
+              parser: 'yyyy-mm-dd'
             },
-            y: {
-              type: 'time',
-              time: {
-                parser: 'HH:mm:ss',
-                    unit: "seconds",
-                    tooltipFormat: 'HH:mm:ss',
-                    displayFormats: {
-                        'seconds': "mm:ss"
-                    },
-                    unitStepSize: 30
-              },
-              title: {
-                display: true,
-                text: 'Zeit [mm:ss]'
-              }
+            title: {
+              display: true,
+              text: 'Jahr'
             }
+          },
+          y: {
+            type: 'time',
+            time: {
+              parser: 'HH:mm:ss',
+              unit: "seconds",
+              tooltipFormat: 'HH:mm:ss',
+              displayFormats: {
+                'seconds': "mm:ss"
+              },
+              unitStepSize: 30
+            },
+            title: {
+              display: true,
+              text: 'Zeit [mm:ss]'
+            }
+          }
         },
         plugins: {
           title: {
@@ -239,8 +252,8 @@ export default {
   }
 
   td {
-  text-align: center;
-  border: 1px solid #e0e0e0;
+    text-align: center;
+    border: 1px solid #e0e0e0;
   }
 }
 
