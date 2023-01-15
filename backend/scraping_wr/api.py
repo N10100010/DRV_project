@@ -111,6 +111,10 @@ def select_pdf_(pdfUrls: list, title: str) -> Union[dict, None]:
     return None # or raise error?
 
 
+
+# Following functions are kinde of deprecated:
+# PDF-Scrape, Parsing and Merge will be implemented in a second pass (aka background/cron process)
+"""
 def merge_intermediates(race, race_data):
     mappings = []
     '''mappings is a list of tuples of the form (race_idx, extra_data_idx)
@@ -145,7 +149,7 @@ def merge_race_data(race, race_data):
     for mapping in mappings:
         race_idx, race_data_idx = mapping
         race[race_idx]['pdf_parsed_race_data'] = race_data[race_data_idx]
-
+"""
 
 def get_by_competition_id_(comp_ids: Union[str, list[str]], verbose: bool = False, parse_pdf=False) -> dict:
     """
