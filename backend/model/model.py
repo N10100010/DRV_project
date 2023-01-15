@@ -275,6 +275,13 @@ class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae
     race_boats = relationship("Race_Boat", back_populates="race")
 
 
+class Invalid_Mark_Result_Code(Base):
+    __tablename__ = "invalid_mark_result_codes"
+    
+    id = Column(String, primary_key=True)
+    name = Column(String)
+
+
 class Race_Boat(Base):
     '''
     Boat vs RaceBoat
@@ -297,12 +304,16 @@ class Race_Boat(Base):
 
     name = Column(String) # e.g. "GER2" for one of the German boats
 
-    result_time_ms = Column(Integer) # milliseconds as Integer
+    # Result time for this race. It should be null, if the race was invalid for this boat.
+    result_time_ms = Column(Integer, nullable=True) # milliseconds as Integer
+
+    # If race was invalid, this field should provide the reason.
+    # E.g. "DNS" Did not start; "BUW" Boat under weight, etc.
+    invalid_mark_result_code_id = Column(String, ForeignKey("invalid_mark_result_codes.id"))
+    invalid_mark_result_code    = relationship("Invalid_Mark_Result_Code")
 
     lane = Column(Integer) # e.g. 1
     rank = Column(Integer) # e.g. 2
-    final_rank = Column(Integer) # e.g. 8
-    final_rank_index__ = Column(String) # TODO: Meaning, Importance, Type?
 
     # TODO: Meaning, importance and/or type unclear
     remark__ = Column(String)
@@ -313,16 +324,40 @@ class Race_Boat(Base):
     # relationships
     race_data = relationship("Race_Data", back_populates="race_boat")
 
+    # TODO:
+    #     (+) invalidMarkResultCode => DNS, DNF, BUW, etc (Foreign Key? or second fiel for long name?)
+    #     (+) result_time (null in case of invalidMarkResultCode != null)
+    #           ===> Alternatively, Put it in Intermediates with a bool field marking it "finish_time";
+    #                Since the other approach is kind of denormalized.
 
 class Race_Data(Base):
     __tablename__ = "race_data"
 
-    # TODO: Unique: (boat_id && distance_meter) # https://stackoverflow.com/q/10059345
     # Multi Column Primary Key: https://stackoverflow.com/a/9036128
     race_boat_id = Column(Integer, ForeignKey("race_boats.id"), primary_key=True, autoincrement=False)
     race_boat    = relationship("Race_Boat", back_populates="race_data")
     distance_meter = Column(Integer, primary_key=True, autoincrement=False)
-    data_source = Column(Integer, primary_key=True, autoincrement=False) # Use Enum_Data_Source class
+
+    data_source_ = Column(Integer) # Use Enum_Data_Source class
+
+    # Data fields from race data PDFs
+    speed_meter_per_sec = Column(Float)
+    stroke = Column(Float)
+
+
+class Intermediate_Time(Base):
+    __tablename__ = "race_data"
+
+    # Multi Column Primary Key: https://stackoverflow.com/a/9036128
+    race_boat_id = Column(Integer, ForeignKey("race_boats.id"), primary_key=True, autoincrement=False)
+    race_boat    = relationship("Race_Boat", back_populates="race_data")
+    distance_meter = Column(Integer, primary_key=True, autoincrement=False)
+
+    data_source_ = Column(Integer) # Use Enum_Data_Source class
+
+    # E.g. "DNS" Did not start; "BUW" Boat under weight, etc.
+    invalid_mark_result_code_id = Column(String, ForeignKey("invalid_mark_result_codes.id"))
+    invalid_mark_result_code    = relationship("Invalid_Mark_Result_Code")
 
     # Data fields from JSON Web API aka "Intermediates"
     rank = Column(Integer)
@@ -330,9 +365,7 @@ class Race_Data(Base):
     difference__ = Column(String)
     start_position__ = Column(String)
 
-    # Data fields from race data PDFs
-    speed_meter_per_sec = Column(Float)
-    stroke = Column(Float)
+    # TODO: (+) invalidMarkResultCode => DNS, DNF, BUW, etc (Foreign Key? or second fiel for long name?)
 
 
 #----------------------------------------------------------------------
