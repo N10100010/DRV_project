@@ -5,7 +5,8 @@ from sqlalchemy import select
 import datetime as dt
 import re
 
-from ..scraping_wr import utils_wr
+# from ..scraping_wr import utils_wr
+# from ..scraping_wr import api
 
 # logging stuff
 import logging
@@ -22,26 +23,52 @@ def get_(data, key, default=None):
     return data.get(key, default)
 
 
-def parse_timedelta_(delta_str):
-    """returns int in milliseconds
+class Timedelta_Parser:
+    regex = re.compile( r"^(((\d*):)?((\d*):)?(\d*))(\.(\d*))?$" )
     
-    Input format examples:
-    '00:01:53.920'
-    '00:07:59.75'
-    """
-    regex = re.compile( r"^(\d+):(\d+):(\d+)\.(\d+)$" )
-    result = regex.match(delta_str)
-
-    if result == None:
-        raise ValueError("Timedelta string does not match the format 'HH:MM:SS.mmm'")
+    def int_(s):
+        is_digit_str = isinstance(s, str) and s.isdigit()
+        is_int = isinstance(s, int)
+        if is_digit_str or is_int:
+            return int(s)
+        return 0
     
-    hours, minutes, seconds, milliseconds = result.group(1,2,3,4)
+    def to_millis(delta_str):
+        """returns int in milliseconds
+        
+        Input format 'HH:MM:SS.mmm'. Examples: 
+        '00:01:53.920', '00:07:59.75', '59.920', '::59.920', '::.', '::1.'
+        """
+        error = ValueError("Timedelta string does not match the format 'HH:MM:SS.mmm'")
 
-    SECOND_IN_MILLIS = 1000
-    MINUTE_IN_MILLIS = 60 * SECOND_IN_MILLIS
-    HOUR_IN_MILLIS   = 60 * MINUTE_IN_MILLIS
+        SECOND_IN_MILLIS = 1000
+        MINUTE_IN_MILLIS = 60 * SECOND_IN_MILLIS
+        HOUR_IN_MILLIS   = 60 * MINUTE_IN_MILLIS
+        
+        result = Timedelta_Parser.regex.match(delta_str)
+        
+        if result == None:
+            raise error
 
-    return int(hours)*HOUR_IN_MILLIS + int(minutes)*MINUTE_IN_MILLIS + int(seconds)*SECOND_IN_MILLIS + int(milliseconds)
+        parsed = dict(hours=None, minutes=None, seconds=None, milliseconds=None)
+        left_part, parsed['milliseconds'] = result.group(1,8)
+
+        # Now split colon seperated left part
+
+        left_part_split = left_part.split(':')
+        
+        if len(left_part_split) > 3:
+            raise error
+
+        for unit, string in zip(('seconds','minutes','hours'), reversed(left_part_split)):
+            parsed[unit] = string
+
+        sum_ms  = Timedelta_Parser.int_(parsed['milliseconds'])
+        sum_ms += Timedelta_Parser.int_(parsed['seconds']) * SECOND_IN_MILLIS
+        sum_ms += Timedelta_Parser.int_(parsed['minutes']) * MINUTE_IN_MILLIS
+        sum_ms += Timedelta_Parser.int_(parsed['hours']) * HOUR_IN_MILLIS
+
+        return sum_ms
 
 
 def create_tables(engine):
@@ -125,7 +152,13 @@ def wr_map_race_boat(session, entity, data):
             entity.athletes.append(association)
 
     entity.name = get_(data, 'DisplayName') # e.g. "GER2" for the second German boat
-    entity.result_time_ms = parse_timedelta_( get_(data, 'ResultTime') ) if get_(data, 'ResultTime') else None
+    
+    result_time_ms = None
+    try:
+        result_time_ms = Timedelta_Parser.to_millis( get_(data, 'ResultTime') )
+    except ValueError:
+        pass # TODO: consider logging
+    entity.result_time_ms = result_time_ms
     
     entity.lane = get_(data, 'Lane')
     entity.rank = get_(data, 'Rank')
