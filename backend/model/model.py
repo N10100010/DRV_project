@@ -277,7 +277,7 @@ class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae
 
 class Invalid_Mark_Result_Code(Base):
     __tablename__ = "invalid_mark_result_codes"
-    
+
     id = Column(String, primary_key=True)
     name = Column(String)
 
@@ -346,7 +346,7 @@ class Race_Data(Base):
 
 
 class Intermediate_Time(Base):
-    __tablename__ = "race_data"
+    __tablename__ = "intermediate_times"
 
     # Multi Column Primary Key: https://stackoverflow.com/a/9036128
     race_boat_id = Column(Integer, ForeignKey("race_boats.id"), primary_key=True, autoincrement=False)
