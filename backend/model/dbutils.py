@@ -53,7 +53,7 @@ class Timedelta_Parser:
         parsed = dict(hours=None, minutes=None, seconds=None, milliseconds=None)
         left_part, parsed['milliseconds'] = result.group(1,8)
 
-        # Now split colon seperated left part
+        # Now split colon separated left part
 
         left_part_split = left_part.split(':')
         
