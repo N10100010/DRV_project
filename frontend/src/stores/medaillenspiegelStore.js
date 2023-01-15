@@ -1,5 +1,5 @@
 import axios from "axios";
-import { defineStore } from "pinia";
+import {defineStore} from "pinia";
 
 export const useMedaillenspiegelState = defineStore({
     id: "medaillenspiegel",
@@ -15,7 +15,7 @@ export const useMedaillenspiegelState = defineStore({
                         'quad': {"JM4x": "Junior Men's Quadruple Sculls"},
                         'pair': {"JM2-": "Junior Men's Pair"},
                         'coxed_four': {"JM4+": "Junior Men's Coxed Four"},
-                        'four': {"JM4-": "Junior Men's Four"} ,
+                        'four': {"JM4-": "Junior Men's Four"},
                         'eight': {"JM8-": "Junior Men's Eight"}
                     },
                     'u19': {},
@@ -57,7 +57,7 @@ export const useMedaillenspiegelState = defineStore({
                         'quad': {"JW4x": "Junior Women's Quadruple Sculls"},
                         'pair': {"JW2-": "Junior Women's Pair"},
                         'coxed_four': {"JW4+": "Junior Women's Coxed Four"},
-                        'four': {"JW4-": "Junior Women's Four"} ,
+                        'four': {"JW4-": "Junior Women's Four"},
                         'eight': {"JW8-": "Junior Women's Eight"}
                     },
                     'u19': {},
@@ -99,11 +99,11 @@ export const useMedaillenspiegelState = defineStore({
                 }
             },
             "competition_category_ids": [
-                {"displayName":  "Olympics", "id": "89346342"},
-                {"displayName":  "World Rowing Championships", "id": "89346362"},
-                {"displayName":  "Qualifications", "id": "89346362"},
+                {"displayName": "Olympics", "id": "89346342"},
+                {"displayName": "World Rowing Championships", "id": "89346362"},
+                {"displayName": "Qualifications", "id": "89346362"},
             ],
-            "runs": [{"displayName":  "FA", "id": "89346342"}],
+            "runs": [{"displayName": "FA", "id": "89346342"}],
             "ranks": ["1", "2", "3", "4-6"],
             "nations": {
                 "AFG": "Afghanistan",
@@ -370,7 +370,7 @@ export const useMedaillenspiegelState = defineStore({
                 },
                 "scatterPlot": {
                     "labels": [
-                        '1930-01-01', '1940-01-01', '1950-01-01', '1960-01-01','1970-01-01',
+                        '1930-01-01', '1940-01-01', '1950-01-01', '1960-01-01', '1970-01-01',
                         '1980-01-01', '1990-01-01', '2000-01-01', '2010-01-01', '2020-01-01',
                     ],
                     "data": [
@@ -404,7 +404,7 @@ export const useMedaillenspiegelState = defineStore({
     },
     actions: {
         async postFormData(formData) {
-            await axios.post('https://jsonplaceholder.typicode.com/users',{ formData })
+            await axios.post('https://jsonplaceholder.typicode.com/users', {formData})
                 .then(response => {
                     // Bearbeite die Antwort des Backends hier
 

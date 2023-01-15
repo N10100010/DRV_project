@@ -7,6 +7,15 @@ export const useRennstrukturAnalyseState = defineStore({
   id: "base",
   state: () => ({
     data: {
+      filterOptions: [{
+        "year": [{"start_year": 1950}, {"end_year": 2025}],
+        "competition_category_ids": [
+            {"displayName":  "Olympics", "id": "89346342"},
+          {"displayName":  "World Rowing Championships", "id": "89346362"},
+          {"displayName":  "World Championships", "id": "89346366"},
+          {"displayName":  "Qualifications", "id": "89346323"},
+        ],
+      }],
       raceData: [ {
             "race_id": 195638,
             "displayName": "Men's Eight Heat 1",
@@ -309,6 +318,9 @@ export const useRennstrukturAnalyseState = defineStore({
     },
     getCompetitionData(state) {
       return state.data.raceData[0]
+    },
+    getRaceAnalysisFilterOptions(state) {
+      return state.data.filterOptions
     },
     getOldTableData(state) {
       return state.data.raceData[0].data

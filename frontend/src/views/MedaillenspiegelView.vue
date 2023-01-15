@@ -1,11 +1,9 @@
 <template>
   <v-btn color="blue"
          @click="setFilterState()" v-show="!filterOpen"
-         style="position: fixed; z-index: 10; left: 0;
-         border-radius: 0; border-top-right-radius: 5px;
-          border-bottom-right-radius: 5px; height: 180px"
+         class="filterToggleButton mt-6 pa-0 ma-0 bg-light-blue"
+         height="180"
          size="x-small"
-         class="mt-6 pa-0 ma-0 bg-light-blue"
   >
     <v-icon>mdi-filter</v-icon>
   </v-btn>
@@ -62,7 +60,7 @@ export default {
     ...mapState(useMedaillenspiegelState, {
       medalChartData: "getBarChartData"
     }),
-     ...mapState(useMedaillenspiegelState, {
+    ...mapState(useMedaillenspiegelState, {
       filterState: "getFilterState"
     })
   },
@@ -72,6 +70,10 @@ export default {
       const store = useMedaillenspiegelState()
       store.setFilterState(this.filterState)
     },
+    checkScreen() {
+      this.windowWidth = window.innerWidth;
+      this.mobile = this.windowWidth <= 750
+    }
   },
   data() {
     return {
@@ -103,6 +105,10 @@ export default {
         'Finale_B': ['Nein']
       }
     }
+  },
+  created() {
+    window.addEventListener('resize', this.checkScreen);
+    this.checkScreen();
   },
   watch: {
     filterState(newValue) {
@@ -136,4 +142,12 @@ export default {
 .nth-grey tr:nth-child(even) {
   background-color: rgba(0, 0, 0, .05);
 }
+
+.filterToggleButton {
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  border-radius: 0 5px 5px 0;
+}
+
 </style>

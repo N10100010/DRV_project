@@ -12,11 +12,9 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
 <template>
   <v-btn color="blue"
          @click="setFilterState()" v-show="!filterOpen"
-         style="position: fixed; z-index: 10; left: 0;
-         border-radius: 0; border-top-right-radius: 5px;
-          border-bottom-right-radius: 5px; height: 180px"
+         class="filterToggleButton mt-6 pa-0 ma-0 bg-light-blue"
+         height="180"
          size="x-small"
-         class="mt-6 pa-0 ma-0 bg-light-blue"
   >
     <v-icon>mdi-filter</v-icon>
   </v-btn>
@@ -149,14 +147,7 @@ export default {
     },
     checkScreen() {
       this.windowWidth = window.innerWidth;
-      if (this.windowWidth <= 750) {
-        this.mobile = true;
-        document.querySelector('body').style.paddingTop = '4.5em';
-        return;
-      }
-      this.mobile = false;
-      document.querySelector('body').style.paddingTop = '10.6em';
-      return;
+      this.mobile = this.windowWidth <= 750
     }
   },
   created() {
@@ -260,4 +251,12 @@ export default {
 .nth-grey tr:nth-child(even) {
   background-color: rgba(0, 0, 0, .05);
 }
+
+.filterToggleButton {
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  border-radius: 0 5px 5px 0;
+}
+
 </style>

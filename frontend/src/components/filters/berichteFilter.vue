@@ -105,7 +105,7 @@ export default {
     this.startYear = Object.values(this.reportFilterOptions[0].year[0])[0]
     this.endYear = Object.values(this.reportFilterOptions[0].year[1])[0]
     this.optionsStartYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
-    this.optionsEndYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
+    this.optionsEndYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.endYear - i)
 
     // create dict from keys to get mapping from ui-element index to corresponding rank display name
     this.ranksDict = Object.fromEntries(this.reportFilterOptions[0].ranks.map((x, idx) => [idx, x]))
