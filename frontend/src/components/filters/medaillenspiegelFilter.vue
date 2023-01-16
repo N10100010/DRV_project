@@ -1,63 +1,47 @@
 <template>
   <v-container>
-  <h2>Filter</h2>
+    <h2>Filter</h2>
     <v-divider></v-divider>
-
     <v-form class="mt-2" id="berichteFilterFormular" @submit.prevent="onSubmit">
-
-      <v-label class="pt-2">Zeitraum</v-label>
-      <v-container class="pa-0 d-flex">
-        <v-col cols="6" class="pa-0">
-          <v-select
-            clearable
-            label="Von"
-            :items="optionsStartYear"
-            variant="underlined"
-            v-model="startYear"
+      <v-container class="pa-0 d-flex pt-3">
+        <v-col cols="6" class="pa-0 pr-2">
+          <v-select clearable label="Von" :items="optionsStartYear"
+                    variant="outlined" v-model="startYear" density="comfortable"
           ></v-select>
         </v-col>
-        <v-col cols="6" class="pa-0">
-          <v-select
-            clearable
-            label="Bis"
-            :items="optionsEndYear"
-            v-model="endYear"
-            variant="underlined"
+        <v-col cols="6" class="pa-0 pl-2">
+          <v-select clearable label="Bis" :items="optionsEndYear"
+                    v-model="endYear" variant="outlined" density="comfortable"
           ></v-select>
         </v-col>
       </v-container>
-      <v-select class="pt-2"
-                clearable chips multiple
-                color="blue"
-                label="Wettkampfklassen"
-                :items="optionsCompTypes"
-                v-model="optionsCompTypes"
-                variant="underlined"
+      <v-select class="pt-2" clearable chips multiple color="blue"
+                label="Wettkampfklassen" :items="optionsCompTypes"
+                v-model="selectedCompTypes" variant="outlined"
       ></v-select>
       <v-label>Medaillientyp</v-label>
-      <v-chip-group filter color="blue" multiple v-model="selectedMedalTypes">
-        <v-chip v-for="medalType in optionsMedalTypes">{{medalType}}</v-chip>
+      <v-chip-group filter color="blue" v-model="selectedMedalTypes">
+        <v-chip v-for="medalType in optionsMedalTypes">{{ medalType }}</v-chip>
       </v-chip-group>
-      <v-autocomplete :items="optionsNations" v-model="selectedNation"
-          variant="underlined" color="blue" label="Nation"
+      <v-autocomplete class="pt-4" :items="optionsNations" v-model="selectedNation"
+                      variant="outlined" color="blue" label="Nation" density="comfortable"
       ></v-autocomplete>
-      <v-label>Geschlecht</v-label>
-      <v-chip-group filter color="blue" v-model="selectedGenders">
-        <v-chip v-for="genderType in genderTypeOptions">{{genderType}}</v-chip>
+      <v-label>Bootsklasse</v-label>
+     <v-chip-group filter color="blue" v-model="selectedGenders">
+        <v-chip v-for="genderType in genderTypeOptions">{{genderType.charAt(0).toUpperCase() + genderType.slice(1)}}</v-chip>
       </v-chip-group>
-      <v-label class="pt-2">Altersklasse</v-label>
       <v-chip-group filter color="blue" v-model="selectedAgeGroups">
-        <v-chip v-for="ageGroup in ageGroupOptions">{{ageGroup}}</v-chip>
+        <v-chip v-for="ageGroup in ageGroupOptions">{{ageGroup.charAt(0).toUpperCase() + ageGroup.slice(1)}}</v-chip>
       </v-chip-group>
-      <v-select label="Bootsklassen" clearable chips
-                :items="optionsBoatClasses" v-model="selectedBoatClasses" variant="underlined"
+      <v-select class="pt-3" label="Bootsklassen" clearable chips density="comfortable"
+                :items="optionsBoatClasses" v-model="selectedBoatClasses" variant="outlined"
       ></v-select>
-
       <v-container class="pa-0 pt-8 text-right">
-        <v-btn color="grey" class="mx-2"><v-icon>mdi-backspace-outline</v-icon></v-btn>
-        <v-btn color="blue" class="mx-2" type="submit" @click="setFilterState">Übernehmen</v-btn>
+        <v-btn color="grey" class="mx-2" @click="clearFormInputs">
+          <v-icon>mdi-backspace-outline</v-icon>
+        </v-btn>
+        <v-btn color="blue" class="mx-2" type="submit">Übernehmen</v-btn>
       </v-container>
-
     </v-form>
   </v-container>
 </template>
@@ -67,14 +51,17 @@
 import Checkbox from "@/components/filters/checkbox.vue";
 import {mapState} from "pinia";
 import {useMedaillenspiegelState} from "@/stores/medaillenspiegelStore";
+import {useBerichteState} from "@/stores/berichteStore";
 
 export default {
   components: {Checkbox},
   computed: {
     ...mapState(useMedaillenspiegelState, {
-      filterOptions: "getMedaillenspiegelFilterOptions"}),
+      filterOptions: "getMedaillenspiegelFilterOptions"
+    }),
     ...mapState(useMedaillenspiegelState, {
-      showFilter: "getFilterState"}),
+      showFilter: "getFilterState"
+    }),
   },
   data() {
     return {
@@ -86,6 +73,7 @@ export default {
       // competition type
       compTypes: [], // list of dicts with objects containing displayName, id and key
       optionsCompTypes: ["Olympics", "World Rowing Championships", "Qualifications"], // default strings
+      selectedCompTypes: ["Olympics", "World Rowing Championships", "Qualifications"],
 
       // year
       startYear: 0,
@@ -160,6 +148,8 @@ export default {
     onSubmit() {
       // define store
       const store = useMedaillenspiegelState()
+      store.setFilterState(this.showFilter) // hide filter on submit
+
       // access form data
       const startYear = this.startYear
       const endYear = this.endYear
@@ -181,14 +171,83 @@ export default {
         console.error(error)
       })
     },
+    clearFormInputs() {
+      this.selectedGenders = 0
+      this.startYear = 1950
+      this.endYear = new Date().getFullYear()
+      this.selectedCompTypes = ["Olympics", "World Rowing Championships", "Qualifications"]
+      this.selectedRanks = [0, 1, 2, 3]
+      this.selectedRuns = [0, 1, 2]
+    },
     checkScreen() {
       this.windowWidth = window.innerWidth
       this.mobile = this.windowWidth <= 769
-    },
-    setFilterState() {
-      const store = useMedaillenspiegelState()
-      store.setFilterState(this.showFilter)
     }
+  },
+  watch: {
+    selectedGenders: function (newVal,) {
+      if (newVal !== undefined) {
+        this.selectedBoatClasses = null
+        let optionsList = []
+        if (newVal === 0) { // men
+          optionsList.push(...Object.keys(this.filterOptions[0].boat_class.men))
+        }
+        if (newVal === 1) { // women
+          optionsList.push(...Object.keys(this.filterOptions[0].boat_class.women))
+        }
+        if (newVal === 2) { // mixed
+          optionsList = []
+          let test = []
+          for (const mixedOption of Object.values(this.filterOptions[0].boat_class.mixed)) {
+            test.push(Object.values(mixedOption))
+          }
+          this.optionsBoatClasses = test.map(item => item[0]).flat()
+        }
+        if (newVal === 3) { // all
+          this.ageGroupOptions = []
+          this.optionsBoatClasses = ["Alle"]
+          this.selectedBoatClasses = this.optionsBoatClasses
+        }
+        this.ageGroupOptions = optionsList.filter((v, i, a) => a.indexOf(v) === i); // exclude non-unique values
+        let boatClassOptions = []
+        Object.entries(Object.values(this.filterOptions[0].boat_class)[newVal]).forEach(([key, value], index) => {
+          if (index === this.selectedAgeGroups) {
+            Object.entries(value).forEach(([, val]) => {
+              if (typeof val === "object") {
+                boatClassOptions.push(Object.values(val)[0])
+              }
+            })
+          }
+        });
+        if (newVal !== 2 && newVal !== 3) {
+          this.optionsBoatClasses = boatClassOptions
+          this.selectedBoatClasses = boatClassOptions[0]
+        } else if (newVal === 2) {
+          this.selectedBoatClasses = this.optionsBoatClasses[0]
+        }
+      }
+    },
+    selectedAgeGroups: function (newVal,) {
+      if (newVal !== undefined) {
+        this.selectedBoatClasses = null
+        let genderObj = Object.values(this.filterOptions[0].boat_class)[this.selectedGenders]
+        let boatClassOptions = []
+
+        Object.entries(genderObj).forEach(([key, value], index) => {
+          if (index === newVal) {
+            Object.entries(value).forEach(([, val]) => {
+              if (typeof val === "object") {
+                boatClassOptions.push(Object.values(val)[0])
+              }
+            })
+          }
+        });
+        this.selectedBoatClasses = boatClassOptions[0]
+        if (this.selectedGenders !== 2 && this.selectedGenders !== 3) {
+          this.optionsBoatClasses = boatClassOptions
+        }
+      }
+    },
   }
 }
 
