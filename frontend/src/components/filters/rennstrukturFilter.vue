@@ -60,13 +60,14 @@
 import Checkbox from "@/components/filters/checkbox.vue";
 import { useRennstrukturAnalyseState } from "@/stores/baseStore";
 import {mapActions, mapState} from "pinia";
-import {useBerichteState} from "@/stores/berichteStore";
 
 export default {
   components: { Checkbox },
   computed: {
     ...mapState(useRennstrukturAnalyseState, {
       raceAnalysisFilterOptions: "getRaceAnalysisFilterOptions"}),
+      ...mapState(useRennstrukturAnalyseState, {
+      showFilter: "getFilterState"}),
   },
   data() {
     return {
@@ -104,6 +105,7 @@ export default {
     onSubmit() {
       // define store
       const store = useRennstrukturAnalyseState();
+      store.setFilterState(this.showFilter) // hide filter on submit
 
       // access form data
       const year = this.year;
@@ -112,7 +114,7 @@ export default {
 
       // send data via pinia store action postFormData
       return store.postFormData({ year, competition_type, gender }).then(() => {
-        alert("Form data sent...")
+
       }).catch(error => {
         console.error(error)
       });

@@ -6,6 +6,7 @@ const COLORS = ['#1E90FF', '#EE7621', '#66CD00', '#CD0000', '#7A67EE', '#32ffff'
 export const useWettkampfresultateStore = defineStore({
     id: "wettkampfresultate",
     state: () => ({
+        filterOpen: true,
         data: {
             raceData: [{
                 "race_id": 195638,
@@ -304,6 +305,9 @@ export const useWettkampfresultateStore = defineStore({
         },
     }),
     getters: {
+        getFilterState(state) {
+            return state.filterOpen
+        },
         getAnalysisData(state) {
             return state.data.analysis
         },
@@ -428,6 +432,9 @@ export const useWettkampfresultateStore = defineStore({
                 }).catch(error => {
                     // Bearbeite den Fehler hier
                 });
+        },
+        setFilterState(filterState) {
+            this.filterOpen = !filterState
         }
     }
 });

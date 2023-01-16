@@ -1,6 +1,6 @@
 <template>
   <v-btn color="blue"
-         @click="drawer = !drawer" v-show="!drawer"
+         @click="setFilterState()" v-show="!filterOpen"
          class="filterToggleButton mt-6 pa-0 ma-0 bg-light-blue"
          height="180"
          size="x-small"
@@ -10,7 +10,7 @@
   <v-card style="box-shadow: none; z-index: 1">
     <v-layout>
       <v-navigation-drawer
-          v-model="drawer"
+          v-model="filterOpen"
           temporary
           v-bind:style='{"margin-top" : (mobile? "71.25px" : "158px" )}'
           width="500">
@@ -175,6 +175,7 @@ ChartJS.register(Tooltip, Legend, TimeScale);
 <script>
 import {useRennstrukturAnalyseState} from "@/stores/baseStore";
 import {mapState} from "pinia";
+import {useBerichteState} from "@/stores/berichteStore";
 
 export default {
   computed: {
@@ -195,11 +196,15 @@ export default {
     }),
     ...mapState(useRennstrukturAnalyseState, {
       getIntermediateData: "getIntermediateChartData"
+    }),
+     ...mapState(useRennstrukturAnalyseState, {
+      filterState: "getFilterState"
     })
+
   },
   data() {
     return {
-      drawer: true,
+      filterOpen: true,
       breadCrumbs: [],
       mobile: false,
       displayRaceDataAnalysis: false,
@@ -345,8 +350,14 @@ export default {
   created() {
     window.addEventListener('resize', this.checkScreen);
     this.checkScreen();
+    this.filterOpen = this.filterState
   },
   methods: {
+    setFilterState() {
+      this.filterOpen = !this.filterOpen;
+      const store = useRennstrukturAnalyseState()
+      store.setFilterState(this.filterState)
+    },
     getEvents(competition) {
       this.events = competition
       this.breadCrumbs.push({
@@ -388,6 +399,17 @@ export default {
     checkScreen() {
       this.windowWidth = window.innerWidth;
       this.mobile = this.windowWidth <= 750
+    }
+  },
+  watch: {
+    filterState(newValue) {
+      this.filterOpen = newValue;
+    },
+    filterOpen: function (newVal, oldVal) {
+      if (oldVal === true && newVal === false && this.filterState === true) {
+        const store = useRennstrukturAnalyseState()
+        store.setFilterState(oldVal)
+      }
     }
   }
 }
