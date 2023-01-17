@@ -2,6 +2,7 @@ from . import model
 
 from sqlalchemy import select
 
+from contextlib import suppress
 import os
 import datetime as dt
 import urllib.parse
@@ -72,7 +73,7 @@ def wr_insert(session, Entity_Class, map_func, data):
     if data == None:
         return None
 
-    uuid = data['id'].lower()
+    uuid = data.get('id','').lower()
     entity = query_by_uuid_(session, Entity_Class, uuid)
     create_entity = entity == None
 
@@ -106,10 +107,10 @@ def wr_map_gender(session, entity, data):
 
 
 def wr_map_athlete(session, entity, data):
-    pass
+    entity.lane = get_(data, 'Lane')
 
 def wr_map_race_boat(session, entity, data):
-    entity.country = wr_insert(session, model.Country, wr_map_country, data['country'])
+    entity.country = wr_insert(session, model.Country, wr_map_country, get_(data, 'country'))
     
     # Current Strategy: Delete all associations and create new ones according to given data.
     entity.athletes.clear()
@@ -133,8 +134,8 @@ def wr_map_race_boat(session, entity, data):
     
     entity.lane = get_(data, 'Lane')
     entity.rank = get_(data, 'Rank')
-    entity.final_rank = get_( get_(data, 'boat', {}), 'finalRank' ) #  TODO use chained get_()
-    entity.final_rank_index__ = repr( get_ (get_(data, 'boat', {}), 'finalRankIndex' ) ) #  TODO use chained get_()
+    entity.final_rank = get_( get_(data, 'boat', {}), 'finalRank' )
+    entity.final_rank_index__ = repr( get_ (get_(data, 'boat', {}), 'finalRankIndex' ) )
     
     entity.remark__ = repr( get_(data, 'Remark') )
     entity.world_cup_points__ = get_(data, 'WorldCupPoints')
@@ -144,8 +145,9 @@ def wr_map_race_boat(session, entity, data):
 
 def wr_map_race(session, entity, data):
     entity.name = get_(data, 'DisplayName')
-    entity.date = dt.datetime.fromisoformat(data['Date'])
-    entity.phase_type = get_( get_(data, 'racePhase', {}), 'DisplayName','' ).lower() #  TODO use chained get_()
+    with suppress(ValueError):
+        entity.date = dt.datetime.fromisoformat(get_(data, 'Date', ''))
+    entity.phase_type = get_( get_(data, 'racePhase', {}), 'DisplayName','' ).lower()
     entity.phase = get_(data, 'FB') # !!! TODO: Extract from RSC Code !!!
     entity.progression = get_(data, 'Progression')
     entity.rsc_code = get_(data, 'RscCode')
@@ -168,8 +170,8 @@ def wr_map_race(session, entity, data):
 
 def wr_map_event(session, entity, data):
     entity.name = get_(data, 'DisplayName')
-    entity.boat_class = wr_insert(session, model.Boat_Class, wr_map_boat_class, data['boatClass'])
-    entity.gender = wr_insert(session, model.Gender, wr_map_gender, data['gender'])
+    entity.boat_class = wr_insert(session, model.Boat_Class, wr_map_boat_class, get_(data, 'boatClass'))
+    entity.gender = wr_insert(session, model.Gender, wr_map_gender, get_(data, 'gender'))
     entity.rsc_code__ = get_(data, 'RscCode')
 
     # Races
@@ -185,7 +187,7 @@ def wr_map_competition_category(session, entity, data):
 
 
 def wr_map_venue(session, entity, data):
-    entity.country = wr_insert(session, model.Country, wr_map_country, data['country'])
+    entity.country = wr_insert(session, model.Country, wr_map_country, get_(data, 'country'))
     entity.city = get_(data, 'RegionCity')
     entity.site = get_(data, 'Site')
     entity.is_world_rowing_venue = get_(data, 'IsWorldRowingVenue')
@@ -197,17 +199,18 @@ def wr_map_competition(session, entity, data):
         session,
         model.Competition_Category,
         wr_map_competition_category,
-        data['competitionType']['competitionCategory']
+        get_(get_(data, 'competitionType'), 'competitionCategory')
     )
 
     # Venue
-    venue = wr_insert(session, model.Venue, wr_map_venue, data['venue'])
+    venue = wr_insert(session, model.Venue, wr_map_venue, get_(data, 'venue'))
 
     entity.competition_category = competition_category
     entity.venue = venue
     entity.name = get_(data, 'DisplayName')
-    entity.start_date = dt.datetime.fromisoformat(data['StartDate'])
-    entity.end_date = dt.datetime.fromisoformat(data['EndDate'])
+    with suppress(ValueError):
+        entity.start_date = dt.datetime.fromisoformat(get_(data, 'StartDate', ''))
+        entity.end_date = dt.datetime.fromisoformat(get_(data, 'EndDate', ''))
 
     entity.competition_code__ = get_(data, 'CompetitionCode')
     entity.is_fisa__ = get_(data, 'IsFisa')
