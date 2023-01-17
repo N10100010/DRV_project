@@ -19,6 +19,9 @@ class Timedelta_Parser:
         """
         error = ValueError("Timedelta string does not match the format 'HH:MM:SS.mmm'")
 
+        if not isinstance(delta_str, str):
+            raise error
+
         SECOND_IN_MILLIS = 1000
         MINUTE_IN_MILLIS = 60 * SECOND_IN_MILLIS
         HOUR_IN_MILLIS   = 60 * MINUTE_IN_MILLIS
