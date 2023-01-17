@@ -34,7 +34,7 @@
           </v-col>
           <v-row>
             <v-col cols="6">
-              <v-table class="tableStyles">
+              <v-table class="tableStyles" density="comfortable">
                 <tbody class="nth-grey">
                 <tr v-for="(el, idx) in tableData[0]">
                   <th>{{ el }}</th>

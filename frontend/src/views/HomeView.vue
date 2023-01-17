@@ -39,82 +39,32 @@
 </template>
 
 
+
 <script>
+import {mapState} from "pinia";
+import {useHomeStore} from "@/stores/homeStore";
+
 export default {
+  computed: {
+    ...mapState(useHomeStore, {
+      calenderData: "getCalenderData"
+    }),
+  },
   data() {
-    const month = new Date().getMonth();
-    const year = new Date().getFullYear();
     return {
       masks: {
         weekdays: 'WWW',
       },
-      attributes: [
-        {
-          key: 1,
-          customData: {
-            title: 'Olympics',
-            style: 'background-color: #64B5F6'
-          },
-          dates: { start: new Date(year, 0, 14), end: new Date(year, 0, 18) },
-        },
-        {
-          key: 2,
-          customData: {
-            title: 'World Rowing',
-            style: 'background-color: #3949AB'
-          },
-          dates: new Date(year, month, 2),
-        },
-        {
-          key: 3,
-          customData: {
-            title: "Qualifications",
-            style: 'background-color: #CDDC39'
-          },
-          dates: new Date(year, month, 5),
-        },
-        {
-          key: 4,
-          customData: {
-            title: 'World Rowing',
-            style: 'background-color: #3949AB'
-          },
-          dates: new Date(year, month, 5),
-        },
-        {
-          key: 4,
-          customData: {
-            title: 'World Rowing',
-            style: 'background-color: #3949AB'
-          },
-          dates: new Date(year, month, 7),
-        },
-        {
-          key: 5,
-          customData: {
-            title: "Other Event",
-            style: 'background-color: #26A69A'
-          },
-          dates: new Date(year, month, 11),
-        },
-        {
-          key: 7,
-          customData: {
-            title: "Event",
-            style: 'background-color: #3949AB'
-          },
-          dates: new Date(year, month, 22),
-        },
-        {
-          key: 8,
-          customData: {
-            title: 'One More',
-            style: 'background-color: #26C6DA'
-          },
-          dates: new Date(year, month, 25),
-        },
-      ],
+      attributes: [],
     };
   },
+  created() {
+    this.attributes = this.calenderData
+  },
+  watch: {
+    calenderData(newVal) {
+      this.attributes = newVal
+    }
+  }
 };
 </script>

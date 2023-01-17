@@ -30,7 +30,7 @@
                   <v-list density="compact" v-show="displayCompetitions">
                     <v-list-item
                         min-height="80"
-                        style="background-color: whitesmoke; border-radius: 5px"
+                        style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
                         class="pa-2 my-2"
                         v-for="competition in getAnalysis"
                         :key="competition"
@@ -42,7 +42,7 @@
                   <!-- events list -->
                   <v-list density="compact" v-show="displayEvents">
                     <v-list-item
-                        style="background-color: whitesmoke; border-radius: 5px"
+                        style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
                         class="pa-2 my-2"
                         v-for="event in events"
                         :key="event"
@@ -53,7 +53,7 @@
                   <!-- races list -->
                   <v-list density="compact" v-show="displayRaces">
                     <v-list-item
-                        style="background-color: whitesmoke; border-radius: 5px"
+                        style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
                         class="pa-2 my-2"
                         v-for="race in races"
                         :key="race"
@@ -116,7 +116,7 @@
 
           <v-row>
             <v-col cols="12">
-              <v-table class="tableStyles">
+              <v-table class="tableStyles" density="compact">
                 <thead>
                 <tr>
                   <th v-for="tableHead in tableData[0]">{{ tableHead }}</th>
@@ -127,7 +127,7 @@
                 <tr v-for="country, idx in tableData.slice(1)">
                   <td v-for="item in country">
                     <template v-if="Array.isArray(item)">
-                      <p v-for="element in item" class="py-1">
+                      <p v-for="element in item">
                         {{ element }}
                       </p>
                     </template>
@@ -143,6 +143,16 @@
                 </tr>
                 </tbody>
               </v-table>
+              <v-col class="text-right font-weight-black" style="font-size: 0.9em">
+                <a v-if="competitionData.pdf_urls.result"
+                   :href=competitionData.pdf_urls.result target="_blank" class="mr-2" style="color: black">
+                  Ergebnisse <v-icon color="grey">mdi-open-in-new</v-icon>
+                </a>
+                <a v-if="competitionData.pdf_urls.race_data"
+                   :href=competitionData.pdf_urls.race_data target="_blank" class="ml-2" style="color: black">
+                  GPS-Daten <v-icon color="grey">mdi-open-in-new</v-icon>
+                </a>
+              </v-col>
             </v-col>
             <v-divider class="mt-8"></v-divider>
             <v-col cols="6">
@@ -197,7 +207,7 @@ export default {
     ...mapState(useRennstrukturAnalyseState, {
       getIntermediateData: "getIntermediateChartData"
     }),
-     ...mapState(useRennstrukturAnalyseState, {
+    ...mapState(useRennstrukturAnalyseState, {
       filterState: "getFilterState"
     })
 
@@ -422,10 +432,11 @@ export default {
   th {
     border: 1px solid #e0e0e0;
     font-size: 14px !important;
+    text-align: left;
   }
 
   td {
-    text-align: center;
+    text-align: left;
     border: 1px solid #e0e0e0;
   }
 }

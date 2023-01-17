@@ -106,7 +106,7 @@ export default {
     this.startYear = Object.values(this.filterOptions[0].year[0])[0]
     this.endYear = Object.values(this.filterOptions[0].year[1])[0]
     this.optionsStartYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
-    this.optionsEndYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
+    this.optionsEndYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.endYear - i)
 
     // competition category id
     this.compTypes = this.filterOptions[0].competition_category_ids
