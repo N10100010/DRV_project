@@ -9,7 +9,7 @@ import urllib.parse
 from ..common.helpers import Timedelta_Parser
 
 # from ..scraping_wr import utils_wr
-# from ..scraping_wr import api
+from ..scraping_wr import api
 
 # logging stuff
 import logging
@@ -150,9 +150,8 @@ def wr_map_race(session, entity, data):
     entity.progression = get_(data, 'Progression')
     entity.rsc_code = get_(data, 'RscCode')
 
-    # TODO: PDF URLs from pdf parser output?
-    entity.pdf_url_results = "https://dummy.url/race_results.pdf"
-    entity.pdf_url_race_data = "https://dummy.url/race_data.pdf"
+    entity.pdf_url_results = get_(api.select_pdf_(get_(data, 'pdfUrls', []), 'results'), 'url')
+    entity.pdf_url_race_data = get_(api.select_pdf_(get_(data, 'pdfUrls', []), 'race data'), 'url')
 
     entity.race_nr__ = repr( get_(data, 'RaceNr') )
     entity.rescheduled__ = repr( get_(data, 'Rescheduled') )
