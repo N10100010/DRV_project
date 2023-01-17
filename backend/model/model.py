@@ -88,7 +88,9 @@ class Enum_Data_Source(enum.Enum):
 class Association_Race_Boat_Athlete(Base):
     """Many-To-Many Pattern with extra data:
     https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#association-object
-    https://stackoverflow.com/a/62378982"""
+    https://stackoverflow.com/a/62378982
+    
+    TODO: Clean up many-to-many oprphans: https://github.com/sqlalchemy/sqlalchemy/wiki/ManyToManyOrphan"""
 
     __tablename__ = "association_raceboat_athlete"
 
@@ -300,7 +302,7 @@ class Race_Boat(Base):
     country    = relationship("Country")
 
     # many-to-many relationship
-    athletes = relationship("Association_Race_Boat_Athlete", back_populates="race_boat")
+    athletes = relationship("Association_Race_Boat_Athlete", back_populates="race_boat", cascade='all,delete,delete-orphan')
 
     name = Column(String) # e.g. "GER2" for one of the German boats
 
