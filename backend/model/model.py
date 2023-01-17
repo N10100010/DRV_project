@@ -370,27 +370,8 @@ class Intermediate_Time(Base):
 
 #----------------------------------------------------------------------
 
-def create_tables():
-    engine = create_engine("postgresql+psycopg2://postgres:postgres@localhost:5432/rowing", echo=True)
-
-    Session = sessionmaker(bind=engine)
-
-    # create all tables (init) if they don't exist
-    Base.metadata.create_all(engine, checkfirst=True)
-
-    session = Session()
-    session.commit()
-
 
 if __name__ == '__main__':
-    print("-"*100, "Init DB")
-    create_tables()
-
-
-    # from ..scraping_wr import api
-    # from backend.scraping_wr import api
-    # print(api)
-
     # Problem with PYTHONPATH vs CWD/PWD: https://stackoverflow.com/a/24435742
     from sys import path as syspath
     print("PYTHONPATH", syspath[0])

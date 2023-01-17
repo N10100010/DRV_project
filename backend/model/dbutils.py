@@ -5,12 +5,29 @@ from sqlalchemy import select
 import datetime as dt
 import re
 
+import urllib.parse
+
 # from ..scraping_wr import utils_wr
 # from ..scraping_wr import api
 
 # logging stuff
 import logging
 logger = logging.getLogger(__name__)
+
+
+def get_rowing_db_url() -> str:
+    """Returns URL suited for SQLAlchemy as configured in environment variables
+    See: https://docs.sqlalchemy.org/en/14/core/engines.html#database-urls
+    """
+    db_url = "{drivername}://{username}:{password}@{host}:{port}/{database}".format(
+        drivername=os.environ.get('DB_SQLALCHEMY_DRIVERNAME', 'postgresql+psycopg2'),
+        username=urllib.parse.quote_plus( os.environ.get('DB_USER', 'postgres') ),
+        password=urllib.parse.quote_plus( os.environ.get('DB_PASS', 'postgres') ),
+        host=os.environ.get('DB_HOST', 'localhost'),
+        port=os.environ.get('DB_PORT', '5432'),
+        database=os.environ.get('DB_NAME', 'rowing')
+    )
+    return db_url
 
 
 def get_(data, key, default=None):
@@ -259,14 +276,8 @@ def wr_insert_competition(session, competition_data):
 
 
 if __name__ == '__main__':
-    import argparse
-    from sys import exit as sysexit
-    import json
-
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
-
     # Command line interface (CLI)
+    import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--create", help="Create tables if not yet existing", action="store_true")
     parser.add_argument("-d", "--drop", help="Drop all tables described by the schema defined in model.py", action="store_true")
@@ -274,8 +285,21 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(args)
 
+
+    from sys import exit as sysexit
+    import json
+
+    # Environment variables
+    from dotenv import load_dotenv
+    load_dotenv()
+    import os
+
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
     # Database: session / connection str
-    engine = create_engine("postgresql+psycopg2://postgres:postgres@localhost:5432/rowing", echo=True)
+    db_url = get_rowing_db_url()
+    engine = create_engine(db_url, echo=True)
     Session = sessionmaker(bind=engine)
     session = Session()
 
