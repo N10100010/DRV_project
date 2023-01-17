@@ -111,7 +111,8 @@ def wr_map_athlete(session, entity, data):
 def wr_map_race_boat(session, entity, data):
     entity.country = wr_insert(session, model.Country, wr_map_country, data['country'])
     
-    # Athletes # TODO: Fix raceBoatAthlete.get('person', {}) => None
+    # Current Strategy: Delete all associations and create new ones according to given data.
+    entity.athletes.clear()
     for raceBoatAthlete in get_(data, 'raceBoatAthletes', []):
         athlete_data = get_(raceBoatAthlete, 'person', {})
         if athlete_data:
