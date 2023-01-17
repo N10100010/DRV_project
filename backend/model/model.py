@@ -207,7 +207,7 @@ class Competition(Base):
 
     # holds info about the state of postprocessing using Enum_Maintenance_State
     maintenance_state_ = Column(Integer, nullable=False,
-        default=Enum_Maintenance_State.world_rowing_api_grabbed
+        default=Enum_Maintenance_State.world_rowing_api_grabbed.value
     )
 
     competition_category_id = Column(Integer, ForeignKey("competition_category.id"))
@@ -322,6 +322,7 @@ class Race_Boat(Base):
     # worldBestTimeId, OVRCode ?
 
     # relationships
+    intermediates = relationship("Intermediate_Time", back_populates="race_boat")
     race_data = relationship("Race_Data", back_populates="race_boat")
 
     # TODO:
@@ -350,7 +351,7 @@ class Intermediate_Time(Base):
 
     # Multi Column Primary Key: https://stackoverflow.com/a/9036128
     race_boat_id = Column(Integer, ForeignKey("race_boats.id"), primary_key=True, autoincrement=False)
-    race_boat    = relationship("Race_Boat", back_populates="race_data")
+    race_boat    = relationship("Race_Boat", back_populates="intermediates")
     distance_meter = Column(Integer, primary_key=True, autoincrement=False)
 
     data_source_ = Column(Integer) # Use Enum_Data_Source class
