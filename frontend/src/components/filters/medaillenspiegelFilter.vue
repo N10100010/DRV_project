@@ -23,7 +23,7 @@
       <v-chip-group filter color="blue" v-model="selectedMedalTypes">
         <v-chip v-for="medalType in optionsMedalTypes">{{ medalType }}</v-chip>
       </v-chip-group>
-      <v-autocomplete class="pt-4" :items="optionsNations" v-model="selectedNation"
+      <v-autocomplete class="pt-4" :items="optionsNations" multiple v-model="selectedNation"
                       variant="outlined" color="blue" label="Nation" density="comfortable"
       ></v-autocomplete>
       <v-label>Bootsklasse</v-label>
