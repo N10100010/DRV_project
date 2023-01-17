@@ -2,8 +2,8 @@ from . import model
 
 from sqlalchemy import select
 
+import os
 import datetime as dt
-
 import urllib.parse
 
 from ..common.helpers import Timedelta_Parser
@@ -241,11 +241,6 @@ if __name__ == '__main__':
 
     from sys import exit as sysexit
     import json
-
-    # Environment variables
-    from dotenv import load_dotenv
-    load_dotenv()
-    import os
 
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
