@@ -92,7 +92,9 @@ POST /get_race/<race_id>
 Speed/Stroke in GPS Daten und keine genauen Strecken. Auch das zurückrechnen via s = v * t wäre schwierig, weil Werte fehlen.
 * propulsion soll Vortrieb heißen; wer ein besseres englisches Wort dafür kennt, gerne her damit :D
 * deficit = Rückstand
+
 * UPDATE: Disziplin hinzugefügt (!) soll sowas wie Steuermann/Steuerfrau etc. darstellen
+* UPDATE: pdf_urls hinzugefügt (!)
 ```json
 [
   {
@@ -103,6 +105,10 @@ Speed/Stroke in GPS Daten und keine genauen Strecken. Auch das zurückrechnen vi
     "boatClass": "Men's Eight",
     "worldBestTimeBoatClass": "00:05:58,36",
     "bestTimeBoatClassCurrentOZ": "00:05:58,36",
+    "pdf_urls": {
+      "result": "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCH_2018/WCH_2018_ROWWSCULL2------------HEAT000100--_C73X7962.PDF",
+      "race_data": "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/ECM2022/ECM2022_ROWXSCULL2--PR2-------PREL000100--_C77X3426.PDF"
+    },
     "data": [
       {
         "nationIoc": "CZE",
@@ -1114,4 +1120,30 @@ Datentypen/Format unklar (klären wir mit DRV): rank, points, final_a und final_
     ]
   }
 ]
+```
+
+
+## Home/Allgemeines
+**Request**
+
+Anfrage für Kalenderdaten auf der Startseite. Liefert array mit Kalendereinträgen.
+```http
+POST /get_calender
+```
+**Response**
+```json
+{
+  "calender_data": [
+    {
+      "key": 1,
+      "customData": {
+        "title": "Olympics"
+      }, 
+      "dates": {
+        "start": "2023-01-17 14:00:0",
+        "end": "2023-01-19 14:00:00"
+      }
+    }
+  ]
+}
 ```
