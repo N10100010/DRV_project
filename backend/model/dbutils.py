@@ -251,7 +251,10 @@ if __name__ == '__main__':
     engine = create_engine(db_url, echo=True)
     Session = sessionmaker(bind=engine)
     session = Session()
-
+    # HIGH PRIO TODO: use scoped_session(...)
+    # Use this Flask/SQLAlchemy Pattern: https://stackoverflow.com/questions/66046801/sqlalchemy-used-in-flask-session-management-implementation
+    # https://towardsdatascience.com/use-flask-and-sqlalchemy-not-flask-sqlalchemy-5a64fafe22a4
+    
     if args.insert:
         print("Load JSON file:", args.insert)
         with open(args.insert, mode="r", encoding="utf-8") as fp:
