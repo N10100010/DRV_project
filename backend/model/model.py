@@ -132,7 +132,7 @@ class Venue(Base):
 
     id = Column(Integer, primary_key=True)
     additional_id_ = Column(String, index=True, unique=True)
-    country_id = Column(Integer, ForeignKey("countries.id"))
+    country_id = Column(ForeignKey("countries.id"))
     country    = relationship("Country")
 
     city = Column(String)
@@ -214,9 +214,9 @@ class Competition(Base):
     # holds info about the state of postprocessing using Enum_Maintenance_Level
     maintenance_level = Column(Integer, nullable=False)
 
-    competition_category_id = Column(Integer, ForeignKey("competition_category.id"))
+    competition_category_id = Column(ForeignKey("competition_category.id"))
     competition_category    = relationship("Competition_Category", back_populates="competitions")
-    venue_id = Column(Integer, ForeignKey("venues.id"))
+    venue_id = Column(ForeignKey("venues.id"))
     venue    = relationship("Venue", back_populates="competitions")
 
     name = Column(String)
@@ -237,11 +237,11 @@ class Event(Base):
     additional_id_ = Column(String, index=True, unique=True)
     name = Column(String)
 
-    competition_id = Column(Integer, ForeignKey("competitions.id"))
+    competition_id = Column(ForeignKey("competitions.id"))
     competition    = relationship("Competition", back_populates="events")
-    boat_class_id = Column(Integer, ForeignKey("boat_classes.id"))
+    boat_class_id = Column(ForeignKey("boat_classes.id"))
     boat_class    = relationship("Boat_Class", back_populates="events")
-    gender_id = Column(Integer, ForeignKey("genders.id"))
+    gender_id = Column(ForeignKey("genders.id"))
     gender    = relationship("Gender")
 
     rsc_code__ = Column(String) # RSC-Codes of races contain more information
@@ -255,7 +255,7 @@ class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae
 
     id = Column(BigInteger, primary_key=True)
     additional_id_ = Column(String, index=True, unique=True)
-    event_id = Column(Integer, ForeignKey("events.id"))
+    event_id = Column(ForeignKey("events.id"))
     event    = relationship("Event", back_populates="races")
 
     name = Column(String)
@@ -298,9 +298,9 @@ class Race_Boat(Base):
 
     id = Column(BigInteger, primary_key=True)
     additional_id_ = Column(String, index=True, unique=True)
-    race_id = Column(Integer, ForeignKey("races.id"))
+    race_id = Column(ForeignKey("races.id"))
     race    = relationship("Race", back_populates="race_boats")
-    country_id = Column(Integer, ForeignKey("countries.id"))
+    country_id = Column(ForeignKey("countries.id"))
     country    = relationship("Country")
 
     # many-to-many relationship
@@ -313,7 +313,7 @@ class Race_Boat(Base):
 
     # If race was invalid, this field should provide the reason.
     # E.g. "DNS" Did not start; "BUW" Boat under weight, etc.
-    invalid_mark_result_code_id = Column(String, ForeignKey("invalid_mark_result_codes.id"))
+    invalid_mark_result_code_id = Column(ForeignKey("invalid_mark_result_codes.id"))
     invalid_mark_result_code    = relationship("Invalid_Mark_Result_Code")
 
     lane = Column(Integer) # e.g. 1
@@ -326,12 +326,12 @@ class Race_Boat(Base):
     # worldBestTimeId, OVRCode ?
 
     # relationships
-    intermediates = relationship("Intermediate_Time", back_populates="race_boat")
-    race_data = relationship("Race_Data", back_populates="race_boat")
+    intermediates = relationship("Intermediate_Time", back_populates="race_boat", cascade='all,delete,delete-orphan')
+    race_data = relationship("Race_Data", back_populates="race_boat", cascade='all,delete,delete-orphan')
 
-    # TODO:
-    #     (+) invalidMarkResultCode => DNS, DNF, BUW, etc (Foreign Key? or second fiel for long name?)
-    #     (+) result_time (null in case of invalidMarkResultCode != null)
+    # NOTE:
+    #     (X) invalidMarkResultCode => DNS, DNF, BUW, etc (Foreign Key? or second field for long name?)
+    #     (X) result_time (null in case of invalidMarkResultCode != null)
     #           ===> Alternatively, Put it in Intermediates with a bool field marking it "finish_time";
     #                Since the other approach is kind of denormalized.
 
@@ -339,7 +339,7 @@ class Race_Data(Base):
     __tablename__ = "race_data"
 
     # Multi Column Primary Key: https://stackoverflow.com/a/9036128
-    race_boat_id = Column(Integer, ForeignKey("race_boats.id"), primary_key=True, autoincrement=False)
+    race_boat_id = Column(BigInteger, ForeignKey("race_boats.id"), primary_key=True, autoincrement=False)
     race_boat    = relationship("Race_Boat", back_populates="race_data")
     distance_meter = Column(Integer, primary_key=True, autoincrement=False)
 
@@ -354,14 +354,14 @@ class Intermediate_Time(Base):
     __tablename__ = "intermediate_times"
 
     # Multi Column Primary Key: https://stackoverflow.com/a/9036128
-    race_boat_id = Column(Integer, ForeignKey("race_boats.id"), primary_key=True, autoincrement=False)
+    race_boat_id = Column(ForeignKey("race_boats.id"), primary_key=True, autoincrement=False)
     race_boat    = relationship("Race_Boat", back_populates="intermediates")
     distance_meter = Column(Integer, primary_key=True, autoincrement=False)
 
     data_source_ = Column(Integer) # Use Enum_Data_Source class
 
     # E.g. "DNS" Did not start; "BUW" Boat under weight, etc.
-    invalid_mark_result_code_id = Column(String, ForeignKey("invalid_mark_result_codes.id"))
+    invalid_mark_result_code_id = Column(ForeignKey("invalid_mark_result_codes.id"))
     invalid_mark_result_code    = relationship("Invalid_Mark_Result_Code")
 
     # Data fields from JSON Web API aka "Intermediates"
@@ -369,8 +369,6 @@ class Intermediate_Time(Base):
     result_time_ms = Column(Integer) # in milliseconds // TODO: as String?
     difference__ = Column(String)
     start_position__ = Column(String)
-
-    # TODO: (+) invalidMarkResultCode => DNS, DNF, BUW, etc (Foreign Key? or second fiel for long name?)
 
 
 #----------------------------------------------------------------------
