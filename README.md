@@ -21,7 +21,7 @@ Container for the innovation project WS '22
 
 ### Backend Scrape/Maintenance Process (Python)
 
-    python -m backend.app.scrape_service
+    python -m backend.procedures.scrape_service
 
 ### Backend API Server (Python/Flask)
 
