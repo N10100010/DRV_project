@@ -3,9 +3,7 @@ from . import model
 from sqlalchemy import select
 
 from contextlib import suppress
-import os
 import datetime as dt
-import urllib.parse
 
 from ..common.helpers import Timedelta_Parser, parse_wr_intermediate_distance_key
 
@@ -15,21 +13,6 @@ from ..scraping_wr import api
 # logging stuff
 import logging
 logger = logging.getLogger(__name__)
-
-
-def get_rowing_db_url() -> str:
-    """Returns URL suited for SQLAlchemy as configured in environment variables
-    See: https://docs.sqlalchemy.org/en/14/core/engines.html#database-urls
-    """
-    db_url = "{drivername}://{username}:{password}@{host}:{port}/{database}".format(
-        drivername=os.environ.get('DB_SQLALCHEMY_DRIVERNAME', 'postgresql+psycopg2'),
-        username=urllib.parse.quote_plus( os.environ.get('DB_USER', 'postgres') ),
-        password=urllib.parse.quote_plus( os.environ.get('DB_PASS', 'postgres') ),
-        host=os.environ.get('DB_HOST', 'localhost'),
-        port=os.environ.get('DB_PORT', '5432'),
-        database=os.environ.get('DB_NAME', 'rowing')
-    )
-    return db_url
 
 
 def get_(data, key, default=None):
@@ -309,26 +292,16 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(args)
 
+    # ----------------------------------
 
-    from sys import exit as sysexit
     import json
+    from .model import engine, Scoped_Session
 
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
-
-    # Database: session / connection str
-    db_url = get_rowing_db_url()
-    engine = create_engine(db_url, echo=True)
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    # HIGH PRIO TODO: use scoped_session(...)
-    # Use this Flask/SQLAlchemy Pattern: https://stackoverflow.com/questions/66046801/sqlalchemy-used-in-flask-session-management-implementation
-    # https://towardsdatascience.com/use-flask-and-sqlalchemy-not-flask-sqlalchemy-5a64fafe22a4
-    
     if args.insert:
         print("Load JSON file:", args.insert)
-        with open(args.insert, mode="r", encoding="utf-8") as fp:
-            competition_data = json.load(fp)
+        with Scoped_Session() as session: # implicit commit when leaving context w/o errors
+            with open(args.insert, mode="r", encoding="utf-8") as fp:
+                competition_data = json.load(fp)
         wr_insert_competition(session, competition_data)
 
     else:

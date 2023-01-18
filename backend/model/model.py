@@ -1,10 +1,12 @@
+import os
+import enum
+import urllib.parse
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy import Column, ForeignKey, Integer, BigInteger, Float, String, Boolean, Date, DateTime, Enum
-
-import enum
 
 # logging stuff
 import logging
@@ -25,9 +27,6 @@ logger = logging.getLogger(__name__)
 
 # connect will actually establish a connection or create/load the sqlite file
 # engine.connect()
-
-Base = declarative_base()
-
 
 """
 TODO:
@@ -69,6 +68,39 @@ https://world-rowing-api.soticcloud.net/stats/api/race/?include=racePhase%2Ceven
     - Consider BigInteger for Primary Key for races / athletes
         - Will it map to bigserial postgres type?
 """
+
+# Provide DB objects
+# ------------------
+
+Base = declarative_base()
+
+def get_rowing_db_url() -> str:
+    """Returns URL suited for SQLAlchemy as configured by environment variables
+    See: https://docs.sqlalchemy.org/en/14/core/engines.html#database-urls
+    """
+    db_url = "{drivername}://{username}:{password}@{host}:{port}/{database}".format(
+        drivername=os.environ.get('DB_SQLALCHEMY_DRIVERNAME', 'postgresql+psycopg2'),
+        username=urllib.parse.quote_plus( os.environ.get('DB_USER', 'postgres') ),
+        password=urllib.parse.quote_plus( os.environ.get('DB_PASS', 'postgres') ),
+        host=os.environ.get('DB_HOST', 'localhost'),
+        port=os.environ.get('DB_PORT', '5432'),
+        database=os.environ.get('DB_NAME', 'rowing')
+    )
+    return db_url
+
+# NOTE: Usage pattern for flask: use scoped_session(...)
+# - https://nestedsoftware.com/2018/06/11/flask-and-sqlalchemy-without-the-flask-sqlalchemy-extension-3cf8.34704.html
+# - https://stackoverflow.com/questions/35664436/flask-and-sqlalchemy-handling-sessions
+#     => NOTE: In case of greenlet based environment use the pattern mentioned in this
+# - https://stackoverflow.com/questions/66046801/sqlalchemy-used-in-flask-session-management-implementation
+# - https://towardsdatascience.com/use-flask-and-sqlalchemy-not-flask-sqlalchemy-5a64fafe22a4
+
+__DB_URL = get_rowing_db_url()
+__DB_VERBOSE = 'DB_VERBOSITY' in os.environ
+
+engine = create_engine(__DB_URL, echo=__DB_VERBOSE)
+Scoped_Session = scoped_session(sessionmaker(bind=engine, autoflush=True, autocommit=False))
+
 
 # Enums
 # -----
