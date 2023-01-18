@@ -107,7 +107,14 @@ def wr_map_gender(session, entity, data):
 
 
 def wr_map_athlete(session, entity, data):
-    entity.lane = get_(data, 'Lane')
+    entity.name = get_(data, 'DisplayName')
+    entity.first_name__ = get_(data, 'FirstName')
+    entity.last_name__ = get_(data, 'LastName')
+    with suppress(ValueError):
+        entity.birthdate = dt.datetime.fromisoformat(get_(data, 'BirthDate', '')).date()
+
+    entity.height_cm__ = get_(data, 'HeightCm')
+    entity.weight_kg__ = get_(data, 'WeightKg')
 
 def wr_map_race_boat(session, entity, data):
     entity.country = wr_insert(session, model.Country, wr_map_country, get_(data, 'country'))
@@ -225,6 +232,7 @@ def wr_map_competition(session, entity, data):
 
 
 def wr_insert_competition(session, competition_data):
+    # HIGH PRIO TODO: Check for Enum_Maintenance_State and leave untouched it's world_rowing_postprocessed
     wr_insert(session, model.Competition, wr_map_competition, competition_data)
     session.commit()
     pass
