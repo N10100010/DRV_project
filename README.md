@@ -2,6 +2,37 @@
 Container for the innovation project WS '22
 
 
+## How to run things
+
+### (Preparation) Install required packages
+
+    pip install -r requirements.txt
+
+### Database (PostgreSQL)
+
+- **database/README.md** describes how to
+    - run a development PostgreSQL based on `docker-compose`
+    - initialize tables
+- **backend/scraping_wr/README.md** describes how to
+    - grab data from World Rowing API
+- **backend/model/README.md** describes how to
+    - create/drop tables
+    - insert data
+
+### Backend Scrape/Maintenance Process (Python)
+
+*TODO...*
+
+### Backend API Server (Python/Flask)
+
+    python -m flask --app backend.app.app:app run
+
+### Frontend (Node.js/Vue)
+
+- **frontend/README.md** describes how to
+    - run the frontend
+
+###
 
 ## MVP
 What would be the MVP for the customer?
