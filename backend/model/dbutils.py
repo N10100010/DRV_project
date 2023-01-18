@@ -231,13 +231,13 @@ def wr_map_competition(session, entity, data):
     STATE_DEFAULT = model.Enum_Maintenance_Level.world_rowing_api_grabbed.value
     STATE_UPPER_LIMIT = model.Enum_Maintenance_Level.world_rowing_api_grabbed.value
 
-    state = entity.maintenance_state_
+    state = entity.maintenance_level
     update_entity = state == None or state <= STATE_UPPER_LIMIT
     if not update_entity:
         return entity
 
-    if entity.maintenance_state_ == None:
-        entity.maintenance_state_ = STATE_DEFAULT
+    if entity.maintenance_level == None:
+        entity.maintenance_level = STATE_DEFAULT
 
     # Competition_Category
     competition_category = wr_insert(

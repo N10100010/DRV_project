@@ -212,7 +212,7 @@ class Competition(Base):
     additional_id_ = Column(String, index=True, unique=True)
 
     # holds info about the state of postprocessing using Enum_Maintenance_Level
-    maintenance_state_ = Column(Integer, nullable=False)
+    maintenance_level = Column(Integer, nullable=False)
 
     competition_category_id = Column(Integer, ForeignKey("competition_category.id"))
     competition_category    = relationship("Competition_Category", back_populates="competitions")
