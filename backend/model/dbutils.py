@@ -302,7 +302,7 @@ if __name__ == '__main__':
         with Scoped_Session() as session: # implicit commit when leaving context w/o errors
             with open(args.insert, mode="r", encoding="utf-8") as fp:
                 competition_data = json.load(fp)
-        wr_insert_competition(session, competition_data)
+            wr_insert_competition(session, competition_data)
 
     else:
         if args.drop:
