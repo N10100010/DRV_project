@@ -1,16 +1,21 @@
 <template>
   <v-container>
-  <h2>Filter</h2>
+    <v-row>
+      <v-col>
+        <h2>Filter</h2>
+      </v-col>
+      <v-col class="text-right">
+        <i class="mdi mdi-close" style="font-size: 25px; color: darkgrey" @click="hideFilter"></i>
+      </v-col>
+    </v-row>
     <v-divider></v-divider>
     <v-form id="rennstrukturFilterFormular" class="mt-2" @submit.prevent="onSubmit"
-    ref="filterForm"  v-model="formValid" lazy-validation>
-
+            ref="filterForm" v-model="formValid" lazy-validation>
       <v-select class="pt-2" clearable density="comfortable" label="Year"
                 :items="optionsYear" v-model="selectedYear"
                 variant="outlined" :rules="[v => !!v || 'Wähle ein Jahr']"
       ></v-select>
-
-       <v-select class="pt-3" density="comfortable"
+      <v-select class="pt-3" density="comfortable"
                 label="Wettkampfklasse" :items="optionsCompTypes"
                 v-model="selectedCompTypes" variant="outlined"
       ></v-select>
@@ -56,17 +61,19 @@
 
 <script>
 import Checkbox from "@/components/filters/checkbox.vue";
-import { useRennstrukturAnalyseState } from "@/stores/baseStore";
+import {useRennstrukturAnalyseState} from "@/stores/baseStore";
 import {mapActions, mapState} from "pinia";
 import {useBerichteState} from "@/stores/berichteStore";
 
 export default {
-  components: { Checkbox },
+  components: {Checkbox},
   computed: {
     ...mapState(useRennstrukturAnalyseState, {
-      raceAnalysisFilterOptions: "getRaceAnalysisFilterOptions"}),
-      ...mapState(useRennstrukturAnalyseState, {
-      showFilter: "getFilterState"}),
+      raceAnalysisFilterOptions: "getRaceAnalysisFilterOptions"
+    }),
+    ...mapState(useRennstrukturAnalyseState, {
+      showFilter: "getFilterState"
+    }),
   },
   data() {
     return {
@@ -103,7 +110,7 @@ export default {
   },
   methods: {
     async onSubmit() {
-      const { valid } = await this.$refs.filterForm.validate()
+      const {valid} = await this.$refs.filterForm.validate()
       if (valid) {
         this.hideFilter()
         this.submitFormData()
@@ -136,3 +143,9 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.mdi-close:hover{
+  cursor: pointer;
+}
+</style>

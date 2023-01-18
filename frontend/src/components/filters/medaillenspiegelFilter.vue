@@ -1,6 +1,13 @@
 <template>
   <v-container>
-    <h2>Filter</h2>
+    <v-row>
+       <v-col>
+      <h2>Filter</h2>
+       </v-col>
+    <v-col class="text-right">
+      <i class="mdi mdi-close" style="font-size: 25px; color: darkgrey" @click="hideFilter"></i>
+    </v-col>
+    </v-row>
     <v-divider></v-divider>
     <v-form class="mt-2" id="berichteFilterFormular" @submit.prevent="onSubmit"
             v-model="formValid" lazy-validation ref="filterForm">
@@ -274,3 +281,9 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.mdi-close:hover{
+  cursor: pointer;
+}
+</style>
