@@ -7,7 +7,7 @@ import os
 import datetime as dt
 import urllib.parse
 
-from ..common.helpers import Timedelta_Parser
+from ..common.helpers import Timedelta_Parser, parse_wr_intermediate_distance_key
 
 # from ..scraping_wr import utils_wr
 from ..scraping_wr import api
@@ -108,7 +108,7 @@ def wr_map_athlete(session, entity, data):
     entity.name = get_(data, 'DisplayName')
     entity.first_name__ = get_(data, 'FirstName')
     entity.last_name__ = get_(data, 'LastName')
-    with suppress(ValueError):
+    with suppress(TypeError, ValueError):
         entity.birthdate = dt.datetime.fromisoformat(get_(data, 'BirthDate', '')).date()
 
     entity.height_cm__ = get_(data, 'HeightCm')
@@ -142,6 +142,7 @@ def wr_insert_invalid_mark_result_code(session, data):
     
     return entity
 
+
 def wr_map_race_boat(session, entity, data):
     entity.country = wr_insert(session, model.Country, wr_map_country, get_(data, 'country'))
     
@@ -158,12 +159,8 @@ def wr_map_race_boat(session, entity, data):
 
     entity.name = get_(data, 'DisplayName') # e.g. "GER2" for the second German boat
     
-    result_time_ms = None
-    try:
-        result_time_ms = Timedelta_Parser.to_millis( get_(data, 'ResultTime') )
-    except ValueError:
-        pass # TODO: log
-    entity.result_time_ms = result_time_ms
+    with suppress(TypeError, ValueError):
+        entity.result_time_ms = Timedelta_Parser.to_millis( get_(data, 'ResultTime') )
     
     entity.invalid_mark_result_code = wr_insert_invalid_mark_result_code(session, get_(data, 'invalidMarkResultCode'))
 
@@ -174,11 +171,36 @@ def wr_map_race_boat(session, entity, data):
     entity.world_cup_points__ = get_(data, 'WorldCupPoints')
     entity.club_name__ = get_( get_(data, 'boat', {}), 'clubName' )
 
-    # TODO: Race Data
+    # Intermediate times
+    # (Beware: Contains duplicates for same distance raceID:931fd903-1d44-4ace-8665-bf1230dc0227 -> boat:2d5a3f94-37ba-480d-9d72-eada6a4c30f9 (DEN))
+    entity.intermediates.clear()
+    seen_set = set()
+    for interm_data in get_(data, 'raceBoatIntermediates', []):
+        intermediate = model.Intermediate_Time()
+
+        # filter out duplicates // Future TODO/NOTE: Check if current strategy is appropriate
+        distance_key = get_(get_(interm_data, 'distance'), 'DisplayName', '')
+        if distance_key in seen_set:
+            pass
+            continue
+        seen_set.add(distance_key)
+
+        with suppress(TypeError, ValueError):
+            intermediate.distance_meter = parse_wr_intermediate_distance_key(distance_key)
+            intermediate.data_source_ = model.Enum_Data_Source.world_rowing_api.value
+            intermediate.rank = get_(interm_data, 'Rank')
+            intermediate.result_time_ms = Timedelta_Parser.to_millis( get_(interm_data, 'ResultTime') )
+
+            intermediate.difference__ = repr( get_(interm_data, 'Difference') )
+            intermediate.start_position__ = repr( get_(interm_data, 'StartPosition') )
+
+            session.add(intermediate)
+            entity.intermediates.append(intermediate)
+
 
 def wr_map_race(session, entity, data):
     entity.name = get_(data, 'DisplayName')
-    with suppress(ValueError):
+    with suppress(TypeError, ValueError):
         entity.date = dt.datetime.fromisoformat(get_(data, 'Date', ''))
     entity.phase_type = get_( get_(data, 'racePhase', {}), 'DisplayName','' ).lower()
     entity.phase = get_(data, 'FB') # !!! HIGH PRIO TODO: Extract from RSC Code !!!
@@ -253,7 +275,7 @@ def wr_map_competition(session, entity, data):
     entity.competition_category = competition_category
     entity.venue = venue
     entity.name = get_(data, 'DisplayName')
-    with suppress(ValueError):
+    with suppress(TypeError, ValueError):
         entity.start_date = dt.datetime.fromisoformat(get_(data, 'StartDate', ''))
         entity.end_date = dt.datetime.fromisoformat(get_(data, 'EndDate', ''))
 

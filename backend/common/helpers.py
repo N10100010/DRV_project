@@ -1,17 +1,18 @@
 import re
 
 
+def int_(s):
+    is_digit_str = isinstance(s, str) and s.isdigit()
+    is_int = isinstance(s, int)
+    if is_digit_str or is_int:
+        return int(s)
+    return 0
+
+
 class Timedelta_Parser:
     regex = re.compile( r"^(((\d*):)?((\d*):)?(\d*))(\.(\d*))?$" )
     
-    def int_(s):
-        is_digit_str = isinstance(s, str) and s.isdigit()
-        is_int = isinstance(s, int)
-        if is_digit_str or is_int:
-            return int(s)
-        return 0
-    
-    def to_millis(delta_str):
+    def to_millis(delta_str: str) -> int:
         """returns int in milliseconds
         
         Input format 'HH:MM:SS.mmm'. Examples: 
@@ -20,7 +21,7 @@ class Timedelta_Parser:
         error = ValueError("Timedelta string does not match the format 'HH:MM:SS.mmm'")
 
         if not isinstance(delta_str, str):
-            raise error
+            raise TypeError("Not a string")
 
         SECOND_IN_MILLIS = 1000
         MINUTE_IN_MILLIS = 60 * SECOND_IN_MILLIS
@@ -44,9 +45,24 @@ class Timedelta_Parser:
         for unit, string in zip(('seconds','minutes','hours'), reversed(left_part_split)):
             parsed[unit] = string
 
-        sum_ms  = Timedelta_Parser.int_(parsed['milliseconds'])
-        sum_ms += Timedelta_Parser.int_(parsed['seconds']) * SECOND_IN_MILLIS
-        sum_ms += Timedelta_Parser.int_(parsed['minutes']) * MINUTE_IN_MILLIS
-        sum_ms += Timedelta_Parser.int_(parsed['hours']) * HOUR_IN_MILLIS
+        sum_ms  = int_(parsed['milliseconds'])
+        sum_ms += int_(parsed['seconds']) * SECOND_IN_MILLIS
+        sum_ms += int_(parsed['minutes']) * MINUTE_IN_MILLIS
+        sum_ms += int_(parsed['hours']) * HOUR_IN_MILLIS
 
         return sum_ms
+
+
+__wr_distance_regex = re.compile( r"^d(\d+)m$" )
+def parse_wr_intermediate_distance_key(distancy_key: str) -> int:
+    """Input: "d2000m" -> Output: int(2000)"""
+
+    if not isinstance(distancy_key, str):
+        raise TypeError("Not a string")
+
+    result = __wr_distance_regex.match(distancy_key)
+    if result == None:
+        raise ValueError("distancy_key does not look like e.g. 'd1234m'")
+
+    meters = result.group(1)
+    return int(meters)
