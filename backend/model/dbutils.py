@@ -5,7 +5,7 @@ from sqlalchemy import select
 from contextlib import suppress
 import datetime as dt
 
-from ..common.helpers import Timedelta_Parser, parse_wr_intermediate_distance_key
+from ..common.helpers import Timedelta_Parser, parse_wr_intermediate_distance_key, get_
 
 # from ..scraping_wr import utils_wr
 from ..scraping_wr import api
@@ -13,16 +13,6 @@ from ..scraping_wr import api
 # logging stuff
 import logging
 logger = logging.getLogger(__name__)
-
-
-def get_(data, key, default=None):
-    if data == None:
-        return default
-    
-    if not isinstance(data, dict):
-        raise ValueError("data Parameter is not dict type")
-    
-    return data.get(key, default)
 
 
 def create_tables(engine):

@@ -1,6 +1,16 @@
 import re
 
 
+def get_(data, key, default=None):
+    if data == None:
+        return default
+    
+    if not isinstance(data, dict):
+        raise ValueError("data Parameter is not dict type")
+    
+    return data.get(key, default)
+
+
 def int_(s):
     is_digit_str = isinstance(s, str) and s.isdigit()
     is_int = isinstance(s, int)
