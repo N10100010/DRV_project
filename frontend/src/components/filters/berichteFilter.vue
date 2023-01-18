@@ -1,48 +1,70 @@
 <template>
   <v-container :style="{'height': mobile ? '135%' : '100%'}">
-  <h2>Filter</h2>
+    <v-row>
+       <v-col>
+      <h2>Filter</h2>
+       </v-col>
+    <v-col class="text-right">
+      <i class="mdi mdi-close" style="font-size: 25px; color: darkgrey" @click="hideFilter"></i>
+    </v-col>
+    </v-row>
     <v-divider></v-divider>
-
-    <v-form class="mt-2" id="berichteFilterFormular" @submit.prevent="onSubmit">
+    <v-form class="mt-2" id="berichteFilterFormular"
+            v-model="formValid" lazy-validation
+            @submit.prevent="onSubmit" ref="filterForm">
 
       <v-chip-group filter color="blue" v-model="selectedGenders">
-        <v-chip v-for="genderType in genderTypeOptions">{{genderType.charAt(0).toUpperCase() + genderType.slice(1)}}</v-chip>
+        <v-chip v-for="genderType in genderTypeOptions">{{ genderType.charAt(0).toUpperCase() + genderType.slice(1) }}
+        </v-chip>
       </v-chip-group>
       <v-chip-group filter color="blue" v-model="selectedAgeGroups">
-        <v-chip v-for="ageGroup in ageGroupOptions">{{ageGroup.charAt(0).toUpperCase() + ageGroup.slice(1)}}</v-chip>
+        <v-chip v-for="ageGroup in ageGroupOptions">{{ ageGroup.charAt(0).toUpperCase() + ageGroup.slice(1) }}</v-chip>
       </v-chip-group>
       <v-select class="pt-3" label="Bootsklassen" clearable chips density="comfortable"
                 :items="optionsBoatClasses" v-model="selectedBoatClasses" variant="outlined"
+                :rules="[v => !!v || 'Wähle mindestens eine Bootsklasse']"
       ></v-select>
       <v-container class="pa-0 d-flex pt-3">
         <v-col cols="6" class="pa-0 pr-2">
           <v-select clearable label="Von" :items="optionsStartYear"
-            variant="outlined" v-model="startYear" density="comfortable"
+                    variant="outlined" v-model="startYear" density="comfortable"
+                    :rules="[v => !!v || 'Wähle ein Jahr als Anfangswert',
+                    (v) => parseInt(v) <= parseInt(endYear) || 'Zeitraum Anfang darf nicht nach dem Ende liegen.']"
           ></v-select>
         </v-col>
         <v-col cols="6" class="pa-0 pl-2">
           <v-select clearable label="Bis" :items="optionsEndYear"
-            v-model="endYear" variant="outlined" density="comfortable"
+                    v-model="endYear" variant="outlined" density="comfortable"
+                    :rules="[v => !!v || 'Wähle ein Jahr als Endwert',
+                        (v) => parseInt(v) >= parseInt(startYear) || 'Zeitraum Ende darf nicht vor dem Anfang liegen.']"
           ></v-select>
         </v-col>
       </v-container>
       <v-select class="pt-3" chips multiple density="comfortable"
                 label="Wettkampfklassen" :items="optionsCompTypes"
                 v-model="selectedCompTypes" variant="outlined"
+                :rules="[v => v.length > 0 || 'Wähle mindestens eine Wettkampfklasse']"
       ></v-select>
       <v-chip-group class="pt-2" filter color="blue" multiple v-model="selectedRuns">
-        <v-chip density="comfortable" v-for="runOption in optionsRuns">{{runOption.charAt(0).toUpperCase() + runOption.slice(1)}}</v-chip>
+        <v-chip density="comfortable" v-for="runOption in optionsRuns">
+          {{ runOption.charAt(0).toUpperCase() + runOption.slice(1) }}
+        </v-chip>
       </v-chip-group>
       <v-select label="Lauf" class="pt-2"
                 clearable :items="optionsRunsFineSelection" v-model="selectedRunsFineSelection"
-                multiple variant="outlined" chips></v-select>
+                multiple variant="outlined" chips
+                :rules="[v => v.length > 0 || 'Wähle mindestens eine Laufkategorie']">
+      </v-select>
+
       <v-label class="pt-1">Platzierung (optional)</v-label>
       <v-chip-group filter color="blue" multiple v-model="selectedRanks">
-        <v-chip v-for="rankName in ranksDisplayNames">{{rankName}}</v-chip>
+        <v-chip v-for="rankName in ranksDisplayNames">{{ rankName }}</v-chip>
       </v-chip-group>
 
       <v-container class="pa-0 pt-4 text-right">
-        <v-btn color="grey" class="mx-2" @click="clearFormInputs"><v-icon>mdi-backspace-outline</v-icon></v-btn>
+        <v-btn color="grey" class="mx-2" @click="clearFormInputs">
+          <v-icon>mdi-backspace-outline</v-icon>
+        </v-btn>
         <v-btn color="blue" class="mx-2" type="submit">Übernehmen</v-btn>
       </v-container>
 
@@ -60,9 +82,11 @@ export default {
   components: {Checkbox},
   computed: {
     ...mapState(useBerichteState, {
-      reportFilterOptions: "getReportFilterOptions"}),
+      reportFilterOptions: "getReportFilterOptions"
+    }),
     ...mapState(useBerichteState, {
-      showFilter: "getFilterState"}),
+      showFilter: "getFilterState"
+    })
   },
   data() {
     return {
@@ -70,6 +94,7 @@ export default {
       mobile: false,
       hoverFilter: false,
       drawer: null,
+      formValid: true,
       // competition type
       compTypes: [], // list of dicts with objects containing displayName, id and key
       optionsCompTypes: ["Olympics", "World Rowing Championships", "Qualifications"],
@@ -125,14 +150,14 @@ export default {
     let boatClassOptions = []
     let values = Object.values(this.reportFilterOptions[0].boat_class)[0]
     Object.entries(values).forEach(([key, value], index) => {
-          if (index === 0) {
-            Object.entries(value).forEach(([, val]) => {
-              if (typeof val === "object") {
-                boatClassOptions.push(Object.values(val)[0])
-              }
-            })
+      if (index === 0) {
+        Object.entries(value).forEach(([, val]) => {
+          if (typeof val === "object") {
+            boatClassOptions.push(Object.values(val)[0])
           }
-      });
+        })
+      }
+    });
     this.selectedBoatClasses = boatClassOptions[0]
     this.optionsBoatClasses = boatClassOptions
 
@@ -147,36 +172,40 @@ export default {
 
   },
   methods: {
-    onSubmit() {
-      // define store
+    async onSubmit() {
+      const {valid} = await this.$refs.filterForm.validate()
+      if (valid) {
+        this.hideFilter()
+        this.submitFormData()
+      } else {
+        alert("Bitte überprüfen Sie die Eingaben.")
+      }
+    },
+    hideFilter() {
       const store = useBerichteState()
-      store.setFilterState(this.showFilter) // hide filter on submit
-
-      // access form data
-      const startYear = this.startYear
-      const endYear = this.endYear
-      const competitionType = this.compTypes.filter(item => this.optionsCompTypes.includes(item.displayName)).map(item => item.id)
-      const ranks = this.ranks.map(key => this.ranksDict[key])
-      const runs = this.selectedRuns
-      const runsFine = this.selectedRunsFineSelection
-      const boatClasses = this.selectedBoatClasses
-
-      // send data via pinia store action postFormData
-      return store.postFormData({
+      store.setFilterState(this.showFilter)
+    },
+    submitFormData() {
+      const formData = {
         "years": {
-          "start_year": startYear,
-          "end_year": endYear
+          "start_year": this.startYear,
+          "end_year": this.endYear
         },
-        "competition_category_ids": competitionType,
-        "boat_classes": boatClasses,
-        "runs": runs,
-        "runs_fine": runsFine,
-        "ranks": ranks
-      }).then(() => {
-        console.log("Form data sent...")
-      }).catch(error => {
-        console.error(error)
-      })
+        "competition_category_ids": this.compTypes.filter(item => this.optionsCompTypes.includes(item.displayName))
+            .map(item => item.id),
+        "boat_classes": this.selectedBoatClasses,
+        "runs": this.selectedRuns,
+        "runs_fine": this.selectedRunsFineSelection,
+        "ranks": this.ranks.map(key => this.ranksDict[key])
+      }
+      const store = useBerichteState()
+      store.postFormData(formData)
+          .then(() => {
+            console.log("Form data sent...")
+          })
+          .catch(error => {
+            console.error(error)
+          })
     },
     clearFormInputs() {
       this.selectedGenders = 0
@@ -192,7 +221,7 @@ export default {
     }
   },
   watch: {
-    selectedGenders: function (newVal, ) {
+    selectedGenders: function (newVal,) {
       if (newVal !== undefined) {
         this.selectedBoatClasses = null
         let optionsList = []
@@ -218,15 +247,15 @@ export default {
         this.ageGroupOptions = optionsList.filter((v, i, a) => a.indexOf(v) === i); // exclude non-unique values
         let boatClassOptions = []
         Object.entries(Object.values(this.reportFilterOptions[0].boat_class)[newVal]).forEach(([key, value], index) => {
-            if (index === this.selectedAgeGroups) {
-              Object.entries(value).forEach(([, val]) => {
-                if (typeof val === "object") {
-                  boatClassOptions.push(Object.values(val)[0])
-                }
-              })
-            }
+          if (index === this.selectedAgeGroups) {
+            Object.entries(value).forEach(([, val]) => {
+              if (typeof val === "object") {
+                boatClassOptions.push(Object.values(val)[0])
+              }
+            })
+          }
         });
-        if (newVal !==2 && newVal !== 3) {
+        if (newVal !== 2 && newVal !== 3) {
           this.optionsBoatClasses = boatClassOptions
           this.selectedBoatClasses = boatClassOptions[0]
         } else if (newVal === 2) {
@@ -234,7 +263,7 @@ export default {
         }
       }
     },
-    selectedAgeGroups: function (newVal, ) {
+    selectedAgeGroups: function (newVal,) {
       if (newVal !== undefined) {
         this.selectedBoatClasses = null
         let genderObj = Object.values(this.reportFilterOptions[0].boat_class)[this.selectedGenders]
@@ -255,11 +284,11 @@ export default {
         }
       }
     },
-    selectedRuns: function (newVal, ) {
+    selectedRuns: function (newVal,) {
       if (newVal !== undefined) {
         let newList = Object.values(newVal)
         const selectionOptions = Object.values(this.reportFilterOptions[0].runs).filter(item => item !== null)
-        let newFineSelectionEntries =  selectionOptions.flatMap((item, idx) => {
+        let newFineSelectionEntries = selectionOptions.flatMap((item, idx) => {
           if (newList.includes(idx)) {
             return item.map(item => item.displayName)
           }
@@ -271,3 +300,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.mdi-close:hover{
+  cursor: pointer;
+}
+</style>

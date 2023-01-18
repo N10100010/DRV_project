@@ -34,7 +34,7 @@ import RennstrukturFilter from "@/components/filters/rennstrukturFilter.vue";
                   <v-list density="compact" v-show="displayCompetitions">
                     <v-list-item
                         min-height="80"
-                        style="background-color: whitesmoke; border-radius: 5px"
+                        style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
                         class="pa-2 my-2"
                         v-for="competition in getAnalysis"
                         :key="competition"
@@ -46,7 +46,7 @@ import RennstrukturFilter from "@/components/filters/rennstrukturFilter.vue";
                   <!-- events list -->
                   <v-list density="compact" v-show="displayEvents">
                     <v-list-item
-                        style="background-color: whitesmoke; border-radius: 5px"
+                        style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
                         class="pa-2 my-2"
                         v-for="event in events"
                         :key="event"
@@ -57,7 +57,7 @@ import RennstrukturFilter from "@/components/filters/rennstrukturFilter.vue";
                   <!-- races list -->
                   <v-list density="compact" v-show="displayRaces">
                     <v-list-item
-                        style="background-color: whitesmoke; border-radius: 5px"
+                        style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
                         class="pa-2 my-2"
                         v-for="race in races"
                         :key="race"

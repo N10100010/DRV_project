@@ -34,11 +34,11 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
         <v-divider></v-divider>
         <v-container class="pa-0 mt-8">
           <v-row>
-            <v-col cols="12">
+            <v-col cols="5">
               <h2>{{ tableData.boat_class }}</h2>
+              <p>{{ tableData.results }} Datensätze gefunden</p>
               <p>Von {{ tableData.start_date }} bis {{ tableData.end_date }}</p>
-              <p>{{ tableData.results }} Datensätze gefunden.</p>
-              <v-table class="tableStyles">
+              <v-table class="tableStyles" density="comfortable">
                 <tbody class="nth-grey">
                 <tr>
                   <th>Weltbestzeit</th>
@@ -100,13 +100,12 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 </tbody>
               </v-table>
             </v-col>
-            <v-col cols="12">
+            <v-col cols="7">
               <v-container>
-                <BarChart :height="400" :data="getBarChartData" :chartOptions="barChartOptions"></BarChart>
+                <BarChart :data="getBarChartData" :chartOptions="barChartOptions"></BarChart>
               </v-container>
               <v-container>
-                <ScatterChart :height="400" :data="getScatterChartData"
-                              :chartOptions="scatterChartOptions"></ScatterChart>
+                <ScatterChart :data="getScatterChartData" :chartOptions="scatterChartOptions"></ScatterChart>
               </v-container>
               <v-container>
               </v-container>
@@ -234,16 +233,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
 .tableStyles {
   border: 1px solid #e0e0e0;
 
   th {
     border: 1px solid #e0e0e0;
     font-size: 14px !important;
+    text-align: right;
   }
 
   td {
-    text-align: center;
+    text-align: right;
     border: 1px solid #e0e0e0;
   }
 }

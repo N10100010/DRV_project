@@ -1,40 +1,56 @@
 <template>
   <v-container>
-    <h2>Filter</h2>
+    <v-row>
+       <v-col>
+      <h2>Filter</h2>
+       </v-col>
+    <v-col class="text-right">
+      <i class="mdi mdi-close" style="font-size: 25px; color: darkgrey" @click="hideFilter"></i>
+    </v-col>
+    </v-row>
     <v-divider></v-divider>
-    <v-form class="mt-2" id="berichteFilterFormular" @submit.prevent="onSubmit">
+    <v-form class="mt-2" id="berichteFilterFormular" @submit.prevent="onSubmit"
+            v-model="formValid" lazy-validation ref="filterForm">
       <v-container class="pa-0 d-flex pt-3">
         <v-col cols="6" class="pa-0 pr-2">
           <v-select clearable label="Von" :items="optionsStartYear"
                     variant="outlined" v-model="startYear" density="comfortable"
+                    :rules="[v => !!v || 'Wähle ein Jahr als Anfangswert',
+                    (v) => parseInt(v) <= parseInt(endYear) || 'Zeitraum Anfang darf nicht nach dem Ende liegen.']"
           ></v-select>
         </v-col>
         <v-col cols="6" class="pa-0 pl-2">
           <v-select clearable label="Bis" :items="optionsEndYear"
                     v-model="endYear" variant="outlined" density="comfortable"
+                    :rules="[v => !!v || 'Wähle ein Jahr als Endwert',
+                        (v) => parseInt(v) >= parseInt(startYear) || 'Zeitraum Ende darf nicht vor dem Anfang liegen.']"
           ></v-select>
         </v-col>
       </v-container>
       <v-select class="pt-2" clearable chips multiple color="blue"
                 label="Wettkampfklassen" :items="optionsCompTypes"
                 v-model="selectedCompTypes" variant="outlined"
+                :rules="[v => v.length > 0 || 'Wähle mindestens eine Wettkampfklasse']"
       ></v-select>
       <v-label>Medaillientyp</v-label>
       <v-chip-group filter color="blue" v-model="selectedMedalTypes">
         <v-chip v-for="medalType in optionsMedalTypes">{{ medalType }}</v-chip>
       </v-chip-group>
-      <v-autocomplete class="pt-4" :items="optionsNations" v-model="selectedNation"
+      <v-autocomplete class="pt-4" :items="optionsNations" multiple v-model="selectedNation"
                       variant="outlined" color="blue" label="Nation" density="comfortable"
+                      :rules="[v => !!v || 'Wähle mindestens eine Nation']"
       ></v-autocomplete>
       <v-label>Bootsklasse</v-label>
-     <v-chip-group filter color="blue" v-model="selectedGenders">
-        <v-chip v-for="genderType in genderTypeOptions">{{genderType.charAt(0).toUpperCase() + genderType.slice(1)}}</v-chip>
+      <v-chip-group filter color="blue" v-model="selectedGenders">
+        <v-chip v-for="genderType in genderTypeOptions">{{ genderType.charAt(0).toUpperCase() + genderType.slice(1) }}
+        </v-chip>
       </v-chip-group>
       <v-chip-group filter color="blue" v-model="selectedAgeGroups">
-        <v-chip v-for="ageGroup in ageGroupOptions">{{ageGroup.charAt(0).toUpperCase() + ageGroup.slice(1)}}</v-chip>
+        <v-chip v-for="ageGroup in ageGroupOptions">{{ ageGroup.charAt(0).toUpperCase() + ageGroup.slice(1) }}</v-chip>
       </v-chip-group>
       <v-select class="pt-3" label="Bootsklassen" clearable chips density="comfortable"
                 :items="optionsBoatClasses" v-model="selectedBoatClasses" variant="outlined"
+                :rules="[v => !!v || 'Wähle mindestens eine Bootsklasse']"
       ></v-select>
       <v-container class="pa-0 pt-8 text-right">
         <v-btn color="grey" class="mx-2" @click="clearFormInputs">
@@ -69,6 +85,7 @@ export default {
       mobile: false,
       hoverFilter: false,
       drawer: null,
+      formValid: true,
 
       // competition type
       compTypes: [], // list of dicts with objects containing displayName, id and key
@@ -83,11 +100,11 @@ export default {
 
       // medal types
       optionsMedalTypes: [],
-      selectedMedalTypes: [],
+      selectedMedalTypes: [0],
 
       // nations
       optionsNations: [],
-      selectedNation: null,
+      selectedNation: "GER (Deutschland)",
 
       // boat classes
       genderTypeOptions: [],
@@ -106,7 +123,7 @@ export default {
     this.startYear = Object.values(this.filterOptions[0].year[0])[0]
     this.endYear = Object.values(this.filterOptions[0].year[1])[0]
     this.optionsStartYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
-    this.optionsEndYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
+    this.optionsEndYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.endYear - i)
 
     // competition category id
     this.compTypes = this.filterOptions[0].competition_category_ids
@@ -133,22 +150,34 @@ export default {
     let boatClassOptions = []
     let values = Object.values(this.filterOptions[0].boat_class)[0]
     Object.entries(values).forEach(([key, value], index) => {
-          if (index === 0) {
-            Object.entries(value).forEach(([, val]) => {
-              if (typeof val === "object") {
-                boatClassOptions.push(Object.values(val)[0])
-              }
-            })
+      if (index === 0) {
+        Object.entries(value).forEach(([, val]) => {
+          if (typeof val === "object") {
+            boatClassOptions.push(Object.values(val)[0])
           }
-      });
+        })
+      }
+    });
     this.selectedBoatClasses = boatClassOptions[0]
     this.optionsBoatClasses = boatClassOptions
   },
   methods: {
-    onSubmit() {
+    async onSubmit() {
+      const {valid} = await this.$refs.filterForm.validate()
+      if (valid) {
+        this.hideFilter()
+        await this.submitFormData()
+      } else {
+        alert("Bitte überprüfen Sie die Eingaben.")
+      }
+    },
+    hideFilter() {
+      const store = useMedaillenspiegelState()
+      store.setFilterState(this.showFilter)
+    },
+    submitFormData() {
       // define store
       const store = useMedaillenspiegelState()
-      store.setFilterState(this.showFilter) // hide filter on submit
 
       // access form data
       const startYear = this.startYear
@@ -252,3 +281,9 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.mdi-close:hover{
+  cursor: pointer;
+}
+</style>

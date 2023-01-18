@@ -21,13 +21,31 @@
         <h1>Medaillenspiegel</h1>
         <v-divider></v-divider>
         <v-container class="pa-0 mt-8">
+          <v-col cols="6" style="font-weight: 600">
+            <v-row>
+              <v-col cols="6" class="pa-0">
+                <p>(n = {{ filterSelection.results }})</p>
+                <p>Von: {{ filterSelection.start_date }}</p>
+                <p>Bis: {{ filterSelection.end_date }}</p>
+              </v-col>
+              <v-col cols="6">
+              </v-col>
+            </v-row>
+          </v-col>
           <v-row>
             <v-col cols="6">
-              <v-table class="tableStyles">
+              <v-table class="tableStyles" density="comfortable">
                 <tbody class="nth-grey">
-                <tr v-for="header in headers" :key="header">
-                  <th>{{ header }}</th>
-                  <td v-for="value in items[header]">{{ value }}</td>
+                <tr v-for="(el, idx) in tableData[0]">
+                  <th>{{ el }}</th>
+                  <td>
+                    <template v-if="typeof tableData[1][idx] === 'object'" v-for="(value, key) in tableData[1][idx]">
+                      {{ value }} ({{ key }}) <br/>
+                    </template>
+                    <template v-else>
+                      {{ tableData[1][idx] }}
+                    </template>
+                  </td>
                 </tr>
                 </tbody>
               </v-table>
@@ -62,6 +80,12 @@ export default {
     }),
     ...mapState(useMedaillenspiegelState, {
       filterState: "getFilterState"
+    }),
+    ...mapState(useMedaillenspiegelState, {
+      filterSelection: "getFilterSelection"
+    }),
+    ...mapState(useMedaillenspiegelState, {
+      tableData: "getTableData"
     })
   },
   methods: {
@@ -79,31 +103,6 @@ export default {
     return {
       mobile: false,
       filterOpen: false,
-      chartData: {
-        "data": [4, 5, 2, 5]
-      },
-      headers: [
-        'Platz',
-        'Punkte',
-        'Nation_IOC',
-        'Medaillen_Gold',
-        'Medaillen_Silber',
-        'Medaillen_Bronze',
-        'Medaillen_Gesamt',
-        'Finale_A',
-        'Finale_B'
-      ],
-      items: {
-        'Platz': ['1'],
-        'Punkte': ['1000'],
-        'Nation_IOC': ['USA'],
-        'Medaillen_Gold': ['5'],
-        'Medaillen_Silber': ['3'],
-        'Medaillen_Bronze': ['2'],
-        'Medaillen_Gesamt': ['10'],
-        'Finale_A': ['Ja'],
-        'Finale_B': ['Nein']
-      }
     }
   },
   created() {

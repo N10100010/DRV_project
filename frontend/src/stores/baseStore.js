@@ -25,6 +25,10 @@ export const useRennstrukturAnalyseState = defineStore({
                 "boatClass": "Men's Eight",
                 "worldBestTimeBoatClass": "00:05:58,36",
                 "bestTimeBoatClassCurrentOZ": "00:05:58,36",
+                "pdf_urls": {
+                    "result": "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCH_2018/WCH_2018_ROWWSCULL2------------HEAT000100--_C73X7962.PDF",
+                    "race_data": "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/ECM2022/ECM2022_ROWXSCULL2--PR2-------PREL000100--_C77X3426.PDF"
+                },
                 "data": [
                     {
                         "nation_ioc": "CZE",
