@@ -72,10 +72,12 @@ https://world-rowing-api.soticcloud.net/stats/api/race/?include=racePhase%2Ceven
 
 # Enums
 # -----
-class Enum_Maintenance_State(enum.Enum):
+class Enum_Maintenance_Level(enum.Enum):
     """Enum for Competition Entity"""
-    world_rowing_api_grabbed = 1
-    world_rowing_postprocessed = 2
+    world_rowing_api_grabbed = 5
+    world_rowing_postprocessed = 6
+
+    manually_entered_data = 1000
 
 class Enum_Data_Source(enum.Enum):
     world_rowing_api = 1
@@ -209,10 +211,8 @@ class Competition(Base):
     id = Column(BigInteger, primary_key=True)
     additional_id_ = Column(String, index=True, unique=True)
 
-    # holds info about the state of postprocessing using Enum_Maintenance_State
-    maintenance_state_ = Column(Integer, nullable=False,
-        default=Enum_Maintenance_State.world_rowing_api_grabbed.value
-    )
+    # holds info about the state of postprocessing using Enum_Maintenance_Level
+    maintenance_state_ = Column(Integer, nullable=False)
 
     competition_category_id = Column(Integer, ForeignKey("competition_category.id"))
     competition_category    = relationship("Competition_Category", back_populates="competitions")

@@ -181,7 +181,7 @@ def wr_map_race(session, entity, data):
     with suppress(ValueError):
         entity.date = dt.datetime.fromisoformat(get_(data, 'Date', ''))
     entity.phase_type = get_( get_(data, 'racePhase', {}), 'DisplayName','' ).lower()
-    entity.phase = get_(data, 'FB') # !!! TODO: Extract from RSC Code !!!
+    entity.phase = get_(data, 'FB') # !!! HIGH PRIO TODO: Extract from RSC Code !!!
     entity.progression = get_(data, 'Progression')
     entity.rsc_code = get_(data, 'RscCode')
 
@@ -227,6 +227,18 @@ def wr_map_venue(session, entity, data):
 
 
 def wr_map_competition(session, entity, data):
+    # Check maintenance state
+    STATE_DEFAULT = model.Enum_Maintenance_Level.world_rowing_api_grabbed.value
+    STATE_UPPER_LIMIT = model.Enum_Maintenance_Level.world_rowing_api_grabbed.value
+
+    state = entity.maintenance_state_
+    update_entity = state == None or state <= STATE_UPPER_LIMIT
+    if not update_entity:
+        return entity
+
+    if entity.maintenance_state_ == None:
+        entity.maintenance_state_ = STATE_DEFAULT
+
     # Competition_Category
     competition_category = wr_insert(
         session,
@@ -258,7 +270,6 @@ def wr_map_competition(session, entity, data):
 
 
 def wr_insert_competition(session, competition_data):
-    # HIGH PRIO TODO: Check for Enum_Maintenance_State and leave untouched it's world_rowing_postprocessed
     wr_insert(session, model.Competition, wr_map_competition, competition_data)
     session.commit()
     pass
