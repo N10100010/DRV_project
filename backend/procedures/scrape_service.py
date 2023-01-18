@@ -49,13 +49,11 @@ if __name__ == '__main__':
     print(args)
 
     
-    if args.procedure:
+    if not args.procedure:
+        start_service()
+    else:
         if SCRAPE_ID in args.procedure:
             scrape()
         
         if MAINTAIN_ID in args.procedure:
             maintain()
-    
-    if not args.procedure:
-        start_service()
-
