@@ -183,7 +183,6 @@ def wr_map_race_boat(session, entity, data):
         if distance_key in seen_set:
             pass
             continue
-        seen_set.add(distance_key)
 
         with suppress(TypeError, ValueError):
             intermediate.distance_meter = parse_wr_intermediate_distance_key(distance_key)
@@ -196,6 +195,8 @@ def wr_map_race_boat(session, entity, data):
 
             session.add(intermediate)
             entity.intermediates.append(intermediate)
+
+            seen_set.add(distance_key)
 
 
 def wr_map_race(session, entity, data):
