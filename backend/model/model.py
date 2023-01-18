@@ -158,20 +158,22 @@ class Athlete(Base):
     id = Column(BigInteger, primary_key=True)
     additional_id_ = Column(String, index=True, unique=True)
 
-    name = Column(String)
-    first_name__ = Column(String)
-    last_name__ = Column(String)
+    name = Column(String) # e.g. "KRAJANGJAM, Nuntida"
+    first_name__ = Column(String) # e.g. "Nuntida"
+    last_name__ = Column(String) # e.g. "KRAJANGJAM"
     birthdate = Column(Date)
 
     height_cm__ = Column(Integer)
     weight_kg__ = Column(Integer)
 
-    country_id = Column(Integer, ForeignKey("countries.id"))
-    # TODO: gender? already contained in Event entity
+    # Country is already present at boat level
+    # country_id = Column(Integer, ForeignKey("countries.id"))
+    # country = relationship("Country")
+
+    # TODO: gender? already contained in Event entity // Gender entity is not expandable in API 
     # OVRCode?
 
     # relationships
-    country = relationship("Country")
     race_boats = relationship("Association_Race_Boat_Athlete", back_populates="athlete")
 
 class Boat_Class(Base):
