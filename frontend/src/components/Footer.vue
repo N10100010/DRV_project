@@ -1,6 +1,9 @@
 <template>
   <footer class="footer">
-    <p>Footer</p>
+    <v-container>
+      <RouterLink to="/impressum" style="color: white" class="pa-2">Impressum</RouterLink>
+      <RouterLink to="/datenschutz" style="color: white" class="pa-2">Datenschutz</RouterLink>
+    </v-container>
   </footer>
 </template>
 
@@ -9,14 +12,11 @@
 .footer {
   text-align: center;
   margin: auto;
-  position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
   width: 100%;
   background-color: #5cc5ed;
-  color: white;
   justify-self: center;
-  z-index: 99;
+  min-height: 100px;
 }
 </style>

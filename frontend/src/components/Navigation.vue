@@ -11,7 +11,7 @@ export default {
       windowWidth: null,
       navigationLinks: [
           {
-            displayName: "Allgemein",
+            displayName: "Allgemeines",
             link: "/",
             subPages: [
               {
@@ -25,50 +25,28 @@ export default {
             ]
         },
         {
-          displayName: "Women",
-          link: "/women",
-          subPages: [
-            {
-              subPageName: "Consetetur sadipscing",
-              linkTo: "/"
-            },
-            {
-              subPageName: "Sed diam",
-              linkTo: "/"
-            },
-            {
-              subPageName: "Tempor invidunt",
-              linkTo: "/"
-            },
-          ]
+          displayName: "Berichte",
+          link: "/berichte",
         },
         {
-          displayName: "Men",
-          link: "/men",
-          subPages: [
-            {
-              subPageName: "Nonumy eirmod",
-              linkTo: "/"
-            },
-            {
-              subPageName: "Tempor invidunt",
-              linkTo: "/"
-            }
-          ]
+          displayName: "Wettkampfresultate",
+          link: "/wettkampfresultate",
         },
         {
-          displayName: "Sonstiges",
-          link: "/sonstiges",
-          subPages: [
-            {
-              subPageName: "Ut labore",
-              linkTo: "/"
-            },
-            {
-              subPageName: "Et dolore magna ",
-              linkTo: "/"
-            }
-          ]
+          displayName: "Rennstrukturanalyse",
+          link: "/rennstrukturanalyse",
+        },
+        {
+          displayName: "Athleten",
+          link: "/athleten",
+        },
+        {
+          displayName: "Teams",
+          link: "/teams",
+        },
+        {
+          displayName: "Medaillenspiegel",
+          link: "/medaillenspiegel",
         }
       ]
     };
@@ -109,6 +87,7 @@ export default {
 </script>
 
 <template>
+  <header>
   <div class="header-box">
     <header v-bind:style='{"padding-top" : (mobile? "0em" : "18px" )}' :class="{ 'scrolled-nav': scrollPosition }">
 
@@ -130,7 +109,8 @@ export default {
           </div>
           <ul v-show="!mobile" class="navigation" :class="{'collapsed-nav': !showSubMenu, 'expanded': showSubMenu}">
             <li v-for="navEntry in navigationLinks">
-              <RouterLink :to="navEntry.link" @mouseover="expandSubPageMenu(navEntry)">{{ navEntry.displayName }}</RouterLink>
+              <!-- To activate the submenu add this (@mouseover="expandSubPageMenu(navEntry)") to the Link below -->
+              <RouterLink :to="navEntry.link">{{ navEntry.displayName }}</RouterLink>
             </li>
           </ul>
         </div>
@@ -158,6 +138,7 @@ export default {
       </nav>
     </header>
   </div>
+  </header>
 </template>
 
 <style lang="scss" scoped>

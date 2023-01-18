@@ -1,18 +1,15 @@
+<template>
+  <Navigation />
+    <RouterView />
+  <FooterC />
+</template>
+
+
 <script setup>
 import { RouterView } from 'vue-router'
 import Navigation from './components/Navigation.vue'
 import FooterC from './components/Footer.vue';
 </script>
-
-<template>
-  <header>
-    <Navigation />
-  </header>
-  <v-container>
-      <RouterView />
-  </v-container>
-  <FooterC />
-</template>
 
 <style lang="scss" scoped>
 .logo {
