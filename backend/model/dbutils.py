@@ -58,13 +58,11 @@ def query_by_uuid_(session, Entity_Class, uuid):
     If not existing:
         returns None
     """
+    # 1.4 / 2.0 https://docs.sqlalchemy.org/en/14/orm/queryguide.html
+    # 2.0 https://docs.sqlalchemy.org/en/20/orm/queryguide/select.html#selecting-orm-entities
     statement = select(Entity_Class).where(Entity_Class.additional_id_ == uuid.lower())
-    result_list = session.execute(statement).first()
-
-    if result_list:
-        return result_list[0]
-    
-    return None
+    result_entity = session.scalars(statement).first()
+    return result_entity
 
 
 def wr_insert(session, Entity_Class, map_func, data):
@@ -116,6 +114,34 @@ def wr_map_athlete(session, entity, data):
     entity.height_cm__ = get_(data, 'HeightCm')
     entity.weight_kg__ = get_(data, 'WeightKg')
 
+
+def wr_insert_invalid_mark_result_code(session, data):
+    """data example: {"code": "Did not start", "displayName": "DNS", "id": "4b554cb1-8468-4fa7-b75b-434ff1732d81"}"""
+    Entity_Class = model.Invalid_Mark_Result_Code
+    
+    if data == None:
+        return None
+
+    # TODO: Force uppercase: Use validator or getter/setter
+    #    - https://gist.github.com/luhn/4170996
+    #    - https://stackoverflow.com/a/34322323
+    #    - https://docs.sqlalchemy.org/en/14/orm/mapped_attributes.html
+
+    abbreviation = get_(data, 'displayName', '').upper()
+    if not abbreviation:
+        return None
+
+    entity = session.get(Entity_Class, {'id': abbreviation})
+    create_entity = entity == None
+
+    if create_entity:
+        entity = Entity_Class()
+        entity.id = abbreviation
+        entity.name = get_(data, 'code')
+        session.add(entity)
+    
+    return entity
+
 def wr_map_race_boat(session, entity, data):
     entity.country = wr_insert(session, model.Country, wr_map_country, get_(data, 'country'))
     
@@ -136,13 +162,13 @@ def wr_map_race_boat(session, entity, data):
     try:
         result_time_ms = Timedelta_Parser.to_millis( get_(data, 'ResultTime') )
     except ValueError:
-        pass # TODO: consider logging
+        pass # TODO: log
     entity.result_time_ms = result_time_ms
     
+    entity.invalid_mark_result_code = wr_insert_invalid_mark_result_code(session, get_(data, 'invalidMarkResultCode'))
+
     entity.lane = get_(data, 'Lane')
     entity.rank = get_(data, 'Rank')
-    entity.final_rank = get_( get_(data, 'boat', {}), 'finalRank' )
-    entity.final_rank_index__ = repr( get_ (get_(data, 'boat', {}), 'finalRankIndex' ) )
     
     entity.remark__ = repr( get_(data, 'Remark') )
     entity.world_cup_points__ = get_(data, 'WorldCupPoints')
