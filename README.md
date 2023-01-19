@@ -25,9 +25,17 @@ Container for the innovation project WS '22
 
 ### Backend API Server (Python/Flask)
 
-    python -m flask --app backend.app.app:app run
+```sh
+python -m flask --app backend.app.app:app run
+```
 
 Alternatively with `python -m backend.app.app`
+
+Debug with hot reload:
+
+```sh
+python -m flask --app backend.app.app:app --debug run
+```
 
 **Note** Do not use this command for deployment. Use something like `gunicorn`.
 

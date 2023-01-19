@@ -45,13 +45,17 @@
             "type": "python",
             "request": "launch",
             "module": "flask",
+            "env": {
+                "FLASK_ENV": "development"
+            },
             "args": [
                 "--app",
                 "backend.app.app:app",
                 "--debug",
                 "run",
                 "--no-debugger",
-                "--no-reload"
+                "--no-reload",
+                "--port=5000"
             ],
             "console": "integratedTerminal",
             "justMyCode": true
