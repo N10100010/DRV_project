@@ -1,11 +1,119 @@
+<script setup>
+import TeamsFilter from "@/components/filters/teamsFilter.vue";
+import 'chartjs-adapter-moment';
+import {Chart as ChartJS, LinearScale, PointElement, Tooltip, Legend, TimeScale} from "chart.js";
+ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
+
+</script>
+
 <template>
-   <v-container class="pa-10">
-  <h1>Teams</h1>
-  <v-divider></v-divider>
-  <v-container class="pa-0 mt-8" style="min-height: 500px">
-     <v-alert color="info" icon="$info" class="mt-8">
-    Hinweis: Seite befinet sich im Aufbau.
-    </v-alert>
+   <v-btn color="blue"
+         @click="setFilterState()" v-show="!filterOpen"
+         style="position: fixed; z-index: 10; left: 0; border-radius: 0"
+         class="mt-8"
+  >
+    <v-icon>mdi-filter</v-icon>
+  </v-btn>
+  <v-card style="box-shadow: none; z-index: 1">
+      <v-layout>
+        <v-navigation-drawer
+          v-model="filterOpen"
+          temporary
+          v-bind:style='{"margin-top" : (mobile? "71.25px" : "158px" )}'
+          style="background-color: white; border: none"
+          width="600">
+         <teams-filter/>
+        </v-navigation-drawer>
+
+  <v-container class="pa-10">
+    <h1>Teams</h1>
+    <v-divider></v-divider>
+    <v-container class="pa-0 mt-8">
+      <v-row>
+        <v-col cols="12">
+          <v-container style="background-color: whitesmoke; min-height: 200px;">
+            <v-table>
+              <thead>
+                <tr>
+                  <th>Nation</th>
+                  <th>Bootsklasse</th>
+                  <th>Athleten</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <!--<td>{{ tableData }}</td>-->
+                  <!--<td>{{ tableData.boatClass }}</td>
+                  <td>
+                    <p v-for="athlete in tableData.athletes">
+                      {{ athlete.firstName }}
+                      {{ athlete.lastName }}<br>
+                      {{ athlete.gender }}
+                    </p>
+                  </td>-->
+                </tr>
+              </tbody>
+            </v-table>
+          </v-container>
+        </v-col>
+      </v-row>
+    </v-container>
   </v-container>
-     </v-container>
+      </v-layout>
+  </v-card>
 </template>
+
+<script>
+import { mapState } from "pinia";
+import { useTeamsState } from "@/stores/teamsStore";
+
+export default {
+  computed: {
+    ...mapState(useTeamsState, {
+      filterState: "getFilterState"
+    }),
+    ...mapState(useTeamsState, {
+      tableData: "getTableData"
+    })
+  },
+  methods: {
+    setFilterState() {
+      this.filterOpen = !this.filterOpen;
+      const store = useTeamsState()
+      store.setFilterState(this.filterState)
+    },
+    checkScreen() {
+      this.windowWidth = window.innerWidth;
+      if(this.windowWidth <= 750){
+        this.mobile = true;
+        document.querySelector('body').style.paddingTop = '4.5em';
+        return;
+      }
+      this.mobile = false;
+      document.querySelector('body').style.paddingTop = '10.6em';
+      return;
+    }
+  },
+  created() {
+    window.addEventListener('resize', this.checkScreen);
+    this.checkScreen();
+  },
+  data() {
+    return {
+      mobile: false,
+      filterOpen: false,
+    }
+  },
+  watch: {
+    filterState(newValue) {
+      this.filterOpen = newValue;
+    },
+    filterOpen: function (newVal, oldVal) {
+      if (oldVal === true && newVal === false && this.filterState === true) {
+        const store = useTeamsState()
+        store.setFilterState(oldVal)
+      }
+    }
+  }
+}
+</script>
