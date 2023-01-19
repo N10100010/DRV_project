@@ -47,7 +47,7 @@ WR_INCLUDE_EVERYTHING = "?include=" + ",".join(
         "events.races.raceBoats.raceBoatAthletes.person.country",
         "events.races.raceBoats.raceBoatIntermediates.distance",
         "events.races.pdfUrls.orisCode",
-        "pdfUrls.orisCode",
+        "pdfUrls.orisCode"
     ]
 )
 
