@@ -10,9 +10,6 @@ import backend.app.mocks as mocks
 
 app = Flask(__name__, template_folder='web/templates')
 
-BASE_PATH_TEMPLATE = "/app/templates/"
-
-
 @app.route('/')
 def home():
     return render_template("./NO_TEMPLATE.html")
