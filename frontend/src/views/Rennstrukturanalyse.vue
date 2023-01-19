@@ -124,7 +124,7 @@
                 </tr>
                 </thead>
                 <tbody class="nth-grey">
-                <tr v-for="country, idx in tableData.slice(1)">
+                <tr v-for="(country, idx) in tableData.slice(1)">
                   <td v-for="item in country">
                     <template v-if="Array.isArray(item)">
                       <p v-for="element in item">
