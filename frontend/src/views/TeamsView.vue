@@ -7,13 +7,17 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
 </script>
 
 <template>
-   <v-btn color="blue"
+
+  <v-btn color="blue"
          @click="setFilterState()" v-show="!filterOpen"
-         style="position: fixed; z-index: 10; left: 0; border-radius: 0"
-         class="mt-8"
+         class="filterToggleButton mt-6 pa-0 ma-0 bg-light-blue"
+         height="180"
+         size="x-small"
   >
-    <v-icon>mdi-filter</v-icon>
-  </v-btn>
+   <v-icon>mdi-filter</v-icon>
+ </v-btn>
+
+
   <v-card style="box-shadow: none; z-index: 1">
       <v-layout>
         <v-navigation-drawer
@@ -28,7 +32,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
   <v-container class="pa-10">
     <h1>Teams</h1>
     <v-divider></v-divider>
-    <v-container class="pa-0 mt-8">
+    <v-container class="pa-0 mt-8" style="min-height: 400px">
       <v-row>
         <v-col cols="12">
           <v-container style="background-color: whitesmoke; min-height: 200px;">
@@ -84,14 +88,7 @@ export default {
     },
     checkScreen() {
       this.windowWidth = window.innerWidth;
-      if(this.windowWidth <= 750){
-        this.mobile = true;
-        document.querySelector('body').style.paddingTop = '4.5em';
-        return;
-      }
-      this.mobile = false;
-      document.querySelector('body').style.paddingTop = '10.6em';
-      return;
+      this.mobile = this.windowWidth <= 750
     }
   },
   created() {
@@ -117,3 +114,13 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.filterToggleButton {
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  border-radius: 0 5px 5px 0;
+}
+
+</style>

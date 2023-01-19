@@ -1,59 +1,62 @@
 <template>
   <v-container>
-  <h2>Filter</h2>
+    <v-row>
+      <v-col>
+        <h2>Filter</h2>
+      </v-col>
+      <v-col class="text-right">
+        <i class="mdi mdi-close" style="font-size: 25px; color: darkgrey" @click="hideFilter"></i>
+      </v-col>
+    </v-row>
     <v-divider></v-divider>
+    <v-form class="mt-2" id="berichteFilterFormular" @submit.prevent="onSubmit"
+            v-model="formValid" lazy-validation ref="filterForm">
 
-    <v-form class="mt-2" id="teamsFormular" @submit.prevent="onSubmit">
-
-      <v-label class="pt-2">Zeitraum</v-label>
-      <v-container class="pa-0 d-flex">
-        <v-col cols="6" class="pa-0">
-          <v-select
-            clearable
-            label="Von"
-            :items="optionsStartYear"
-            variant="underlined"
-            v-model="startYear"
+      <v-container class="pa-0 d-flex pt-3">
+        <v-col cols="6" class="pa-0 pr-2">
+          <v-select clearable label="Von" :items="optionsStartYear"
+                    variant="outlined" v-model="startYear" density="comfortable"
+                    :rules="[v => !!v || 'Wähle ein Jahr als Anfangswert',
+                    (v) => parseInt(v) <= parseInt(endYear) || 'Zeitraum Anfang darf nicht nach dem Ende liegen.']"
           ></v-select>
         </v-col>
-        <v-col cols="6" class="pa-0">
-          <v-select
-            clearable
-            label="Bis"
-            :items="optionsEndYear"
-            v-model="endYear"
-            variant="underlined"
+        <v-col cols="6" class="pa-0 pl-2">
+          <v-select clearable label="Bis" :items="optionsEndYear"
+                    v-model="endYear" variant="outlined" density="comfortable"
+                    :rules="[v => !!v || 'Wähle ein Jahr als Endwert',
+                        (v) => parseInt(v) >= parseInt(startYear) || 'Zeitraum Ende darf nicht vor dem Anfang liegen.']"
           ></v-select>
         </v-col>
       </v-container>
-      <v-select class="pt-2"
-                clearable chips multiple
-                color="blue"
-                label="Wettkampfklassen"
-                :items="optionsCompTypes"
-                v-model="optionsCompTypes"
-                variant="underlined"
+
+
+      <v-select class="pt-2" clearable chips multiple color="blue"
+                label="Wettkampfklassen" :items="optionsCompTypes"
+                v-model="selectedCompTypes" variant="outlined"
+                :rules="[v => v.length > 0 || 'Wähle mindestens eine Wettkampfklasse']"
       ></v-select>
-      <v-autocomplete :items="optionsNations" v-model="selectedNation"
-          variant="underlined" color="blue" label="Nation"
+      <v-autocomplete class="pt-4" :items="optionsNations" v-model="selectedNation"
+                      variant="outlined" color="blue" label="Nation" density="comfortable"
+                      :rules="[v => !!v || 'Wähle mindestens eine Nation']"
       ></v-autocomplete>
-      <v-label>Geschlecht</v-label>
+      <v-label>Bootsklasse</v-label>
       <v-chip-group filter color="blue" v-model="selectedGenders">
-        <v-chip v-for="genderType in genderTypeOptions">{{genderType}}</v-chip>
+        <v-chip v-for="genderType in genderTypeOptions">{{ genderType.charAt(0).toUpperCase() + genderType.slice(1) }}
+        </v-chip>
       </v-chip-group>
-      <v-label class="pt-2">Altersklasse</v-label>
       <v-chip-group filter color="blue" v-model="selectedAgeGroups">
-        <v-chip v-for="ageGroup in ageGroupOptions">{{ageGroup}}</v-chip>
+        <v-chip v-for="ageGroup in ageGroupOptions">{{ ageGroup.charAt(0).toUpperCase() + ageGroup.slice(1) }}</v-chip>
       </v-chip-group>
-      <v-select label="Bootsklassen" clearable chips
-                :items="optionsBoatClasses" v-model="selectedBoatClasses" variant="underlined"
+      <v-select class="pt-3" label="Bootsklassen" clearable chips density="comfortable"
+                :items="optionsBoatClasses" v-model="selectedBoatClasses" variant="outlined"
+                :rules="[v => !!v || 'Wähle mindestens eine Bootsklasse']"
       ></v-select>
-
       <v-container class="pa-0 pt-8 text-right">
-        <v-btn color="grey" class="mx-2"><v-icon>mdi-backspace-outline</v-icon></v-btn>
-        <v-btn color="blue" class="mx-2" type="submit" @click="setFilterState">Übernehmen</v-btn>
+        <v-btn color="grey" class="mx-2" @click="clearFormInputs">
+          <v-icon>mdi-backspace-outline</v-icon>
+        </v-btn>
+        <v-btn color="blue" class="mx-2" type="submit">Übernehmen</v-btn>
       </v-container>
-
     </v-form>
   </v-container>
 </template>
@@ -62,15 +65,18 @@
 <script>
 import Checkbox from "@/components/filters/checkbox.vue";
 import {mapState} from "pinia";
-import { useTeamsState } from "@/stores/teamsStore";
+import {useTeamsState} from "@/stores/teamsStore";
+import {useAthletenState} from "@/stores/athletenStore";
 
 export default {
   components: {Checkbox},
   computed: {
     ...mapState(useTeamsState, {
-      filterOptions: "getTeamsFilterOptions"}),
+      filterOptions: "getTeamsFilterOptions"
+    }),
     ...mapState(useTeamsState, {
-      showFilter: "getFilterState"}),
+      showFilter: "getFilterState"
+    }),
   },
   data() {
     return {
@@ -78,12 +84,15 @@ export default {
       mobile: false,
       hoverFilter: false,
       drawer: null,
+      formValid: true,
 
       // competition type
       compTypes: [], // list of dicts with objects containing displayName, id and key
       optionsCompTypes: ["Olympics", "World Rowing Championships", "Qualifications"], // default strings
+      selectedCompTypes: ["Olympics", "World Rowing Championships", "Qualifications"],
 
       // year
+      birthYear: null,
       startYear: 0,
       endYear: 0,
       optionsStartYear: [],
@@ -91,7 +100,7 @@ export default {
 
       // nations
       optionsNations: [],
-      selectedNation: null,
+      selectedNation: "GER (Deutschland)",
 
       // boat classes
       genderTypeOptions: [],
@@ -125,7 +134,7 @@ export default {
     }
     this.optionsNations = finalCountryNames
 
-    // boatclasses
+    // boat classes
     this.genderTypeOptions = Object.keys(this.filterOptions[0].boat_class)
     let ageGroupOptions = Object.keys(this.filterOptions[0].boat_class.men)
     ageGroupOptions.push(...Object.keys(this.filterOptions[0].boat_class.women))
@@ -134,49 +143,140 @@ export default {
     let boatClassOptions = []
     let values = Object.values(this.filterOptions[0].boat_class)[0]
     Object.entries(values).forEach(([key, value], index) => {
-          if (index === 0) {
-            Object.entries(value).forEach(([, val]) => {
-              if (typeof val === "object") {
-                boatClassOptions.push(Object.values(val)[0])
-              }
-            })
+      if (index === 0) {
+        Object.entries(value).forEach(([, val]) => {
+          if (typeof val === "object") {
+            boatClassOptions.push(Object.values(val)[0])
           }
-      });
+        })
+      }
+    });
     this.selectedBoatClasses = boatClassOptions[0]
     this.optionsBoatClasses = boatClassOptions
   },
   methods: {
-    onSubmit() {
-      // define store
-      const store = useTeamsState()
-      // access form data
-      const startYear = this.startYear
-      const endYear = this.endYear
-      const competitionTypes = this.compTypes.filter(item => this.optionsCompTypes.includes(item.displayName)).map(item => item.id)
-      const nationCode = this.selectedNation
-      const gender = this.selectedGenders
 
-      // send data via pinia store action postFormData
+    async onSubmit() {
+      const {valid} = await this.$refs.filterForm.validate()
+      if (valid) {
+        this.hideFilter()
+        await this.submitFormData()
+      } else {
+        alert("Bitte überprüfen Sie die Eingaben.")
+      }
+    },
+    hideFilter() {
+      const store = useTeamsState()
+      store.setFilterState(this.showFilter)
+    },
+    submitFormData() {
+      const store = useTeamsState()
       return store.postFormData({
-        "years": [{"start_year": startYear}, {"end_year": endYear}],
-        "gender": gender,
-        "competition_category_ids": competitionTypes,
-        "nation_ioc": nationCode
+        "birthYear": this.birthYear,
+        "gender": this.selectedGenders,
+        "competition_category_ids": this.compTypes.filter(item => this.optionsCompTypes.includes(item.displayName)).map(item => item.id),
+        "nation_ioc": this.selectedNation
       }).then(() => {
         console.log("Form data sent...")
       }).catch(error => {
         console.error(error)
       })
     },
+    clearFormInputs() {
+      this.birthYear = null
+      this.selectedCompTypes = ["Olympics", "World Rowing Championships", "Qualifications"]
+      this.selectedNation = "GER (Deutschland)"
+    },
     checkScreen() {
       this.windowWidth = window.innerWidth
       this.mobile = this.windowWidth <= 769
     },
     setFilterState() {
+      this.filterOpen = !this.filterOpen;
       const store = useTeamsState()
-      store.setFilterState(this.showFilter)
+      store.setFilterState(this.filterState)
+    },
+  },
+  watch: {
+    filterState(newValue) {
+      this.filterOpen = newValue;
+    },
+    filterOpen: function (newVal, oldVal) {
+      if (oldVal === true && newVal === false && this.filterState === true) {
+        const store = useTeamsState()
+        store.setFilterState(oldVal)
+      }
+    },
+    selectedGenders: function (newVal,) {
+      if (newVal !== undefined) {
+        this.selectedBoatClasses = null
+        let optionsList = []
+        if (newVal === 0) { // men
+          optionsList.push(...Object.keys(this.filterOptions[0].boat_class.men))
+        }
+        if (newVal === 1) { // women
+          optionsList.push(...Object.keys(this.filterOptions[0].boat_class.women))
+        }
+        if (newVal === 2) { // mixed
+          optionsList = []
+          let test = []
+          for (const mixedOption of Object.values(this.filterOptions[0].boat_class.mixed)) {
+            test.push(Object.values(mixedOption))
+          }
+          this.optionsBoatClasses = test.map(item => item[0]).flat()
+        }
+        if (newVal === 3) { // all
+          this.ageGroupOptions = []
+          this.optionsBoatClasses = ["Alle"]
+          this.selectedBoatClasses = this.optionsBoatClasses
+        }
+        this.ageGroupOptions = optionsList.filter((v, i, a) => a.indexOf(v) === i); // exclude non-unique values
+        let boatClassOptions = []
+        Object.entries(Object.values(this.filterOptions[0].boat_class)[newVal]).forEach(([key, value], index) => {
+          if (index === this.selectedAgeGroups) {
+            Object.entries(value).forEach(([, val]) => {
+              if (typeof val === "object") {
+                boatClassOptions.push(Object.values(val)[0])
+              }
+            })
+          }
+        });
+        if (newVal !== 2 && newVal !== 3) {
+          this.optionsBoatClasses = boatClassOptions
+          this.selectedBoatClasses = boatClassOptions[0]
+        } else if (newVal === 2) {
+          this.selectedBoatClasses = this.optionsBoatClasses[0]
+        }
+      }
+    },
+    selectedAgeGroups: function (newVal,) {
+      if (newVal !== undefined) {
+        this.selectedBoatClasses = null
+        let genderObj = Object.values(this.filterOptions[0].boat_class)[this.selectedGenders]
+        let boatClassOptions = []
+
+        Object.entries(genderObj).forEach(([key, value], index) => {
+          if (index === newVal) {
+            Object.entries(value).forEach(([, val]) => {
+              if (typeof val === "object") {
+                boatClassOptions.push(Object.values(val)[0])
+              }
+            })
+          }
+        });
+        this.selectedBoatClasses = boatClassOptions[0]
+        if (this.selectedGenders !== 2 && this.selectedGenders !== 3) {
+          this.optionsBoatClasses = boatClassOptions
+        }
+      }
     }
   }
 }
 
 </script>
+
+<style scoped>
+.mdi-close:hover {
+  cursor: pointer;
+}
+</style>

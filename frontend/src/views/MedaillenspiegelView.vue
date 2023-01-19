@@ -1,7 +1,7 @@
 <template>
   <v-btn color="blue"
          @click="setFilterState()" v-show="!filterOpen"
-         class="filterToggleButton mt-6 pa-0 ma-0 bg-light-blue"
+         class="filterToggleButton mt-6 pa-0 ma-0"
          height="180"
          size="x-small"
   >
@@ -147,6 +147,7 @@ export default {
   z-index: 10;
   left: 0;
   border-radius: 0 5px 5px 0;
+  color: #1369b0;
 }
 
 </style>
