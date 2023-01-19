@@ -39,6 +39,22 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": true
+        },
+        {
+            "name": "Py: flask",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "args": [
+                "--app",
+                "backend.app.app:app",
+                "--debug",
+                "run",
+                "--no-debugger",
+                "--no-reload"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
         }
     ]
 }
