@@ -21,6 +21,9 @@
             "type": "python",
             "request": "launch",
             "module": "backend.model.dbutils",
+            "env": {
+                "DB_VERBOSITY": "1"
+            },
             "args": [
                 "--insert",
                 "dump.json"

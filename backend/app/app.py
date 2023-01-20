@@ -4,8 +4,10 @@ import os
 from flask import Flask, render_template
 from flask import request
 from flask import jsonify
+from flask import abort
 
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 
 from backend.model import model
 import backend.scraping_wr.api as api
@@ -15,12 +17,17 @@ app = Flask(__name__, template_folder='web/templates')
 
 Scoped_Session = model.Scoped_Session
 
+
 @app.route('/')
 def home():
     return render_template("./NO_TEMPLATE.html")
 
 
 # Receive JSON via POST in flask: https://sentry.io/answers/flask-getting-post-data/#json-data
+# Parameterized route etc.: https://pythonbasics.org/flask-tutorial-routes/
+# Route syntax doc: https://flask.palletsprojects.com/en/2.2.x/api/#url-route-registrations
+# Multiple Joins: https://docs.sqlalchemy.org/en/14/orm/queryguide.html#chaining-multiple-joins
+
 @app.route('/report', methods=['POST'])
 def get_report():
     filter_dict = request.json
@@ -42,6 +49,52 @@ def get_competition_categories():
     for entity in entities:
         mapped = { "id": entity.id, "display_name": entity.name }
         result.append(mapped)
+
+    return result
+
+
+@app.route('/get_race/<int:race_id>', methods=['GET'])
+def get_race(race_id):
+    session = Scoped_Session()
+
+    # Join relationship fields using "Joined Load" to fetch all-in-one:
+    #   https://docs.sqlalchemy.org/en/14/orm/tutorial.html#joined-load
+    #   https://docs.sqlalchemy.org/en/14/orm/loading_relationships.html#sqlalchemy.orm.joinedload
+    stmt = (
+        select(model.Race)
+        .where(model.Race.id == int(race_id))
+        .options(
+            joinedload(model.Race.race_boats)
+            .joinedload(model.Race_Boat.intermediates),
+            joinedload(model.Race.event)
+            .options(
+                joinedload(model.Event.boat_class),
+                joinedload(model.Event.competition)
+                .joinedload(model.Competition.venue)
+                .joinedload(model.Venue.country)
+            )
+        )
+    )
+
+    race = session.scalars(stmt).first()
+    if race == None:
+        abort(404)
+
+    venue = race.event.competition.venue
+
+    result = {
+        "raceId": race.id,
+        "displayName": race.name,
+        "startDate": str(race.date),
+        "venue": f"{venue.site}/{venue.city}, {venue.country.name}",
+        "boatClass": race.event.boat_class.abbreviation, # TODO: currrently only abbrev.
+        "worldBestTimeBoatClass": "############## TODO ##############", # fmt: "00:05:58,36"
+        "bestTimeBoatClassCurrentOZ": "############## TODO ##############", # fmt: "00:05:58,36"
+        "pdf_urls": {
+            "result": race.pdf_url_results,
+            "race_data": race.pdf_url_race_data
+        }
+    }
 
     return result
 

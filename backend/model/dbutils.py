@@ -1,6 +1,7 @@
 from . import model
 
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 
 from contextlib import suppress
 import datetime as dt
