@@ -4,16 +4,19 @@ import os
 from flask import Flask, render_template
 from flask import request
 from flask import jsonify
+from flask import abort
 
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 
-from backend.model import model
-import backend.scraping_wr.api as api
-import backend.app.mocks as mocks
+from model import model
+import scraping_wr.api as api
+import app.mocks as mocks
 
 app = Flask(__name__, template_folder='web/templates')
 
 Scoped_Session = model.Scoped_Session
+
 
 @app.route('/')
 def home():
@@ -21,6 +24,10 @@ def home():
 
 
 # Receive JSON via POST in flask: https://sentry.io/answers/flask-getting-post-data/#json-data
+# Parameterized route etc.: https://pythonbasics.org/flask-tutorial-routes/
+# Route syntax doc: https://flask.palletsprojects.com/en/2.2.x/api/#url-route-registrations
+# Multiple Joins: https://docs.sqlalchemy.org/en/14/orm/queryguide.html#chaining-multiple-joins
+
 @app.route('/report', methods=['POST'])
 def get_report():
     filter_dict = request.json
@@ -35,10 +42,6 @@ def test():
 
 @app.route('/get_competition_category', methods=['GET'])
 def get_competition_categories():
-    """
-    todo: check, and make sure that the result matches the expected return-value
-    returns somewhat static list of competition categories
-    """
     result = []
 
     session = Scoped_Session()
@@ -48,6 +51,55 @@ def get_competition_categories():
         result.append(mapped)
 
     return result
+
+
+@app.route('/get_race/<int:race_id>', methods=['GET'])
+def get_race(race_id):
+    session = Scoped_Session()
+
+    # Join relationship fields using "Joined Load" to fetch all-in-one:
+    #   https://docs.sqlalchemy.org/en/14/orm/tutorial.html#joined-load
+    #   https://docs.sqlalchemy.org/en/14/orm/loading_relationships.html#sqlalchemy.orm.joinedload
+    stmt = (
+        select(model.Race)
+        .where(model.Race.id == int(race_id))
+        .options(
+            joinedload(model.Race.race_boats)
+            .joinedload(model.Race_Boat.intermediates),
+            joinedload(model.Race.event)
+            .options(
+                joinedload(model.Event.boat_class),
+                joinedload(model.Event.competition)
+                .joinedload(model.Competition.venue)
+                .joinedload(model.Venue.country)
+            )
+        )
+    )
+
+    # TODO: fill remaining fields (api-design.md)
+
+    race = session.scalars(stmt).first()
+    if race == None:
+        abort(404)
+
+    venue = race.event.competition.venue
+
+    result = {
+        "raceId": race.id,
+        "displayName": race.name,
+        "startDate": str(race.date),
+        "venue": f"{venue.site}/{venue.city}, {venue.country.name}",
+        "boatClass": race.event.boat_class.abbreviation, # TODO: currrently only abbrev.
+        "worldBestTimeBoatClass": "############## TODO ##############", # fmt: "00:05:58,36"
+        "bestTimeBoatClassCurrentOZ": "############## TODO ##############", # fmt: "00:05:58,36"
+        "pdf_urls": {
+            "result": race.pdf_url_results,
+            "race_data": race.pdf_url_race_data
+        }
+    }
+
+    return result
+
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):

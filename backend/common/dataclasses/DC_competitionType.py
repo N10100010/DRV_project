@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import typing
 
-from backend.dataclasses.DC_Schema import DC_Schema
+from .DC_Schema import DC_Schema
 
 
 @dataclass

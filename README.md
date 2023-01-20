@@ -25,16 +25,18 @@ Container for the innovation project WS '22
 
 ### Backend API Server (Python/Flask)
 
+*Note: `pwd` is `backend/`*
+
 ```sh
-python -m flask --app backend.app.app:app run
+python -m flask --app app.app:app run
 ```
 
-Alternatively with `python -m backend.app.app`
+Alternatively with `python -m app.app`
 
 Debug with hot reload:
 
 ```sh
-python -m flask --app backend.app.app:app --debug run
+python -m flask --app app.app:app --debug run
 ```
 
 **Note** Do not use this command for deployment. Use something like `gunicorn`.
