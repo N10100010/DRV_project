@@ -62,7 +62,8 @@ export const useWettkampfresultateStore = defineStore({
                                 "pace [t]": "00:01:50,72",
                                 "rank": 1,
                                 "deficit [s]": "00:00:00,000",
-                                "relDiffToAvgSpeed [%]": 1.3
+                                "relDiffToAvgSpeed [%]": 1.3,
+                                "worldBestTimeBoatClass [%]": 95.2
                             }
                         },
                         "gpsData": {
@@ -176,7 +177,8 @@ export const useWettkampfresultateStore = defineStore({
                                 "pace [t]": "00:01:50,72",
                                 "rank": 2,
                                 "deficit [s]": "00:00:02,340",
-                                "relDiffToAvgSpeed [%]": 1.3
+                                "relDiffToAvgSpeed [%]": 1.3,
+                                "worldBestTimeBoatClass [%]": 93.8
                             }
                         },
                         "gpsData": {

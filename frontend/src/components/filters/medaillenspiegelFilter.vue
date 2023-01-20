@@ -32,7 +32,7 @@
                 v-model="selectedCompTypes" variant="outlined"
                 :rules="[v => v.length > 0 || 'Wähle mindestens eine Wettkampfklasse']"
       ></v-select>
-      <v-label>Medaillientyp</v-label>
+      <v-label>Medaillentyp</v-label>
       <v-chip-group filter color="blue" v-model="selectedMedalTypes">
         <v-chip v-for="medalType in optionsMedalTypes">{{ medalType }}</v-chip>
       </v-chip-group>

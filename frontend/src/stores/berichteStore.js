@@ -208,7 +208,7 @@ export const useBerichteState = defineStore({
                     {
                         type: 'bar',
                         label: "Anzahl Rennen",
-                        backgroundColor: '#1E90FF',
+                        backgroundColor: '#5cc5ed',
                         data: state.data[0].plot_data.histogram.data
                     }
                 ]
@@ -229,8 +229,8 @@ export const useBerichteState = defineStore({
                         type: 'scatter',
                         label: 'Scatter Dataset',
                         data: plotData,
-                        backgroundColor: '#1E90FF',
-                        borderColor: '#1E90FF'
+                        backgroundColor: '#5cc5ed',
+                        borderColor: '#5cc5ed'
                     }
                 ]
             }
