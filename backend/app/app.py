@@ -76,6 +76,8 @@ def get_race(race_id):
         )
     )
 
+    # TODO: fill remaining fields (api-design.md)
+
     race = session.scalars(stmt).first()
     if race == None:
         abort(404)
