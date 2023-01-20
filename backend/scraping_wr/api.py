@@ -36,19 +36,18 @@ WR_INCLUDE_EVERYTHING = "?include=" + ",".join(
         "venue.country",
         "events.gender",
         "events.boatClass",
+        "events.pdfUrls",
         "events.races",
-        "events.races.racePhase",
         "events.races.raceStatus",
         "events.races.racePhase",
         "events.races.raceBoats.boat",
         "events.races.raceBoats.invalidMarkResultCode",
-        "events.races.raceBoats.raceBoatAthletes.person.country",
         "events.races.raceBoats.country",
         "events.races.raceBoats.raceBoatAthletes.person",
+        "events.races.raceBoats.raceBoatAthletes.person.country",
         "events.races.raceBoats.raceBoatIntermediates.distance",
-        "pdfUrls.orisCode",
-        "events.pdfUrls",
-        "events.races.pdfUrls.orisCode"
+        "events.races.pdfUrls.orisCode",
+        "pdfUrls.orisCode"
     ]
 )
 
