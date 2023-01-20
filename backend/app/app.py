@@ -5,19 +5,24 @@ from flask import Flask, render_template
 from flask import request
 from flask import jsonify
 
+from sqlalchemy import select
+
+from backend.model import model
 import backend.scraping_wr.api as api
 import backend.app.mocks as mocks
 
 app = Flask(__name__, template_folder='web/templates')
+
+Scoped_Session = model.Scoped_Session
 
 @app.route('/')
 def home():
     return render_template("./NO_TEMPLATE.html")
 
 
+# Receive JSON via POST in flask: https://sentry.io/answers/flask-getting-post-data/#json-data
 @app.route('/report', methods=['POST'])
 def get_report():
-    # Receive JSON via POST in flask: https://sentry.io/answers/flask-getting-post-data/#json-data
     filter_dict = request.json
     data = mocks.generic_get_data(_filter=filter_dict)
     return data
@@ -28,6 +33,31 @@ def test():
     return "This is not a asdtest 123 :)"
 
 
+@app.route('/get_competition_category', methods=['GET'])
+def get_competition_categories():
+    """
+    todo: check, and make sure that the result matches the expected return-value
+    returns somewhat static list of competition categories
+    """
+    result = []
+
+    session = Scoped_Session()
+    entities = session.scalars(select(model.Competition_Category)).all()
+    for entity in entities:
+        mapped = { "id": entity.id, "display_name": entity.name }
+        result.append(mapped)
+
+    return result
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    ''' Enable Flask to automatically remove database sessions at the
+    end of the request or when the application shuts down.
+    Ref: http://flask.pocoo.org/docs/patterns/sqlalchemy/
+    Ref: https://stackoverflow.com/a/45719168
+    '''
+    Scoped_Session.remove()
+
 # @app.route('/result', 'POST')
 # def get_result(filter_dict: dict):
 #     """
@@ -35,15 +65,6 @@ def test():
 #     """
 #     data = mocks.generic_get_data(_filter=filter_dict)
 #     return data
-
-
-# @app.route('/get_competition_category', 'POST')
-# def get_competition_categories():
-#     """
-#     todo: check, and make sure that the result matches the expected return-value
-#     returns somewhat static list of competition categories
-#     """
-#     return api.get_competition_categories()
 
 
 # @app.route('/analysis', 'POST')
