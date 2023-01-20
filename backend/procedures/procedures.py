@@ -13,7 +13,7 @@ from datetime import datetime
 
 import sh  # shell - allows calling terminal-commands as python function. ATTENTION: THE PACKAGES HAVE TO BE INSTALLED!
 
-import backend.scraping_wr.api as wr
+from scraping_wr import api as wr
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,4 @@
-from ..model import model
+from model import model
 
 """ NOTES
 - [SCRAPE] Procedure

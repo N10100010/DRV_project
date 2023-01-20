@@ -8,7 +8,8 @@
             "name": "Py: Scrape competition",
             "type": "python",
             "request": "launch",
-            "module": "backend.scraping_wr._main",
+            "cwd": "${workspaceFolder}/backend",
+            "module": "scraping_wr._main",
             "args": [
                 "grabc",
                 "--out",
@@ -20,14 +21,15 @@
             "name": "Py: dbutils insert",
             "type": "python",
             "request": "launch",
-            "module": "backend.model.dbutils",
-            "env": {
-                "DB_VERBOSITY": "1"
-            },
+            "cwd": "${workspaceFolder}/backend",
+            "module": "model.dbutils",
             "args": [
                 "--insert",
                 "dump.json"
             ],
+            "env": {
+                "DB_VERBOSITY": "1"
+            },
             "console": "integratedTerminal",
             "justMyCode": true
         },
@@ -35,11 +37,15 @@
             "name": "Py: dbutils drop/create tables",
             "type": "python",
             "request": "launch",
-            "module": "backend.model.dbutils",
+            "cwd": "${workspaceFolder}/backend",
+            "module": "model.dbutils",
             "args": [
                 "--drop",
                 "--create"
             ],
+            "env": {
+                "DB_VERBOSITY": "1"
+            },
             "console": "integratedTerminal",
             "justMyCode": true
         },
@@ -47,13 +53,14 @@
             "name": "Py: flask",
             "type": "python",
             "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
             "module": "flask",
             "env": {
                 "FLASK_ENV": "development"
             },
             "args": [
                 "--app",
-                "backend.app.app:app",
+                "app.app:app",
                 "--debug",
                 "run",
                 "--no-debugger",

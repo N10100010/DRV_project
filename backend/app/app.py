@@ -9,9 +9,9 @@ from flask import abort
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
-from backend.model import model
-import backend.scraping_wr.api as api
-import backend.app.mocks as mocks
+from model import model
+import scraping_wr.api as api
+import app.mocks as mocks
 
 app = Flask(__name__, template_folder='web/templates')
 

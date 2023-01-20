@@ -1,14 +1,14 @@
 import numpy as np
 
-from backend.scraping_wr.api import get_competition_ids, get_by_competition_id, get_by_competition_id_
-from backend.scraping_wr.utils_wr import load_json
+from .api import get_competition_ids, get_by_competition_id, get_by_competition_id_
+from .utils_wr import load_json
 import requests
 
 import logging
 
 logger = logging.getLogger(__name__)
 
-import backend.scraping_wr.api as api
+from . import api
 ########################################################################################################################
 # NOTE:
 # This main.py is just for rapid testing

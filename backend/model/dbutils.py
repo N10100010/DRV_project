@@ -6,10 +6,10 @@ from sqlalchemy.orm import joinedload
 from contextlib import suppress
 import datetime as dt
 
-from ..common.helpers import Timedelta_Parser, parse_wr_intermediate_distance_key, get_
+from common.helpers import Timedelta_Parser, parse_wr_intermediate_distance_key, get_
 
 # from ..scraping_wr import utils_wr
-from ..scraping_wr import api
+from scraping_wr import api
 
 # logging stuff
 import logging
