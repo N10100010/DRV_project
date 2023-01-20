@@ -17,6 +17,25 @@ services:
       DB_SQLALCHEMY_DRIVERNAME: "postgresql+psycopg2"
       DB_VERBOSITY: "1"
 
+  scraping-service:
+    build:
+      context: backend
+      dockerfile: ./scraping-service.Dockerfile
+    ports:
+      - 5001:5000
+    volumes:
+      - ./backend:/usr/src/app
+    depends_on:
+      - db
+    environment:
+      DB_USER: "postgres"
+      DB_PASS: "postgres"
+      DB_HOST: "db"
+      DB_PORT: "5432"
+      DB_NAME: "rowing"
+      DB_SQLALCHEMY_DRIVERNAME: "postgresql+psycopg2"
+      DB_VERBOSITY: "1"
+
   db:
     image: postgres:14.1-alpine
     restart: always
