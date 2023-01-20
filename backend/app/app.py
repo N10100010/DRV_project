@@ -35,10 +35,6 @@ def test():
 
 @app.route('/get_competition_category', methods=['GET'])
 def get_competition_categories():
-    """
-    todo: check, and make sure that the result matches the expected return-value
-    returns somewhat static list of competition categories
-    """
     result = []
 
     session = Scoped_Session()
@@ -48,6 +44,7 @@ def get_competition_categories():
         result.append(mapped)
 
     return result
+
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
