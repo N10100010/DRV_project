@@ -14,3 +14,7 @@ tenacity~=8.1
 # utils that should be removed
 jsbeautifier # TODO: get rid of this dependency; see https://stackoverflow.com/a/9105143
 tqdm
+
+# found in root folder's requirements.txt:
+# sh~=1.14.3
+# setuptools~=57.4.0
