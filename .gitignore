@@ -133,6 +133,7 @@ dmypy.json
 
 # jsons in the scraping backend
 backend/scraping_wr/*.json
+backend/tmp.*.json
 
 #-------------------------------------------------------------
 
