@@ -17,7 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD [ "python", "-m", "flask", "--app", "app.app:app" , "--debug", "run"]
+# Note that interface "0.0.0.0" has to be used
+CMD [ "python", "-m", "flask", "--app", "app.app:app" , "--debug", "run", "--host", "0.0.0.0"]
 
-# Use `waitress` in prod: https://flask.palletsprojects.com/en/2.2.x/tutorial/deploy/#run-with-a-production-server
+# Use e.g. `waitress` in prod: https://flask.palletsprojects.com/en/2.2.x/tutorial/deploy/#run-with-a-production-server
 #CMD [ "waitress-serve", "--call", "app.app:app" ]
