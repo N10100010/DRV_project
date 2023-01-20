@@ -25,7 +25,12 @@
             <v-col cols="12">
               <h2>Suchergebnisse</h2>
               <v-container class="pa-0" style="min-height: 500px">
-                <v-col cols="6" class="pa-0">
+
+
+
+                <v-col :cols="mobile ? 12 : 6" class="pa-0">
+
+
                   <!-- competition list -->
                   <v-list density="compact" v-show="displayCompetitions">
                     <v-list-item
@@ -39,6 +44,9 @@
                         @click="getEvents(competition.events)"
                     ></v-list-item>
                   </v-list>
+
+
+
                   <!-- events list -->
                   <v-list density="compact" v-show="displayEvents">
                     <v-list-item
