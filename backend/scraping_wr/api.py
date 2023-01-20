@@ -5,7 +5,7 @@ import json as jsn
 
 
 import numpy as np
-from tqdm import tqdm
+tqdm = lambda i : i #from tqdm import tqdm
 
 import backend.scraping_wr.utils_wr as ut_wr
 import backend.scraping_wr.pdf_race_data as pdf_race_data
