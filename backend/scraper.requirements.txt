@@ -1,13 +1,17 @@
-# camelot
-opencv-python-headless # camelot dependency
+# camelot / pdf parsing
+opencv-python-headless # camelot dependency // fixes issue https://github.com/camelot-dev/camelot/issues/286
 camelot-py[base]
 pandas==1.5.*
 
 # server
-Flask~=2.2.2
-waitress~=2.1.2
+# Flask~=2.2.2
+# waitress~=2.1.2
+
+# database
 SQLAlchemy~=1.4.45
-psycopg2-binary~=2.9.5
+psycopg2-binary
+
+# web scraping
 requests~=2.28
 tenacity~=8.1
 

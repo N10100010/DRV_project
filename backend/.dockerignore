@@ -1,2 +1,5 @@
 .dockerignore
 Dockerfile
+Dockerfile*
+*.Dockerfile
+README.md
