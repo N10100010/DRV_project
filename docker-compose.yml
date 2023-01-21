@@ -44,9 +44,22 @@ services:
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_DB: "rowing"
     ports:
-      - '5432:5432'
+      - 5432:5432
     volumes:
       - db:/var/lib/postgresql/data
+
+  frontend:
+    build: ./frontend
+    ports:
+      - 5173:5173
+    volumes:
+      - ./frontend/src:/usr/app/src
+      - ./frontend/public:/usr/app/public
+    depends_on:
+      - api
+    environment:
+      PORT: "5173"
+      BACKEND_API_BASE_URL: "http://localhost:5000/"
 
 volumes:
   db:
