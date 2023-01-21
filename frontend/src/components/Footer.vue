@@ -3,6 +3,7 @@
     <v-container>
       <RouterLink to="/impressum" style="color: white" class="pa-2">Impressum</RouterLink>
       <RouterLink to="/datenschutz" style="color: white" class="pa-2">Datenschutz</RouterLink>
+      <RouterLink to="/hilfe" style="color: white" class="pa-2">Hilfe</RouterLink>
     </v-container>
   </footer>
 </template>

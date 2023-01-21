@@ -384,13 +384,13 @@ export const useAthletenState = defineStore({
             
             this.previewAthleteResults = [{
                 "id": 1,
-                "firstName": "Max",
-                "lastName": "Mustermann"
+                "firstName": "Markus",
+                "lastName": "Last"
             },
             {
                 "id": 2,
-                "firstName": "Alfons",
-                "lastName": "Heisenberg"
+                "firstName": "Kay",
+                "lastName": "Winkert"
             }]
             /*await axios.post('https://jsonplaceholder.typicode.com/users',{ formData })
                 .then(response => {
