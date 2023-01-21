@@ -36,30 +36,30 @@ def get_report():
 
 @app.route('/test')
 def test():
-    return "This is not a asdtest 123 :)"
+    return { "msg": "Hello World! This is a test endopoint." }
 
 
-@app.route('/get_competition_category', methods=['GET'])
+@app.route('/competition_category/', methods=['GET'])
 def get_competition_categories():
     result = []
 
     session = Scoped_Session()
-    entities = session.scalars(select(model.Competition_Category)).all()
-    for entity in entities:
+    iterator = session.execute(select(model.Competition_Category)).scalars()
+    for entity in iterator:
         mapped = { "id": entity.id, "display_name": entity.name }
         result.append(mapped)
 
     return result
 
 
-@app.route('/get_race/<int:race_id>', methods=['GET'])
+@app.route('/race/<int:race_id>/', methods=['GET'])
 def get_race(race_id):
     session = Scoped_Session()
 
     # Join relationship fields using "Joined Load" to fetch all-in-one:
     #   https://docs.sqlalchemy.org/en/14/orm/tutorial.html#joined-load
     #   https://docs.sqlalchemy.org/en/14/orm/loading_relationships.html#sqlalchemy.orm.joinedload
-    stmt = (
+    statement = (
         select(model.Race)
         .where(model.Race.id == int(race_id))
         .options(
@@ -77,7 +77,7 @@ def get_race(race_id):
 
     # TODO: fill remaining fields (api-design.md)
 
-    race = session.scalars(stmt).first()
+    race = session.execute(statement).scalars().first()
     if race == None:
         abort(404)
 
