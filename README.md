@@ -64,6 +64,19 @@ python -m flask --app app.app:app --debug run
 
 ###
 
+
+## Deployment on Railway.app
+
+### Frontend
+
+The following service settings have to be made on *railway.app*:
+
+- Set *Root Directory* `/frontend`
+- Set the following environment variables in the service settings:
+    - `NIXPACKS_NODE_VERSION=16`
+    - `PORT=3000`
+
+
 ## MVP
 What would be the MVP for the customer?
 
