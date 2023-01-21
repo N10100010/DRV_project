@@ -1,7 +1,9 @@
 version: '3.8'
 services:
   api:
-    build: ./backend
+    build:
+      context: backend
+      dockerfile: ./api.Dockerfile
     ports:
       - 5000:5000
     volumes:
@@ -20,7 +22,7 @@ services:
   scraper:
     build:
       context: backend
-      dockerfile: ./Dockerfile.scraper
+      dockerfile: ./scraper.Dockerfile
     ports:
       - 5001:5000
     volumes:
