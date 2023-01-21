@@ -6,7 +6,6 @@ import 'chartjs-adapter-moment';
 import {Chart as ChartJS, LinearScale, PointElement, Tooltip, Legend, TimeScale} from "chart.js";
 
 ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
-
 </script>
 
 <template>
@@ -30,14 +29,36 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
       </v-navigation-drawer>
 
       <v-container class="pa-10">
-        <h1>Berichte</h1>
+        <v-col cols="6" class="d-flex flex-row" style="align-items: center">
+           <h1>Berichte</h1>
+          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>
+           <v-tooltip
+               activator="#tooltip-analyis-icon"
+            location="end"
+            open-on-hover
+        >In Berichte können Analysen über längere Zeiträume und weitere Filterkriterien erstellt werden.</v-tooltip>
+        </v-col>
         <v-divider></v-divider>
         <v-container class="pa-0 mt-8">
           <v-row>
             <v-col cols="5">
               <h2>{{ tableData.boat_class }}</h2>
-              <p>{{ tableData.results }} Datensätze gefunden</p>
-              <p>Von {{ tableData.start_date }} bis {{ tableData.end_date }}</p>
+              <v-col cols="12" class="px-0">
+                <v-alert type="success" variant="tonal" class="ma-0 pa-3" closable>
+                  <v-row>
+                    <v-col cols="6">
+                      <b><p>{{ tableData.results }} Datensätze</p></b>
+                      <p>Von: {{ tableData.start_date.slice(0, 4) }}</p>
+                      <p>Bis: {{ tableData.end_date.slice(0, 4) }}</p>
+                    </v-col>
+                    <v-col cols="6">
+                      <b><p>Bootsklasse(n):</p></b>
+                      <p>{{ tableData.boat_class }}</p>
+                    </v-col>
+                  </v-row>
+                </v-alert>
+              </v-col>
+
               <v-table class="tableStyles" density="comfortable">
                 <tbody class="nth-grey">
                 <tr>

@@ -17,22 +17,32 @@
         <rennstruktur-filter/>
       </v-navigation-drawer>
       <v-container class="pa-10">
-        <h1>Rennstrukturanalyse</h1>
+        <v-col cols="6" class="d-flex flex-row" style="align-items: center">
+           <h1>Rennstrukturanalyse</h1>
+          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>
+           <v-tooltip
+               activator="#tooltip-analyis-icon"
+            location="end"
+            open-on-hover
+        >Die Rennstrukturanalyse erlaubt die gezielte Betrachtung des Rennverlaufs auf Basis von Ergebnis- und GPS Daten.</v-tooltip>
+        </v-col>
         <v-divider></v-divider>
-        <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 mt-4" :items="breadCrumbs"></v-breadcrumbs>
-        <v-container class="pa-0 mt-8" v-if="!displayRaceDataAnalysis">
+      <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 mt-2" :items="breadCrumbs"></v-breadcrumbs>
+        <v-container class="pa-0 mt-2" v-if="!displayRaceDataAnalysis">
           <v-row>
             <v-col cols="12">
               <h2>Suchergebnisse</h2>
-              <v-container class="pa-0" style="min-height: 500px">
 
-
-
+              <v-container class="pa-0 mt-3" style="min-height: 500px">
                 <v-col :cols="mobile ? 12 : 6" class="pa-0">
+                <v-alert type="info" variant="tonal" v-if="!getAnalysis && !loading">
+                  Bitte wähle ein Jahr und eine Wettkampfklasse in den Filterkriterien.
+                </v-alert>
 
+                  <v-progress-circular v-if="loading" indeterminate color="blue" size="40"></v-progress-circular>
 
                   <!-- competition list -->
-                  <v-list density="compact" v-show="displayCompetitions">
+                  <v-list density="compact" v-show="displayCompetitions && !loading">
                     <v-list-item
                         min-height="80"
                         style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
@@ -41,25 +51,25 @@
                         :key="competition"
                         :title="competition.display_name"
                         :subtitle="competition.start_date+' | '+competition.venue"
-                        @click="getEvents(competition.events)"
+                        @click="getEvents(competition.events, competition.id)"
                     ></v-list-item>
                   </v-list>
 
 
 
                   <!-- events list -->
-                  <v-list density="compact" v-show="displayEvents">
+                  <v-list density="compact" v-show="displayEvents && !loading">
                     <v-list-item
                         style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
                         class="pa-2 my-2"
                         v-for="event in events"
                         :key="event"
                         :title="event.display_name"
-                        @click="getRaces(event.races)"
+                        @click="getRaces(event.races, event.id)"
                     ></v-list-item>
                   </v-list>
                   <!-- races list -->
-                  <v-list density="compact" v-show="displayRaces">
+                  <v-list density="compact" v-show="displayRaces && !loading">
                     <v-list-item
                         style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
                         class="pa-2 my-2"
@@ -75,7 +85,7 @@
           </v-row>
         </v-container>
 
-        <v-container v-if="displayRaceDataAnalysis" class="pa-0 mt-8">
+        <v-container v-if="displayRaceDataAnalysis && !loading" class="pa-0 mt-8">
           <v-row no-gutters>
             <v-col>
               <v-table>
@@ -193,7 +203,7 @@ ChartJS.register(Tooltip, Legend, TimeScale);
 <script>
 import {useRennstrukturAnalyseState} from "@/stores/baseStore";
 import {mapState} from "pinia";
-import {useBerichteState} from "@/stores/berichteStore";
+import router from "@/router";
 
 export default {
   computed: {
@@ -217,14 +227,17 @@ export default {
     }),
     ...mapState(useRennstrukturAnalyseState, {
       filterState: "getFilterState"
+    }),
+    ...mapState(useRennstrukturAnalyseState, {
+      loading: "getLoadingState"
     })
-
   },
   data() {
     return {
-      filterOpen: true,
+      filterOpen: false,
       breadCrumbs: [],
       mobile: false,
+      showTooltip: false,
       displayRaceDataAnalysis: false,
       displayCompetitions: true,
       displayEvents: false,
@@ -376,7 +389,10 @@ export default {
       const store = useRennstrukturAnalyseState()
       store.setFilterState(this.filterState)
     },
-    getEvents(competition) {
+    getEvents(competition, compId) {
+      router.push({ path: this.$route.path,
+        query: { comp_id: compId }}
+      )
       this.events = competition
       this.breadCrumbs.push({
         title: 'Competition',
@@ -393,7 +409,7 @@ export default {
       this.displayCompetitions = false
       this.displayEvents = true
     },
-    getRaces(events) {
+    getRaces(events, eventId) {
       this.races = events
       this.breadCrumbs.push({
         title: 'Event',
@@ -428,6 +444,9 @@ export default {
         const store = useRennstrukturAnalyseState()
         store.setFilterState(oldVal)
       }
+    },
+    loading() {
+      router.push('/rennstrukturanalyse')
     }
   }
 }
@@ -460,5 +479,4 @@ export default {
   border-radius: 0 5px 5px 0;
   color: #1369b0;
 }
-
 </style>

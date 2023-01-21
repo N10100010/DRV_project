@@ -180,6 +180,22 @@ export const useBerichteState = defineStore({
                         "00:06:54", "00:06:53", "00:06:55", "00:06:50", "00:06:48",
                         "00:06:43", "00:06:46", "00:06:40", "00:06:39", "00:06:40"
                     ]
+                },
+                "percentile_75": {
+                    "labels": [
+                        '1930-01-01', '2020-01-01'
+                    ],
+                    "data": [
+                        "00:06:51", "00:06:51"
+                    ]
+                },
+                "percentile_25": {
+                    "labels": [
+                        '1930-01-01', '2020-01-01'
+                    ],
+                    "data": [
+                        "00:06:44", "00:06:44"
+                    ]
                 }
             }
         }]
@@ -215,22 +231,48 @@ export const useBerichteState = defineStore({
             }
         },
         getScatterChartData(state) {
-            const plotData = [];
             const scatterData = state.data[0].plot_data.scatterPlot;
-            for (let i = 0; i < scatterData.labels.length; i++) {
-                plotData.push({
-                    x: scatterData.labels[i],
-                    y: scatterData.data[i]
-                });
-            }
+            const firstPercentileData = state.data[0].plot_data.percentile_75;
+            const secondPercentileData = state.data[0].plot_data.percentile_25;
+
+            const plotData = scatterData.labels.map((label, i) => ({x: label, y: scatterData.data[i]}));
+            const percentile75Data = firstPercentileData.labels.map((label, i) => ({
+                x: label,
+                y: firstPercentileData.data[i]
+            }));
+            const percentile25Data = secondPercentileData.labels.map((label, i) => ({
+                x: label,
+                y: secondPercentileData.data[i]
+            }));
+
             return {
                 datasets: [
                     {
                         type: 'scatter',
-                        label: 'Scatter Dataset',
+                        label: 'Boote',
                         data: plotData,
                         backgroundColor: '#5cc5ed',
                         borderColor: '#5cc5ed'
+                    },
+                    {
+                        type: 'line',
+                        label: '75. Perzentil',
+                        data: percentile75Data,
+                        borderColor: "darkgrey",
+                        borderWidth: 2,
+                        backgroundColor: "darkgrey",
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                    },
+                    {
+                        type: 'line',
+                        label: '25. Perzentil',
+                        data: percentile25Data,
+                        borderColor: "darkgrey",
+                        borderWidth: 2,
+                        backgroundColor: "darkgrey",
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
                     }
                 ]
             }

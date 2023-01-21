@@ -14,6 +14,7 @@
       <v-autocomplete :items="previewAthleteResults" v-model="selectedAthlete" clearable
                       variant="outlined" color="blue" label="Athlet" @input="searchAthletes"
                       class="pt-2" :rules="[v => !!v || 'Athletenname darf nicht leer sein']"
+                      autofocus
       ></v-autocomplete>
       <h2 class="pt-3">Filter</h2>
       <v-divider></v-divider>

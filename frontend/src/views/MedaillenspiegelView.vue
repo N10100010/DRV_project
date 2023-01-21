@@ -18,19 +18,33 @@
         <medaillenspiegel-filter/>
       </v-navigation-drawer>
       <v-container class="pa-10">
-        <h1>Medaillenspiegel</h1>
+        <v-col cols="6" class="d-flex flex-row" style="align-items: center">
+          <h1>Medaillenspiegel</h1>
+          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
+          </v-icon>
+          <v-tooltip
+              activator="#tooltip-analyis-icon"
+              location="end"
+              open-on-hover
+          >Im Rahmen des Medaillenspiegels können die Erfolge von Nationen betrachtet werden.<br>
+            Wähle hierzu aus den Filteroptionen im Filter (links) einen Zeitraum und eine Nation aus.
+          </v-tooltip>
+        </v-col>
         <v-divider></v-divider>
         <v-container class="pa-0 mt-8">
-          <v-col cols="6" style="font-weight: 600">
-            <v-row>
-              <v-col cols="6" class="pa-0">
-                <p>(n = {{ filterSelection.results }})</p>
-                <p>Von: {{ filterSelection.start_date }}</p>
-                <p>Bis: {{ filterSelection.end_date }}</p>
-              </v-col>
-              <v-col cols="6">
-              </v-col>
-            </v-row>
+          <v-col cols="6" class="pl-0">
+            <v-alert type="success" variant="tonal" class="ma-0 pa-3" closable>
+              <v-row>
+                <v-col cols="6">
+                  <b><p>{{ filterSelection.results }} Datensätze</p></b>
+                  <p>Von: {{ filterSelection.start_date.slice(0, 4) }}</p>
+                  <p>Bis: {{ filterSelection.end_date.slice(0, 4) }}</p>
+                </v-col>
+                <v-col cols="6">
+                  <b><p>Bootsklassen: {{ filterSelection.boat_class }}</p></b>
+                </v-col>
+              </v-row>
+            </v-alert>
           </v-col>
           <v-row>
             <v-col cols="6">
