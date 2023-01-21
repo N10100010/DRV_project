@@ -3,7 +3,7 @@ FROM python:3.10-slim
 
 # Ref: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 
-ARG REQUIREMENTS_TXT=requirements.scraper.txt
+ARG REQUIREMENTS_TXT=scraper.requirements.txt
 
 WORKDIR /usr/src/app
 
