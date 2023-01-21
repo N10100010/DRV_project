@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  backend:
+  api:
     build: ./backend
     ports:
       - 5000:5000
@@ -17,10 +17,10 @@ services:
       DB_SQLALCHEMY_DRIVERNAME: "postgresql+psycopg2"
       DB_VERBOSITY: "1"
 
-  scraping-service:
+  scraper:
     build:
       context: backend
-      dockerfile: ./scraping-service.Dockerfile
+      dockerfile: ./Dockerfile.scraper
     ports:
       - 5001:5000
     volumes:
