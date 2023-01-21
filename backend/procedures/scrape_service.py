@@ -1,4 +1,12 @@
+import logging
+from time import sleep
+
 from model import model
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+__SCRAPER_SLEEP_TIME_SECONDS = 5
 
 """ NOTES
 - [SCRAPE] Procedure
@@ -8,52 +16,79 @@ from model import model
     - Parse PDF Data
     - Merge/Assign Data to the right boat
     - Decide what data seems higher quality and write it to the database
+
+TODO
+- print() -> Logger
 """
 
+def prescrape():
+    logger = logging.getLogger("prescrape")
+
+    logger.info("Fetch all competition heads and write to db")
+
+
 def scrape():
-    print("[scrape]", "Grab competition 123-asd-123-asd")
+    logger = logging.getLogger("scrape")
+
+    logger.info("Grab competition 123-asd-123-asd")
     
-    print("[scrape]", "Write competition to db")
+    logger.info("Write competition to db")
 
     # Race Data PDF here or in maintain()
 
 
 def maintain():
-    print("[maintain]", "Find unmaintained competition in db")
+    logger = logging.getLogger("maintain")
 
-    print("[maintain]", "Found")
+    logger.info("Find unmaintained competition in db")
 
-    print("[maintain]", "Fetch & Parse PDF")
+    logger.info("Found")
 
-    print("[maintain]", "Check Quality of both Datasets")
+    logger.info("Fetch & Parse PDF")
 
-    print("[maintain]", "Overwrite in db")
+    logger.info("Check Quality of both Datasets")
+
+    logger.info("Overwrite in db")
+
+
+def scheduler(duration=__SCRAPER_SLEEP_TIME_SECONDS):
+    logger = logging.getLogger("scheduler")
+
+    logger.info(f"Waiting {duration} seconds ...")
+    sleep(duration)
 
 
 def start_service():
-    print("[start_service]")
-    for i in range(5):
+    logger.info("[start_service]")
+    while True:
+        prescrape()
         scrape()
         maintain()
-        # sleep()
+
+        scheduler()
+
 
 if __name__ == '__main__':
     import argparse
 
-    SCRAPE_ID = 'scrape'
-    MAINTAIN_ID = 'maintain'
+    procedures = {
+        "prescrape": prescrape,
+        "scrape": scrape,
+        "maintain": maintain
+    }
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--procedure", help="Procedure to run", choices=[SCRAPE_ID, MAINTAIN_ID], action="append")
+    parser.add_argument(
+        "-p", "--procedure", help="Procedure to run",
+        choices=list(procedures.keys()), action="append"
+    )
     args = parser.parse_args()
-    print(args)
+    logger.info(args)
 
     
     if not args.procedure:
         start_service()
     else:
-        if SCRAPE_ID in args.procedure:
-            scrape()
-        
-        if MAINTAIN_ID in args.procedure:
-            maintain()
+        for procedure_id in args.procedure:
+            func = procedures[procedure_id]
+            func()
