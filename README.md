@@ -76,7 +76,10 @@ The following service settings have to be made on *railway.app*:
 
 - Set *Root Directory* `/frontend`
 - Set the following environment variables in the service settings:
-    - `NIXPACKS_NODE_VERSION=16`
+    - `NIXPACKS_NODE_VERSION`: Specifies the major version of Node.js
+        - e.g. `16`
+    - `BACKEND_API_BASE_URL`: Specifies the public base url of backend API
+        - example: `https://backend-api-production-drv-project.up.railway.app/`
 
 
 ## MVP
