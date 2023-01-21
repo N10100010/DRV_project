@@ -3,6 +3,6 @@ builder = "nixpacks"
 buildCommand = "pip install -r api.requirements.txt"
 
 [deploy]
-startCommand = "python -m waitress --host 0.0.0.0 --port ${PORT} app.app:app"
+startCommand = "python app/railway.py && python -m waitress --host 0.0.0.0 --port ${PORT} app.app:app"
 # further CLI options trust the forwarding headers etc.:
 #  -> https://docs.pylonsproject.org/projects/waitress/en/stable/usage.html#heroku
