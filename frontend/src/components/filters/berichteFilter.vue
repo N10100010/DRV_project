@@ -24,6 +24,8 @@
                 :items="optionsBoatClasses" v-model="selectedBoatClasses" variant="outlined"
                 :rules="[v => !!v || 'Wähle mindestens eine Bootsklasse']"
       ></v-select>
+
+
       <v-container class="pa-0 d-flex pt-3">
         <v-col cols="6" class="pa-0 pr-2">
           <v-select clearable label="Von" :items="optionsStartYear"

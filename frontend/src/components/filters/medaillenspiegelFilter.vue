@@ -40,6 +40,11 @@
                       variant="outlined" color="blue" label="Nation" density="comfortable"
                       :rules="[v => !!v || 'Wähle mindestens eine Nation']"
       ></v-autocomplete>
+
+
+
+
+      <!--
       <v-label>Bootsklasse</v-label>
       <v-chip-group filter color="blue" v-model="selectedGenders">
         <v-chip v-for="genderType in genderTypeOptions">{{ genderType.charAt(0).toUpperCase() + genderType.slice(1) }}
@@ -52,6 +57,12 @@
                 :items="optionsBoatClasses" v-model="selectedBoatClasses" variant="outlined"
                 :rules="[v => !!v || 'Wähle mindestens eine Bootsklasse']"
       ></v-select>
+      -->
+      <v-select class="pt-3" label="Bootsklassen" clearable multiple chips density="comfortable"
+                :items="optionsBoatClasses" v-model="selectedBoatClasses" variant="outlined"
+                :rules="[v => !!v || 'Wähle mindestens eine Bootsklasse']"
+      ></v-select>
+
       <v-container class="pa-0 pt-8 text-right">
         <v-btn color="grey" class="mx-2" @click="clearFormInputs">
           <v-icon>mdi-backspace-outline</v-icon>
@@ -107,10 +118,6 @@ export default {
       selectedNation: "GER (Deutschland)",
 
       // boat classes
-      genderTypeOptions: [],
-      selectedGenders: [0],
-      ageGroupOptions: [],
-      selectedAgeGroups: 0,
       optionsBoatClasses: [],
       selectedBoatClasses: this.optionsBoatClasses,
     }
@@ -141,25 +148,21 @@ export default {
     }
     this.optionsNations = finalCountryNames
 
-    // boatclasses
-    this.genderTypeOptions = Object.keys(this.filterOptions[0].boat_class)
-    let ageGroupOptions = Object.keys(this.filterOptions[0].boat_class.men)
-    ageGroupOptions.push(...Object.keys(this.filterOptions[0].boat_class.women))
-    this.ageGroupOptions = ageGroupOptions.filter((v, i, a) => a.indexOf(v) === i); // exclude non-unique values
+    // boat classes
+    let boatClassValues = []
+     function getMostInnerValue(o) {
+        for (let key in o) {
+            if (typeof o[key] === 'object') {
+                getMostInnerValue(o[key]);
+            } else {
+                boatClassValues.push(o[key]);
+            }
+        }
+    }
+    getMostInnerValue(Object.values(this.filterOptions[0].boat_class))
 
-    let boatClassOptions = []
-    let values = Object.values(this.filterOptions[0].boat_class)[0]
-    Object.entries(values).forEach(([key, value], index) => {
-      if (index === 0) {
-        Object.entries(value).forEach(([, val]) => {
-          if (typeof val === "object") {
-            boatClassOptions.push(Object.values(val)[0])
-          }
-        })
-      }
-    });
-    this.selectedBoatClasses = boatClassOptions[0]
-    this.optionsBoatClasses = boatClassOptions
+    this.selectedBoatClasses = boatClassValues[0]
+    this.optionsBoatClasses = boatClassValues
   },
   methods: {
     async onSubmit() {
@@ -212,71 +215,6 @@ export default {
       this.windowWidth = window.innerWidth
       this.mobile = this.windowWidth <= 769
     }
-  },
-  watch: {
-    selectedGenders: function (newVal,) {
-      if (newVal !== undefined) {
-        this.selectedBoatClasses = null
-        let optionsList = []
-        if (newVal === 0) { // men
-          optionsList.push(...Object.keys(this.filterOptions[0].boat_class.men))
-        }
-        if (newVal === 1) { // women
-          optionsList.push(...Object.keys(this.filterOptions[0].boat_class.women))
-        }
-        if (newVal === 2) { // mixed
-          optionsList = []
-          let test = []
-          for (const mixedOption of Object.values(this.filterOptions[0].boat_class.mixed)) {
-            test.push(Object.values(mixedOption))
-          }
-          this.optionsBoatClasses = test.map(item => item[0]).flat()
-        }
-        if (newVal === 3) { // all
-          this.ageGroupOptions = []
-          this.optionsBoatClasses = ["Alle"]
-          this.selectedBoatClasses = this.optionsBoatClasses
-        }
-        this.ageGroupOptions = optionsList.filter((v, i, a) => a.indexOf(v) === i); // exclude non-unique values
-        let boatClassOptions = []
-        Object.entries(Object.values(this.filterOptions[0].boat_class)[newVal]).forEach(([key, value], index) => {
-          if (index === this.selectedAgeGroups) {
-            Object.entries(value).forEach(([, val]) => {
-              if (typeof val === "object") {
-                boatClassOptions.push(Object.values(val)[0])
-              }
-            })
-          }
-        });
-        if (newVal !== 2 && newVal !== 3) {
-          this.optionsBoatClasses = boatClassOptions
-          this.selectedBoatClasses = boatClassOptions[0]
-        } else if (newVal === 2) {
-          this.selectedBoatClasses = this.optionsBoatClasses[0]
-        }
-      }
-    },
-    selectedAgeGroups: function (newVal,) {
-      if (newVal !== undefined) {
-        this.selectedBoatClasses = null
-        let genderObj = Object.values(this.filterOptions[0].boat_class)[this.selectedGenders]
-        let boatClassOptions = []
-
-        Object.entries(genderObj).forEach(([key, value], index) => {
-          if (index === newVal) {
-            Object.entries(value).forEach(([, val]) => {
-              if (typeof val === "object") {
-                boatClassOptions.push(Object.values(val)[0])
-              }
-            })
-          }
-        });
-        this.selectedBoatClasses = boatClassOptions[0]
-        if (this.selectedGenders !== 2 && this.selectedGenders !== 3) {
-          this.optionsBoatClasses = boatClassOptions
-        }
-      }
-    },
   }
 }
 

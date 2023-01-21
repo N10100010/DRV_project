@@ -124,6 +124,7 @@ export default {
     },
     submitFormData() {
       const store = useRennstrukturAnalyseState()
+      store.setToLoadingState()
       const formData = {
         "year": this.year,
         "competition_type": this.selectedCompTypes,

@@ -6,7 +6,8 @@ const COLORS = ['#1E90FF', '#EE7621', '#66CD00', '#CD0000', '#7A67EE', '#32ffff'
 export const useRennstrukturAnalyseState = defineStore({
     id: "base",
     state: () => ({
-        filterOpen: true,
+        filterOpen: false,
+        loadingState: false,
         data: {
             filterOptions: [{
                 "year": [{"start_year": 1950}, {"end_year": 2025}],
@@ -259,62 +260,7 @@ export const useRennstrukturAnalyseState = defineStore({
                     }
                 ]
             }],
-            analysis: [
-                {
-                    "id": 395871,
-                    "display_name": "2022 World Rowing Cup II",
-                    "venue": "Malta/Poznan, Poland",
-                    "start_date": "2022-06-16 00:00:00",
-                    "competition_category": "World Rowing Cup",
-                    "events": [
-                        {
-                            "id": 734839,
-                            "display_name": "Lightweight Women's Single Sculls",
-                            "races": [
-                                {"id": 187573, "display_name": "Final FB"},
-                                {"id": 424754, "display_name": "Heat 1"}
-                            ]
-                        },
-                        {
-                            "id": 748394,
-                            "display_name": "Men's Four",
-                            "races": [
-                                {"id": 195638, "display_name": "Men's Eight Heat 1"},
-                                {"id": 823759, "display_name": "Men's Eight Final FA"},
-                                {"id": 748394, "display_name": "Men's Eight Repechage"},
-                                {"id": 839473, "display_name": "Men's Eight Heat 2"}
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "id": 395871,
-                    "display_name": "2022 World Rowing Cup III",
-                    "venue": "Malta/Poznan, Poland",
-                    "start_date": "2022-06-16 00:00:00",
-                    "competition_category": "World Rowing Cup",
-                    "events": [
-                        {
-                            "id": 734839,
-                            "display_name": "Lightweight Women's Single Sculls",
-                            "races": [
-                                {"id": 187573, "display_name": "Final FB"},
-                                {"id": 424754, "display_name": "Heat 1"}
-                            ]
-                        },
-                        {
-                            "id": 748394,
-                            "display_name": "Men's Four",
-                            "races": [
-                                {"id": 195638, "display_name": "Men's Eight Heat 1"},
-                                {"id": 823759, "display_name": "Men's Eight Final FA"},
-                                {"id": 748394, "display_name": "Men's Eight Repechage"},
-                                {"id": 839473, "display_name": "Men's Eight Heat 2"}
-                            ]
-                        }
-                    ]
-                }
-            ]
+            analysis: null
         },
     }),
     getters: {
@@ -332,6 +278,9 @@ export const useRennstrukturAnalyseState = defineStore({
         },
         getOldTableData(state) {
             return state.data.raceData[0].data
+        },
+        getLoadingState(state) {
+            return state.loadingState
         },
         getTableData(state) {
             const tableHead = ['Platz', 'Bahn', 'Nation', 'Mannschaft'];
@@ -442,15 +391,79 @@ export const useRennstrukturAnalyseState = defineStore({
             }
         },
         async postFormData(formData) {
+            setTimeout(() => {
+                this.data.analysis = [
+                {
+                    "id": 395871,
+                    "display_name": "2022 World Rowing Cup II",
+                    "venue": "Malta/Poznan, Poland",
+                    "start_date": "2022-06-16 00:00:00",
+                    "competition_category": "World Rowing Cup",
+                    "events": [
+                        {
+                            "id": 734839,
+                            "display_name": "Lightweight Women's Single Sculls",
+                            "races": [
+                                {"id": 187573, "display_name": "Final FB"},
+                                {"id": 424754, "display_name": "Heat 1"}
+                            ]
+                        },
+                        {
+                            "id": 748394,
+                            "display_name": "Men's Four",
+                            "races": [
+                                {"id": 195638, "display_name": "Men's Eight Heat 1"},
+                                {"id": 823759, "display_name": "Men's Eight Final FA"},
+                                {"id": 748394, "display_name": "Men's Eight Repechage"},
+                                {"id": 839473, "display_name": "Men's Eight Heat 2"}
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": 395871,
+                    "display_name": "2022 World Rowing Cup III",
+                    "venue": "Malta/Poznan, Poland",
+                    "start_date": "2022-06-16 00:00:00",
+                    "competition_category": "World Rowing Cup",
+                    "events": [
+                        {
+                            "id": 734839,
+                            "display_name": "Lightweight Women's Single Sculls",
+                            "races": [
+                                {"id": 187573, "display_name": "Final FB"},
+                                {"id": 424754, "display_name": "Heat 1"}
+                            ]
+                        },
+                        {
+                            "id": 748394,
+                            "display_name": "Men's Four",
+                            "races": [
+                                {"id": 195638, "display_name": "Men's Eight Heat 1"},
+                                {"id": 823759, "display_name": "Men's Eight Final FA"},
+                                {"id": 748394, "display_name": "Men's Eight Repechage"},
+                                {"id": 839473, "display_name": "Men's Eight Heat 2"}
+                            ]
+                        }
+                    ]
+                }
+            ]
+                this.loadingState = false
+            }, 800);
+            /*
             await axios.post('https://jsonplaceholder.typicode.com/users', {formData})
                 .then(response => {
                     // Bearbeite die Antwort des Backends hier
                 }).catch(error => {
                     // Bearbeite den Fehler hier
                 });
+            */
         },
         setFilterState(filterState) {
             this.filterOpen = !filterState
+        },
+        setToLoadingState() {
+            this.loadingState = true
         }
     }
 });

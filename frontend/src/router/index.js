@@ -1,13 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import Berichte from "@/views/Berichte.vue";
-import Wettkampfresultate from "@/views/WettkampfresultateView.vue";
 import Rennstrukturanalyse from "@/views/Rennstrukturanalyse.vue";
 import AthletenView from "@/views/AthletenView.vue";
 import TeamsView from "@/views/TeamsView.vue";
 import MedaillenspiegelView from "@/views/MedaillenspiegelView.vue";
 import DatenschutzView from "@/views/DatenschutzView.vue";
 import ImpressumView from "@/views/ImpressumView.vue";
+import HilfeView from "@/views/HilfeView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,11 +21,6 @@ const router = createRouter({
       path: '/berichte',
       name: 'berichte',
       component: Berichte
-    },
-    {
-      path: '/wettkampfresultate',
-      name: 'wettkampfresultate',
-      component: Wettkampfresultate
     },
     {
       path: '/rennstrukturanalyse',
@@ -56,6 +51,11 @@ const router = createRouter({
       path: '/impressum',
       name: 'impressum',
       component: ImpressumView
+    },
+      {
+      path: '/hilfe',
+      name: 'hilfe',
+      component: HilfeView
     }
   ]
 })
