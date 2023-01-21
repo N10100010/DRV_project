@@ -1,8 +1,23 @@
 # DRB_project
 Container for the innovation project WS '22
 
+## How to run things with Docker
 
-## How to run things
+Start all the services with
+
+```sh
+docker compose up
+```
+
+Start only a specific service e.g. frontend: `docker compose up frontend`
+
+Reset the project by composing down:
+
+```sh
+docker compose down --rmi all --volumes
+```
+
+## How to run things manually
 
 ### (Preparation) Install required packages
 
