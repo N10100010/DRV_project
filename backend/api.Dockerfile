@@ -2,10 +2,12 @@ FROM python:3.10-alpine
 
 # Ref: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 
+ARG REQUIREMENTS_TXT=api.requirements.txt
+
 WORKDIR /usr/src/app
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+COPY $REQUIREMENTS_TXT ./
+RUN pip install --no-cache-dir -r $REQUIREMENTS_TXT
 
 COPY . .
 
