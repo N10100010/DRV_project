@@ -24,6 +24,7 @@
             "cwd": "${workspaceFolder}/backend",
             "module": "model.dbutils",
             "args": [
+                "--create",
                 "--insert",
                 "tmp.dump.json"
             ],

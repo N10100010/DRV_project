@@ -288,18 +288,18 @@ if __name__ == '__main__':
     import json
     from .model import engine, Scoped_Session
 
+    if args.drop:
+        print("----- Drop All Tables -----")
+        drop_all_tables(engine)
+
+    if args.create:
+        print("----- Create Tables -----")
+        create_tables(engine)
+
     if args.insert:
         print("Load JSON file:", args.insert)
         with Scoped_Session() as session: # implicit commit when leaving context w/o errors
             with open(args.insert, mode="r", encoding="utf-8") as fp:
                 competition_data = json.load(fp)
             wr_insert_competition(session, competition_data)
-
-    else:
-        if args.drop:
-            print("----- Drop All Tables -----")
-            drop_all_tables(engine)
-
-        if args.create:
-            print("----- Create Tables -----")
-            create_tables(engine)
+    

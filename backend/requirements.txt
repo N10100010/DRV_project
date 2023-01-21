@@ -1,16 +1,5 @@
-# camelot
-opencv-python-headless # camelot dependency
-camelot-py[base]
-pandas==1.5.*
-
 # server
 Flask~=2.2.2
 waitress~=2.1.2
 SQLAlchemy~=1.4.45
 psycopg2-binary~=2.9.5
-requests~=2.28
-tenacity~=8.1
-
-# utils that should be removed
-jsbeautifier # TODO: get rid of this dependency; see https://stackoverflow.com/a/9105143
-tqdm

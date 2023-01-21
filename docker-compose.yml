@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  backend:
+  api:
     build: ./backend
     ports:
       - 5000:5000
@@ -17,9 +17,28 @@ services:
       DB_SQLALCHEMY_DRIVERNAME: "postgresql+psycopg2"
       DB_VERBOSITY: "1"
 
+  scraper:
+    build:
+      context: backend
+      dockerfile: ./Dockerfile.scraper
+    ports:
+      - 5001:5000
+    volumes:
+      - ./backend:/usr/src/app
+    depends_on:
+      - db
+    environment:
+      DB_USER: "postgres"
+      DB_PASS: "postgres"
+      DB_HOST: "db"
+      DB_PORT: "5432"
+      DB_NAME: "rowing"
+      DB_SQLALCHEMY_DRIVERNAME: "postgresql+psycopg2"
+      DB_VERBOSITY: "1"
+
   db:
     image: postgres:14.1-alpine
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
