@@ -120,6 +120,32 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 </tr>
                 </tbody>
               </v-table>
+              <v-table class="tableStyles">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>WB [t]</th>
+                    <th>Ø [t]</th>
+                    <th>Δ [s]</th>
+                    <th>n</th>
+                  </tr>
+                </thead>
+                <tbody class="nth-grey">
+                  <template v-for="agegroup in agegroups">
+                    <tr>
+                      <th>{{ agegroup }}</th>
+                    </tr>
+                    
+                    <tr v-for="boatclass in boatclasses">
+                      <td>M1+</td>
+                      <td>{{ tableData["world_best_time_boat_class"] }}</td>
+                      <td>{{ tableData["mean"]["mm:ss,00"] }}</td>
+                      <td>{{ tableData["std_dev"] }}</td>
+                      <td>{{ tableData["results"] }}</td>
+                    </tr>
+                  </template>
+                </tbody>
+              </v-table>
             </v-col>
             <v-col cols="7">
               <v-container>
@@ -176,6 +202,8 @@ export default {
   },
   data() {
     return {
+      agegroups: ['OPEN MEN', 'OPEN WOMEN', 'U23 MEN', 'U23 WOMEN', 'U19 MEN', 'U19 WOMEN'],
+      boatclasses: ['test', 'test', 'test'],
       mobile: false,
       filterOpen: false,
       barChartOptions: {
