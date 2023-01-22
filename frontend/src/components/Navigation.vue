@@ -11,7 +11,7 @@ export default {
       windowWidth: null,
       navigationLinks: [
           {
-            displayName: "Allgemeines",
+            displayName: "Dashboard",
             link: "/",
             subPages: [
               {
@@ -27,10 +27,6 @@ export default {
         {
           displayName: "Berichte",
           link: "/berichte",
-        },
-        {
-          displayName: "Wettkampfresultate",
-          link: "/wettkampfresultate",
         },
         {
           displayName: "Rennstrukturanalyse",

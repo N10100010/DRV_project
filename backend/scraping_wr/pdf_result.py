@@ -15,7 +15,10 @@ import itertools
 import camelot
 import re
 from typing import Union
-from backend.scraping_wr.utils_pdf import (clean, clean_df, get_string_loc, handle_table_partitions,
+import json
+
+from .utils_general import write_to_json
+from .utils_pdf import (clean, clean_df, get_string_loc, handle_table_partitions,
                        clean_str, print_stats)
 import logging
 
@@ -103,7 +106,7 @@ def get_country_code(df: pd.DataFrame, row: int) -> str:
     """
     country_df = df.iloc[row:row + 1, 0:df.shape[1] - 1]
     country_data = country_df.values.reshape(-1)
-    reg = r"(?<![A-Z])[A-Z]{3}(?![A-Z])(?!\s)"
+    reg = r"(?<![A-Z])[A-Z]{3}(?![A-Z])(?!\s)[1-9]?"
     country = list(itertools.chain(*[re.findall(reg, str(x)) for x in country_data]))
     return next(iter(clean_str(country, style="country")), None)
 
@@ -142,7 +145,7 @@ def check_extracted_data(data: dict) -> dict:
     return data
 
 
-def extract_data_from_pdf_urls(urls: list) -> tuple[list, list]:
+def extract_data_from_pdf_urls(urls: list) -> tuple[dict, list]:
     """
     This function extracts relevant data from the result data pdfs.
     --------------
@@ -152,10 +155,10 @@ def extract_data_from_pdf_urls(urls: list) -> tuple[list, list]:
     Returns: list with extracted data
     """
 
-    data, failed_requests, errors, empty_files = [], [], 0, 0
+    final_data, data, failed_requests, errors, empty_files = {}, [], [], 0, 0
 
     for url in urls:
-        extraction_result, tables = {}, []
+        boat_data, tables = {}, []
         try:
             tables = camelot.read_pdf(url, flavor="stream", pages="all", column_tol=2)
         except NotImplementedError:
@@ -164,7 +167,6 @@ def extract_data_from_pdf_urls(urls: list) -> tuple[list, list]:
             logger.error(f" Error occurred: {e}")
 
         if tables:
-            result_data = {}
             try:
                 # prepare df
                 df = clean(handle_table_partitions(tables=tables, results=True))
@@ -180,7 +182,7 @@ def extract_data_from_pdf_urls(urls: list) -> tuple[list, list]:
                     country_rows, _ = cntry_locs["row"], cntry_locs["col"]
 
                     for idx, row in enumerate(country_rows):
-                        extraction_result[idx] = {
+                        boat_data[idx] = {
                             "country": get_country_code(df=df, row=row),
                             "rank": idx + 1,
                             "lane": get_lane(df=df, row=row, i=idx),
@@ -188,13 +190,15 @@ def extract_data_from_pdf_urls(urls: list) -> tuple[list, list]:
                             "times": get_times(df=df, row=row, cols=dist_locs),
                             "inter_ranks": get_intermediate_ranks(df=df, row=row)
                         }
-                    result_data = check_extracted_data(extraction_result)
-                elif df.empty:
-                    result_data = {}
+                    data = [value for value in check_extracted_data(boat_data).values()]
 
-                if result_data:
-                    extraction_result["url"] = url
-                    data.append(result_data)
+                elif df.empty:
+                    data = []
+
+                if data:
+                    final_data["url"] = url
+                    final_data["data"] = data
+
                     logger.info(f"Extract of {url.split('/').pop()} successful.")
                 else:
                     empty_files += 1
@@ -209,7 +213,7 @@ def extract_data_from_pdf_urls(urls: list) -> tuple[list, list]:
     rate = "{:.2f}".format(100 - ((errors / total if total else 0) * 100))
     print_stats(total=total, errors=errors, empties=empty_files, rate=rate)
 
-    return data, failed_requests
+    return final_data, failed_requests
 
 
 # extract data per year and write data and failed requests to respective json files
@@ -234,10 +238,10 @@ def extract_data_from_pdf_urls(urls: list) -> tuple[list, list]:
 '''
 # Use this to test selected files
 pdf_urls = [
-    "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCH_2014/WCH_2014_ROWXSCULL2--TA--------FNL-000100--_C73X2402.pdf",
+    "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCH_2017/WCH_2017_ROWMNOCOX4------------HEAT000100--_C73X2157.pdf",
 ]
-pdf_data, failed_req = extract_table_data_from_pdf(urls=pdf_urls)
+pdf_data, failed_req = extract_data_from_pdf_urls(urls=pdf_urls)
+
 write_to_json(data=pdf_data, filename="result_data")
 write_to_json(data=failed_req, filename="result_data_failed")
 '''
-

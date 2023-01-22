@@ -1,170 +1,209 @@
 <template>
   <v-btn color="blue"
-         @click="drawer = !drawer" v-show="!drawer"
-         style="position: fixed; z-index: 10; left: 0; border-radius: 0"
-         class="mt-8"
+         @click="setFilterState()" v-show="!filterOpen"
+         class="filterToggleButton mt-6 pa-0 ma-0"
+         height="180"
+         size="x-small"
   >
     <v-icon>mdi-filter</v-icon>
   </v-btn>
   <v-card style="box-shadow: none; z-index: 1">
-      <v-layout>
-        <v-navigation-drawer
-      v-model="drawer"
-      temporary
-      style="margin-top: 160px; background-color: white; border: none"
-      width="500">
-    <rennstruktur-filter/>
-  </v-navigation-drawer>
-  <v-container class="pa-10">
-  <h1>Rennstrukturanalyse</h1>
-  <v-divider></v-divider>
-    <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 mt-4" :items="breadCrumbs"></v-breadcrumbs>
-  <v-container class="pa-0 mt-8" v-if="!displayRaceDataAnalysis">
-    <v-row>
-      <v-col cols="12">
-        <h2>Suchergebnisse</h2>
-        <v-container class="pa-0" style="min-height: 500px">
-          <v-col cols="6" class="pa-0">
-            <!-- competition list -->
-            <v-list density="compact" v-show="displayCompetitions">
-              <v-list-item
-                  style="background-color: whitesmoke; border-radius: 5px"
-                  class="pa-2 my-2"
-                  v-for="competition in getAnalysis"
-                  :key="competition"
-                  :title="competition.display_name"
-                  :subtitle="competition.start_date+' | '+competition.venue"
-                  @click="getEvents(competition.events)"
-              ></v-list-item>
-            </v-list>
-            <!-- events list -->
-            <v-list density="compact" v-show="displayEvents">
-              <v-list-item
-                  style="background-color: whitesmoke; border-radius: 5px"
-                  class="pa-2 my-2"
-                  v-for="event in events"
-                  :key="event"
-                  :title="event.display_name"
-                  @click="getRaces(event.races)"
-              ></v-list-item>
-            </v-list>
-            <!-- races list -->
-            <v-list density="compact" v-show="displayRaces">
-              <v-list-item
-                  style="background-color: whitesmoke; border-radius: 5px"
-                  class="pa-2 my-2"
-                  v-for="race in races"
-                  :key="race"
-                  :title="race.display_name"
-                  @click="loadRaceAnalysis(race.display_name)"
-              ></v-list-item>
-            </v-list>
-          </v-col>
-        </v-container>
-      </v-col>
-    </v-row>
-  </v-container>
-
-      <v-container v-if="displayRaceDataAnalysis" class="pa-0 mt-8">
-        <v-row no-gutters>
-      <v-col>
-        <v-table>
-          <tbody>
-            <tr>
-              <td><b>Wettkampf:</b></td>
-              <td>{{ competitionData.displayName }}</td>
-            </tr>
-            <tr>
-              <td><b>Austragungsort:</b></td>
-              <td>{{ competitionData.venue }}</td>
-            </tr>
-            <tr>
-              <td><b>Datum & Startzeit:</b></td>
-              <td>{{ competitionData.startDate }}</td>
-            </tr>
-          </tbody>
-        </v-table>
-      </v-col>
-      <v-col>
-        <v-table>
-          <tbody>
-            <tr>
-              <td><b>Bootsklasse:</b></td>
-              <td>{{ competitionData.boatClass }}</td>
-            </tr>
-            <tr>
-              <td><b>Weltbestzeit Bootsklasse:</b></td>
-              <td>{{ competitionData.worldBestTimeBoatClass }}</td>
-            </tr>
-            <tr>
-              <td><b>Bestzeit Bootsklasse laufender OZ/Jahr:</b></td>
-              <td>{{ competitionData.bestTimeBoatClassCurrentOZ }}</td>
-            </tr>
-          </tbody>
-        </v-table>
-      </v-col>
-    </v-row>
-
-        <v-container class="pa-0 d-flex">
-          <v-col cols="6" class="pa-0">
+    <v-layout>
+      <v-navigation-drawer
+          v-model="filterOpen"
+          temporary
+          v-bind:style='{"margin-top" : (mobile? "71.25px" : "158px" )}'
+          width="500">
+        <rennstruktur-filter/>
+      </v-navigation-drawer>
+      <v-container class="pa-10">
+        <v-col cols="6" class="d-flex flex-row" style="align-items: center">
+           <h1>Rennstrukturanalyse</h1>
+          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>
+           <v-tooltip
+               activator="#tooltip-analyis-icon"
+            location="end"
+            open-on-hover
+        >Die Rennstrukturanalyse erlaubt die gezielte Betrachtung des Rennverlaufs auf Basis von Ergebnis- und GPS Daten.</v-tooltip>
         </v-col>
-          <v-col cols="6" class="pa-0 text-right">
-        </v-col>
+        <v-divider></v-divider>
+      <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 mt-2" :items="breadCrumbs"></v-breadcrumbs>
+        <v-container class="pa-0 mt-2" v-if="!displayRaceDataAnalysis">
+          <v-row>
+            <v-col cols="12">
+              <h2>Suchergebnisse</h2>
+
+              <v-container class="pa-0 mt-3" style="min-height: 500px">
+                <v-col :cols="mobile ? 12 : 6" class="pa-0">
+                <v-alert type="info" variant="tonal" v-if="!getAnalysis && !loading">
+                  Bitte wähle ein Jahr und eine Wettkampfklasse in den Filterkriterien.
+                </v-alert>
+
+                  <v-progress-circular v-if="loading" indeterminate color="blue" size="40"></v-progress-circular>
+
+                  <!-- competition list -->
+                  <v-list density="compact" v-show="displayCompetitions && !loading">
+                    <v-list-item
+                        min-height="80"
+                        style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
+                        class="pa-2 my-2"
+                        v-for="competition in getAnalysis"
+                        :key="competition"
+                        :title="competition.display_name"
+                        :subtitle="competition.start_date+' | '+competition.venue"
+                        @click="getEvents(competition.events, competition.id)"
+                    ></v-list-item>
+                  </v-list>
+
+
+
+                  <!-- events list -->
+                  <v-list density="compact" v-show="displayEvents && !loading">
+                    <v-list-item
+                        style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
+                        class="pa-2 my-2"
+                        v-for="event in events"
+                        :key="event"
+                        :title="event.display_name"
+                        @click="getRaces(event.races, event.id)"
+                    ></v-list-item>
+                  </v-list>
+                  <!-- races list -->
+                  <v-list density="compact" v-show="displayRaces && !loading">
+                    <v-list-item
+                        style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
+                        class="pa-2 my-2"
+                        v-for="race in races"
+                        :key="race"
+                        :title="race.display_name"
+                        @click="loadRaceAnalysis(race.display_name)"
+                    ></v-list-item>
+                  </v-list>
+                </v-col>
+              </v-container>
+            </v-col>
+          </v-row>
         </v-container>
 
-        <v-row>
-          <v-col cols="12">
-            <h2>Tabellen</h2>
+        <v-container v-if="displayRaceDataAnalysis && !loading" class="pa-0 mt-8">
+          <v-row no-gutters>
+            <v-col>
               <v-table>
-                <thead>
-                  <tr>
-                    <th v-for="tableHead in tableData[0]">{{ tableHead }}</th>
-                  </tr>
-                </thead>
-                <tbody class="nth-grey">
-                  <tr v-for="country in tableData.slice(1)">
-                    <td v-for="item in country">
-                      <template v-if="Array.isArray(item)">
-                        <p v-for="element in item" class="py-1"  style="font-size: 12px">
-                          {{ element }}
-                        </p>
-                      </template>
-                      <template v-else>
-                        <p>
-                          {{ item }}
-                        </p>
-                      </template>
-                    </td>
-                  </tr>
+                <tbody>
+                <tr>
+                  <td><b>Wettkampf:</b></td>
+                  <td>{{ competitionData.displayName }}</td>
+                </tr>
+                <tr>
+                  <td><b>Austragungsort:</b></td>
+                  <td>{{ competitionData.venue }}</td>
+                </tr>
+                <tr>
+                  <td><b>Datum & Startzeit:</b></td>
+                  <td>{{ competitionData.startDate }}</td>
+                </tr>
                 </tbody>
               </v-table>
-          </v-col>
-          <v-divider class="mt-8"></v-divider>
-          <v-col cols="6">
-            <v-container v-for="(data, idx) in getGPsData">
-              <LineChart :data="data" :chartOptions="gpsChartOptions[idx]"></LineChart>
-            </v-container>
-          </v-col>
-          <v-col cols="6">
-          <v-container v-for="(data, idx) in getIntermediateData">
-              <LineChart :data="data" :chartOptions="intermediateChartOptions[idx]"></LineChart>
-            </v-container>
-          </v-col>
-        </v-row>
+            </v-col>
+            <v-col>
+              <v-table>
+                <tbody>
+                <tr>
+                  <td><b>Bootsklasse:</b></td>
+                  <td>{{ competitionData.boatClass }}</td>
+                </tr>
+                <tr>
+                  <td><b>Weltbestzeit Bootsklasse:</b></td>
+                  <td>{{ competitionData.worldBestTimeBoatClass }}</td>
+                </tr>
+                <tr>
+                  <td><b>Bestzeit Bootsklasse laufender OZ/Jahr:</b></td>
+                  <td>{{ competitionData.bestTimeBoatClassCurrentOZ }}</td>
+                </tr>
+                </tbody>
+              </v-table>
+            </v-col>
+          </v-row>
+
+          <v-container class="pa-0 d-flex">
+            <v-col cols="6" class="pa-0">
+            </v-col>
+            <v-col cols="6" class="pa-0 text-right">
+            </v-col>
+          </v-container>
+
+          <v-row>
+            <v-col cols="12">
+              <v-table class="tableStyles" density="compact">
+                <thead>
+                <tr>
+                  <th v-for="tableHead in tableData[0]">{{ tableHead }}</th>
+                  <th>Prog.<br>Code</th>
+                </tr>
+                </thead>
+                <tbody class="nth-grey">
+                <tr v-for="(country, idx) in tableData.slice(1)">
+                  <td v-for="item in country">
+                    <template v-if="Array.isArray(item)">
+                      <p v-for="element in item">
+                        {{ element }}
+                      </p>
+                    </template>
+                    <template v-else>
+                      <p>
+                        {{ item }}
+                      </p>
+                    </template>
+                  </td>
+                  <td>
+                    {{ competitionData.data[idx].progressionCode }}
+                  </td>
+                </tr>
+                </tbody>
+              </v-table>
+              <v-col class="text-right font-weight-black" style="font-size: 0.9em">
+                <a v-if="competitionData.pdf_urls.result"
+                   :href=competitionData.pdf_urls.result target="_blank" class="mr-2" style="color: black">
+                  Ergebnisse <v-icon color="grey">mdi-open-in-new</v-icon>
+                </a>
+                <a v-if="competitionData.pdf_urls.race_data"
+                   :href=competitionData.pdf_urls.race_data target="_blank" class="ml-2" style="color: black">
+                  GPS-Daten <v-icon color="grey">mdi-open-in-new</v-icon>
+                </a>
+              </v-col>
+            </v-col>
+            <v-divider class="mt-8"></v-divider>
+            <v-col cols="6">
+              <v-container v-for="(data, idx) in getGPsData">
+                <LineChart :data="data" :chartOptions="gpsChartOptions[idx]"></LineChart>
+              </v-container>
+            </v-col>
+            <v-col cols="6">
+              <v-container v-for="(data, idx) in getIntermediateData">
+                <LineChart :data="data" :chartOptions="intermediateChartOptions[idx]"></LineChart>
+              </v-container>
+            </v-col>
+          </v-row>
+        </v-container>
       </v-container>
-    </v-container>
-      </v-layout>
-</v-card>
+    </v-layout>
+  </v-card>
 </template>
 
 <script setup>
 import RennstrukturFilter from "@/components/filters/rennstrukturFilter.vue";
 import LineChart from "@/components/charts/LineChart.vue";
+import '@/assets/base.css';
+import 'chartjs-adapter-moment';
+import {Chart as ChartJS, Tooltip, Legend, TimeScale} from "chart.js";
+
+ChartJS.register(Tooltip, Legend, TimeScale);
 </script>
 
 <script>
-import { useRennstrukturAnalyseState } from "@/stores/baseStore";
-import { mapState } from "pinia";
+import {useRennstrukturAnalyseState} from "@/stores/baseStore";
+import {mapState} from "pinia";
+import router from "@/router";
 
 export default {
   computed: {
@@ -185,12 +224,20 @@ export default {
     }),
     ...mapState(useRennstrukturAnalyseState, {
       getIntermediateData: "getIntermediateChartData"
+    }),
+    ...mapState(useRennstrukturAnalyseState, {
+      filterState: "getFilterState"
+    }),
+    ...mapState(useRennstrukturAnalyseState, {
+      loading: "getLoadingState"
     })
   },
   data() {
     return {
-      drawer: true,
+      filterOpen: false,
       breadCrumbs: [],
+      mobile: false,
+      showTooltip: false,
       displayRaceDataAnalysis: false,
       displayCompetitions: true,
       displayEvents: false,
@@ -220,7 +267,7 @@ export default {
             text: "Geschwindigkeit über Distanz"
           }
         }
-        },
+      },
         {
           responsive: true,
           maintainAspectRatio: false,
@@ -273,26 +320,26 @@ export default {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-            x: {
-              title: {
-                display: true,
-                text: 'Strecke [m]'
-              }
-            },
-            y: {
-              title: {
-                display: true,
-                text: 'Platzierung'
-              }
+          x: {
+            title: {
+              display: true,
+              text: 'Strecke [m]'
             }
           },
+          y: {
+            title: {
+              display: true,
+              text: 'Platzierung'
+            }
+          }
+        },
         plugins: {
           title: {
             display: true,
             text: "Platzierung über Distanz"
           }
         }
-        },
+      },
         {
           responsive: true,
           maintainAspectRatio: false,
@@ -304,6 +351,17 @@ export default {
               }
             },
             y: {
+              type: 'time',
+              time: {
+                parser: 'hh:mm:ss.SSS',
+                displayFormats: {
+                  second: 'ss.SSS',
+                  tooltip: 'mm:ss.SSS'
+                }
+              },
+              min: '00:00:00,000',
+              max: '00:00:20,000',
+              unitTimeSteps: 100,
               title: {
                 display: true,
                 text: 'Rückstand [sek]'
@@ -320,8 +378,21 @@ export default {
       ]
     }
   },
+  created() {
+    window.addEventListener('resize', this.checkScreen);
+    this.checkScreen();
+    this.filterOpen = this.filterState
+  },
   methods: {
-    getEvents(competition) {
+    setFilterState() {
+      this.filterOpen = !this.filterOpen;
+      const store = useRennstrukturAnalyseState()
+      store.setFilterState(this.filterState)
+    },
+    getEvents(competition, compId) {
+      router.push({ path: this.$route.path,
+        query: { comp_id: compId }}
+      )
       this.events = competition
       this.breadCrumbs.push({
         title: 'Competition',
@@ -338,7 +409,7 @@ export default {
       this.displayCompetitions = false
       this.displayEvents = true
     },
-    getRaces(events) {
+    getRaces(events, eventId) {
       this.races = events
       this.breadCrumbs.push({
         title: 'Event',
@@ -358,15 +429,54 @@ export default {
     loadRaceAnalysis(raceName) {
       this.displayRaceDataAnalysis = true
       this.breadCrumbs.push(raceName)
+    },
+    checkScreen() {
+      this.windowWidth = window.innerWidth;
+      this.mobile = this.windowWidth <= 750
+    }
+  },
+  watch: {
+    filterState(newValue) {
+      this.filterOpen = newValue;
+    },
+    filterOpen: function (newVal, oldVal) {
+      if (oldVal === true && newVal === false && this.filterState === true) {
+        const store = useRennstrukturAnalyseState()
+        store.setFilterState(oldVal)
+      }
+    },
+    loading() {
+      router.push('/rennstrukturanalyse')
     }
   }
 }
 </script>
 
-<style>
+<style lang="scss" scoped>
+.tableStyles {
+  border: 1px solid #e0e0e0;
+
+  th {
+    border: 1px solid #e0e0e0;
+    font-size: 14px !important;
+    text-align: left;
+  }
+
+  td {
+    text-align: left;
+    border: 1px solid #e0e0e0;
+  }
+}
+
 .nth-grey tr:nth-of-type(odd) {
   background-color: rgba(0, 0, 0, .05);
 }
 
-
+.filterToggleButton {
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  border-radius: 0 5px 5px 0;
+  color: #1369b0;
+}
 </style>

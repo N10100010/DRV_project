@@ -18,8 +18,8 @@ import itertools
 import pandas as pd
 from typing import Union
 
-from backend.scraping_wr.utils_general import write_to_json
-from backend.scraping_wr.utils_pdf import (handle_table_partitions, get_data_loc, print_stats,
+from .utils_general import write_to_json
+from .utils_pdf import (handle_table_partitions, get_data_loc, print_stats, find_distance_column,
                        clean_df, get_string_loc, check_speed_stroke, reset_axis, clean_str)
 import logging
 
@@ -50,11 +50,21 @@ def read_race_data(df: pd.DataFrame) -> Union[dict, None]:
         return
     table_head_df = reset_axis(df.iloc[country_idx:country_idx + (2 if rank_found else 1)], axes=[0])
 
-    # extract country codes
-    country_data = table_head_df.iloc[0:1, 1:].values.flatten().tolist()
-    country_list = [x.split('\n') for x in country_data if x and x not in SPECIAL_NAMES_FOR_COUNTRY_ROW]
-    countries = list(itertools.chain(*country_list))
-    countries = clean_str(countries, style="country")
+    # extract country codes including location
+    country_row_df = table_head_df.iloc[0:1, 1:]
+    country_bins, idx = {}, 0
+    for col in country_row_df:
+        if col % 2 != 0:
+            country_data = country_row_df.loc[:, col:col+1].values
+            country_list = [x for x in country_data if x.any() not in SPECIAL_NAMES_FOR_COUNTRY_ROW]
+            country_codes = list(itertools.chain(*country_list))
+            country_bins[idx] = clean_str(country_codes, style="country")
+            idx += 1
+
+    countries = [next(iter(value), None) for value in country_bins.values() if value]
+    # find column pairs that do not contain a country code
+    cols_with_no_cc = [(i*2+1, i*2+2) for i in country_bins.keys() if not country_bins[i]]
+    cols_to_drop = list(itertools.chain.from_iterable(cols_with_no_cc))
 
     # handle ranks data; if ranks are found they are present in the row below the county code
     ranks = None
@@ -71,9 +81,14 @@ def read_race_data(df: pd.DataFrame) -> Union[dict, None]:
     # Handle actual race data part
     data_range = get_data_loc(df)
     data_df = df.iloc[data_range[0]:data_range[1] + 1]
+    data_df = data_df.drop(cols_to_drop, axis=1)
+
+    # assumption here: for each country there are two respective data columns: speed and stroke
+    assert len(countries)*2 == data_df.shape[1]-1, print("Data set and country mismatch...")
 
     # get distance values
-    dist = clean_str(data_df.iloc[:, 0:2].values, style="dist")
+    dist_col = find_distance_column(data_df)
+    dist = clean_str(data_df.iloc[:, 0:dist_col+1].values, style="dist")
 
     # map race data and ranks to countries
     boat_data, offset = {}, 0
@@ -97,7 +112,7 @@ def read_race_data(df: pd.DataFrame) -> Union[dict, None]:
     return boat_data
 
 
-def exclude_empty_files(data: dict, limit: int = 5) -> dict:
+def exclude_empty_files(data: dict, limit: int = 5) -> list:
     """
     Excludes files that do not contain a specified limit of data values.
     Background: If there are only very few values, e.g. 2-3 per country, mapping the values
@@ -110,14 +125,15 @@ def exclude_empty_files(data: dict, limit: int = 5) -> dict:
         more_than_limit_strokes = all(list(map(lambda x: x >= limit, num_of_stroke_values)))
 
         if more_than_limit_speeds and more_than_limit_strokes:
-            return data
+            return [value for value in data.values()]
         else:
             logger.warning(f" Found less than {limit} GPS data values per country. Ignore file.")
-            return {}
-    return {}
+            return []
+
+    return [value for value in data.values()]
 
 
-def extract_data_from_pdf_url(urls: list) -> tuple[list, list]:
+def extract_data_from_pdf_url(urls: list) -> tuple[dict, list]:
     """
     Extracts data from given pdf urls using camelot-py
     -----------------------
@@ -128,7 +144,7 @@ def extract_data_from_pdf_url(urls: list) -> tuple[list, list]:
     * list with json objects (final structure needs to be discussed) for each team per race
     * list containing the urls of all failed requests
     """
-    data, failed_reqs, errors, empty_files = [], [], 0, 0
+    final_data, failed_reqs, errors, empty_files = {}, [], 0, 0
 
     for url in urls:
         try:
@@ -139,11 +155,11 @@ def extract_data_from_pdf_url(urls: list) -> tuple[list, list]:
             # extract relevant data and return dict
             data_dict = read_race_data(df=df)
             # exclude files that are below a specific limit of relevant data values
-            race_data_dict = exclude_empty_files(data=data_dict, limit=5)
+            race_data_list = exclude_empty_files(data=data_dict, limit=5)
 
-            if race_data_dict:
-                race_data_dict["url"] = url
-                data.append(race_data_dict)
+            if race_data_list:
+                final_data["url"] = url
+                final_data["data"] = race_data_list
                 logging.info(f"Extract of {url.split('/').pop()} successful.")
             else:
                 empty_files += 1
@@ -155,11 +171,11 @@ def extract_data_from_pdf_url(urls: list) -> tuple[list, list]:
             logging.error(f"\nError at {url}:\n{e}.\nErrors so far: {errors}.")
 
     # create extraction statistics
-    #total = len(pdf_urls) - empty_files
-    #extraction_rate = "{:.2f}".format(100-((errors/total if total else 0)*100))
-    #print_stats(total=total, errors=errors, empties=empty_files, rate=extraction_rate)
+    # total = len(pdf_urls) - empty_files
+    # extraction_rate = "{:.2f}".format(100-((errors/total if total else 0)*100))
+    # print_stats(total=total, errors=errors, empties=empty_files, rate=extraction_rate)
 
-    return data, failed_reqs
+    return final_data, failed_reqs
 
 
 # extract data per year and write data and failed requests to respective json files
@@ -170,7 +186,8 @@ final_extracted_data, final_failed_requests = [], []
 #     # get competition ids for current year
 #     competition_ids = get_competition_ids(years=year)
 #     # fetch pdf urls for given competition ids
-#     pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=COMPETITION_LIMIT, results=False)[::EVERY_NTH_DOCUMENT]
+#     pdf_urls = get_pdf_urls(comp_ids=competition_ids, comp_limit=COMPETITION_LIMIT, results=False)
+#     [::EVERY_NTH_DOCUMENT]
 #     # extract race data and get list of failed requests
 #     race_data, failed_requests = extract_table_data_from_pdf(urls=pdf_urls)
 #     # append to final list
@@ -183,10 +200,9 @@ final_extracted_data, final_failed_requests = [], []
 '''
 # Use this to test selected files
 pdf_urls = [
-    "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCH_2017/WCH_2017_ROWXCOXED4--PR3-------PREL000100--_MGPSX7872.pdf"
+"https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCp2_2022_1/WCp2_2022_1_ROWWSCULL1-L----------FNL-000200--_C77X1113.PDF",
 ]
-race_data, failed_requests = extract_table_data_from_pdf(urls=pdf_urls)
-
+race_data, failed_requests = extract_data_from_pdf_url(urls=pdf_urls)
 write_to_json(data=race_data, filename="race_data")
 write_to_json(data=failed_requests, filename="race_data_failed")
 '''

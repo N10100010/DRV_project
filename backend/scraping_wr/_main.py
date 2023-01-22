@@ -1,24 +1,46 @@
 import numpy as np
 
-from backend.scraping_wr.api import get_competition_ids, get_by_competition_id
-from utils_wr import load_json
+from .api import get_competition_ids, get_by_competition_id, get_by_competition_id_
+from .utils_wr import load_json
 import requests
 
 import logging
 
 logger = logging.getLogger(__name__)
 
-import utils_wr as ut_wr
-import api as api
+from . import api
 ########################################################################################################################
 # NOTE:
 # This main.py is just for rapid testing
 ########################################################################################################################
-import json as jsn
+import json
+from sys import exit as sysexit
 
+
+def grab_competition_example(competition_id, out_path='dump.json'):
+    comp_data = get_by_competition_id_(comp_ids=[str(competition_id)], parse_pdf=False)
+    with open(out_path, "w", encoding='ascii') as fp:
+        json.dump(comp_data, fp)
 
 
 if __name__ == '__main__':
+    import argparse
+
+    DEFAULT_COMPETITION = '718b3256-e778-4003-88e9-832c4aad0cc2'
+
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(help='Available sub-commands', dest='command')
+    parser_cgrab = subparsers.add_parser('grabc', help='Grab a competition and save as JSON')
+    parser_cgrab.add_argument("-i", "--uuid", help="Scrape competition and save as JSON", default=DEFAULT_COMPETITION)
+    parser_cgrab.add_argument("-o", "--out", help="Specify path for output", default="dump.json")
+
+    args = parser.parse_args()
+    print(args)
+
+    if args.command == 'grabc':
+        grab_competition_example(args.uuid, args.out)
+        sysexit()
+
     ### KEEP FOR TESTING
 
     #_ids_all = []

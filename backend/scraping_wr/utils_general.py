@@ -1,6 +1,5 @@
 from datetime import datetime
-
-import jsbeautifier
+from typing import Union
 import json
 import pandas as pd
 import numpy as np
@@ -11,13 +10,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def write_to_json(data: list, filename: str) -> None:
+def write_to_json(data: Union[list,dict], filename: str) -> None:
     """ Takes a list and writes to .json file. """
-    options = jsbeautifier.default_options()
-    options.indent_size = JSON_INDENT_SIZE
-    file = open(f"{filename}.json", "w")
-    file.write(jsbeautifier.beautify(json.dumps(data), options))
-    file.close()
+    with open(filename, "w", encoding='ascii') as fp:
+        json.dump(data, fp, indent=2, sort_keys=True)
 
 
 def get_date_columns(str_list: list) -> list:
