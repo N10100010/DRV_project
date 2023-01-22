@@ -1,8 +1,8 @@
 <template>
   <v-btn color="blue"
          @click="setFilterState()" v-show="!filterOpen"
-         class="filterToggleButton mt-6 pa-0 ma-0"
-         height="180"
+         :class="mobile ? 'filterToggleButtonMobile mt-6 pa-0 ma-0' : 'filterToggleButton mt-6 pa-0 ma-0'"
+         :height="mobile ? 100: 180"
          size="x-small"
   >
     <v-icon>mdi-filter</v-icon>
@@ -16,7 +16,7 @@
           width="500">
         <rennstruktur-filter/>
       </v-navigation-drawer>
-      <v-container class="pa-10">
+      <v-container :class="mobile ? 'pa-5' : 'pa-10'">
         <v-col cols="6" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Rennstrukturanalyse</h1>
           <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
@@ -176,13 +176,13 @@
               </v-col>
             </v-col>
             <v-divider class="mt-8"></v-divider>
-            <v-col cols="6">
-              <v-container v-for="(data, idx) in getGPsData">
+            <v-col :cols="mobile ? 12 : 6" :class="mobile ? 'pa-0' : null">
+              <v-container v-for="(data, idx) in getGPsData" :class="mobile ? 'pa-0' : null">
                 <LineChart :data="data" :chartOptions="gpsChartOptions[idx]"></LineChart>
               </v-container>
             </v-col>
-            <v-col cols="6">
-              <v-container v-for="(data, idx) in getIntermediateData">
+            <v-col :cols="mobile ? 12 : 6" :class="mobile ? 'pa-0' : null">
+              <v-container v-for="(data, idx) in getIntermediateData" :class="mobile ? 'pa-0' : null">
                 <LineChart :data="data" :chartOptions="intermediateChartOptions[idx]"></LineChart>
               </v-container>
             </v-col>
@@ -530,4 +530,13 @@ export default {
   border-radius: 0 5px 5px 0;
   color: #1369b0;
 }
+.filterToggleButtonMobile {
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  border-radius: 0 5px 5px 0;
+  color: #1369b0;
+  bottom: 10px;
+}
+
 </style>

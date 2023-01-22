@@ -30,36 +30,35 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
 
       <v-container class="pa-10">
         <v-col cols="12" class="d-flex flex-row px-0" style="align-items: center">
-           <h1>Berichte</h1>
-          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>
-           <v-tooltip
-               activator="#tooltip-analyis-icon"
-            location="end"
-            open-on-hover
-        >In Berichte können Analysen über längere Zeiträume und weitere Filterkriterien erstellt werden.</v-tooltip>
+          <h1>Berichte</h1>
+          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
+          </v-icon>
+          <v-tooltip
+              activator="#tooltip-analyis-icon"
+              location="end"
+              open-on-hover
+          >In Berichte können Analysen über längere Zeiträume und weitere Filterkriterien erstellt werden.
+          </v-tooltip>
         </v-col>
         <v-divider></v-divider>
-        <v-container class="pa-0 mt-8">
+        <v-container class="pa-0 mt-2">
           <v-row>
             <v-col cols="5">
               <h2>{{ tableData.boat_class }}</h2>
-              <v-col cols="12" class="px-0">
-                <v-alert type="success" variant="tonal" class="ma-0 pa-3" closable>
-                  <v-row>
-                    <v-col cols="6">
-                      <b><p>{{ tableData.results }} Datensätze</p></b>
-                      <p>Von: {{ tableData.start_date.slice(0, 4) }}</p>
-                      <p>Bis: {{ tableData.end_date.slice(0, 4) }}</p>
-                    </v-col>
-                    <v-col cols="6">
-                      <b><p>Bootsklasse(n):</p></b>
-                      <p>{{ tableData.boat_class }}</p>
-                    </v-col>
-                  </v-row>
-                </v-alert>
+              <v-alert type="success" variant="tonal" class="my-2" closable>
+            <v-row>
+              <v-col cols="6">
+                <b><p>{{ tableData.results }} Datensätze</p></b>
+                <p>Von: {{ tableData.start_date.slice(0, 4) }}</p>
+                <p>Bis: {{ tableData.end_date.slice(0, 4) }}</p>
               </v-col>
-
-              <v-table class="tableStyles" density="comfortable">
+              <v-col cols="6">
+                <b><p>Bootsklasse(n):</p></b>
+                <p>{{ tableData.boat_class }}</p>
+              </v-col>
+            </v-row>
+          </v-alert>
+              <v-table class="tableStyles" density="compact">
                 <tbody class="nth-grey">
                 <tr>
                   <th>Weltbestzeit</th>
@@ -123,10 +122,12 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
             </v-col>
             <v-col cols="7">
               <v-container style="width: 100%">
-                <BarChart :height="'100%'" :width="'100%'" :data="getBarChartData" :chartOptions="barChartOptions"></BarChart>
+                <BarChart :height="'100%'" :width="'100%'" :data="getBarChartData"
+                          :chartOptions="barChartOptions"></BarChart>
               </v-container>
               <v-container style="width: 100%">
-                <ScatterChart :height="'100%'" :width="'100%'" :data="getScatterChartData" :chartOptions="scatterChartOptions"></ScatterChart>
+                <ScatterChart :height="'100%'" :width="'100%'" :data="getScatterChartData"
+                              :chartOptions="scatterChartOptions"></ScatterChart>
               </v-container>
             </v-col>
           </v-row>
@@ -191,6 +192,9 @@ export default {
           }
         },
         plugins: {
+          legend: {
+            display: false
+          },
           title: {
             display: true,
             text: "Histogram Men's Single Sculls"
@@ -229,6 +233,9 @@ export default {
           }
         },
         plugins: {
+          legend: {
+            display: false
+          },
           title: {
             display: true,
             text: "Men's Single Sculls"
