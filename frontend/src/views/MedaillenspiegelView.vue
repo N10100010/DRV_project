@@ -18,7 +18,7 @@
         <medaillenspiegel-filter/>
       </v-navigation-drawer>
       <v-container class="pa-10">
-        <v-col cols="6" class="d-flex flex-row" style="align-items: center">
+        <v-col cols="6" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Medaillenspiegel</h1>
           <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
           </v-icon>

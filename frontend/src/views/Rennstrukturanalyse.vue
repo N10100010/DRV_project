@@ -17,27 +17,29 @@
         <rennstruktur-filter/>
       </v-navigation-drawer>
       <v-container class="pa-10">
-        <v-col cols="6" class="d-flex flex-row" style="align-items: center">
-           <h1>Rennstrukturanalyse</h1>
-          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>
-           <v-tooltip
-               activator="#tooltip-analyis-icon"
-            location="end"
-            open-on-hover
-        >Die Rennstrukturanalyse erlaubt die gezielte Betrachtung des Rennverlaufs auf Basis von Ergebnis- und GPS Daten.</v-tooltip>
+        <v-col cols="6" class="d-flex flex-row px-0" style="align-items: center">
+          <h1>Rennstrukturanalyse</h1>
+          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
+          </v-icon>
+          <v-tooltip
+              activator="#tooltip-analyis-icon"
+              location="end"
+              open-on-hover
+          >Die Rennstrukturanalyse erlaubt die gezielte Betrachtung des Rennverlaufs auf Basis von Ergebnis- und GPS
+            Daten.
+          </v-tooltip>
         </v-col>
         <v-divider></v-divider>
-      <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 mt-2" :items="breadCrumbs"></v-breadcrumbs>
+        <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 mt-2" :items="breadCrumbs"></v-breadcrumbs>
         <v-container class="pa-0 mt-2" v-if="!displayRaceDataAnalysis">
           <v-row>
             <v-col cols="12">
               <h2>Suchergebnisse</h2>
-
               <v-container class="pa-0 mt-3" style="min-height: 500px">
                 <v-col :cols="mobile ? 12 : 6" class="pa-0">
-                <v-alert type="info" variant="tonal" v-if="!getAnalysis && !loading">
-                  Bitte wähle ein Jahr und eine Wettkampfklasse in den Filterkriterien.
-                </v-alert>
+                  <v-alert type="info" variant="tonal" v-if="!getAnalysis && !loading">
+                    Bitte wähle ein Jahr und eine Wettkampfklasse in den Filterkriterien.
+                  </v-alert>
 
                   <v-progress-circular v-if="loading" indeterminate color="blue" size="40"></v-progress-circular>
 
@@ -54,7 +56,6 @@
                         @click="getEvents(competition.events, competition.id)"
                     ></v-list-item>
                   </v-list>
-
 
 
                   <!-- events list -->
@@ -76,7 +77,7 @@
                         v-for="race in races"
                         :key="race"
                         :title="race.display_name"
-                        @click="loadRaceAnalysis(race.display_name)"
+                        @click="loadRaceAnalysis(race.display_name, race.id)"
                     ></v-list-item>
                   </v-list>
                 </v-col>
@@ -164,11 +165,13 @@
               <v-col class="text-right font-weight-black" style="font-size: 0.9em">
                 <a v-if="competitionData.pdf_urls.result"
                    :href=competitionData.pdf_urls.result target="_blank" class="mr-2" style="color: black">
-                  Ergebnisse <v-icon color="grey">mdi-open-in-new</v-icon>
+                  Ergebnisse
+                  <v-icon color="grey">mdi-open-in-new</v-icon>
                 </a>
                 <a v-if="competitionData.pdf_urls.race_data"
                    :href=competitionData.pdf_urls.race_data target="_blank" class="ml-2" style="color: black">
-                  GPS-Daten <v-icon color="grey">mdi-open-in-new</v-icon>
+                  GPS-Daten
+                  <v-icon color="grey">mdi-open-in-new</v-icon>
                 </a>
               </v-col>
             </v-col>
@@ -232,6 +235,11 @@ export default {
       loading: "getLoadingState"
     })
   },
+  /*
+  beforeRouteLeave(to, from, next) {
+    console.log(from.fullPath)
+    next(false)
+  },*/
   data() {
     return {
       filterOpen: false,
@@ -382,6 +390,13 @@ export default {
     window.addEventListener('resize', this.checkScreen);
     this.checkScreen();
     this.filterOpen = this.filterState
+
+    // possible solution for permanent url --> in the real scenario there must be a fetch to the backend
+    window.onload = () => {
+      const url = new URL(window.location.href);
+      const race_id = url.searchParams.get("race_id");
+      this.displayRaceDataAnalysis = !!race_id;
+    }
   },
   methods: {
     setFilterState() {
@@ -390,8 +405,10 @@ export default {
       store.setFilterState(this.filterState)
     },
     getEvents(competition, compId) {
-      router.push({ path: this.$route.path,
-        query: { comp_id: compId }}
+      router.push({
+            path: this.$route.path,
+            query: {comp_id: compId}
+          }
       )
       this.events = competition
       this.breadCrumbs.push({
@@ -399,6 +416,9 @@ export default {
         disabled: false,
         href: '#',
         onclick: () => {
+          router.replace({
+            query: Object.assign({}, this.$route.query, { event_id: undefined })
+          });
           this.displayCompetitions = true
           this.displayRaceDataAnalysis = false
           this.displayEvents = false
@@ -410,12 +430,15 @@ export default {
       this.displayEvents = true
     },
     getRaces(events, eventId) {
+      router.push(this.$route.fullPath + `&event_id=${eventId}`)
       this.races = events
       this.breadCrumbs.push({
         title: 'Event',
         disabled: false,
         href: '#',
         onclick: () => {
+          let newUrl = window.location.href.replace(/&race_id=.*/, "");
+          window.history.pushState({}, "", newUrl);
           this.displayCompetitions = false
           this.displayRaceDataAnalysis = false
           this.displayEvents = true
@@ -426,7 +449,8 @@ export default {
       this.displayEvents = false
       this.displayRaces = true
     },
-    loadRaceAnalysis(raceName) {
+    loadRaceAnalysis(raceName, raceId) {
+      router.push(this.$route.fullPath + `&race_id=${raceId}`)
       this.displayRaceDataAnalysis = true
       this.breadCrumbs.push(raceName)
     },
@@ -447,6 +471,33 @@ export default {
     },
     loading() {
       router.push('/rennstrukturanalyse')
+    },
+    $route: {
+      immediate: true,
+      deep: true,
+      handler(to, from) {
+        /*
+        if (typeof from !== 'undefined' && typeof to !== 'undefined') {
+          if (!from.query.hasOwnProperty("comp_id") && !from.query.hasOwnProperty("event_id")) {
+            this.displayCompetitions = true;
+            this.displayEvents = false;
+            this.breadCrumbs.splice(0)
+          }
+          if (from.query.hasOwnProperty("comp_id") && !from.query.hasOwnProperty("event_id")) {
+            this.displayCompetitions = true;
+            this.displayEvents = false;
+            this.breadCrumbs.splice(0)
+          }
+          if (from.query.hasOwnProperty("event_id") && !from.query.hasOwnProperty("comp_id")) {
+            this.displayCompetitions = false;
+            this.displayEvents = true;
+          }
+          if (from.query.hasOwnProperty("comp_id") && from.query.hasOwnProperty("event_id")) {
+            this.displayCompetitions = false;
+            this.displayEvents = true;
+          }
+        }*/
+      }
     }
   }
 }

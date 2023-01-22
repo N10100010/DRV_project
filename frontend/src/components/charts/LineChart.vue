@@ -33,12 +33,8 @@ export default {
 <template>
     <div class="chart-container">
       <Line
-        id="my-chart-id2"
         :options="chartOptions"
         :data="data"
       />
     </div>
 </template>
-
-<style scoped src="@/assets/chart.css">
-</style>

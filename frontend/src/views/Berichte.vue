@@ -29,7 +29,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
       </v-navigation-drawer>
 
       <v-container class="pa-10">
-        <v-col cols="6" class="d-flex flex-row" style="align-items: center">
+        <v-col cols="12" class="d-flex flex-row px-0" style="align-items: center">
            <h1>Berichte</h1>
           <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>
            <v-tooltip
@@ -122,15 +122,11 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
               </v-table>
             </v-col>
             <v-col cols="7">
-              <v-container>
-                <BarChart :data="getBarChartData" :chartOptions="barChartOptions"></BarChart>
+              <v-container style="width: 100%">
+                <BarChart :height="'100%'" :width="'100%'" :data="getBarChartData" :chartOptions="barChartOptions"></BarChart>
               </v-container>
-              <v-container>
-                <ScatterChart :data="getScatterChartData" :chartOptions="scatterChartOptions"></ScatterChart>
-              </v-container>
-              <v-container>
-              </v-container>
-              <v-container>
+              <v-container style="width: 100%">
+                <ScatterChart :height="'100%'" :width="'100%'" :data="getScatterChartData" :chartOptions="scatterChartOptions"></ScatterChart>
               </v-container>
             </v-col>
           </v-row>
@@ -179,6 +175,7 @@ export default {
       mobile: false,
       filterOpen: false,
       barChartOptions: {
+        responsive: true,
         scales: {
           x: {
             title: {
@@ -201,6 +198,7 @@ export default {
         }
       },
       scatterChartOptions: {
+        responsive: true,
         scales: {
           x: {
             type: 'time',
@@ -281,5 +279,4 @@ export default {
   border-radius: 0 5px 5px 0;
   color: #1369b0;
 }
-
 </style>
