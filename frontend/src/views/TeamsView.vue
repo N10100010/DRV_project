@@ -35,30 +35,74 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
     <v-container class="pa-0 mt-8" style="min-height: 400px">
       <v-row>
         <v-col cols="12">
-          <v-container style="background-color: whitesmoke; min-height: 200px;">
-            <v-table>
+            <v-table class="tableStyles" density="comfortable">
               <thead>
                 <tr>
+                  <th>Team</th>
                   <th>Nation</th>
                   <th>Bootsklasse</th>
-                  <th>Athleten</th>
+                  <th>Mitglieder</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <!--<td>{{ tableData }}</td>-->
-                  <!--<td>{{ tableData.boatClass }}</td>
+              <tbody class="nth-grey">
+                <tr v-for="team, idx in tableData.teams">
+                  <td>{{ idx + 1 }}</td>
+                  <td>{{ team.nation_ioc }}</td>
+                  <td>{{ team.boatClass }}</td>
+
+                  <!--
                   <td>
-                    <p v-for="athlete in tableData.athletes">
-                      {{ athlete.firstName }}
-                      {{ athlete.lastName }}<br>
-                      {{ athlete.gender }}
+                    <p v-for="item, idx in team.athletes">
+                      {{ team.athletes[idx].firstName }} {{ team.athletes[idx].lastName }}<br>
                     </p>
-                  </td>-->
+                  </td>
+                  <td>
+                    <p v-for="item, idx in team.athletes">
+                      {{ team.athletes[idx].discipline }}<br>
+                    </p>
+                  </td>
+                  <td>
+                    <p v-for="item, idx in team.athletes">
+                      {{ team.athletes[idx].gender == 'male' ? 'Männlich' : 'Weiblich' }}<br>
+                    </p>
+                  </td>
+                  -->
+
+                  <!--
+                  <td>
+                    <template v-for="athlete, idx in team.athletes">
+                      <p class="distance">{{ athlete.firstName }} {{ athlete.lastName }}</p>                    
+                      <p class="distance">{{ athlete.gender == 'male' ? 'Männlich' : 'Weiblich' }}</p>
+                      <p class="distance">{{ athlete.discipline }}</p>
+                      
+                      <br v-if="idx+1 < team.athletes.length">
+                    </template>
+                  </td>
+                  -->
+
+                  <!--
+                  <td>
+                    <p v-for="athlete, idx in team.athletes" class="distance">
+                      <p>{{ athlete.firstName }} {{ athlete.lastName }}</p>                    
+                      <p>{{ athlete.gender == 'male' ? 'Männlich' : 'Weiblich' }}</p>
+                      <p>{{ athlete.discipline }}</p>
+                    </p>
+                  </td>
+                  -->
+
+                  <td>
+                    <p v-for="athlete, idx in team.athletes" class="pt-1 pb-1 distance">
+                      <p>{{ athlete.firstName }} {{ athlete.lastName }}</p>                    
+                      <hr>
+                      <p>{{ athlete.gender == 'male' ? 'Männlich' : 'Weiblich' }}</p>
+                      <hr>
+                      <p>{{ athlete.discipline }}</p>
+                    </p>
+                  </td>
+
                 </tr>
               </tbody>
             </v-table>
-          </v-container>
         </v-col>
       </v-row>
     </v-container>
@@ -115,12 +159,37 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .filterToggleButton {
   position: fixed;
   z-index: 10;
   left: 0;
   border-radius: 0 5px 5px 0;
+}
+
+.tableStyles {
+  border: 1px solid #e0e0e0;
+
+  th {
+    border: 1px solid #e0e0e0;
+    font-size: 14px !important;
+    text-align: left;
+  }
+
+  td {
+    text-align: left;
+    border: 1px solid #e0e0e0;
+  }
+}
+
+.nth-grey tr:nth-child(odd) {
+  background-color: rgba(0, 0, 0, .05);
+}
+
+
+.distance {
+  display: inline-block;
+  padding-right: 10px;
 }
 
 </style>

@@ -3,14 +3,15 @@ import os
 
 from flask import Flask, render_template
 from flask import request
-from flask import jsonify
 from flask import abort
 
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
-from model import model
-import app.mocks as mocks
+from backend.model import model
+from . import mocks
+
+import backend.scraping_wr.api
 
 app = Flask(__name__, template_folder='web/templates')
 
