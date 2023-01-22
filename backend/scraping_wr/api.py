@@ -170,11 +170,15 @@ RACE_PHASES = {
     },
     'Heat': {
         'id': 'cd3d5ca1-5aed-4146-b39b-a192ae6533f1',
-        'rsc_code_snippets': ['HEAT000100', 'HEAT0001RR', 'HEAT000200', 'HEAT000300', 'HEAT000400', 'HEAT000500', 'HEAT000600', 'HEAT000700', 'HEAT000800', 'RND2000100', 'RND2000200', 'RND2000300', 'RND2000400', 'RND2000500', 'RND2000600', 'RND3000100', 'RND3000200', 'RND3000300', 'RND3000400', 'RND3000500', 'RND3000600']
+        'rsc_code_snippets': ['HEAT000100', 'HEAT0001RR', 'HEAT000200', 'HEAT000300', 'HEAT000400', 'HEAT000500',
+                              'HEAT000600', 'HEAT000700', 'HEAT000800', 'RND2000100', 'RND2000200', 'RND2000300',
+                              'RND2000400', 'RND2000500', 'RND2000600', 'RND3000100', 'RND3000200', 'RND3000300',
+                              'RND3000400', 'RND3000500', 'RND3000600']
     },
     'Final': {
         'id': 'e0fc3320-cd66-43af-a5b5-97afd55b2971',
-        'rsc_code_snippets': ['FNL000100', 'FNL0001RR', 'FNL000200', 'FNL000300', 'FNL000400', 'FNL000500', 'FNL000600', 'FNL000700', 'FNL000800']
+        'rsc_code_snippets': ['FNL000100', 'FNL0001RR', 'FNL000200', 'FNL000300', 'FNL000400', 'FNL000500', 'FNL000600',
+                              'FNL000700', 'FNL000800']
     },
     'Preliminary': {
         'id': '92b34c4e-af58-4e91-8f4a-22c09984a006',
@@ -186,15 +190,19 @@ RACE_PHASES = {
     },
     'Repechage': {
         'id': '0959f5e8-f85a-40fb-93ab-b6c477f6aade',
-        'rsc_code_snippets': ['REP000100', 'REP0001RR', 'REP000200', 'REP000300', 'REP000400', 'REP000500', 'REP000600', 'REP000700', 'REP000800', 'REP005100', 'REP005200', 'REP005300', 'REP005400', 'SFNL000100']
+        'rsc_code_snippets': ['REP000100', 'REP0001RR', 'REP000200', 'REP000300', 'REP000400', 'REP000500', 'REP000600',
+                              'REP000700', 'REP000800', 'REP005100', 'REP005200', 'REP005300', 'REP005400',
+                              'SFNL000100']
     },
     'Semifinal': {
         'id': 'e6693585-d2cf-464c-9f8e-b2e531b26400',
-        'rsc_code_snippets': ['SFNL000100', 'SFNL000200', 'SFNL000300', 'SFNL000400', 'SFNL000500', 'SFNL000600', 'SFNL000700', 'SFNL000800']
+        'rsc_code_snippets': ['SFNL000100', 'SFNL000200', 'SFNL000300', 'SFNL000400', 'SFNL000500', 'SFNL000600',
+                              'SFNL000700', 'SFNL000800']
     },
     'Quarterfinal': {
         'id': 'a0b6ffd8-92b8-427b-a667-ac2ff640031a',
-        'rsc_code_snippets': ['QFNL000100', 'QFNL000200', 'QFNL000300', 'QFNL000400', 'QFNL000500', 'QFNL000600', 'QFNL000700', 'QFNL000800']
+        'rsc_code_snippets': ['QFNL000100', 'QFNL000200', 'QFNL000300', 'QFNL000400', 'QFNL000500', 'QFNL000600',
+                              'QFNL000700', 'QFNL000800']
     },
 }
 
@@ -205,22 +213,131 @@ RACE_STATUSES = {
     'Official': '182f6f15-8e78-41c3-95b3-8b006af2c6a1'
 }
 
-
 ########################################################################################################################
 
 ##  other utils
+STR_NUMBERS_0_10 = ''.join([str(n) for n in range(0, 10)])
+
+
 def process_rsc_code(code: str) -> tuple[str, str]:
     """
     Processes the RscCode of a race to extract the phase (Lauf) of the race.
     @param code: str - total rcs code
     @return: str - processed rsc code
+    # todo: same here as the todo in function filter_by_race_phase. Add filter parameteres to the database
     """
     processed = code.split('---')
     boat_class = processed[0].strip('--')
     phase = processed[-1].strip('--')
     phase = "".join(re.split("[^0-9a-zA-Z*]", phase))
+    phase = phase.lstrip(STR_NUMBERS_0_10)
 
     return boat_class, phase
+
+
+def extract_race_phase_from_rsc(processed: str) -> (str, int):
+    """
+    This extraction allows to identify a race, within a competition, given the class of a race.
+    CAUTION: Expects the second value from the function process-rsc-code.
+    @param processed: The processed phase of a race, from its rsc-code
+    @return: Extracted race phase, with its respective stage (phase: str, stage: int)
+    """
+    lower = processed.lower()
+
+    if lower[0:4] in ('qfnl', 'sfnl', 'heat', 'prel', 'seed'):
+        start, end = 4, 4
+    elif lower[0:3] in ('fnl', 'rep'):
+        start, end = 3, 4
+    elif lower[0:3] in ('rnd'):
+        start, end = 3, 1
+    else:
+        logger.warning(f"Encountered unknown phase in rsc-code. Seen value: {lower}")
+        return processed, 0
+
+    # remove unwanted parts of the string
+    processed = processed[0: start + end]
+
+    # return only parts that indicate the phase
+    return processed[0: start], int(processed[-1])
+
+## FILTER FUNCTIONS
+def filter_races(races: list, fltr: dict) -> list:
+    # todo: the races should already have the filter present. it might be best to add filter parameters to the db
+    # todo: is this even needed?
+    ret = []
+
+    for race in races:
+        boat_class, phase_stage = process_rsc_code(race['RscCode'])
+
+    return ret
+
+def process_race_display_name(name: str) -> str:
+    """
+    Processes the display-name of a race to extract the type of it.
+    """
+    lower = name.lower()
+
+    def _extract(s: str) -> str:
+        s = s.split(" ")
+        if len(s) >= 2:
+            s = s[-2:len(s)]
+        else:
+            s = s[0]
+        return ''.join(s).replace(' ', '').strip(' ')
+
+    def _process(s: str, t: tuple) -> str:
+        init_s = s
+        _s, _c, fine = t
+        if s.startswith(_c):
+            s = s.replace(_c + _c[0], _s).replace(_c, _s).replace(_s + _s, _s)
+        return s
+
+    val = lower
+    if 'quarterfinal' in lower:
+        short, coarse, fine = 'qfnl', 'quarterfinal', range(1, 10)
+        lower = lower + str(fine[0]) if lower[-1] not in fine else lower
+        val = _extract(lower)
+        val = _process(val, (short, coarse, fine))
+    elif 'semifinal' in lower:
+        short, coarse, fine = 'sfnl', 'semifinal', range(1, 4)
+        lower = lower + str(fine[0]) if lower[-1] not in fine else lower
+        val = _extract(lower)
+        val = _process(val, (short, coarse, fine))
+    elif 'final' in lower:
+        short, coarse, fine = 'fnl', 'final', ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
+
+        # lower = lower + str(fine[0]) if len(lower) == 1 and lower[-1] not in fine else lower
+        if len(lower) == 1 and lower == 'f':
+            lower += fine[0]
+        val = _extract(lower)
+        val = _process(val, (short, coarse, fine))
+        if 'f' in val and 'fnl' not in val and len(val) <= 5:
+            val = val.replace('f', 'fnl')
+
+    elif 'heat' in lower:
+        short, coarse, fine = 'h', 'heat', range(1, 10)
+        lower = lower + str(fine[0]) if lower[-1] not in fine else lower
+        val = _extract(lower)
+        val = _process(val, (short, coarse, fine))
+    elif 'preliminary' in lower or 'test' in lower:
+        short, coarse, fine = 'prel', 'preliminary', range(1, 5)
+        lower = lower + str(fine[0]) if lower[-1] not in fine else lower
+        val = _extract(lower)
+        val = _process(val, (short, coarse, fine))
+        val = val.replace('test', '')
+        val = val.replace('race', '')
+    elif 'repechage' in lower:
+        short, coarse, fine = 'rep', 'repechage', range(1, 10)
+        lower = lower + str(fine[0]) if lower[-1] not in fine else lower
+        val = _extract(lower)
+        val = _process(val, (short, coarse, fine))
+        #
+    # todo: what about seeding?
+
+    else:
+        print(f"did not identify lower: {lower}")
+
+    return val
 
 
 def save(data: dict, fn: str):
@@ -255,20 +372,6 @@ def _extract(nested: iter, successor_filter: str = None) -> list:
     return _l
 
 
-# def process_item(ret_val, keys_of_interest, item_id, pbar):
-#     everything = ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_COMPETITION + item_id + WR_INCLUDE_EVERYTHING)
-#     for koi in keys_of_interest:
-#         ret_val[koi].extend(
-#             _extract(
-#                 ut_wr.get_all(everything, koi)
-#             )
-#         )
-#
-#     pbar.update()
-#
-#     return ret_val
-
-
 def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Union[str, list[str]],
                           verbose: bool = False) -> dict:
     """
@@ -281,7 +384,7 @@ def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Uni
     """
 
     allowed_keys = {
-        'events', 'races', 'pdfs',
+        'events', 'races', 'pdf',
         'raceBoats', 'raceBoatAthletes',
         'raceBoatIntermediates',
         'venue', 'boatClass'
@@ -314,11 +417,11 @@ def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Uni
             )
 
     # if race and pdfs is in the koi's, we want to aggregate the data from the pdf
-    if 'races' in keys_of_interest and 'pdfs' in keys_of_interest:
+    if 'races' in keys_of_interest and 'pdf' in keys_of_interest:
         races = []
         for race in tqdm(ret_val['races'], desc='Aggregating PDF data'):
             race['pdfUrls'] = extract_pdf_urls(race['pdfUrls'])
-
+            races.append(race)
             results_data = pdf_result_data.extract_data_from_pdf_urls(race['pdfUrls']['results'])[0]
             race_data = pdf_race_data.extract_data_from_pdf_url(race['pdfUrls']['race_data'])[0]
             race['results_data'] = results_data

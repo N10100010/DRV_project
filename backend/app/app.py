@@ -15,7 +15,7 @@ def home():
     return render_template("./NO_TEMPLATE.html")
 
 
-@app.route('/report', 'POST')
+@app.route('/report', methods=['POST'])
 def get_report(filter_dict: dict):
     """
 
@@ -24,7 +24,7 @@ def get_report(filter_dict: dict):
     return data
 
 
-@app.route('/result', 'POST')
+@app.route('/result', methods=['POST'])
 def get_result(filter_dict: dict):
     """
 
@@ -33,7 +33,7 @@ def get_result(filter_dict: dict):
     return data
 
 
-@app.route('/get_competition_category', 'POST')
+@app.route('/get_competition_category', methods=['POST'])
 def get_competition_categories():
     """
     todo: check, and make sure that the result matches the expected return-value
@@ -42,7 +42,7 @@ def get_competition_categories():
     return api.get_competition_categories()
 
 
-@app.route('/analysis', 'POST')
+@app.route('/analysis', methods=['POST'])
 def get_analysis(filter_dict: dict) -> Union[list, dict]:
     """
     When?
@@ -59,7 +59,7 @@ def get_analysis(filter_dict: dict) -> Union[list, dict]:
     return data
 
 
-@app.route('/analysis/<race_id>', 'GET')
+@app.route('/analysis/<race_id>', methods=['GET'])
 def get_race_analysis(race_id: str):
     race_id = "bcda473e-f602-4747-a61e-a35963bd7198"
     # data = generic_get_data(_filter={'id': race_id})
@@ -67,7 +67,7 @@ def get_race_analysis(race_id: str):
     return data
 
 
-@app.route('/get_report_filter_options', 'GET')
+@app.route('/get_report_filter_options', methods=['GET'])
 def get_report_filter_options(filter_dict: dict):
     """
     todo:

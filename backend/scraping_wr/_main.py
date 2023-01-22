@@ -22,42 +22,51 @@ if __name__ == '__main__':
     ### KEEP FOR TESTING
 
     #_ids_all = []
-    #for y in np.arange(2010, 2024):
+    #for y in np.arange(2000, 2024):
     #    _ids_all.extend(get_competition_ids(y))
-    ##
-    #ret = api.get_by_competition_id(_ids_all, ['races'])
 
-    #api.save(ret, './races_2010_2024.json')
+    #ret = api.get_by_competition_id(_ids_all, ['races', 'pdf'])
 
-    ret = api.load('./races_2010_2024.json')
+    #api.save(ret, './races_2000_2024_pdfs.json')
 
-    #
-    #
-    # #api.save(ret, '2000_2020.json')
-    # # load local json
-    # #ret = api.load('2019_2020.json')
-    # ret = api.load('one_comp_id.json')
-    # #
-    tuple_set__rsc_racePhase = set()
+    ret = api.load('./races_2000_2024_pdfs.json')
+
+    import collections
+    d = dict()
+
+    tup_set__rsc_disname = set()
+    tup_set__rsc_disname_short = set()
+    # [race for race in ret['races'] if 'RND' in race["RscCode"]]
+    test = set()
+    extracted = set()
+    race_disname = set()
     for race in ret['races']:
-        boat_class, phase = api.process_rsc_code(race['RscCode'])
-        # rsc = race['RscCode'].split('---')
-        ##
-        #rsc_0 = rsc[0].strip('--')
-        #rsc_1 = rsc[-1].strip('--')
-        rpdn = ' '.join(race['DisplayName'].split(' ')[-3:-1])
-        rp = race['racePhase']['DisplayName']
-        ##
-        tuple_set__rsc_racePhase.add((rp, phase))
-    ##
-    tuple_set__rsc_racePhase = sorted(tuple_set__rsc_racePhase)
-##
-    # # tuple_set__rsc_racePhase = sorted(tuple_set__rsc_racePhase)
-    # competition_types = api.get_competition_categories()
+        boat_class, rsc = api.process_rsc_code(race['RscCode'])
+        tup_set__rsc_disname.add((api.extract_race_phase_from_rsc(rsc), api.process_race_display_name(race['DisplayName']), race['DisplayName']))
+        tup_set__rsc_disname_short.add((rsc, api.process_race_display_name(race['DisplayName'])))
+        #if len(race['pdfUrls']['results']) != 0:
+        #    d[(rsc, api.process_race_display_name(race['DisplayName']))] = race['pdfUrls']
+        race['rsc_race_phase'] = api.extract_race_phase_from_rsc(rsc)
+        test.add(rsc)
+        extracted.add(api.extract_race_phase_from_rsc(rsc))
+        race_disname.add(race['DisplayName'])
 
-    #comp_categories = api.get_competition_categories()
-    #comp_types = api.get_competition_types()
-    #boat_classes = api.get_boatclasses()
+    #d = collections.OrderedDict(sorted(d.items()))
+    extracted = sorted(extracted)
+    tup_set = sorted(tup_set__rsc_disname)
+    tup_set_short = sorted(tup_set__rsc_disname_short)
+
+
+    # tuple_set__rsc_racePhase = set()
+    # for race in ret['races']:
+    #     boat_class, phase = api.process_rsc_code(race['RscCode'])
+    #     rpdn = ' '.join(race['DisplayName'].split(' ')[-3:-1])
+    #     rp = race['racePhase']['DisplayName']
+    #
+    #     tuple_set__rsc_racePhase.add((rp, phase))
+    #
+    # tuple_set__rsc_racePhase = sorted(tuple_set__rsc_racePhase)
+
     print()
     #
     # # extract race phases
