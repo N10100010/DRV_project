@@ -1,0 +1,75 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Py: Scrape competition",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
+            "module": "scraping_wr._main",
+            "args": [
+                "grabc",
+                "--out",
+                "tmp.dump.json"
+            ],
+            "justMyCode": true
+        },
+        {
+            "name": "Py: dbutils insert",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
+            "module": "model.dbutils",
+            "args": [
+                "--create",
+                "--insert",
+                "tmp.dump.json"
+            ],
+            "env": {
+                "DB_VERBOSITY": "1"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Py: dbutils drop/create tables",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
+            "module": "model.dbutils",
+            "args": [
+                "--drop",
+                "--create"
+            ],
+            "env": {
+                "DB_VERBOSITY": "1"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Py: flask",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
+            "module": "flask",
+            "env": {
+                "FLASK_ENV": "development"
+            },
+            "args": [
+                "--app",
+                "app.app:app",
+                "--debug",
+                "run",
+                "--no-debugger",
+                "--no-reload",
+                "--port=5000"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}
