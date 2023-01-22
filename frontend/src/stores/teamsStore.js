@@ -325,18 +325,14 @@ export const useTeamsState = defineStore({
                         "firstName": "Lukas",
                         "lastName": "Helesic",
                         "gender": "male",
-                        "disciplines": [
-                            "Para Scull"
-                        ],
+                        "discipline": "Para Scull"
                     },
                     {
                         "id": 95434533,
                         "firstName": "Julia",
                         "lastName": "Hannelore",
                         "gender": "female",
-                        "disciplines": [
-                            "Para Scull"
-                        ],
+                        "discipline": "Para Scull"
                     }
                 ],
             },
@@ -348,22 +344,18 @@ export const useTeamsState = defineStore({
                 "athletes": [
                     {
                         "id": 98245435,
-                        "firstName": "Lukas",
+                        "firstName": "Alfons",
                         "lastName": "Helesic",
                         "gender": "male",
-                        "disciplines": [
-                            "Para Scull"
-                        ],
+                        "discipline": "Para Scull"
 
                     },
                     {
                         "id": 95434533,
-                        "firstName": "Julia",
+                        "firstName": "Ulrike",
                         "lastName": "Hannelore",
                         "gender": "female",
-                        "disciplines": [
-                            "Riemen"
-                        ],
+                        "discipline": "Riemen"
                     }
                 ],
             }
@@ -378,7 +370,7 @@ export const useTeamsState = defineStore({
             return state.filterOptions
         },
         getTableData(state) {
-            return state.data.teams[0]
+            return state.data
         }
     },
     actions: {
