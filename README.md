@@ -1,8 +1,23 @@
 # DRB_project
 Container for the innovation project WS '22
 
+## How to run things with Docker
 
-## How to run things
+Start all the services with
+
+```sh
+docker compose up
+```
+
+Start only a specific service e.g. frontend: `docker compose up frontend`
+
+Reset the project by composing down:
+
+```sh
+docker compose down --rmi all --volumes
+```
+
+## How to run things manually
 
 ### (Preparation) Install required packages
 
@@ -21,18 +36,51 @@ Container for the innovation project WS '22
 
 ### Backend Scrape/Maintenance Process (Python)
 
-*TODO...*
+    python -m backend.procedures.scrape_service
 
 ### Backend API Server (Python/Flask)
 
-    python -m flask --app backend.app.app:app run
+*Note: `pwd` is `backend/`*
+
+```sh
+python -m flask --app app.app:app run
+```
+
+Alternatively with `python -m app.app`
+
+Debug with hot reload:
+
+```sh
+python -m flask --app app.app:app --debug run
+```
+
+**Note** Do not use this command for deployment. Use something like `gunicorn`.
 
 ### Frontend (Node.js/Vue)
 
 - **frontend/README.md** describes how to
+    - install required packages
     - run the frontend
 
 ###
+
+
+## Deployment on Railway.app
+
+See also: https://docs.railway.app/
+- https://docs.railway.app/develop/variables
+
+### Frontend
+
+The following service settings have to be made on *railway.app*:
+
+- Set *Root Directory* `/frontend`
+- Set the following environment variables in the service settings:
+    - `NIXPACKS_NODE_VERSION`: Specifies the major version of Node.js
+        - e.g. `16`
+    - `BACKEND_API_BASE_URL`: Specifies the public base url of backend API
+        - example: `https://backend-api-production-drv-project.up.railway.app/`
+
 
 ## MVP
 What would be the MVP for the customer?

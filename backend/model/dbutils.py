@@ -1,14 +1,15 @@
 from . import model
 
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 
 from contextlib import suppress
 import datetime as dt
 
-from ..common.helpers import Timedelta_Parser, parse_wr_intermediate_distance_key, get_
+from common.helpers import Timedelta_Parser, parse_wr_intermediate_distance_key, get_
 
 # from ..scraping_wr import utils_wr
-from ..scraping_wr import api
+from scraping_wr import api
 
 # logging stuff
 import logging
@@ -287,18 +288,18 @@ if __name__ == '__main__':
     import json
     from .model import engine, Scoped_Session
 
+    if args.drop:
+        print("----- Drop All Tables -----")
+        drop_all_tables(engine)
+
+    if args.create:
+        print("----- Create Tables -----")
+        create_tables(engine)
+
     if args.insert:
         print("Load JSON file:", args.insert)
         with Scoped_Session() as session: # implicit commit when leaving context w/o errors
             with open(args.insert, mode="r", encoding="utf-8") as fp:
                 competition_data = json.load(fp)
             wr_insert_competition(session, competition_data)
-
-    else:
-        if args.drop:
-            print("----- Drop All Tables -----")
-            drop_all_tables(engine)
-
-        if args.create:
-            print("----- Create Tables -----")
-            create_tables(engine)
+    

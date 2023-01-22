@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import typing
 
-from backend.dataclasses.DC_Schema import DC_Schema
+from .DC_Schema import DC_Schema
 
 
 @dataclass

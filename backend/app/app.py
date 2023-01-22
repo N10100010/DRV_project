@@ -1,13 +1,21 @@
 from typing import Union
-
-from flask import Flask, render_template
 import os
 
-import backend.scraping_wr.api as api
+from flask import Flask, render_template
+from flask import request
+from flask import abort
+
+from sqlalchemy import select
+from sqlalchemy.orm import joinedload
+
+from backend.model import model
+from . import mocks
+
+import backend.scraping_wr.api
 
 app = Flask(__name__, template_folder='web/templates')
 
-BASE_PATH_TEMPLATE = "/app/templates/"
+Scoped_Session = model.Scoped_Session
 
 
 @app.route('/')
@@ -15,230 +23,133 @@ def home():
     return render_template("./NO_TEMPLATE.html")
 
 
-@app.route('/report', 'POST')
-def get_report(filter_dict: dict):
-    """
+# Receive JSON via POST in flask: https://sentry.io/answers/flask-getting-post-data/#json-data
+# Parameterized route etc.: https://pythonbasics.org/flask-tutorial-routes/
+# Route syntax doc: https://flask.palletsprojects.com/en/2.2.x/api/#url-route-registrations
+# Multiple Joins: https://docs.sqlalchemy.org/en/14/orm/queryguide.html#chaining-multiple-joins
 
-    """
-    data = generic_get_data(_filter=filter_dict)
+@app.route('/report', methods=['POST'])
+def get_report():
+    filter_dict = request.json
+    data = mocks.generic_get_data(_filter=filter_dict)
     return data
 
 
-@app.route('/result', 'POST')
-def get_result(filter_dict: dict):
-    """
-
-    """
-    data = generic_get_data(_filter=filter_dict)
-    return data
+@app.route('/test')
+def test():
+    return { "msg": "Hello World! This is a test endopoint." }
 
 
-@app.route('/get_competition_category', 'POST')
+@app.route('/competition_category/', methods=['GET'])
 def get_competition_categories():
-    """
-    todo: check, and make sure that the result matches the expected return-value
-    returns somewhat static list of competition categories
-    """
-    return api.get_competition_categories()
+    result = []
+
+    session = Scoped_Session()
+    iterator = session.execute(select(model.Competition_Category)).scalars()
+    for entity in iterator:
+        mapped = { "id": entity.id, "display_name": entity.name }
+        result.append(mapped)
+
+    return result
 
 
-@app.route('/analysis', 'POST')
-def get_analysis(filter_dict: dict) -> Union[list, dict]:
-    """
-    When?
-    This endpoint is used, when the user is on the page for the 'Rennstrukturanalyse' and selected filter for
-        - year
-        - competition_category
-    of interest.
-    @param filter_dict: example for filter_dict {  "year": 2008, "competition_category_id": 5  }
-    @return: nested dict/json: structure containing competitions, their events and their races respectively.
-    See https://github.com/N10100010/DRV_project/blob/api-design/doc/backend-api.md#user-auswahl-jahr-einzeln-und-wettkampfklasse-zb-olympics for mock of return value.
-    """
-    # data = generic_get_data(_filter=filter_dict)
-    data = mock_standard_analysis_endpoint()
-    return data
+@app.route('/race/<int:race_id>/', methods=['GET'])
+def get_race(race_id):
+    session = Scoped_Session()
 
+    # Join relationship fields using "Joined Load" to fetch all-in-one:
+    #   https://docs.sqlalchemy.org/en/14/orm/tutorial.html#joined-load
+    #   https://docs.sqlalchemy.org/en/14/orm/loading_relationships.html#sqlalchemy.orm.joinedload
+    statement = (
+        select(model.Race)
+        .where(model.Race.id == int(race_id))
+        .options(
+            joinedload(model.Race.race_boats)
+            .joinedload(model.Race_Boat.intermediates),
+            joinedload(model.Race.event)
+            .options(
+                joinedload(model.Event.boat_class),
+                joinedload(model.Event.competition)
+                .joinedload(model.Competition.venue)
+                .joinedload(model.Venue.country)
+            )
+        )
+    )
 
-@app.route('/analysis/<race_id>', 'GET')
-def get_race_analysis(race_id: str):
-    race_id = "bcda473e-f602-4747-a61e-a35963bd7198"
-    # data = generic_get_data(_filter={'id': race_id})
-    data = mock_race_analysis_endpoint()
-    return data
+    # TODO: fill remaining fields (api-design.md)
 
+    race = session.execute(statement).scalars().first()
+    if race == None:
+        abort(404)
 
-@app.route('/get_report_filter_options', 'GET')
-def get_report_filter_options(filter_dict: dict):
-    """
-    todo:
-    """
-    return {}
+    venue = race.event.competition.venue
 
-
-def generic_get_data(_filter: dict, is_outer_filter: bool = True) -> dict:
-    """
-    TODO 0: Access the database through some connection and aggregate the data resulting from the passed _filter.
-    @param _filter: dict - A dictionary defining filter-criteria for the resulting data.
-    @return: data - dict:  The requested data, according to the _filter. The result can be nested
-    """
-    data = {}
-    return data
-
-
-def mock_race_analysis_endpoint() -> list[dict]:
-    mock = [
-        {
-            "raceId": 195638,
-            "displayName": "Men's Eight Heat 1",
-            "startDate": "2022-06-16 14:12:00",
-            "venue": "Malta/Poznan, Poland",
-            "boatClass": "Men's Eight",
-            "worldBestTimeBoatClass": "00:05:58,36",
-            "bestTimeBoatClassCurrentOZ": "00:05:58,36",
-            "data": [
-                {
-                    "nationIoc": "CZE",
-                    "nationDisplayName": "Tschechien",
-                    "lane": 2,
-                    "rank": 1,
-                    "run": "FB",
-                    "progressionCode": "1-3SA/B 4..SC/D",
-                    "athletes": [
-                        {
-                            "id": 98245435,
-                            "firstName": "Lukas",
-                            "lastName": "Helesic"
-                        },
-                        {
-                            "id": 954345365,
-                            "firstName": "S Jakub",
-                            "lastName": "Podrazil"
-                        }
-                    ],
-                    "intermediates": {
-                        "500": {
-                            "time": "00:02:24,12",
-                            "pace": "00:02:24,12",
-                            "rank": 2,
-                            "deficit": "00:00:03,12",
-                            "relDiffToAvgSpeed": -1.3
-                        },
-                        "1000": {
-                            "time": "00:03:13,82",
-                            "pace": "00:01:50,72",
-                            "rank": 1,
-                            "deficit": "00:00:00,00",
-                            "relDiffToAvgSpeed": 4.3
-                        },
-                        "1500": {
-                            "time": "00:04:52,00",
-                            "pace": "00:01:50,72",
-                            "rank": 1,
-                            "deficit": "00:00:00,00",
-                            "relDiffToAvgSpeed": 2.3
-                        },
-                        "2000": {
-                            "time": "00:06:29,14",
-                            "pace": "00:01:50,72",
-                            "rank": 1,
-                            "deficit": "00:00:00,00",
-                            "relDiffToAvgSpeed": 1.3
-                        }
-                    },
-                    "gpsData": {
-                        "distance": {
-                            "50": {
-                                "speed": 5.2,
-                                "stroke": 34.1,
-                                "propulsion": 8.3
-                            },
-                            "100": {
-                                "speed": 4.9,
-                                "stroke": 33.4,
-                                "propulsion": 8.8
-                            },
-                            "150": {
-                                "speed": 4.7,
-                                "stroke": 35.0,
-                                "propulsion": 7.1
-                            },
-                            "200": {
-                                "speed": 4.6,
-                                "stroke": 38.0,
-                                "propulsion": 8.1
-                            },
-                            "250": {
-                                "speed": 4.9,
-                                "stroke": 32.0,
-                                "propulsion": 7.2
-                            }
-                        }
-                    }
-                }
-            ]
-        },
-    ]
-    return mock
-
-
-def mock_standard_analysis_endpoint() -> list[dict]:
-    mock = [
-        {
-            "id": 395871,
-            "display_name": "2022 World Rowing Cup II",
-            "venue": "Malta/Poznan, Poland",
-            "start_date": "2022-06-16 00:00:00",
-            "competition_category": "World Rowing Cup",
-            "events": [
-                {
-                    "id": 734839,
-                    "display_name": "Lightweight Women's Single Sculls",
-                    "races": [
-                        {"id": 187573, "display_name": "Final FB"},
-                        {"id": 424754, "display_name": "Heat 1"}
-                    ]
-                },
-                {
-                    "id": 748394,
-                    "display_name": "Men's Four",
-                    "races": [
-                        {"id": 195638, "display_name": "Men's Eight Heat 1"},
-                        {"id": 823759, "display_name": "Men's Eight Final FA"},
-                        {"id": 748394, "display_name": "Men's Eight Repechage"},
-                        {"id": 839473, "display_name": "Men's Eight Heat 2"}
-                    ]
-                }
-            ]
-        },
-        {
-            "id": 123456,
-            "display_name": "2021 World Rowing Cup I",
-            "venue": "Somecity, Someland",
-            "start_date": "2022-06-16 00:00:00",
-            "competition_category": "World Rowing Cup",
-            "events": [
-                {
-                    "id": 234567,
-                    "display_name": "Lightweight Women's Single Sculls",
-                    "races": [
-                        {"id": 345678, "display_name": "Semi-Final FB"},
-                        {"id": 456789, "display_name": "Heat Repechage"}
-                    ]
-                },
-                {
-                    "id": 567891,
-                    "display_name": "Men's Four",
-                    "races": [
-                        {"id": 678910, "display_name": "Women's Eight Heat 1"},
-                        {"id": 789101, "display_name": "Women's Eight Final FA"},
-                        {"id": 891011, "display_name": "Women's Eight Repechage"},
-                        {"id": 910111, "display_name": "Women's Eight Heat 2"}
-                    ]
-                }
-            ]
+    result = {
+        "raceId": race.id,
+        "displayName": race.name,
+        "startDate": str(race.date),
+        "venue": f"{venue.site}/{venue.city}, {venue.country.name}",
+        "boatClass": race.event.boat_class.abbreviation, # TODO: currrently only abbrev.
+        "worldBestTimeBoatClass": "############## TODO ##############", # fmt: "00:05:58,36"
+        "bestTimeBoatClassCurrentOZ": "############## TODO ##############", # fmt: "00:05:58,36"
+        "pdf_urls": {
+            "result": race.pdf_url_results,
+            "race_data": race.pdf_url_race_data
         }
-    ]
-    return mock
+    }
+
+    return result
+
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    ''' Enable Flask to automatically remove database sessions at the
+    end of the request or when the application shuts down.
+    Ref: http://flask.pocoo.org/docs/patterns/sqlalchemy/
+    Ref: https://stackoverflow.com/a/45719168
+    '''
+    Scoped_Session.remove()
+
+# @app.route('/result', 'POST')
+# def get_result(filter_dict: dict):
+#     """
+
+#     """
+#     data = mocks.generic_get_data(_filter=filter_dict)
+#     return data
+
+
+# @app.route('/analysis', 'POST')
+# def get_analysis(filter_dict: dict) -> Union[list, dict]:
+#     """
+#     When?
+#     This endpoint is used, when the user is on the page for the 'Rennstrukturanalyse' and selected filter for
+#         - year
+#         - competition_category
+#     of interest.
+#     @param filter_dict: example for filter_dict {  "year": 2008, "competition_category_id": 5  }
+#     @return: nested dict/json: structure containing competitions, their events and their races respectively.
+#     See https://github.com/N10100010/DRV_project/blob/api-design/doc/backend-api.md#user-auswahl-jahr-einzeln-und-wettkampfklasse-zb-olympics for mock of return value.
+#     """
+#     # data = generic_get_data(_filter=filter_dict)
+#     data = mocks.mock_standard_analysis_endpoint()
+#     return data
+
+
+# @app.route('/analysis/<race_id>', 'GET')
+# def get_race_analysis(race_id: str):
+#     race_id = "bcda473e-f602-4747-a61e-a35963bd7198"
+#     # data = generic_get_data(_filter={'id': race_id})
+#     data = mocks.mock_race_analysis_endpoint()
+#     return data
+
+
+# @app.route('/get_report_filter_options', 'GET')
+# def get_report_filter_options(filter_dict: dict):
+#     """
+#     todo:
+#     """
+#     return {}
 
 
 if __name__ == "__main__":

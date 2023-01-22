@@ -1,20 +1,22 @@
+import logging
 from dataclasses import dataclass
 import typing
 
-from backend.dataclasses.DC_Schema import DC_Schema
+from .DC_Schema import DC_Schema
 
 
 @dataclass
-class DC_Event(DC_Schema):
+class DC_Boat(DC_Schema):
     #  ID PRESENT IN DC_Schema
+    type: str
     display_name: str
-    rsc_code: str
 
-    def __init__(self, _id: str, display_name: str, rsc_code: str):
+    def __init__(self, _id: str, _type: str, display_name: str):
+        self.type = _type
         self.display_name = display_name
-        self.rsc_code = rsc_code
 
         super().__init__(_id=_id)
 
     def __post__init__(self):
+        print("hallo from the post init")
         pass

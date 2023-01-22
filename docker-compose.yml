@@ -1,0 +1,69 @@
+version: '3.8'
+services:
+  api:
+    build:
+      context: backend
+      dockerfile: ./api.Dockerfile
+    ports:
+      - 5000:5000
+    volumes:
+      - ./backend:/usr/src/app
+    depends_on:
+      - db
+    environment:
+      PORT: "5000"
+      DB_USER: "postgres"
+      DB_PASS: "postgres"
+      DB_HOST: "db"
+      DB_PORT: "5432"
+      DB_NAME: "rowing"
+      DB_SQLALCHEMY_DRIVERNAME: "postgresql+psycopg2"
+      DB_VERBOSITY: "1"
+
+  scraper:
+    build:
+      context: backend
+      dockerfile: ./scraper.Dockerfile
+    volumes:
+      - ./backend:/usr/src/app
+    depends_on:
+      - db
+    environment:
+      DB_USER: "postgres"
+      DB_PASS: "postgres"
+      DB_HOST: "db"
+      DB_PORT: "5432"
+      DB_NAME: "rowing"
+      DB_SQLALCHEMY_DRIVERNAME: "postgresql+psycopg2"
+      DB_VERBOSITY: "1"
+
+  db:
+    image: postgres:14.1-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "rowing"
+    ports:
+      - 5432:5432
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: ./dev.Dockerfile
+    ports:
+      - 5173:5173
+    volumes:
+      - ./frontend/src:/usr/app/src
+      - ./frontend/public:/usr/app/public
+    depends_on:
+      - api
+    environment:
+      PORT: "5173"
+      BACKEND_API_BASE_URL: "http://localhost:5000/"
+
+volumes:
+  db:
+    driver: local

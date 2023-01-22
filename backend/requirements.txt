@@ -1,9 +1,2 @@
-# TODO: add versions for the respective packages
-flask
-pandas
-seaborn
-SQLAlchemy
-psycopg2-binary
-requests
-tenacity
-jsbeautifier # TODO: get rid of this dependency; see https://stackoverflow.com/a/9105143
+# This file is intentionally empty
+# This is just here so that Railway/Nixpacks recognizes this folder as Python project
