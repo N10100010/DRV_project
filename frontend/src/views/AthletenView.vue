@@ -217,7 +217,7 @@ export default {
   }
 }
 
-.nth-grey tr:nth-child(even) {
+.nth-grey tr:nth-child(odd) {
   background-color: rgba(0, 0, 0, .05);
 }
 </style>
