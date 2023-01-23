@@ -7,9 +7,7 @@ References:
 
 ## Database (PostgreSQL)
 
-**Step 1**
-
-Add a PostgreSQL database to your project's environment on *railway.app*.
+**Step:** Add a PostgreSQL database to your project's environment on *railway.app*.
 
 *Note that the connection credentials of the database will be automatically provided to the services by *railway.app* via environment variables. So no further steps are necessary.*
 
