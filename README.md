@@ -5,6 +5,10 @@ Container for the innovation project WS '22
 
 See: [doc/DEPLOYMENT.md](doc/DEPLOYMENT.md)
 
+## Database: Backup & Restore
+
+See: [doc/DATABASE.md](doc/DATABASE.md)
+
 ## How to run things with Docker (dev)
 
 Start all the services with
@@ -29,12 +33,12 @@ docker compose down --rmi all --volumes
 
 ### Database (PostgreSQL)
 
-- **database/README.md** describes how to
+- **[doc/DATABASE.md](doc/DATABASE.md)** describes how to
     - run a development PostgreSQL based on `docker-compose`
     - initialize tables
-- **backend/scraping_wr/README.md** describes how to
+- **[backend/scraping_wr/README.md](backend/scraping_wr/README.md)** describes how to
     - grab data from World Rowing API
-- **backend/model/README.md** describes how to
+- **[backend/model/README.md](backend/model/README.md)** describes how to
     - create/drop tables
     - insert data
 

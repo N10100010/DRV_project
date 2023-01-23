@@ -18,10 +18,9 @@ docker-compose exec -T --env PGPASSWORD=123secret123 db pg_dump --username=postg
 
 **Restore**
 
-Beware of the `--clean` option: https://stackoverflow.com/questions/43603192/will-pg-restore-overwrite-the-existing-tables
+*Mind the `--clean` option: https://stackoverflow.com/questions/43603192/will-pg-restore-overwrite-the-existing-tables*
 
 To Railway.app
-
 
 ```sh
 docker-compose exec -T --env PGPASSWORD=123secret123 db pg_restore --username=postgres --host=example.railway.app --port=6863 --dbname=railway --verbose --clean < db-backup.tar
