@@ -80,11 +80,11 @@ def get_rowing_db_url() -> str:
     """
     db_url = "{drivername}://{username}:{password}@{host}:{port}/{database}".format(
         drivername=os.environ.get('DB_SQLALCHEMY_DRIVERNAME', 'postgresql+psycopg2'),
-        username=urllib.parse.quote_plus( os.environ.get('DB_USER', 'postgres') ),
-        password=urllib.parse.quote_plus( os.environ.get('DB_PASS', 'postgres') ),
-        host=os.environ.get('DB_HOST', 'localhost'),
-        port=os.environ.get('DB_PORT', '5432'),
-        database=os.environ.get('DB_NAME', 'rowing')
+        username=urllib.parse.quote_plus( os.environ.get('PGUSER', 'postgres') ),
+        password=urllib.parse.quote_plus( os.environ.get('PGPASSWORD', 'postgres') ),
+        host=os.environ.get('PGHOST', 'localhost'),
+        port=os.environ.get('PGPORT', '5432'),
+        database=os.environ.get('PGDATABASE', 'rowing')
     )
     return db_url
 
