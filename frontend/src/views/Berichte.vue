@@ -59,7 +59,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 </v-alert>
               </v-col>
 
-              <v-table class="tableStyles" density="comfortable">
+              <v-table class="tableStyles" density="comfortable" v-if="!matrixVisible">
                 <tbody class="nth-grey">
                 <tr>
                   <th>Weltbestzeit</th>
@@ -120,7 +120,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 </tr>
                 </tbody>
               </v-table>
-              <v-table class="tableStyles">
+              <v-table class="tableStyles" v-if="matrixVisible">
                 <thead>
                   <tr>
                     <th></th>
@@ -183,6 +183,9 @@ export default {
     }),
     ...mapState(useBerichteState, {
       filterState: "getFilterState"
+    }),
+    ...mapState(useBerichteState, {
+      matrixVisible: "getSelectedBoatClass"
     })
   },
   methods: {

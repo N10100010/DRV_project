@@ -5,6 +5,7 @@ export const useBerichteState = defineStore({
     id: "berichte",
     state: () => ({
         filterOpen: false,
+        selectedBoatClass: {0: "Alle"},
         filterOptions: [{
             "year": [{"start_year": 1950}, {"end_year": 2025}],
             "boat_class": {
@@ -210,6 +211,9 @@ export const useBerichteState = defineStore({
         getTableData(state) {
             return state.data[0]
         },
+        getSelectedBoatClass(state) {
+            return state.selectedBoatClass[0] === "Alle"
+        },
         getBarChartData(state) {
             return {
                 labels: state.data[0].plot_data.histogram.labels,
@@ -280,6 +284,7 @@ export const useBerichteState = defineStore({
     },
     actions: {
         async postFormData(formData) {
+            this.selectedBoatClass = formData.boat_classes
             await axios.post('https://jsonplaceholder.typicode.com/users', {formData})
                 .then(response => {
                     // Bearbeite die Antwort des Backends hier
