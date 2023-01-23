@@ -7,10 +7,7 @@ from flask import abort
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
-
-
-
-from app.model import model
+from model import model
 
 # app is the main controller for the Flask-Server and will start the app in the main function 
 app = Flask(__name__, template_folder='web/templates')
