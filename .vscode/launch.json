@@ -70,6 +70,14 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": true
-        }
+        },
+        {
+            "name": "Py: Scrape competition - Nick",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
+            "module": "scraping_wr._main",
+            "justMyCode": true
+        },
     ]
 }

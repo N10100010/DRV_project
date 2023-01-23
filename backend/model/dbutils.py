@@ -1,7 +1,8 @@
-from . import model
+
 
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
+from sqlalchemy_utils import database_exists, create_database
 
 from contextlib import suppress
 import datetime as dt
@@ -10,6 +11,8 @@ from common.helpers import Timedelta_Parser, parse_wr_intermediate_distance_key,
 
 # from ..scraping_wr import utils_wr
 from scraping_wr import api
+
+from . import model
 
 # logging stuff
 import logging
@@ -287,6 +290,10 @@ if __name__ == '__main__':
 
     import json
     from .model import engine, Scoped_Session
+
+    if not database_exists(engine.url): 
+        print("----- Create Database 'rowing' -----")
+        create_database(engine.url)
 
     if args.drop:
         print("----- Drop All Tables -----")

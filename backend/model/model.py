@@ -5,7 +5,9 @@ import urllib.parse
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.ext.declarative import declarative_base
+
+from sqlalchemy.orm import relationship
 from sqlalchemy import Column, ForeignKey, Integer, BigInteger, Float, String, Boolean, Date, DateTime, Enum
 
 # logging stuff
@@ -84,7 +86,7 @@ def get_rowing_db_url() -> str:
         password=urllib.parse.quote_plus( os.environ.get('DB_PASS', 'postgres') ),
         host=os.environ.get('DB_HOST', 'localhost'),
         port=os.environ.get('DB_PORT', '5432'),
-        database=os.environ.get('DB_NAME', 'rowing')
+        database=os.environ.get('DB_NAME', 'postgres')
     )
     return db_url
 

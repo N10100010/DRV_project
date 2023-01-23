@@ -283,6 +283,8 @@ def filter_races(races: list, fltr: dict) -> list:
 def process_race_display_name(name: str) -> str:
     """
     Processes the display-name of a race to extract the type of it.
+    todo: split up the numbers from the string part and return tuple 
+        -- > semifnl: c/d21 digitiert zu (c/d, 21) # contains error, well...
     """
     lower = name.lower()
 

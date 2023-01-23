@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     #api.save(ret, './races_2000_2024_pdfs.json')
 
-    ret = api.load('./races_2000_2024_pdfs.json')
+    ret = api.load('scraping_wr/races_2000_2024_pdfs.json')
 
     import collections
     d = dict()

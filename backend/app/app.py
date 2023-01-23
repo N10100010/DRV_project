@@ -1,27 +1,22 @@
-from typing import Union
 import os
 
-from flask import Flask, render_template
+from flask import Flask
 from flask import request
 from flask import abort
 
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
-from backend.model import model
-from . import mocks
 
-import backend.scraping_wr.api
 
+
+from app.model import model
+
+# app is the main controller for the Flask-Server and will start the app in the main function 
 app = Flask(__name__, template_folder='web/templates')
 
+# used similar to a context manager. using the constructor creates a scoped session, bound to its creating function scope 
 Scoped_Session = model.Scoped_Session
-
-
-@app.route('/')
-def home():
-    return render_template("./NO_TEMPLATE.html")
-
 
 # Receive JSON via POST in flask: https://sentry.io/answers/flask-getting-post-data/#json-data
 # Parameterized route etc.: https://pythonbasics.org/flask-tutorial-routes/
@@ -30,6 +25,9 @@ def home():
 
 @app.route('/report', methods=['POST'])
 def get_report():
+    """
+    
+    """
     filter_dict = request.json
     data = mocks.generic_get_data(_filter=filter_dict)
     return data
@@ -42,6 +40,9 @@ def test():
 
 @app.route('/competition_category/', methods=['GET'])
 def get_competition_categories():
+    """
+    todo: comment
+    """
     result = []
 
     session = Scoped_Session()
@@ -53,8 +54,49 @@ def get_competition_categories():
     return result
 
 
+@app.route('/competition/<int:year>/<int:competition_category_id>')
+def get_competitions_year_category(year: int, competition_category_id: int) -> dict: 
+    """
+    WHEN?
+    This endpoint is used, when the user is on the page for the 'Rennstrukturanalyse' and selected filter for
+        - year
+        - competition_category
+    of interest.
+    @param filter_dict: example for filter_dict {  "year": 2008, "competition_category_id": 5  }
+    @return: nested dict/json: structure containing competitions, their events and their races respectively.
+    See https://github.com/N10100010/DRV_project/blob/api-design/doc/backend-api.md#user-auswahl-jahr-einzeln-und-wettkampfklasse-zb-olympics for mock of return value.
+    """
+    from datetime import datetime
+    session = Scoped_Session()
+    result = {}
+    statement = (
+        select(
+            model.Competition.id,
+            model.Competition.start_date, 
+            model.Competition.name, 
+            model.Competition.venue
+        ).where(
+            model.Competition_Category == int(competition_category_id)
+            and datetime(model.Competition.start_date).year == year
+        ).options(
+            joinedload(
+                model.Competition.events
+            ).joinedload(model.Event.races)
+        )
+    )
+    competitions = session.execute(statement)
+    return result
+
+
+
 @app.route('/race/<int:race_id>/', methods=['GET'])
-def get_race(race_id):
+def get_race(race_id: int) -> dict:
+    """
+    WHEN? THIS FUNCTION IS CALLED WHEN THE USER SELECTED A RACE 
+    Gets the mandatory information to display a race-analysis (Rennstrukturanalyse).
+    @race_id: the internal, unique id identifying a race. 
+    @return: the information of a race
+    """
     session = Scoped_Session()
 
     # Join relationship fields using "Joined Load" to fetch all-in-one:
@@ -76,6 +118,8 @@ def get_race(race_id):
         )
     )
 
+    competitions = session.execute(statement)
+    print()
     # TODO: fill remaining fields (api-design.md)
 
     race = session.execute(statement).scalars().first()
@@ -129,7 +173,7 @@ def shutdown_session(exception=None):
 #     of interest.
 #     @param filter_dict: example for filter_dict {  "year": 2008, "competition_category_id": 5  }
 #     @return: nested dict/json: structure containing competitions, their events and their races respectively.
-#     See https://github.com/N10100010/DRV_project/blob/api-design/doc/backend-api.md#user-auswahl-jahr-einzeln-und-wettkampfklasse-zb-olympics for mock of return value.
+     #See https://github.com/N10100010/DRV_project/blob/api-design/doc/backend-api.md#user-auswahl-jahr-einzeln-und-wettkampfklasse-zb-olympics for mock of return value.
 #     """
 #     # data = generic_get_data(_filter=filter_dict)
 #     data = mocks.mock_standard_analysis_endpoint()
