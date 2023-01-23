@@ -276,7 +276,7 @@ def wr_map_competition(session, entity, data):
     # Insert 1:m https://stackoverflow.com/q/16433338
     events = map(
         lambda d : wr_insert(session, model.Event, wr_map_event, d),
-        get_(competition_data, 'events', [])
+        get_(data, 'events', [])
     )
     entity.events.extend(events)
 
