@@ -186,6 +186,9 @@
                 <LineChart :data="data" :chartOptions="intermediateChartOptions[idx]"></LineChart>
               </v-container>
             </v-col>
+            <v-col :cols="mobile ? 12 : 6" :class="mobile ? 'pa-0' : null">
+                <LineChart :data="deficitMeters" :chartOptions="deficitChartOptions"></LineChart>
+            </v-col>
           </v-row>
         </v-container>
       </v-container>
@@ -233,7 +236,10 @@ export default {
     }),
     ...mapState(useRennstrukturAnalyseState, {
       loading: "getLoadingState"
-    })
+    }),
+    ...mapState(useRennstrukturAnalyseState, {
+      deficitMeters: "getDeficitInMeters"
+    }),
   },
   /*
   beforeRouteLeave(to, from, next) {
@@ -383,7 +389,31 @@ export default {
             }
           }
         }
-      ]
+      ],
+      deficitChartOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Strecke [m]'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Rückstand [m]'
+            }
+          }
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: "Rückstand über Distanz"
+          }
+        }
+      },
     }
   },
   created() {
