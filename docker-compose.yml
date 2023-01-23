@@ -12,12 +12,11 @@ services:
       - db
     environment:
       PORT: "5000"
-      DB_USER: "postgres"
-      DB_PASS: "postgres"
-      DB_HOST: "db"
-      DB_PORT: "5432"
-      DB_NAME: "rowing"
-      DB_SQLALCHEMY_DRIVERNAME: "postgresql+psycopg2"
+      PGUSER: "postgres"
+      PGPASSWORD: "postgres"
+      PGHOST: "db"
+      PGPORT: "5432"
+      PGDATABASE: "rowing"
       DB_VERBOSITY: "1"
 
   scraper:
@@ -29,12 +28,11 @@ services:
     depends_on:
       - db
     environment:
-      DB_USER: "postgres"
-      DB_PASS: "postgres"
-      DB_HOST: "db"
-      DB_PORT: "5432"
-      DB_NAME: "rowing"
-      DB_SQLALCHEMY_DRIVERNAME: "postgresql+psycopg2"
+      PGUSER: "postgres"
+      PGPASSWORD: "postgres"
+      PGHOST: "db"
+      PGPORT: "5432"
+      PGDATABASE: "rowing"
       DB_VERBOSITY: "1"
 
   db:
