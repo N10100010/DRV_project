@@ -7,7 +7,7 @@
 **Usage**
 
 ```
-$ python -m backend.scraping_wr._main grabc --help
+$ python -m scraping_wr._main grabc --help
 usage: _main.py grabc [-h] [-i UUID] [-o OUT]
 
 options:
@@ -19,12 +19,12 @@ options:
 **Example:**
 
 ```sh
-python -m backend.scraping_wr._main grabc --uuid 718b3256-e778-4003-88e9-832c4aad0cc2 --out dump.json
+python -m scraping_wr._main grabc --uuid 718b3256-e778-4003-88e9-832c4aad0cc2 --out dump.json
 ```
 
 
 ## Run remaining test code
 
 ```sh
-python -m backend.scraping_wr._main
+python -m scraping_wr._main
 ```
