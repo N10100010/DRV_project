@@ -34,6 +34,7 @@ services:
       PGPORT: "5432"
       PGDATABASE: "rowing"
       DB_VERBOSITY: "1"
+      DRV_SCRAPER_DEV_MODE: "1"
 
   db:
     image: postgres:14.1-alpine

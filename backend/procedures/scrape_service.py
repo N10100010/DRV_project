@@ -1,4 +1,5 @@
 import logging
+import os
 from time import sleep
 
 from model import model
@@ -6,6 +7,7 @@ from model import model
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+__SCRAPER_DEV_MODE = os.environ.get('DRV_SCRAPER_DEV_MODE','').strip() == '1'
 __SCRAPER_SLEEP_TIME_SECONDS = 5
 
 """ NOTES
