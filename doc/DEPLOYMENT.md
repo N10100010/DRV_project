@@ -57,9 +57,7 @@ The Python version is configured by code in `runtime.txt`. See: https://github.c
 
 The following **service settings** have to be made on *railway.app*:
 
-**Step 1**
-
-Set *Root Directory* as follows
+**Step 1:** Set *Root Directory* as follows
 
 ```
 /frontend
