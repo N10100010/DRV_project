@@ -1,12 +1,15 @@
 import logging
+import os
 from time import sleep
 
 from model import model
+from scraping_wr import api
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-__SCRAPER_SLEEP_TIME_SECONDS = 5
+__SCRAPER_DEV_MODE = os.environ.get('DRV_SCRAPER_DEV_MODE','').strip() == '1'
+__SCRAPER_SLEEP_TIME_SECONDS = 60 * 60
 
 """ NOTES
 - [SCRAPE] Procedure
@@ -18,14 +21,15 @@ __SCRAPER_SLEEP_TIME_SECONDS = 5
     - Decide what data seems higher quality and write it to the database
 
 TODO
-- print() -> Logger
+
 """
 
 def prescrape():
     logger = logging.getLogger("prescrape")
 
     logger.info("Fetch all competition heads and write to db")
-
+    result = api.get_competition_ids(single_fetch=False)
+    pass
 
 def scrape():
     logger = logging.getLogger("scrape")
