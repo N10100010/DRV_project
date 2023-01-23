@@ -5,7 +5,6 @@ import { Scatter } from 'vue-chartjs'
 <template>
   <div class="chart-container">
     <scatter
-      id="scatter-chart-id"
       :options="chartOptions"
       :data="data"
     />
@@ -21,5 +20,9 @@ export default {
 }
 </script>
 
-<style scoped src="@/assets/chart.css">
+<style>
+.chart-container > canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
 </style>
