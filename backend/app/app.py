@@ -34,9 +34,9 @@ def get_report():
     return data
 
 
-@app.route('/test')
-def test():
-    return { "msg": "Hello World! This is a test endopoint." }
+@app.route('/healthcheck')
+def healthcheck():
+    return "healthy"
 
 
 @app.route('/competition_category/', methods=['GET'])
