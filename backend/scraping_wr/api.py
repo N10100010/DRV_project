@@ -538,7 +538,7 @@ def get_competition_heads(years: Optional[Union[list, int]] = None, single_fetch
     Param years: Selects years.
         - Can be a list of years.
         - Can be an int.
-        - Can be None -> All years from 1990 to 5 years in the future.
+        - Can be None -> All years from 1900 to 5 years in the future.
 
     Param single_fetch: Request the selection of years in a single API call.
     """
