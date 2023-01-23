@@ -1,7 +1,15 @@
 # DRB_project
 Container for the innovation project WS '22
 
-## How to run things with Docker
+## Deployment on Railway.app
+
+See: [doc/DEPLOYMENT.md](doc/DEPLOYMENT.md)
+
+## Database: Backup & Restore
+
+See: [doc/DATABASE.md](doc/DATABASE.md)
+
+## How to run things with Docker (dev)
 
 Start all the services with
 
@@ -25,12 +33,12 @@ docker compose down --rmi all --volumes
 
 ### Database (PostgreSQL)
 
-- **database/README.md** describes how to
+- **[doc/DATABASE.md](doc/DATABASE.md)** describes how to
     - run a development PostgreSQL based on `docker-compose`
     - initialize tables
-- **backend/scraping_wr/README.md** describes how to
+- **[backend/scraping_wr/README.md](backend/scraping_wr/README.md)** describes how to
     - grab data from World Rowing API
-- **backend/model/README.md** describes how to
+- **[backend/model/README.md](backend/model/README.md)** describes how to
     - create/drop tables
     - insert data
 
@@ -62,21 +70,6 @@ python -m flask --app app.app:app --debug run
     - install required packages
     - run the frontend
 
-###
-
-
-## Deployment on Railway.app
-
-See also: https://docs.railway.app/
-- https://docs.railway.app/develop/variables
-
-### Frontend
-
-The following service settings have to be made on *railway.app*:
-
-- Set *Root Directory* `/frontend`
-- Set the following environment variables in the service settings:
-    - `NIXPACKS_NODE_VERSION=16`
 
 
 ## MVP

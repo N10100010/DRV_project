@@ -23,7 +23,7 @@ const router = createRouter({
       component: Berichte
     },
     {
-      path: '/rennstrukturanalyse',
+      path: '/rennstrukturanalyse/:',
       name: 'rennstrukturanalyse',
       component: Rennstrukturanalyse
     },

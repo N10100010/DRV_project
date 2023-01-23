@@ -3,14 +3,14 @@ import os
 
 from flask import Flask, render_template
 from flask import request
-from flask import jsonify
 from flask import abort
 
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
 from model import model
-import app.mocks as mocks
+from . import mocks
+
 
 app = Flask(__name__, template_folder='web/templates')
 
@@ -34,9 +34,9 @@ def get_report():
     return data
 
 
-@app.route('/test')
-def test():
-    return { "msg": "Hello World! This is a test endopoint." }
+@app.route('/healthcheck')
+def healthcheck():
+    return "healthy"
 
 
 @app.route('/competition_category/', methods=['GET'])
@@ -151,6 +151,7 @@ def shutdown_session(exception=None):
 #     return {}
 
 
+# TODO: Remove the following lines or move app.py to parent folder (/backend)
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=True, host='0.0.0.0', port=port)

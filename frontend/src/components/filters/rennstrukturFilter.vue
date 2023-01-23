@@ -11,7 +11,7 @@
     <v-divider></v-divider>
     <v-form id="rennstrukturFilterFormular" class="mt-2" @submit.prevent="onSubmit"
             ref="filterForm" v-model="formValid" lazy-validation>
-      <v-select class="pt-2" clearable density="comfortable" label="Year"
+      <v-select class="pt-2" clearable density="comfortable" label="Jahr"
                 :items="optionsYear" v-model="selectedYear"
                 variant="outlined" :rules="[v => !!v || 'Wähle ein Jahr']"
       ></v-select>

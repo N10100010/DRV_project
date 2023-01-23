@@ -7,7 +7,6 @@ ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 <template>
   <div class="chart-container">
     <Bar
-      id="my-chart-id"
       :options="chartOptions"
       :data="data"
     />
@@ -19,6 +18,3 @@ export default {
   props: ['data', 'chartOptions']
 }
 </script>
-
-<style scoped src="@/assets/chart.css">
-</style>
