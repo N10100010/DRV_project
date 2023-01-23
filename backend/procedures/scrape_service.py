@@ -12,9 +12,12 @@ from scraping_wr import api
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+SCRAPER_SINGLEPASS = os.environ.get('SCRAPER_SINGLEPASS','').strip() == '1'
 SCRAPER_DEV_MODE = os.environ.get('DRV_SCRAPER_DEV_MODE','').strip() == '1'
-SCRAPER_SLEEP_TIME_SECONDS = 60 * 60
 SCRAPER_YEAR_MIN = int(os.environ.get('SCRAPER_YEAR_MIN', '1900').strip())
+
+DAY_IN_SECONDS = 60 * 60 * 24
+SCRAPER_SLEEP_TIME_SECONDS = 1 * DAY_IN_SECONDS
 
 """ NOTES
 - [SCRAPE] Procedure
@@ -61,8 +64,9 @@ def prescrape(**kwargs):
         if not wr_detected:
             logger.info("No World Rowing API scrapes detected. Extending scrape range to max.")
             year_min = SCRAPER_YEAR_MIN
-            if SCRAPER_DEV_MODE:
-                year_min = datetime.date.today().year-5
+
+            # if SCRAPER_DEV_MODE:
+            #     year_min = datetime.date.today().year-5
 
         logger.info(f"Final decision for year range selection: {year_min}-{year_max}")
         if year_min > year_max:
@@ -114,12 +118,16 @@ def scheduler(duration=SCRAPER_SLEEP_TIME_SECONDS):
     sleep(duration)
 
 
-def start_service():
+def start_service(singlepass=False):
     logger.info("[start_service]")
     while True:
         prescrape()
         scrape()
         maintain()
+
+        if SCRAPER_SINGLEPASS or singlepass:
+            logger.info("Override Scheduler")
+            break
 
         scheduler()
 
@@ -138,12 +146,13 @@ if __name__ == '__main__':
         "-p", "--procedure", help="Procedure to run",
         choices=list(procedures.keys()), action="append"
     )
+    parser.add_argument("-s", "--singlepass", help="Ignore the scheduler. Script exits after one pass.", action="store_true")
     args = parser.parse_args()
     logger.info(args)
 
     
     if not args.procedure:
-        start_service()
+        start_service(singlepass=args.singlepass)
     else:
         for procedure_id in args.procedure:
             func = procedures[procedure_id]

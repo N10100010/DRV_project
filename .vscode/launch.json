@@ -57,8 +57,9 @@
             "cwd": "${workspaceFolder}/backend",
             "module": "procedures.scrape_service",
             "env": {
+                "SCRAPER_SINGLEPASS": "1",
                 "DRV_SCRAPER_DEV_MODE": "1",
-                "DB_VERBOSITY": "1"
+                "DB_VERBOSITY": "0"
             },
             "args": [],
             "console": "integratedTerminal",
