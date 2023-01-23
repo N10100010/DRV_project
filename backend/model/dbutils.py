@@ -223,18 +223,33 @@ def wr_map_venue(session, entity, data):
     entity.is_world_rowing_venue = get_(data, 'IsWorldRowingVenue')
 
 
+def wr_map_competition_prescrape(session, entity, data):
+    STATE_RESULT_STATE = model.Enum_Maintenance_Level.world_rowing_api_prescraped.value
+
+    state = entity.maintenance_level
+    update_entity = state == None or state < STATE_RESULT_STATE
+    if not update_entity:
+        return
+
+    entity.maintenance_level = STATE_RESULT_STATE
+
+    entity.name = get_(data, 'DisplayName')
+    with suppress(TypeError, ValueError):
+        entity.start_date = dt.datetime.fromisoformat(get_(data, 'StartDate', ''))
+        entity.end_date = dt.datetime.fromisoformat(get_(data, 'EndDate', ''))
+    
+
 def wr_map_competition(session, entity, data):
     # Check maintenance state
-    STATE_DEFAULT = model.Enum_Maintenance_Level.world_rowing_api_grabbed.value
-    STATE_UPPER_LIMIT = model.Enum_Maintenance_Level.world_rowing_api_grabbed.value
+    STATE_RESULT_STATE = model.Enum_Maintenance_Level.world_rowing_api_grabbed.value
+    STATE_UPPER_LIMIT  = STATE_RESULT_STATE
 
     state = entity.maintenance_level
     update_entity = state == None or state <= STATE_UPPER_LIMIT
     if not update_entity:
-        return entity
+        return
 
-    if entity.maintenance_level == None:
-        entity.maintenance_level = STATE_DEFAULT
+    entity.maintenance_level = STATE_RESULT_STATE
 
     # Competition_Category
     competition_category = wr_insert(

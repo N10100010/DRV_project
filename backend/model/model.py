@@ -106,6 +106,7 @@ Scoped_Session = scoped_session(sessionmaker(bind=engine, autoflush=True, autoco
 # -----
 class Enum_Maintenance_Level(enum.Enum):
     """Enum for Competition Entity"""
+    world_rowing_api_prescraped = 3
     world_rowing_api_grabbed = 5
     world_rowing_postprocessed = 6
 

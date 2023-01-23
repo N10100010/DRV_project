@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 SCRAPER_DEV_MODE = os.environ.get('DRV_SCRAPER_DEV_MODE','').strip() == '1'
 SCRAPER_SLEEP_TIME_SECONDS = 60 * 60
-SCRAPER_YEAR_MIN = int(os.environ.get('SCRAPER_YEAR_MIN', '1990').strip())
+SCRAPER_YEAR_MIN = int(os.environ.get('SCRAPER_YEAR_MIN', '1900').strip())
 
 """ NOTES
 - [SCRAPE] Procedure
@@ -41,12 +41,13 @@ def _scrape_range_full_year_window():
     return today.year-1, today.year+1
 
 def detect_wr_scrapes(session):
-    statement = select(model.Competition.id).where(model.Competition.additional_id_ != None) # TODO: Introduce a field for source 
+    # HIGH-PRIO TODO: Introduce a field for source == WorldRowing
+    statement = select(model.Competition.id).where(model.Competition.additional_id_ != None) 
     rows = session.execute(statement).first()
     detected = not rows == None
     return detected
 
-def prescrape():
+def prescrape(**kwargs):
     logger = logging.getLogger("prescrape")
     logger.info("Initialize Database")
     dbutils.create_tables(model.engine)
@@ -69,11 +70,18 @@ def prescrape():
         
         logger.info("Fetch all competition heads and write to db")
         for year in range(year_min, year_max+1):
-            logger.info(f"BEGIN year={year}")
+            logger.info(f"Begin year={year} ---------------")
             competitions_wr = api.get_competition_heads([year], single_fetch=False)
             for competition_data in competitions_wr:
                 logger.info(f'''Adding year={year} competition="{competition_data.get('id')}" name="{competition_data.get('DisplayName')}"''')
-                sleep(1)
+                dbutils.wr_insert(
+                    session,
+                    model.Competition,
+                    dbutils.wr_map_competition_prescrape,
+                    competition_data
+                )
+                # Reminder: session.add() already done within wr_insert()
+        session.commit()
 
 def scrape():
     logger = logging.getLogger("scrape")
