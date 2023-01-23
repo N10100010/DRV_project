@@ -138,6 +138,7 @@ dmypy.json
 backend/scraping_wr/*.json
 backend/tmp.*.json
 /database/secret.*
+/*.tar
 
 #-------------------------------------------------------------
 
