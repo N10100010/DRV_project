@@ -41,11 +41,11 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                   <th>Team</th>
                   <th>Nation</th>
                   <th>Bootsklasse</th>
-                  <th>Mitglieder</th>
+                  <th>Athleten</th>
                 </tr>
               </thead>
               <tbody class="nth-grey">
-                <tr v-for="team, idx in tableData.teams">
+                <tr v-for="(team, idx) in tableData.teams">
                   <td>{{ idx + 1 }}</td>
                   <td>{{ team.nation_ioc }}</td>
                   <td>{{ team.boatClass }}</td>
@@ -91,13 +91,11 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                   -->
 
                   <td>
-                    <p v-for="athlete, idx in team.athletes" class="pt-1 pb-1 distance">
-                      <p>{{ athlete.firstName }} {{ athlete.lastName }}</p>                    
-                      <hr>
-                      <p>{{ athlete.gender == 'male' ? 'Männlich' : 'Weiblich' }}</p>
-                      <hr>
-                      <p>{{ athlete.discipline }}</p>
-                    </p>
+                    <template v-for="(athlete, idx) in team.athletes" class="pt-1 pb-1 distance">
+                      <p>
+                        <b>{{ athlete.firstName }} {{ athlete.lastName }}</b>
+                      ({{ athlete.discipline }})</p>
+                    </template>
                   </td>
 
                 </tr>

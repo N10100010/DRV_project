@@ -28,7 +28,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
         <berichte-filter/>
       </v-navigation-drawer>
 
-      <v-container class="pa-10">
+      <v-container class="px-10 py-0">
         <v-col cols="12" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Berichte</h1>
           <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
@@ -45,16 +45,11 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
           <v-row>
             <v-col cols="5">
               <h2>{{ tableData.boat_class }}</h2>
-              <v-alert type="success" variant="tonal" class="my-2" closable>
+              <v-alert type="success" variant="tonal" class="my-2">
             <v-row>
-              <v-col cols="6">
-                <b><p>{{ tableData.results }} Datensätze</p></b>
-                <p>Von: {{ tableData.start_date.slice(0, 4) }}</p>
-                <p>Bis: {{ tableData.end_date.slice(0, 4) }}</p>
-              </v-col>
-              <v-col cols="6">
-                <b><p>Bootsklasse(n):</p></b>
-                <p>{{ tableData.boat_class }}</p>
+              <v-col cols="12">
+                <p>{{ tableData.results }} Datensätze |
+                  Von {{ tableData.start_date.slice(0, 4) }} Bis {{ tableData.end_date.slice(0, 4) }}</p>
               </v-col>
             </v-row>
           </v-alert>
@@ -73,9 +68,9 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                   <td>
                     <p>
                       {{ tableData["mean"]["mm:ss,00"] }}<br>
-                      {{ tableData["mean"]["m/s"] }}[m/s]<br>
-                      {{ tableData["mean"]["pace 500m"] }}[500m]<br>
-                      {{ tableData["mean"]["pace 1000m"] }}[1000m]
+                      {{ tableData["mean"]["m/s"] }} <i>[m/s]</i><br>
+                      {{ tableData["mean"]["pace 500m"] }} [500m]<br>
+                      {{ tableData["mean"]["pace 1000m"] }} [1000m]
                     </p>
                   </td>
                 </tr>
@@ -125,6 +120,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 <BarChart :height="'100%'" :width="'100%'" :data="getBarChartData"
                           :chartOptions="barChartOptions"></BarChart>
               </v-container>
+              <v-divider></v-divider>
               <v-container style="width: 100%">
                 <ScatterChart :height="'100%'" :width="'100%'" :data="getScatterChartData"
                               :chartOptions="scatterChartOptions"></ScatterChart>
@@ -266,11 +262,11 @@ export default {
   th {
     border: 1px solid #e0e0e0;
     font-size: 14px !important;
-    text-align: right;
+    text-align: left;
   }
 
   td {
-    text-align: right;
+    text-align: left;
     border: 1px solid #e0e0e0;
   }
 }

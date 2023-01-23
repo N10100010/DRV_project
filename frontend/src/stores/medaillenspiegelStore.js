@@ -379,7 +379,7 @@ export const useMedaillenspiegelState = defineStore({
                     {
                         type: 'bar',
                         label: "Medaillenübersicht",
-                        backgroundColor: '#64B5F6',
+                        backgroundColor: '#5cc5ed',
                         data: state.medal_bar_chart_data.data
                     },
                 ]

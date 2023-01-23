@@ -12,14 +12,14 @@
       </v-navigation-drawer>
 
 
-      <v-container class="pa-10">
+      <v-container class="py-10 pt-0">
         <h1>Athleten</h1>
         <v-divider></v-divider>
         <v-container class="pa-0 mt-8" style="min-height: 400px">
           <v-row>
-            <v-col :cols="mobile ? 12 : 6">
+            <v-col :cols="mobile ? 12 : 4">
               <h2>{{ tableData.firstName }} {{ tableData.lastName }}</h2>
-              <v-table class="tableStyles" density="comfortable">
+              <v-table class="tableStyles" density="compact">
                 <tbody class="nth-grey">
                   <tr>
                     <th>Nation</th>
@@ -82,7 +82,7 @@
                     <td>{{ tableData.bestTimeBoatClass }}</td>
                   </tr>
                   <tr>
-                    <th>Bestzeit Bootsklasse laufender OZ</th>
+                    <th>Bestzeit Bootsklasse OZ/Jahr</th>
                     <td>{{ tableData.bestTimeBoatClassCurrentOZ }}</td>
                   </tr>
                 </tbody>
@@ -90,7 +90,7 @@
             </v-col>
             <v-col v-if="!mobile">
               <h2>Rennliste</h2>
-              <v-table class="tableStyles" density="comfortable">
+              <v-table class="tableStyles" density="compact">
                 <thead>
                   <tr>
                     <th>Wettkampf</th>
@@ -101,7 +101,7 @@
                   </tr>
                 </thead>
                 <tbody class="nth-grey">
-                  <tr v-for="race, idx in tableData.raceList">
+                  <tr v-for="(race, idx) in tableData.raceList">
                     <td>{{ race.raceName }}</td>
                     <td>{{ race.startDate }}</td>
                     <td>{{ race.rank }}</td>
@@ -124,7 +124,7 @@
                   </tr>
                 </thead>
                 <tbody class="nth-grey">
-                  <tr v-for="race, idx in tableData.raceList">
+                  <tr v-for="(race, idx) in tableData.raceList">
                     <td>{{ race.raceName }}</td>
                     <td>{{ race.startDate }}</td>
                     <td>{{ race.rank }}</td>
@@ -208,7 +208,7 @@ export default {
   th {
     border: 1px solid #e0e0e0;
     font-size: 14px !important;
-    text-align: center;
+    text-align: left;
   }
 
   td {

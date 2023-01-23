@@ -17,9 +17,9 @@
           width="600">
         <medaillenspiegel-filter/>
       </v-navigation-drawer>
-      <v-container :class="mobile ? 'pa-5' : 'pa-10'">
+      <v-container :class="mobile ? 'pa-5' : 'px-10 pt-0'">
 
-        <v-col :cols="mobile ? 12 : 6" v-if="mobile" class="d-flex flex-row px-0" style="align-items: center">
+        <v-col :cols="mobile ? 12 : 6" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Medaillenspiegel</h1>
           <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
           </v-icon>
@@ -34,18 +34,14 @@
         <v-divider></v-divider>
         <v-container class="pa-0 mt-8">
           <v-col :cols="mobile ? 12 : 6" class="pa-0">
-            <h2>{{filterSelection.nation_ioc}}</h2>
-            <v-alert type="success" variant="tonal" class="my-2" closable>
+            <h2>Men's Single Sculls</h2>
+            <v-alert type="success" variant="tonal" class="my-2 mr-2">
               <v-row>
-                <v-col :cols="mobile ? 12 : 6">
-                  <b><p>{{ filterSelection.results }} Datensätze</p></b>
-                  <p>Von: {{ filterSelection.start_date.slice(0, 4) }}</p>
-                  <p>Bis: {{ filterSelection.end_date.slice(0, 4) }}</p>
-                </v-col>
-                <v-col :cols="mobile ? 12 : 6">
-                  <b><p>Bootsklassen:</p></b>
-                  <p v-for="boatClass in Object.values(filterSelection.boat_classes)">
-                    {{ Object.values(boatClass)[0] }}
+                <v-col>
+                  <p>{{ filterSelection.results }} Datensätze |
+                  Von {{ filterSelection.start_date.slice(0, 4) }}
+                  Bis {{ filterSelection.end_date.slice(0, 4) }}
+                  in {{filterSelection.nation_ioc}}
                   </p>
                 </v-col>
               </v-row>
@@ -53,7 +49,7 @@
           </v-col>
           <v-row>
             <v-col :cols="mobile ? 12 : 6">
-              <v-table class="tableStyles" density="compact">
+              <v-table class="tableStyles mb-4" density="compact">
                 <tbody class="nth-grey">
                 <tr v-for="(el, idx) in tableData[0]">
                   <th>{{ el }}</th>
@@ -149,11 +145,11 @@ export default {
   th {
     border: 1px solid #e0e0e0;
     font-size: 14px !important;
-    text-align: right;
+    text-align: left;
   }
 
   td {
-    text-align: right;
+    text-align: left;
     border: 1px solid #e0e0e0;
   }
 }

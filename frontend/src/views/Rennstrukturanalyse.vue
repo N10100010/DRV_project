@@ -16,7 +16,7 @@
           width="500">
         <rennstruktur-filter/>
       </v-navigation-drawer>
-      <v-container :class="mobile ? 'pa-5' : 'pa-10'">
+      <v-container :class="mobile ? 'pa-5' : 'px-10 pt-0'">
         <v-col cols="6" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Rennstrukturanalyse</h1>
           <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
@@ -31,7 +31,7 @@
         </v-col>
         <v-divider></v-divider>
         <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 mt-2" :items="breadCrumbs"></v-breadcrumbs>
-        <v-container class="pa-0 mt-2" v-if="!displayRaceDataAnalysis">
+        <v-container class="pa-0" v-if="!displayRaceDataAnalysis">
           <v-row>
             <v-col cols="12">
               <h2>Suchergebnisse</h2>
@@ -86,15 +86,12 @@
           </v-row>
         </v-container>
 
-        <v-container v-if="displayRaceDataAnalysis && !loading" class="pa-0 mt-8">
+        <v-container v-if="displayRaceDataAnalysis && !loading" class="pa-0">
+          <h2>{{competitionData.displayName}}</h2>
           <v-row no-gutters>
             <v-col>
-              <v-table>
+              <v-table density="compact">
                 <tbody>
-                <tr>
-                  <td><b>Wettkampf:</b></td>
-                  <td>{{ competitionData.displayName }}</td>
-                </tr>
                 <tr>
                   <td><b>Austragungsort:</b></td>
                   <td>{{ competitionData.venue }}</td>
@@ -107,12 +104,8 @@
               </v-table>
             </v-col>
             <v-col>
-              <v-table>
+              <v-table density="compact">
                 <tbody>
-                <tr>
-                  <td><b>Bootsklasse:</b></td>
-                  <td>{{ competitionData.boatClass }}</td>
-                </tr>
                 <tr>
                   <td><b>Weltbestzeit Bootsklasse:</b></td>
                   <td>{{ competitionData.worldBestTimeBoatClass }}</td>
@@ -175,7 +168,6 @@
                 </a>
               </v-col>
             </v-col>
-            <v-divider class="mt-8"></v-divider>
             <v-col :cols="mobile ? 12 : 6" :class="mobile ? 'pa-0' : null">
               <v-container v-for="(data, idx) in getGPsData" :class="mobile ? 'pa-0' : null">
                 <LineChart :data="data" :chartOptions="gpsChartOptions[idx]"></LineChart>

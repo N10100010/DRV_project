@@ -1,12 +1,7 @@
 <template>
-  <v-container class="pa-10">
-  <h1>Allgemeines</h1>
-  <v-divider></v-divider>
+  <v-container class="px-10">
   <v-container class="pa-0 mt-8" style="min-height: 450px">
-    <h2>Aktuelles</h2>
-    <v-alert class="mb-10">
-      Platzhalter für Inhalte (z.B. Letzte/aktuelle Weltbestzeiten, Aktuelle Trend Fahrzeiten etc.)
-    </v-alert>
+
     <h2>Kalender</h2>
     <div class="text-center section">
     <v-calendar
