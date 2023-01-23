@@ -40,13 +40,13 @@ Compose up
 
 Create tables
 
-    python -m backend.model.dbutils --create
+    python -m model.dbutils --create
 
 ### Purge container instance and volume
 
 Drop tables (optional)
 
-    python -m backend.model.dbutils --drop
+    python -m model.dbutils --drop
 
 Compose down
 
