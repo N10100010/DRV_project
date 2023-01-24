@@ -547,7 +547,7 @@ def get_competition_heads(years: Optional[Union[list, int]] = None, single_fetch
     if years == None:
         # current year -1 to + 5; to make sure we get planned comps as well
         present_year = date.today().year
-        selected_years = range(1900, present_year+5)
+        selected_years = range(1900, present_year+5+1)
     elif isinstance(years, int):
         selected_years = [years]
     elif isinstance(years, list):
