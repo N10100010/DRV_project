@@ -96,7 +96,7 @@ def scrape():
             .where(model.Competition.maintenance_level == model.Enum_Maintenance_Level.world_rowing_api_prescraped.value)
         ) 
         competitions = session.execute(statement).scalars().all()
-        # TODO: Get rif of all() call and use a count query to get N: https://stackoverflow.com/a/65775282
+        # TODO: Get rid of all() call and use a count query to get N: https://stackoverflow.com/a/65775282
         logger.info(f"Competitions that have to be scraped N={len(competitions)}")
 
         for competition in competitions:
