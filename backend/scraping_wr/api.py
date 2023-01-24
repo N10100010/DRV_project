@@ -560,12 +560,12 @@ def get_competition_heads(years: Optional[Union[list, int]] = None, single_fetch
     else:
         year_batches = [ [year] for year in selected_years ]
 
-    query_strings = ( ut_wr.build_filter_string({'year': year_batch}) for year_batch in year_batches )
-
-    for query_string in query_strings:
+    for year_batch in year_batches:
+        query_string = ut_wr.build_filter_string({'year': year_batch})
         competitions = ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_COMPETITION + query_string)
         for competition in competitions:
             yield competition
+            
 
 def get_competition_ids(*args, **kwargs) -> list[str]:
     competition_heads_iterator = get_competition_heads(*args, **kwargs)
