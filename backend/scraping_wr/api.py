@@ -567,7 +567,6 @@ def get_competition_heads(years: Optional[Union[list, int]] = None, single_fetch
         for competition in competitions:
             yield competition
 
-
 def get_competition_ids(*args, **kwargs) -> list[str]:
     competition_heads_iterator = get_competition_heads(*args, **kwargs)
     return [ c['id'] for c in competition_heads_iterator ]
