@@ -1,4 +1,4 @@
-# DRB_project
+# drv-project
 Container for the innovation project WS '22
 
 ## Deployment on Railway.app
@@ -44,7 +44,7 @@ docker compose down --rmi all --volumes
 
 ### Backend Scrape/Maintenance Process (Python)
 
-    python -m backend.procedures.scrape_service
+    python -m procedures.scrape_service
 
 ### Backend API Server (Python/Flask)
 
