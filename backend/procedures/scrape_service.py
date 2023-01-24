@@ -94,18 +94,24 @@ def prescrape(**kwargs):
         session.commit()
 
 
+def _get_competitions_to_scrape(session):
+    """Returns tuple: competitions_iterator, number_of_competitions"""
+    statement = (
+        select(model.Competition)
+        .where(model.Competition.maintenance_level == model.Enum_Maintenance_Level.world_rowing_api_prescraped.value)
+    ) 
+    competitions = session.execute(statement).scalars().all()
+    N = len(competitions) # TODO: Get rid of all() call and use a count query to get N: https://stackoverflow.com/a/65775282
+    return competitions, N
+
+
 def scrape():
     logger = logging.getLogger("scrape")
     with model.Scoped_Session() as session:
-        statement = (
-            select(model.Competition)
-            .where(model.Competition.maintenance_level == model.Enum_Maintenance_Level.world_rowing_api_prescraped.value)
-        ) 
-        competitions = session.execute(statement).scalars().all()
-        # TODO: Get rid of all() call and use a count query to get N: https://stackoverflow.com/a/65775282
-        logger.info(f"Competitions that have to be scraped N={len(competitions)}")
+        competitions_iter, num_competitions = _get_competitions_to_scrape(session=session)
+        logger.info(f"Competitions that have to be scraped N={num_competitions}")
 
-        for competition in competitions:
+        for competition in competitions_iter:
             competition_uuid = competition.additional_id_
             if not competition_uuid:
                 logger.info(f"Competition with id={competition.id} has no UUID w.r.t. (World Rowing API). Skip")
