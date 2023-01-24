@@ -63,7 +63,7 @@ def prescrape(**kwargs):
         wr_detected = detect_wr_scrapes(session)
 
         if not wr_detected:
-            logger.info("No World Rowing API scrapes detected. Extending scrape range to max.")
+            logger.info("No World Rowing API scrapes detected. Extending scrape range to maximum")
             year_min = SCRAPER_YEAR_MIN
 
             # if SCRAPER_DEV_MODE:
@@ -96,13 +96,14 @@ def scrape():
             .where(model.Competition.maintenance_level == model.Enum_Maintenance_Level.world_rowing_api_prescraped.value)
         ) 
         competitions = session.execute(statement).scalars().all()
-        # TODO: Get rif of all() call and use a count query to get N: https://stackoverflow.com/a/65775282
+        # TODO: Get rid of all() call and use a count query to get N: https://stackoverflow.com/a/65775282
         logger.info(f"Competitions that have to be scraped N={len(competitions)}")
 
         for competition in competitions:
             competition_uuid = competition.additional_id_
             if not competition_uuid:
-                logger.info(f"Competition with id={competition.id} has no UUID w.r.t. (World Rowing API)")
+                logger.info(f"Competition with id={competition.id} has no UUID w.r.t. (World Rowing API). Skip")
+                continue
             
             logger.info(f'''Fetching competition="{competition_uuid}" date="{competition.start_date}" name="{competition.name}"''')
             competition_data = api.get_by_competition_id_(comp_ids=[competition_uuid], parse_pdf=False)

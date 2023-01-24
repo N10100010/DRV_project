@@ -547,18 +547,21 @@ def get_competition_heads(years: Optional[Union[list, int]] = None, single_fetch
     if years == None:
         # current year -1 to + 5; to make sure we get planned comps as well
         present_year = date.today().year
-        selected_years = range(1900, present_year+5)
+        selected_years = list( range(1900, present_year+5+1) )
     elif isinstance(years, int):
         selected_years = [years]
-    elif isinstance(years, list):
+    elif isinstance(years, list) or isinstance(years, tuple):
         selected_years = list(years)
     else:
         raise TypeError("Param years has to be of type: None, list or int")
 
-    query_strings = ( ut_wr.build_filter_string({'year': year}) for year in selected_years )
     if single_fetch:
-        query_strings = [ ut_wr.build_filter_string({'year': list(selected_years)}) ]
-        
+        year_batches = [ selected_years ]
+    else:
+        year_batches = [ [year] for year in selected_years ]
+
+    query_strings = ( ut_wr.build_filter_string({'year': year_batch}) for year_batch in year_batches )
+
     for query_string in query_strings:
         competitions = ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_COMPETITION + query_string)
         for competition in competitions:
