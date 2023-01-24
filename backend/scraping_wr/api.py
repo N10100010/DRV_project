@@ -5,8 +5,8 @@ from datetime import datetime, date
 import json as jsn
 
 
-#tqdm = lambda i : i
-from tqdm import tqdm
+# from tqdm import tqdm
+tqdm = lambda i : i
 
 from . import utils_wr as ut_wr
 from . import pdf_race_data as pdf_race_data
@@ -440,7 +440,7 @@ def get_by_competition_id_(comp_ids: Union[str, list[str]], verbose: bool = Fals
 
     for event_idx, event in tqdm( enumerate(comp_data.get('events', [])) ):
         for race_idx, race in enumerate(event.get('races', [])):
-            logger.info(f"event_idx {event_idx} race_idx {race_idx}")
+            #logger.info(f"event_idx {event_idx} race_idx {race_idx}")
 
             pdf_info_race_data = select_pdf_(race.get('pdfUrls', []), 'race data')
             pdf_info_results = select_pdf_(race.get('pdfUrls', []), 'results')

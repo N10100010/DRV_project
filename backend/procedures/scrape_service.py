@@ -4,6 +4,7 @@ from time import sleep
 import datetime
 
 from sqlalchemy import select
+from sqlalchemy.sql.expression import func
 
 from model import model
 from model import dbutils
@@ -89,12 +90,29 @@ def prescrape(**kwargs):
 
 def scrape():
     logger = logging.getLogger("scrape")
+    with model.Scoped_Session() as session:
+        statement = (
+            select(model.Competition)
+            .where(model.Competition.maintenance_level == model.Enum_Maintenance_Level.world_rowing_api_prescraped.value)
+        ) 
+        competitions = session.execute(statement).scalars().all()
+        # TODO: Get rif of all() call and use a count query to get N: https://stackoverflow.com/a/65775282
+        logger.info(f"Competitions that have to be scraped N={len(competitions)}")
 
-    logger.info("Grab competition 123-asd-123-asd")
-    
-    logger.info("Write competition to db")
+        for competition in competitions:
+            competition_uuid = competition.additional_id_
+            if not competition_uuid:
+                logger.info(f"Competition with id={competition.id} has no UUID w.r.t. (World Rowing API)")
+            
+            logger.info(f'''Fetching competition="{competition_uuid}" date="{competition.start_date}" name="{competition.name}"''')
+            competition_data = api.get_by_competition_id_(comp_ids=[competition_uuid], parse_pdf=False)
 
-    # Race Data PDF here or in maintain()
+            logger.info(f"Write competition to database")
+            dbutils.wr_insert_competition(session, competition_data)
+            session.commit()
+
+        session.commit()
+        # Race Data PDF here or in maintain()
 
 
 def maintain():
