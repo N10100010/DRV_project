@@ -558,7 +558,7 @@ def get_competition_heads(years: Optional[Union[list, int]] = None, single_fetch
     if single_fetch:
         year_batches = [ selected_years ]
     else:
-        year_batches = [ [year_batch] for year_batch in selected_years ]
+        year_batches = [ [year] for year in selected_years ]
 
     query_strings = ( ut_wr.build_filter_string({'year': year_batch}) for year_batch in year_batches )
 
