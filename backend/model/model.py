@@ -96,7 +96,7 @@ def get_rowing_db_url() -> str:
 # - https://towardsdatascience.com/use-flask-and-sqlalchemy-not-flask-sqlalchemy-5a64fafe22a4
 
 __DB_URL = get_rowing_db_url()
-__DB_VERBOSE = 'DB_VERBOSITY' in os.environ
+__DB_VERBOSE = os.environ.get('DB_VERBOSITY','').strip() == '1'
 
 engine = create_engine(__DB_URL, echo=__DB_VERBOSE)
 Scoped_Session = scoped_session(sessionmaker(bind=engine, autoflush=True, autocommit=False))
@@ -106,6 +106,7 @@ Scoped_Session = scoped_session(sessionmaker(bind=engine, autoflush=True, autoco
 # -----
 class Enum_Maintenance_Level(enum.Enum):
     """Enum for Competition Entity"""
+    world_rowing_api_prescraped = 3
     world_rowing_api_grabbed = 5
     world_rowing_postprocessed = 6
 

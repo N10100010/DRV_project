@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Py: Scrape competition",
+            "name": "Py: Scrape competition to JSON",
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}/backend",
@@ -18,7 +18,7 @@
             "justMyCode": true
         },
         {
-            "name": "Py: dbutils insert",
+            "name": "Py: dbutils insert from JSON",
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}/backend",
@@ -47,6 +47,21 @@
             "env": {
                 "DB_VERBOSITY": "1"
             },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Py: scraper (dev)",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
+            "module": "procedures.scrape_service",
+            "env": {
+                "SCRAPER_SINGLEPASS": "1",
+                "DRV_SCRAPER_DEV_MODE": "1",
+                "DB_VERBOSITY": "0"
+            },
+            "args": [],
             "console": "integratedTerminal",
             "justMyCode": true
         },
