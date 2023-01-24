@@ -121,19 +121,19 @@ def build_filter_string(filter_params: dict) -> str:
     """
     ret = '?'
     splitter = '&'
-    schema = f'filter[KEY]=PARAM'
+    schema = 'filter[{PARAM}]={VALUE}'
 
     if not set(filter_params.keys()).issubset(set(WR_FILTER_MAPPING.keys())):
         # the keys for filters start with capital letters. For ease of use, this is taken care of by the function.
         logger.error(f"A key of the passed filter is not allowed. Allowed filters: {list(WR_FILTER_MAPPING.keys())}")
 
-    last_key = list(filter_params.keys())[-1]
+    param_pairs = []
     for k, v in filter_params.items():
-        ret += schema.replace('KEY', WR_FILTER_MAPPING[k]).replace('PARAM', stringify_params(val=v))
-        if k != last_key:
-            ret += splitter
+        param_pair = schema.format(PARAM=WR_FILTER_MAPPING[k], VALUE=stringify_params(val=v))
+        param_pairs.append(param_pair)
 
-    return ret
+    query_string = ret + "&".join(param_pairs)
+    return query_string
 
 
 def extract_competition_ids(values: dict) -> list[str]:
