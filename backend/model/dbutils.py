@@ -39,7 +39,7 @@ def query_by_uuid_(session, Entity_Class, uuid):
     return result_entity
 
 
-def wr_insert(session, Entity_Class, map_func, data):
+def wr_insert(session, Entity_Class, map_func, data, add_session=True, **kwargs):
     """Proxy function to fetch or create an entity.
     Usage: wr_insert(session, model.Country, wr_map_country, data_dict)"""
     if data == None:
@@ -53,9 +53,9 @@ def wr_insert(session, Entity_Class, map_func, data):
         entity = Entity_Class()
         entity.additional_id_ = uuid
 
-    map_func(session, entity, data)
+    entity = map_func(session, entity, data, **kwargs)
 
-    if create_entity:
+    if create_entity and add_session:
         session.add(entity)
 
     return entity
@@ -67,15 +67,18 @@ def wr_map_country(session, entity, data):
 
     entity.is_former_country__ = repr(get_(data, 'IsFormerCountry'))
     entity.is_noc__ = repr(get_(data, 'IsNOC'))
+    return entity
 
 
 def wr_map_boat_class(session, entity, data):
     entity.abbreviation = get_(data, 'DisplayName')
     # TODO: entity.name // full name not in API data
+    return entity
 
 
 def wr_map_gender(session, entity, data):
     entity.name = get_(data, 'DisplayName')
+    return entity
 
 
 def wr_map_athlete(session, entity, data):
@@ -87,6 +90,7 @@ def wr_map_athlete(session, entity, data):
 
     entity.height_cm__ = get_(data, 'HeightCm')
     entity.weight_kg__ = get_(data, 'WeightKg')
+    return entity
 
 
 def wr_insert_invalid_mark_result_code(session, data):
@@ -171,6 +175,7 @@ def wr_map_race_boat(session, entity, data):
             entity.intermediates.append(intermediate)
 
             seen_set.add(distance_key)
+    return entity
 
 
 def wr_map_race(session, entity, data):
@@ -196,6 +201,7 @@ def wr_map_race(session, entity, data):
         get_(data, 'raceBoats', [])
     )
     entity.race_boats.extend(race_boats)
+    return entity
 
 
 def wr_map_event(session, entity, data):
@@ -210,10 +216,12 @@ def wr_map_event(session, entity, data):
         get_(data, 'races', [])
     )
     entity.races.extend(races)
+    return entity
 
 
 def wr_map_competition_category(session, entity, data):
     entity.name = get_(data, 'DisplayName')
+    return entity
 
 
 def wr_map_venue(session, entity, data):
@@ -221,36 +229,26 @@ def wr_map_venue(session, entity, data):
     entity.city = get_(data, 'RegionCity')
     entity.site = get_(data, 'Site')
     entity.is_world_rowing_venue = get_(data, 'IsWorldRowingVenue')
+    return entity
 
 
 def wr_map_competition_prescrape(session, entity, data):
     STATE_RESULT_STATE = model.Enum_Maintenance_Level.world_rowing_api_prescraped.value
 
-    state = entity.maintenance_level
+    state = entity.scraper_maintenance_level
     update_entity = state == None or state < STATE_RESULT_STATE
     if not update_entity:
-        return
+        return entity
 
-    entity.maintenance_level = STATE_RESULT_STATE
+    entity.scraper_maintenance_level = STATE_RESULT_STATE
 
     entity.name = get_(data, 'DisplayName')
     with suppress(TypeError, ValueError):
-        entity.start_date = dt.datetime.fromisoformat(get_(data, 'StartDate', ''))
-        entity.end_date = dt.datetime.fromisoformat(get_(data, 'EndDate', ''))
-    
+        entity.year = int(get_(data, 'Year'))
+    return entity
 
-def wr_map_competition(session, entity, data):
-    # Check maintenance state
-    STATE_RESULT_STATE = model.Enum_Maintenance_Level.world_rowing_api_grabbed.value
-    STATE_UPPER_LIMIT  = STATE_RESULT_STATE
 
-    state = entity.maintenance_level
-    update_entity = state == None or state <= STATE_UPPER_LIMIT
-    if not update_entity:
-        return
-
-    entity.maintenance_level = STATE_RESULT_STATE
-
+def __wr_map_competition(session, entity: model.Competition, data):
     # Competition_Category
     competition_category = wr_insert(
         session,
@@ -266,7 +264,10 @@ def wr_map_competition(session, entity, data):
     entity.venue = venue
     entity.name = get_(data, 'DisplayName')
     with suppress(TypeError, ValueError):
+        entity.year = int(get_(data, 'Year'))
+    with suppress(TypeError, ValueError):
         entity.start_date = dt.datetime.fromisoformat(get_(data, 'StartDate', ''))
+    with suppress(TypeError, ValueError):
         entity.end_date = dt.datetime.fromisoformat(get_(data, 'EndDate', ''))
 
     entity.competition_code__ = get_(data, 'CompetitionCode')
@@ -279,13 +280,25 @@ def wr_map_competition(session, entity, data):
         get_(data, 'events', [])
     )
     entity.events.extend(events)
+    return entity
 
 
-def wr_insert_competition(session, competition_data):
-    wr_insert(session, model.Competition, wr_map_competition, competition_data)
-    session.commit()
-    pass
+def wr_map_competition_scrape(session, entity: model.Competition, data: dict):
+    # Check maintenance state
+    STATE_RESULT_STATE = model.Enum_Maintenance_Level.world_rowing_api_grabbed.value
+    STATE_UPPER_LIMIT  = STATE_RESULT_STATE
 
+    state = entity.scraper_maintenance_level
+    update_entity = state == None or state <= STATE_UPPER_LIMIT
+    if not update_entity:
+        return entity
+
+    entity.scraper_maintenance_level = STATE_RESULT_STATE
+    entity.scraper_data_provider = model.Enum_Data_Provider.world_rowing.value
+    entity.scraper_last_scrape = dt.datetime.today()
+
+    entity = __wr_map_competition(session, entity, data)
+    return entity
 
 
 if __name__ == '__main__':
@@ -315,8 +328,9 @@ if __name__ == '__main__':
 
     if args.insert:
         logger.info(f"Load JSON file: {args.insert}")
-        with Scoped_Session() as session: # implicit commit when leaving context w/o errors
+        with Scoped_Session() as session:
             with open(args.insert, mode="r", encoding="utf-8") as fp:
                 competition_data = json.load(fp)
-            wr_insert_competition(session, competition_data)
+            wr_insert(session, model.Competition, wr_map_competition_scrape, competition_data)
+            session.commit()
     

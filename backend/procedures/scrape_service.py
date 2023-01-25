@@ -51,7 +51,6 @@ def _detect_wr_scrapes(session):
     detected = not rows == None
     return detected
 
-
 def _scrape_competition_heads(session, year_min, year_max, logger=logger):
     if year_min > year_max:
         raise Exception(f"Year range is invalid: {year_min}-{year_max}")
@@ -68,7 +67,6 @@ def _scrape_competition_heads(session, year_min, year_max, logger=logger):
                 dbutils.wr_map_competition_prescrape,
                 competition_data
             )
-            # Reminder: session.add() already done within wr_insert()
 
 
 def prescrape(**kwargs):
@@ -98,7 +96,7 @@ def _get_competitions_to_scrape(session):
     """Returns tuple: competitions_iterator, number_of_competitions"""
     statement = (
         select(model.Competition)
-        .where(model.Competition.maintenance_level == model.Enum_Maintenance_Level.world_rowing_api_prescraped.value)
+        .where(model.Competition.scraper_maintenance_level == model.Enum_Maintenance_Level.world_rowing_api_prescraped.value)
     ) 
     competitions = session.execute(statement).scalars().all()
     N = len(competitions) # TODO: Get rid of all() call and use a count query to get N: https://stackoverflow.com/a/65775282
@@ -114,14 +112,17 @@ def scrape():
         for competition in competitions_iter:
             competition_uuid = competition.additional_id_
             if not competition_uuid:
-                logger.info(f"Competition with id={competition.id} has no UUID w.r.t. (World Rowing API). Skip")
+                logger.error(f"Competition with id={competition.id} has no UUID w.r.t. (World Rowing API). Skip")
                 continue
             
+            # High Prio TODO: introduce check if scraping should actually happen
+
             logger.info(f'''Fetching competition="{competition_uuid}" date="{competition.start_date}" name="{competition.name}"''')
             competition_data = api.get_by_competition_id_(comp_ids=[competition_uuid], parse_pdf=False)
 
             logger.info(f"Write competition to database")
-            dbutils.wr_insert_competition(session, competition_data)
+            # let's use the mapper func directly since we already have the ORM instance
+            competition = dbutils.wr_map_competition_scrape(session, competition, competition_data)
             session.commit()
 
         session.commit()
