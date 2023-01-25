@@ -1,6 +1,8 @@
 import axios from "axios";
 import {defineStore} from "pinia";
 
+const formatMilliseconds = ms => new Date(ms).toISOString().slice(14, -2);
+
 export const useBerichteState = defineStore({
     id: "berichte",
     state: () => ({
@@ -132,44 +134,45 @@ export const useBerichteState = defineStore({
             "boat_class": "Men's Eight",
             "start_date": "2020-06-16 14:12:00",
             "end_date": "2022-06-16 14:12:00",
-            "world_best_time_boat_class": "00:05:58,36",
-            "best_in_period": "00:05:58,36",
+            "world_best_time_boat_class": 358360,
+            "best_in_period": 358360,
             "mean": {
-                "mm:ss,00": "00:05:58,36",
+                "mm:ss,00": 467360,
                 "m/s": 4.54,
-                "pace 500m": "00:02:05,40",
-                "pace 1000m": "00:02:05,40"
+                "pace 500m": 158360,
+                "pace 1000m": 282360
             },
-            "std_dev": "00:00:23,42",
-            "median": "00:05:32,36",
+            "std_dev": 43360,
+            "median": 432360,
             "gradation_fastest": {
                 "no_of_samples": 345,
-                "time": "00:06:06,36"
+                "time": 358360
             },
             "gradation_medium": {
                 "no_of_samples": 239,
-                "time": "00:06:13,52"
+                "time": 358360
             },
             "gradation_slow": {
                 "no_of_samples": 167,
-                "time": "00:07:52,37"
+                "time": 358360
             },
             "gradation_slowest": {
                 "no_of_samples": 463,
-                "time": "00:08:04,62"
+                "time": 358360
             },
             "plot_data": {
                 "histogram": {
                     "labels":
                         [
-                            "00:06:34", "00:06:36", "00:06:38",
-                            "00:06:40", "00:06:42", "00:06:44",
-                            "00:06:46", "00:06:48", "00:06:50",
-                            "00:06:52", "00:06:54", "00:06:56",
-                            "00:06:58", "00:07:00", "00:07:02",
-                            "00:07:04", "00:07:06", "00:07:08",
+                            358360, 360360, 362360,
+                            364360, 366360, 368360,
+                            370360, 372360, 374360,
+                            376360, 378360, 380360,
+                            382360, 384360, 386360,
+                            388360, 390360, 392360,
+                            394360, 396360, 398360,
                         ],
-                    "data": [20, 26, 45, 180, 503, 98, 55, 23, 16, 4, 2, 3, 1, 3, 1, 4, 3, 2]
+                    "data": [2, 18, 20, 26, 45, 72, 120, 503, 160, 98, 55, 23, 16, 4, 5, 2, 1, 3, 1, 3, 1, 4, 3, 2]
                 },
                 "scatterPlot": {
                     "labels": [
@@ -177,8 +180,8 @@ export const useBerichteState = defineStore({
                         '1980-01-01', '1990-01-01', '2000-01-01', '2010-01-01', '2020-01-01',
                     ],
                     "data": [
-                        "00:06:54", "00:06:53", "00:06:55", "00:06:50", "00:06:48",
-                        "00:06:43", "00:06:46", "00:06:40", "00:06:39", "00:06:40"
+                        390360, 392360, 396360, 382360, 384360,
+                        394360, 386360, 380360, 388360, 378360,
                     ]
                 },
                 "percentile_75": {
@@ -186,7 +189,7 @@ export const useBerichteState = defineStore({
                         '1930-01-01', '2020-01-01'
                     ],
                     "data": [
-                        "00:06:51", "00:06:51"
+                        388360, 388360
                     ]
                 },
                 "percentile_25": {
@@ -194,7 +197,7 @@ export const useBerichteState = defineStore({
                         '1930-01-01', '2020-01-01'
                     ],
                     "data": [
-                        "00:06:44", "00:06:44"
+                        380360, 380360
                     ]
                 }
             }
@@ -212,7 +215,7 @@ export const useBerichteState = defineStore({
         },
         getBarChartData(state) {
             return {
-                labels: state.data[0].plot_data.histogram.labels,
+                labels: state.data[0].plot_data.histogram.labels.map(x => formatMilliseconds(x)),
                 datasets: [
                     {
                         type: 'line',
@@ -233,14 +236,19 @@ export const useBerichteState = defineStore({
             const firstPercentileData = state.data[0].plot_data.percentile_75;
             const secondPercentileData = state.data[0].plot_data.percentile_25;
 
-            const plotData = scatterData.labels.map((label, i) => ({x: label, y: scatterData.data[i]}));
+            const plotData = scatterData.labels.map((label, i) => (
+                {
+                    x: label,
+                    y: formatMilliseconds(scatterData.data[i])
+                }));
+
             const percentile75Data = firstPercentileData.labels.map((label, i) => ({
                 x: label,
-                y: firstPercentileData.data[i]
+                y: formatMilliseconds(firstPercentileData.data[i])
             }));
             const percentile25Data = secondPercentileData.labels.map((label, i) => ({
                 x: label,
-                y: secondPercentileData.data[i]
+                y: formatMilliseconds(secondPercentileData.data[i])
             }));
 
             return {

@@ -348,9 +348,9 @@ export const useRennstrukturAnalyseState = defineStore({
             })
             return tableData;
         },
+
         getDeficitInMeters(state) {
             // TODO: How to integrate the time here?
-
             // determine winner
             const winnerIdx = state.data.raceData[0].data.findIndex(team => team.rank === 1);
             const winnerData = state.data.raceData[0].data.map(dataObj => dataObj.gpsData.distance)[winnerIdx]
@@ -415,12 +415,16 @@ export const useRennstrukturAnalyseState = defineStore({
                     const label = dataObj.nation_ioc;
                     const backgroundColor = COLORS[colorIndex % 6];
                     const borderColor = COLORS[colorIndex % 6];
-                    const data = Object.values(dataObj.intermediates).map(distanceObj => distanceObj[key]);
+                    let data = Object.values(dataObj.intermediates).map(distanceObj => distanceObj[key]);
+                    if (key === "deficit [s]") {
+                        data = data.map(x => formatMilliseconds(x))
+                    }
                     datasets.push({label, backgroundColor, borderColor, data});
                     colorIndex++;
                 });
+                const chartLabels = Object.keys(state.data.raceData[0].data[0].intermediates)
                 return {
-                    labels: Object.keys(state.data.raceData[0].data[0].intermediates),
+                    labels: chartLabels,
                     datasets
                 };
             })

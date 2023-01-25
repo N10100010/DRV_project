@@ -65,30 +65,30 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 <tbody class="nth-grey">
                 <tr>
                   <th>Weltbestzeit</th>
-                  <td>{{ tableData.world_best_time_boat_class }}</td>
+                  <td>{{ formatMilliseconds(tableData.world_best_time_boat_class) }}</td>
                 </tr>
                 <tr>
                   <th>Beste im Zeitraum</th>
-                  <td>{{ tableData.best_in_period }}</td>
+                  <td>{{ formatMilliseconds(tableData.best_in_period) }}</td>
                 </tr>
                 <tr>
-                  <th>Mittelwert</th>
+                  <th>Mittelwerte</th>
                   <td>
                     <p>
-                      {{ tableData["mean"]["mm:ss,00"] }}<br>
-                      {{ tableData["mean"]["m/s"] }} <i>[m/s]</i><br>
-                      {{ tableData["mean"]["pace 500m"] }} [500m]<br>
-                      {{ tableData["mean"]["pace 1000m"] }} [1000m]
+                      {{ tableData["mean"]["m/s"] }} [m/s]<br>
+                      {{ formatMilliseconds(tableData["mean"]["pace 500m"]) }} [500m]<br>
+                      {{ formatMilliseconds(tableData["mean"]["pace 1000m"]) }} [1000m]<br>
+                      {{ formatMilliseconds(tableData["mean"]["mm:ss,00"]) }} [2000m]
                     </p>
                   </td>
                 </tr>
                 <tr>
                   <th>Standardabweichung</th>
-                  <td>{{ tableData.std_dev }}</td>
+                  <td>{{ formatMilliseconds(tableData.std_dev) }}</td>
                 </tr>
                 <tr>
                   <th>Median</th>
-                  <td>{{ tableData.median }}</td>
+                  <td>{{ formatMilliseconds(tableData.median) }}</td>
                 </tr>
                 <tr>
                   <th></th>
@@ -97,27 +97,27 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 <tr>
                   <th>Abstufung schnellste</th>
                   <td>(n={{ tableData["gradation_fastest"]["no_of_samples"] }})
-                    {{ tableData["gradation_fastest"]["time"] }}
+                    {{ formatMilliseconds(tableData["gradation_fastest"]["time"]) }}
                   </td>
                 </tr>
                 <tr>
                   <th>Abstufung mittel</th>
                   <td>(n={{ tableData["gradation_medium"]["no_of_samples"] }}) {{
-                      tableData["gradation_medium"]["time"]
+                      formatMilliseconds(tableData["gradation_medium"]["time"])
                     }}
                   </td>
                 </tr>
                 <tr>
                   <th>Abstufung langsam</th>
                   <td>(n={{ tableData["gradation_slow"]["no_of_samples"] }}) {{
-                      tableData["gradation_slow"]["time"]
+                     formatMilliseconds(tableData["gradation_slow"]["time"])
                     }}
                   </td>
                 </tr>
                 <tr>
                   <th>Abstufung langsamste</th>
                   <td>(n={{ tableData["gradation_slowest"]["no_of_samples"] }})
-                    {{ tableData["gradation_slowest"]["time"] }}
+                    {{ formatMilliseconds(tableData["gradation_slowest"]["time"]) }}
                   </td>
                 </tr>
                 </tbody>
@@ -168,6 +168,9 @@ export default {
     checkScreen() {
       this.windowWidth = window.innerWidth;
       this.mobile = this.windowWidth <= 750
+    },
+    formatMilliseconds(ms) {
+      return new Date(ms).toISOString().slice(14, -2)
     }
   },
   created() {
@@ -227,19 +230,19 @@ export default {
               unit: "seconds",
               tooltipFormat: 'HH:mm:ss',
               displayFormats: {
-                'seconds': "mm:ss"
+                'seconds': "HH:mm:ss"
               },
               unitStepSize: 30
             },
             title: {
               display: true,
-              text: 'Zeit [mm:ss]'
+              text: 'Zeit [mm:ss.ms]'
             }
           }
         },
         plugins: {
           legend: {
-            display: false
+            display: false,
           },
           title: {
             display: true,

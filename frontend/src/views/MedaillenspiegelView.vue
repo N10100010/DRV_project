@@ -40,7 +40,7 @@
                 <v-col>
                   <p>{{ filterSelection.results }} Datensätze |
                   Von {{ filterSelection.start_date.slice(0, 4) }}
-                  Bis {{ filterSelection.end_date.slice(0, 4) }}
+                  Bis {{ filterSelection.end_date.slice(0, 4) }}<br>
                   in {{filterSelection.nation_ioc}}
                   </p>
                 </v-col>

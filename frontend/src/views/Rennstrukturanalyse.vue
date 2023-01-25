@@ -341,18 +341,18 @@ export default {
             y: {
               type: 'time',
               time: {
-                parser: 'hh:mm:ss.SSS',
+                parser: 'mm:ss.SS',
                 displayFormats: {
-                  second: 'ss.SSS',
-                  tooltip: 'mm:ss.SSS'
+                  second: 'mm:ss.SS',
+                  tooltip: 'mm:ss.SS'
                 }
               },
-              min: '00:00:00,000',
-              max: '00:00:20,000',
+              min: '00:00,00',
+              max: '00:20,00',
               unitTimeSteps: 100,
               title: {
                 display: true,
-                text: 'Rückstand [sek]'
+                text: 'Rückstand [mm:ss.ms]'
               }
             }
           },
