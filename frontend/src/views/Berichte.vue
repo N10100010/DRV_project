@@ -120,7 +120,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 </tr>
                 </tbody>
               </v-table>
-              <v-table class="tableStyles" v-if="matrixVisible">
+              <v-table class="tableStyles" density="compact" v-if="matrixVisible">
                 <thead>
                   <tr>
                     <th></th>
@@ -131,17 +131,24 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                   </tr>
                 </thead>
                 <tbody class="nth-grey">
+                  <th>OPEN MEN</th>
+                  <tr v-for="item in matrixTableData">
+                    <td>{{ item }}</td>
+                  </tr>
+
+
                   <template v-for="agegroup in agegroups">
                     <tr>
                       <th>{{ agegroup }}</th>
                     </tr>
-                    
-                    <tr v-for="boatclass in boatclasses">
-                      <td>M1+</td>
-                      <td>{{ tableData["world_best_time_boat_class"] }}</td>
-                      <td>{{ tableData["mean"]["mm:ss,00"] }}</td>
-                      <td>{{ tableData["std_dev"] }}</td>
-                      <td>{{ tableData["results"] }}</td>
+                      
+                    {{ matrixTableData[0].length }}
+
+                    <tr v-for="boatclass, key, idx in matrixTableData[0]">
+                      {{ boatclass }}
+                      <td>{{ Object.keys(boatclass)[0] }}</td>
+                      <td>{{ Object.keys(boatclass)[1] }}</td>
+                      <td>{{ idx }}</td>
                     </tr>
                   </template>
                 </tbody>
@@ -176,6 +183,9 @@ export default {
       tableData: "getTableData"
     }),
     ...mapState(useBerichteState, {
+        matrixTableData: 'getMatrixTableData'
+    }),
+    ...mapState(useBerichteState, {
       getBarChartData: "getBarChartData"
     }),
     ...mapState(useBerichteState, {
@@ -206,7 +216,6 @@ export default {
   data() {
     return {
       agegroups: ['OPEN MEN', 'OPEN WOMEN', 'U23 MEN', 'U23 WOMEN', 'U19 MEN', 'U19 WOMEN'],
-      boatclasses: ['test', 'test', 'test'],
       mobile: false,
       filterOpen: false,
       barChartOptions: {
