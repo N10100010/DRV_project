@@ -128,7 +128,7 @@ export const useBerichteState = defineStore({
             "ranks": ["1", "2", "3", "4-6"],
         }],
         data: [{
-            "results": 872,
+            "results": 825,
             "boat_class": "Men's Eight",
             "start_date": "2020-06-16 14:12:00",
             "end_date": "2022-06-16 14:12:00",

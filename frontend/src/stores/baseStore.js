@@ -4,7 +4,7 @@ import {defineStore} from "pinia";
 // function to convert milliseconds to min:sec:ms
 const formatMilliseconds = ms => new Date(ms).toISOString().slice(14, -2);
 // predefined colors for charts
-const COLORS = ['#FF0000', '#FFCC00', '#CD0000', '#000', '#7A67EE', '#32ffff'];
+const COLORS = ['#FF0000', '#FFCC00', '#008000', '#000', '#45E845', '#00E300'];
 
 export const useRennstrukturAnalyseState = defineStore({
     id: "base",

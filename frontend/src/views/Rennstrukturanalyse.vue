@@ -16,7 +16,7 @@
           width="500">
         <rennstruktur-filter/>
       </v-navigation-drawer>
-      <v-container :class="mobile ? 'pa-5' : 'px-10 pt-0'">
+      <v-container :class="mobile ? 'pa-5 main-container' : 'px-10 pt-0 main-container'">
         <v-col cols="6" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Rennstrukturanalyse</h1>
           <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
@@ -35,7 +35,7 @@
           <v-row>
             <v-col cols="12">
               <h2>Suchergebnisse</h2>
-              <v-container class="pa-0 mt-3" style="min-height: 500px">
+              <v-container class="pa-0 mt-3">
                 <v-col :cols="mobile ? 12 : 6" class="pa-0">
                   <v-alert type="info" variant="tonal" v-if="!getAnalysis && !loading">
                     Bitte wähle ein Jahr und eine Wettkampfklasse in den Filterkriterien.
@@ -86,36 +86,16 @@
           </v-row>
         </v-container>
 
-        <v-container v-if="displayRaceDataAnalysis && !loading" class="pa-0">
-          <h2>{{competitionData.displayName}}</h2>
+        <v-container v-if="displayRaceDataAnalysis && !loading" class="px-0 py-2">
+
           <v-row no-gutters>
-            <v-col>
-              <v-table density="compact">
-                <tbody>
-                <tr>
-                  <td><b>Austragungsort:</b></td>
-                  <td>{{ competitionData.venue }}</td>
-                </tr>
-                <tr>
-                  <td><b>Datum & Startzeit:</b></td>
-                  <td>{{ competitionData.startDate }}</td>
-                </tr>
-                </tbody>
-              </v-table>
+            <v-col cols="6">
+              <h2>{{ competitionData.displayName }}</h2>
             </v-col>
-            <v-col>
-              <v-table density="compact">
-                <tbody>
-                <tr>
-                  <td><b>Weltbestzeit Bootsklasse:</b></td>
-                  <td>{{ competitionData.worldBestTimeBoatClass }}</td>
-                </tr>
-                <tr>
-                  <td><b>Bestzeit Bootsklasse laufender OZ/Jahr:</b></td>
-                  <td>{{ competitionData.bestTimeBoatClassCurrentOZ }}</td>
-                </tr>
-                </tbody>
-              </v-table>
+            <v-col cols="6" class="text-right">
+              <p style="color: grey">Bestzeiten: {{ competitionData.worldBestTimeBoatClass }} (WB) |
+                {{ competitionData.bestTimeBoatClassCurrentOZ }} (OZ/Jahr)</p>
+              <p><b>{{ competitionData.venue }} | {{ competitionData.startDate }}</b></p>
             </v-col>
           </v-row>
 
@@ -168,18 +148,20 @@
                 </a>
               </v-col>
             </v-col>
-            <v-col :cols="mobile ? 12 : 6" :class="mobile ? 'pa-0' : null">
-              <v-container v-for="(data, idx) in getGPsData" :class="mobile ? 'pa-0' : null">
-                <LineChart :data="data" :chartOptions="gpsChartOptions[idx]"></LineChart>
+            <v-col :cols="mobile ? 12 : 6" class="pa-0">
+              <v-container v-for="(data, idx) in getGPsData" :class="mobile ? 'pa-0' : 'pa-2'">
+                <LineChart :data="data" :chartOptions="gpsChartOptions[idx]" class="chart-bg"></LineChart>
               </v-container>
             </v-col>
-            <v-col :cols="mobile ? 12 : 6" :class="mobile ? 'pa-0' : null">
-              <v-container v-for="(data, idx) in getIntermediateData" :class="mobile ? 'pa-0' : null">
-                <LineChart :data="data" :chartOptions="intermediateChartOptions[idx]"></LineChart>
+            <v-col :cols="mobile ? 12 : 6" class="pa-0">
+              <v-container v-for="(data, idx) in getIntermediateData" :class="mobile ? 'pa-0' : 'pa-2'">
+                <LineChart :data="data" :chartOptions="intermediateChartOptions[idx]" class="chart-bg"></LineChart>
               </v-container>
             </v-col>
-            <v-col :cols="mobile ? 12 : 6" :class="mobile ? 'pa-0' : null">
-                <LineChart :data="deficitMeters" :chartOptions="deficitChartOptions"></LineChart>
+            <v-col :cols="mobile ? 12 : 6" class="pa-0">
+              <v-container :class="mobile ? 'pa-0' : 'pa-2'">
+              <LineChart :data="deficitMeters" :chartOptions="deficitChartOptions" class="chart-bg"></LineChart>
+                </v-container>
             </v-col>
           </v-row>
         </v-container>
@@ -439,7 +421,7 @@ export default {
         href: '#',
         onclick: () => {
           router.replace({
-            query: Object.assign({}, this.$route.query, { event_id: undefined })
+            query: Object.assign({}, this.$route.query, {event_id: undefined})
           });
           this.displayCompetitions = true
           this.displayRaceDataAnalysis = false
@@ -479,6 +461,8 @@ export default {
     checkScreen() {
       this.windowWidth = window.innerWidth;
       this.mobile = this.windowWidth <= 750
+       let navbarHeight = window.innerWidth < 750 ? '71.25px' : '160px';
+      document.documentElement.style.setProperty('--navbar-height', navbarHeight);
     }
   },
   watch: {
@@ -530,21 +514,20 @@ export default {
   border: 1px solid #e0e0e0;
 
   th {
-    border: 1px solid #e0e0e0;
+    border: 0.5px solid #e0e0e0;
     font-size: 14px !important;
     text-align: left;
   }
 
   td {
     text-align: left;
-    border: 1px solid #e0e0e0;
+    border: 0.5px solid #e0e0e0;
   }
 }
 
 .nth-grey tr:nth-of-type(odd) {
-  background-color: rgba(0, 0, 0, .05);
+  background-color: #f8f8f8;
 }
-
 .filterToggleButton {
   position: fixed;
   z-index: 10;
@@ -560,5 +543,11 @@ export default {
   color: #1369b0;
   bottom: 10px;
 }
-
+.chart-bg {
+  background-color: #fbfbfb;
+  border-radius: 3px;
+}
+.main-container {
+  min-height: calc(100vh - (var(--navbar-height)) - 100px);
+}
 </style>

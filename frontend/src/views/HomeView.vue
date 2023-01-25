@@ -1,5 +1,5 @@
 <template>
-  <v-container :class="mobile ? 'px-5' : 'px-10 pt-0'">
+  <v-container :class="mobile ? 'px-5 main-container' : 'px-10 pt-0 main-container'">
   <v-col cols="12" class="pa-0 pt-0">
     <h1 class="py-3">Kalender</h1>
     <v-divider></v-divider>
@@ -10,9 +10,10 @@
       :attributes="attributes"
       disable-page-swipe
       is-expanded
+      style="border-radius: 0"
     >
       <template v-slot:day-content="{ day, attributes }">
-        <div class="flex flex-col h-full z-10 overflow-hidden" style="height: 80px">
+        <div class="flex flex-col h-full z-10 overflow-hidden" style="height: 75px">
           <span class="day-label text-sm">{{ day.day }}</span>
           <div class="flex-grow">
             <router-link style="color: white" to="/wettkampfresultate">
@@ -63,6 +64,8 @@ export default {
     checkScreen() {
       this.windowWidth = window.innerWidth;
       this.mobile = this.windowWidth <= 750
+       let navbarHeight = window.innerWidth < 750 ? '71.25px' : '160px';
+      document.documentElement.style.setProperty('--navbar-height', navbarHeight);
     }
   },
   watch: {
@@ -72,3 +75,9 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.main-container {
+  min-height: calc(100vh - (var(--navbar-height)) - 100px);
+}
+</style>

@@ -17,7 +17,7 @@
           width="600">
         <medaillenspiegel-filter/>
       </v-navigation-drawer>
-      <v-container :class="mobile ? 'pa-5' : 'px-10 pt-0'">
+      <v-container :class="mobile ? 'pa-5 main-container' : 'px-10 pt-0 main-container'">
 
         <v-col :cols="mobile ? 12 : 6" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Medaillenspiegel</h1>
@@ -35,7 +35,7 @@
         <v-container class="pa-0 mt-8">
           <v-col :cols="mobile ? 12 : 6" class="pa-0">
             <h2>Men's Single Sculls</h2>
-            <v-alert type="success" variant="tonal" class="my-2 mr-2">
+            <v-alert type="success" variant="tonal" class="my-2 mr-2" v-if="filterSelection.results">
               <v-row>
                 <v-col>
                   <p>{{ filterSelection.results }} Datensätze |
@@ -46,6 +46,13 @@
                 </v-col>
               </v-row>
             </v-alert>
+            <v-alert type="error" variant="tonal" class="my-2" v-else>
+                <v-row>
+                  <v-col cols="12">
+                    <p>Leider keine Ergebnisse gefunden.</p>
+                  </v-col>
+                </v-row>
+              </v-alert>
           </v-col>
           <v-row>
             <v-col :cols="mobile ? 12 : 6">
@@ -66,7 +73,9 @@
               </v-table>
             </v-col>
             <v-col :cols="mobile ? 12 : 6">
+              <v-container class="chart-bg">
               <BarChart :data="medalChartData"></BarChart>
+                </v-container>
             </v-col>
           </v-row>
         </v-container>
@@ -112,6 +121,8 @@ export default {
     checkScreen() {
       this.windowWidth = window.innerWidth;
       this.mobile = this.windowWidth <= 750
+      let navbarHeight = window.innerWidth < 750 ? '71.25px' : '160px';
+      document.documentElement.style.setProperty('--navbar-height', navbarHeight);
     }
   },
   data() {
@@ -143,14 +154,14 @@ export default {
   border: 1px solid #e0e0e0;
 
   th {
-    border: 1px solid #e0e0e0;
+    border: 0.5px solid #e0e0e0;
     font-size: 14px !important;
     text-align: left;
   }
 
   td {
     text-align: left;
-    border: 1px solid #e0e0e0;
+    border: 0.5px solid #e0e0e0;
   }
 }
 
@@ -173,6 +184,14 @@ export default {
   border-radius: 0 5px 5px 0;
   color: #1369b0;
   bottom: 10px;
+}
+
+.chart-bg {
+  background-color: #fbfbfb;
+  border-radius: 3px;
+}
+.main-container {
+  min-height: calc(100vh - (var(--navbar-height)) - 100px);
 }
 
 </style>

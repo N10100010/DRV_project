@@ -11,7 +11,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
 <template>
   <v-btn color="blue"
          @click="setFilterState()" v-show="!filterOpen"
-        :class="mobile ? 'filterToggleButtonMobile mt-6 pa-0 ma-0' : 'filterToggleButton mt-6 pa-0 ma-0'"
+         :class="mobile ? 'filterToggleButtonMobile mt-6 pa-0 ma-0' : 'filterToggleButton mt-6 pa-0 ma-0'"
          :height="mobile ? 100: 180"
          size="x-small"
   >
@@ -28,7 +28,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
         <berichte-filter/>
       </v-navigation-drawer>
 
-      <v-container :class="mobile ? 'px-5 py-0' : 'px-10 py-0'">
+      <v-container :class="mobile ? 'px-5 py-0 main-container' : 'px-10 py-0 main-container'">
         <v-col cols="12" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Berichte</h1>
           <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
@@ -45,14 +45,22 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
           <v-row>
             <v-col :cols="mobile ? 12 : 5">
               <h2>{{ tableData.boat_class }}</h2>
-              <v-alert type="success" variant="tonal" class="my-2">
-            <v-row>
-              <v-col cols="12">
-                <p>{{ tableData.results }} Datensätze |
-                  Von {{ tableData.start_date.slice(0, 4) }} Bis {{ tableData.end_date.slice(0, 4) }}</p>
-              </v-col>
-            </v-row>
-          </v-alert>
+              <v-alert type="success" variant="tonal" class="my-2" v-if="tableData.results">
+                <v-row>
+                  <v-col cols="12">
+                    <p>{{ tableData.results }} Datensätze |
+                      Von {{ tableData.start_date.slice(0, 4) }} Bis {{ tableData.end_date.slice(0, 4) }}</p>
+                  </v-col>
+                </v-row>
+              </v-alert>
+              <v-alert type="error" variant="tonal" class="my-2" v-else>
+                <v-row>
+                  <v-col cols="12">
+                    <p>Leider keine Ergebnisse gefunden.</p>
+                  </v-col>
+                </v-row>
+              </v-alert>
+
               <v-table class="tableStyles" density="compact">
                 <tbody class="nth-grey">
                 <tr>
@@ -116,14 +124,13 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
               </v-table>
             </v-col>
             <v-col :cols="mobile ? 12 : 7" class="pa-0">
-              <v-container style="width: 100%" class="pa-0">
+              <v-container style="width: 100%" class="pa-2">
                 <BarChart :height="'100%'" :width="'100%'" :data="getBarChartData"
-                          :chartOptions="barChartOptions"></BarChart>
+                          :chartOptions="barChartOptions" class="chart-bg"></BarChart>
               </v-container>
-              <v-divider></v-divider>
-              <v-container style="width: 100%" class="pa-0">
+              <v-container style="width: 100%" class="pa-2">
                 <ScatterChart :height="'100%'" :width="'100%'" :data="getScatterChartData"
-                              :chartOptions="scatterChartOptions"></ScatterChart>
+                              :chartOptions="scatterChartOptions" class="chart-bg"></ScatterChart>
               </v-container>
             </v-col>
           </v-row>
@@ -166,6 +173,8 @@ export default {
   created() {
     window.addEventListener('resize', this.checkScreen);
     this.checkScreen();
+    let navbarHeight = window.innerWidth < 750 ? '71.25px' : '160px';
+      document.documentElement.style.setProperty('--navbar-height', navbarHeight);
   },
   data() {
     return {
@@ -260,21 +269,20 @@ export default {
   border: 1px solid #e0e0e0;
 
   th {
-    border: 1px solid #e0e0e0;
+    border: 0.5px solid #e0e0e0;
     font-size: 14px !important;
     text-align: left;
   }
 
   td {
     text-align: left;
-    border: 1px solid #e0e0e0;
+    border: 0.5px solid #e0e0e0;
   }
 }
 
 .nth-grey tr:nth-child(even) {
   background-color: rgba(0, 0, 0, .05);
 }
-
 .filterToggleButton {
   position: fixed;
   z-index: 10;
@@ -290,5 +298,11 @@ export default {
   color: #1369b0;
   bottom: 10px;
 }
-
+.chart-bg {
+  background-color: #fbfbfb;
+  border-radius: 3px;
+}
+.main-container {
+  min-height: calc(100vh - (var(--navbar-height)) - 100px);
+}
 </style>

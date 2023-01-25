@@ -16,7 +16,7 @@
         <athleten-filter/>
       </v-navigation-drawer>
 
-      <v-container :class="mobile ? 'px-5 py-0 pb-8' : 'px-10 py-0 pb-8'">
+      <v-container :class="mobile ? 'px-5 py-0 pb-8 main-container' : 'px-10 py-0 pb-8 main-container'">
         <v-col cols="12" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Athleten</h1>
           <v-icon id="tooltip-athlete-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
@@ -182,6 +182,8 @@ export default {
     checkScreen() {
       this.windowWidth = window.innerWidth;
       this.mobile = this.windowWidth <= 750
+      let navbarHeight = window.innerWidth < 750 ? '71.25px' : '160px';
+      document.documentElement.style.setProperty('--navbar-height', navbarHeight);
     },
   },
   created() {
@@ -221,21 +223,20 @@ export default {
   border: 1px solid #e0e0e0;
 
   th {
-    border: 1px solid #e0e0e0;
+    border: 0.5px solid #e0e0e0;
     font-size: 14px !important;
     text-align: left;
   }
 
   td {
     text-align: left;
-    border: 1px solid #e0e0e0;
+    border: 0.5px solid #e0e0e0;
   }
 }
 
 .nth-grey tr:nth-child(odd) {
   background-color: rgba(0, 0, 0, .05);
 }
-
 .filterToggleButton {
   position: fixed;
   z-index: 10;
@@ -243,7 +244,6 @@ export default {
   border-radius: 0 5px 5px 0;
   color: #1369b0;
 }
-
 .filterToggleButtonMobile {
   position: fixed;
   z-index: 10;
@@ -251,5 +251,8 @@ export default {
   border-radius: 0 5px 5px 0;
   color: #1369b0;
   bottom: 10px;
+}
+.main-container {
+  min-height: calc(100vh - (var(--navbar-height)) - 100px);
 }
 </style>
