@@ -16,7 +16,7 @@
         <div class="flex flex-col h-full z-10 overflow-hidden" style="height: 75px">
           <span class="day-label text-sm">{{ day.day }}</span>
           <div class="flex-grow">
-            <router-link style="color: white" to="/wettkampfresultate">
+            <router-link style="color: white" to="/rennstrukturanalyse">
             <p
               v-for="attr in attributes"
               :key="attr.key"

@@ -1,3 +1,52 @@
+<template>
+  <header>
+    <div class="header-box">
+      <header :style='{"padding-top" : (mobile? "0em" : "18px" )}' :class="{ 'scrolled-nav': scrollPosition }">
+
+        <div id="desktop-title" class="title-container" v-show="!mobile">
+          <p>U ->- Row</p>
+          <p><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></p>
+        </div>
+
+        <nav :style='{"padding-top" : (!mobile? "2.5em" : "15px"), "padding-bottom" : (!mobile? "15px" : "5px")}'
+             @mouseleave="onMouseLeaveNav">
+          <div class="nav-links-wrapper">
+            <div v-show="!mobile" class="branding">
+              <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="105"
+                                      height="45"/></RouterLink>
+            </div>
+            <div v-show="mobile" class="branding-mobile">
+              <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="64"
+                                      height="30"/></RouterLink>
+            </div>
+            <ul v-show="!mobile" class="navigation" :class="{'collapsed-nav': !showSubMenu, 'expanded': showSubMenu}">
+              <li v-for="navEntry in navigationLinks">
+                <RouterLink :class="isActive(navEntry.link, navEntry.displayName) ?
+                'router-link-exact-active' : null"
+                            :to="navEntry.link">{{ navEntry.displayName }}</RouterLink>
+              </li>
+            </ul>
+          </div>
+          <p v-show="mobile" id="mobile-title">U ->- Row</p>
+          <div v-show="mobile" class="icon">
+            <i @click="toggleMobileNav" class="far fa-bars" :class="{ 'icon-active': mobileNav }"></i>
+          </div>
+          <transition name="mobile-nav">
+            <div v-show="mobileNav" class="dropdown-nav">
+              <h2 id="nav-header"><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></h2>
+              <ul>
+                <li v-for="navEntry in navigationLinks">
+                  <RouterLink :to="navEntry.link" @click="toggleMobileNav">{{ navEntry.displayName }}</RouterLink>
+                </li>
+              </ul>
+            </div>
+          </transition>
+        </nav>
+      </header>
+    </div>
+  </header>
+</template>
+
 <script>
 export default {
   name: "navigation",
@@ -10,19 +59,9 @@ export default {
       showSubMenu: false,
       windowWidth: null,
       navigationLinks: [
-          {
-            displayName: "Dashboard",
-            link: "/",
-            subPages: [
-              {
-                subPageName: "Lorem ipsum dolor",
-                linkTo: "/"
-              },
-              {
-                subPageName: "Sit amet",
-                linkTo: "/"
-              }
-            ]
+        {
+          displayName: "Kalender",
+          link: "/"
         },
         {
           displayName: "Berichte",
@@ -51,14 +90,16 @@ export default {
     window.addEventListener('resize', this.checkScreen);
     this.checkScreen();
   },
-
   methods: {
+     isActive(link, linkName) {
+       if (linkName !== "Kalender") {
+         return this.$route.path.startsWith(link);
+       } else {
+         return false;
+       }
+    },
     toggleMobileNav() {
       this.mobileNav = !this.mobileNav;
-    },
-    expandSubPageMenu(linkData) {
-      this.currentSubMenu = linkData.subPages
-      this.showSubMenu = true;
     },
     onMouseOverSubMenu() {
       this.showSubMenu = true;
@@ -68,7 +109,7 @@ export default {
     },
     checkScreen() {
       this.windowWidth = window.innerWidth;
-      if(this.windowWidth <= 750){
+      if (this.windowWidth <= 750) {
         this.mobile = true;
         document.querySelector('body').style.paddingTop = '4.5em';
         return;
@@ -82,61 +123,6 @@ export default {
 }
 </script>
 
-<template>
-  <header>
-  <div class="header-box">
-    <header v-bind:style='{"padding-top" : (mobile? "0em" : "18px" )}' :class="{ 'scrolled-nav': scrollPosition }">
-
-      <!-- Title element -->
-      <div id="desktop-title" class="title-container" v-show="!mobile">
-        <p>U ->- Row</p>
-        <p><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></p>
-      </div>
-
-      <!-- navbar incl. mobile navbar -->
-      <nav v-bind:style='{"padding-top" : (!mobile? "2.5em" : "15px"), "padding-bottom" : (!mobile? "15px" : "5px")}'
-           @mouseleave="onMouseLeaveNav">
-        <div class="nav-links-wrapper">
-          <div v-show="!mobile" class="branding">
-            <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="105" height="45"/></RouterLink>
-          </div>
-          <div v-show="mobile" class="branding-mobile">
-            <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="64" height="30"/></RouterLink>
-          </div>
-          <ul v-show="!mobile" class="navigation" :class="{'collapsed-nav': !showSubMenu, 'expanded': showSubMenu}">
-            <li v-for="navEntry in navigationLinks">
-              <!-- To activate the submenu add this (@mouseover="expandSubPageMenu(navEntry)") to the Link below -->
-              <RouterLink :to="navEntry.link">{{ navEntry.displayName }}</RouterLink>
-            </li>
-          </ul>
-        </div>
-        <div id="sub-menu" v-show="showSubMenu" @mouseover="onMouseOverSubMenu">
-          <ul>
-            <li v-for="subMenuLink in currentSubMenu">
-              <RouterLink :to="subMenuLink.linkTo"> {{ subMenuLink.subPageName }}</RouterLink>
-            </li>
-          </ul>
-        </div>
-        <p v-show="mobile" id="mobile-title">U ->- Row</p>
-        <div v-show="mobile" class="icon">
-          <i @click="toggleMobileNav" class="far fa-bars" :class="{ 'icon-active': mobileNav }"></i>
-        </div>
-        <transition name="mobile-nav">
-          <div v-show="mobileNav" class="dropdown-nav">
-            <h2 id="nav-header"><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></h2>
-            <ul>
-              <li v-for="navEntry in navigationLinks">
-                <RouterLink :to="navEntry.link" @click="toggleMobileNav">{{ navEntry.displayName }}</RouterLink>
-              </li>
-            </ul>
-          </div>
-        </transition>
-      </nav>
-    </header>
-  </div>
-  </header>
-</template>
-
 <style lang="scss" scoped>
 header {
   top: 0;
@@ -149,8 +135,8 @@ header {
   z-index: 99;
 
   a.router-link-exact-active {
-  color: #1369b0;
-}
+    color: #1369b0;
+  }
 
   nav {
     display: flex;
@@ -239,9 +225,9 @@ header {
       }
 
       #nav-header {
-          font-size: 12px;
-          padding: 1.5em;
-        }
+        font-size: 12px;
+        padding: 1.5em;
+      }
     }
 
     .mobile-nav-enter-active,
@@ -260,17 +246,17 @@ header {
   }
 
   header::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  @media(min-width: 750px) {
-    border-top: 0.5rem solid #008000;
-    border-bottom: 1rem solid #1369b0;
-  }
-  border-top: 0.25rem solid #008000;
-  border-bottom: 0.5rem solid #1369b0;
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    @media(min-width: 750px) {
+      border-top: 0.5rem solid #008000;
+      border-bottom: 1rem solid #1369b0;
+    }
+    border-top: 0.25rem solid #008000;
+    border-bottom: 0.5rem solid #1369b0;
   }
 }
 
@@ -328,7 +314,7 @@ p {
 }
 
 #sub-menu li a:hover {
-    color: #1369b0;
+  color: #1369b0;
 }
 
 .nav-links-wrapper {
