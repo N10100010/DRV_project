@@ -1,9 +1,9 @@
 <template>
-  <v-container class="px-10">
-  <v-container class="pa-0 mt-8" style="min-height: 450px">
-
-    <h2>Kalender</h2>
-    <div class="text-center section">
+  <v-container :class="mobile ? 'px-5' : 'px-10 pt-0'">
+  <v-col cols="12" class="pa-0 pt-0">
+    <h1 class="py-3">Kalender</h1>
+    <v-divider></v-divider>
+    <div class="text-center section pt-5">
     <v-calendar
       class="custom-calendar"
       :masks="masks"
@@ -12,16 +12,16 @@
       is-expanded
     >
       <template v-slot:day-content="{ day, attributes }">
-        <div class="flex flex-col h-full z-10 overflow-hidden">
+        <div class="flex flex-col h-full z-10 overflow-hidden" style="height: 80px">
           <span class="day-label text-sm">{{ day.day }}</span>
-          <div class="flex-grow overflow-y-auto overflow-x-auto">
+          <div class="flex-grow">
             <router-link style="color: white" to="/wettkampfresultate">
             <p
               v-for="attr in attributes"
               :key="attr.key"
-              class="text-xs leading-tight rounded-sm p-1 mt-0 mb-1"
+              class="leading-tight rounded-sm p-1 mt-0 mb-1"
               :style=attr.customData.style
-            >{{ attr.customData.title }}
+            > {{mobile ?  attr.customData.shortTitle : attr.customData.title }}
             </p>
               </router-link>
           </div>
@@ -29,7 +29,7 @@
       </template>
     </v-calendar>
   </div>
-  </v-container>
+  </v-col>
   </v-container>
 </template>
 
@@ -47,6 +47,7 @@ export default {
   },
   data() {
     return {
+      mobile: false,
       masks: {
         weekdays: 'WWW',
       },
@@ -55,6 +56,14 @@ export default {
   },
   created() {
     this.attributes = this.calenderData
+    window.addEventListener('resize', this.checkScreen);
+    this.checkScreen();
+  },
+  methods: {
+    checkScreen() {
+      this.windowWidth = window.innerWidth;
+      this.mobile = this.windowWidth <= 750
+    }
   },
   watch: {
     calenderData(newVal) {

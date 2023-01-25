@@ -11,8 +11,8 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
 <template>
   <v-btn color="blue"
          @click="setFilterState()" v-show="!filterOpen"
-         class="filterToggleButton mt-6 pa-0 ma-0"
-         height="180"
+        :class="mobile ? 'filterToggleButtonMobile mt-6 pa-0 ma-0' : 'filterToggleButton mt-6 pa-0 ma-0'"
+         :height="mobile ? 100: 180"
          size="x-small"
   >
     <v-icon>mdi-filter</v-icon>
@@ -28,7 +28,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
         <berichte-filter/>
       </v-navigation-drawer>
 
-      <v-container class="px-10 py-0">
+      <v-container :class="mobile ? 'px-5 py-0' : 'px-10 py-0'">
         <v-col cols="12" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Berichte</h1>
           <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
@@ -37,13 +37,13 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
               activator="#tooltip-analyis-icon"
               location="end"
               open-on-hover
-          >In Berichte können Analysen über längere Zeiträume und weitere Filterkriterien erstellt werden.
+          >In Berichte kannst du Analysen über längere Zeiträume und weitere Filterkriterien erstellen.
           </v-tooltip>
         </v-col>
         <v-divider></v-divider>
-        <v-container class="pa-0 mt-2">
+        <v-container class="pa-0 mt-2 pb-8">
           <v-row>
-            <v-col cols="5">
+            <v-col :cols="mobile ? 12 : 5">
               <h2>{{ tableData.boat_class }}</h2>
               <v-alert type="success" variant="tonal" class="my-2">
             <v-row>
@@ -115,13 +115,13 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 </tbody>
               </v-table>
             </v-col>
-            <v-col cols="7">
-              <v-container style="width: 100%">
+            <v-col :cols="mobile ? 12 : 7" class="pa-0">
+              <v-container style="width: 100%" class="pa-0">
                 <BarChart :height="'100%'" :width="'100%'" :data="getBarChartData"
                           :chartOptions="barChartOptions"></BarChart>
               </v-container>
               <v-divider></v-divider>
-              <v-container style="width: 100%">
+              <v-container style="width: 100%" class="pa-0">
                 <ScatterChart :height="'100%'" :width="'100%'" :data="getScatterChartData"
                               :chartOptions="scatterChartOptions"></ScatterChart>
               </v-container>
@@ -282,4 +282,13 @@ export default {
   border-radius: 0 5px 5px 0;
   color: #1369b0;
 }
+.filterToggleButtonMobile {
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  border-radius: 0 5px 5px 0;
+  color: #1369b0;
+  bottom: 10px;
+}
+
 </style>

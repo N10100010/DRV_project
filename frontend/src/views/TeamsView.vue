@@ -3,21 +3,17 @@ import TeamsFilter from "@/components/filters/teamsFilter.vue";
 import 'chartjs-adapter-moment';
 import {Chart as ChartJS, LinearScale, PointElement, Tooltip, Legend, TimeScale} from "chart.js";
 ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
-
 </script>
 
 <template>
-
   <v-btn color="blue"
          @click="setFilterState()" v-show="!filterOpen"
-         class="filterToggleButton mt-6 pa-0 ma-0 bg-light-blue"
-         height="180"
+        :class="mobile ? 'filterToggleButtonMobile mt-6 pa-0 ma-0' : 'filterToggleButton mt-6 pa-0 ma-0'"
+         :height="mobile ? 100: 180"
          size="x-small"
   >
-   <v-icon>mdi-filter</v-icon>
- </v-btn>
-
-
+    <v-icon>mdi-filter</v-icon>
+  </v-btn>
   <v-card style="box-shadow: none; z-index: 1">
       <v-layout>
         <v-navigation-drawer
@@ -29,8 +25,19 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
          <teams-filter/>
         </v-navigation-drawer>
 
-  <v-container class="pa-10">
+  <v-container :class="mobile ? 'px-5 py-0' : 'px-10 py-0'">
+    <v-col cols="12" class="d-flex flex-row px-0" style="align-items: center">
     <h1>Teams</h1>
+      <v-icon id="tooltip-teams-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
+          </v-icon>
+          <v-tooltip
+              activator="#tooltip-teams-icon"
+              location="end"
+              open-on-hover
+          >Hier findest du die Zusammensetzung der gewählten Nationalmannschaft
+            mit Besetzung der Bootsklassen.
+          </v-tooltip>
+    </v-col>
     <v-divider></v-divider>
     <v-container class="pa-0 mt-8" style="min-height: 400px">
       <v-row>
@@ -183,11 +190,24 @@ export default {
 .nth-grey tr:nth-child(odd) {
   background-color: rgba(0, 0, 0, .05);
 }
-
-
 .distance {
   display: inline-block;
   padding-right: 10px;
+}
+.filterToggleButton {
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  border-radius: 0 5px 5px 0;
+  color: #1369b0;
+}
+.filterToggleButtonMobile {
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  border-radius: 0 5px 5px 0;
+  color: #1369b0;
+  bottom: 10px;
 }
 
 </style>
