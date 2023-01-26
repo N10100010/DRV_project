@@ -1,8 +1,9 @@
 import logging
-import re
 from typing import Union, Optional, Iterator
 from datetime import datetime, date
 import json as jsn
+
+import re
 
 
 # from tqdm import tqdm
@@ -224,154 +225,50 @@ RACE_STATUSES = {
 
 ########################################################################################################################
 
-##  other utils
-STR_NUMBERS_0_10 = ''.join([str(n) for n in range(0, 10)])
-
-
-def process_rsc_code(code: str) -> tuple[str, str]:
-    """
-    Processes the RscCode of a race to extract the phase (Lauf) of the race.
-    @param code: str - total rcs code
-    @return: str - processed rsc code
-    # todo: same here as the todo in function filter_by_race_phase. Add filter parameteres to the database
-    """
-    processed = code.split('---')
-    boat_class = processed[0].strip('--')
-    phase = processed[-1].strip('--')
-    phase = "".join(re.split("[^0-9a-zA-Z*]", phase))
-    phase = phase.lstrip(STR_NUMBERS_0_10)
-
-    return boat_class, phase
-
-
-def extract_race_phase_from_rsc(processed: str) -> (str, int):
-    """
-    This extraction allows to identify a race, within a competition, given the class of a race.
-    CAUTION: Expects the second value from the function process-rsc-code.
-    @param processed: The processed phase of a race, from its rsc-code
-    @return: Extracted race phase, with its respective stage (phase: str, stage: int)
-    """
-    lower = processed.lower()
-
-    if lower[0:4] in ('qfnl', 'sfnl', 'heat', 'prel', 'seed'):
-        start, end = 4, 4
-    elif lower[0:3] in ('fnl', 'rep'):
-        start, end = 3, 4
-    elif lower[0:3] in ('rnd'):
-        start, end = 3, 1
-    else:
-        logger.warning(f"Encountered unknown phase in rsc-code. Seen value: {lower}")
-        return processed, 0
-
-    # remove unwanted parts of the string
-    processed = processed[0: start + end]
-
-    # return only parts that indicate the phase
-    return processed[0: start], int(processed[-1])
-
-## FILTER FUNCTIONS
-def filter_races(races: list, fltr: dict) -> list:
-    # todo: the races should already have the filter present. it might be best to add filter parameters to the db
-    # todo: is this even needed?
-    ret = []
-
-    for race in races:
-        boat_class, phase_stage = process_rsc_code(race['RscCode'])
-
-    return ret
-
-def process_race_display_name(name: str) -> str:
+def process_race_display_name(name: str) -> tuple[str, int]:
     """
     Processes the display-name of a race to extract the type of it.
+    ! This is to cover an edge-case to cover semifinals. this means we know that it is semifinals display-name
+    @param name: The unprocessed display-name of a race
+    @return: The processed short-version of a display-name
     """
     lower = name.lower()
+    if 'semifinal' in lower:
+        last_occurrence = lower.rindex('semifinal')
+        #  9 = len(semifinal)
+        lower = lower[last_occurrence + 9: len(lower)]
 
-    def _extract(s: str) -> str:
-        s = s.split(" ")
-        if len(s) >= 2:
-            s = s[-2:len(s)]
-        else:
-            s = s[0]
-        return ''.join(s).replace(' ', '').strip(' ')
+    org_lower = lower.replace('0', '').lstrip('s')
+    number = re.findall(r'\d+', org_lower)
+    number = number[0] if len(number) > 0 else None
 
-    def _process(s: str, t: tuple) -> str:
-        init_s = s
-        _s, _c, fine = t
-        if s.startswith(_c):
-            s = s.replace(_c + _c[0], _s).replace(_c, _s).replace(_s + _s, _s)
-        return s
+    # strip-fct's can handle None value - does nothing
+    lower = org_lower.lstrip('sf').lstrip('f').rstrip('r').rstrip(number).replace(' ', '').lstrip('s')
 
-    val = lower
-    if 'quarterfinal' in lower:
-        short, coarse, fine = 'qfnl', 'quarterfinal', range(1, 10)
-        lower = lower + str(fine[0]) if lower[-1] not in fine else lower
-        val = _extract(lower)
-        val = _process(val, (short, coarse, fine))
-    elif 'semifinal' in lower:
-        short, coarse, fine = 'sfnl', 'semifinal', range(1, 4)
-        lower = lower + str(fine[0]) if lower[-1] not in fine else lower
-        val = _extract(lower)
-        val = _process(val, (short, coarse, fine))
-    elif 'final' in lower:
-        short, coarse, fine = 'fnl', 'final', ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
-
-        # lower = lower + str(fine[0]) if len(lower) == 1 and lower[-1] not in fine else lower
-        if len(lower) == 1 and lower == 'f':
-            lower += fine[0]
-        val = _extract(lower)
-        val = _process(val, (short, coarse, fine))
-        if 'f' in val and 'fnl' not in val and len(val) <= 5:
-            val = val.replace('f', 'fnl')
-
-    elif 'heat' in lower:
-        short, coarse, fine = 'h', 'heat', range(1, 10)
-        lower = lower + str(fine[0]) if lower[-1] not in fine else lower
-        val = _extract(lower)
-        val = _process(val, (short, coarse, fine))
-    elif 'preliminary' in lower or 'test' in lower:
-        short, coarse, fine = 'prel', 'preliminary', range(1, 5)
-        lower = lower + str(fine[0]) if lower[-1] not in fine else lower
-        val = _extract(lower)
-        val = _process(val, (short, coarse, fine))
-        val = val.replace('test', '')
-        val = val.replace('race', '')
-    elif 'repechage' in lower:
-        short, coarse, fine = 'rep', 'repechage', range(1, 10)
-        lower = lower + str(fine[0]) if lower[-1] not in fine else lower
-        val = _extract(lower)
-        val = _process(val, (short, coarse, fine))
-        #
-    # todo: what about seeding?
-
-    else:
-        print(f"did not identify lower: {lower}")
-
-    return val
+    return lower, number
 
 
-def extract_race_phase_details(race_phase, rsc_code, display_name):
-    """returns a dict containing the keys "subtype" and "number"
+def extract_race_phase_details(rsc_code: str, display_name: str):  # -> dict:
     """
-    # Example 1: https://world-rowing-api.soticcloud.net/stats/api/race/86e9d017-aac7-44d6-aa1c-802e010801d1?include=racePhase
-    race_phase = "Semifinal"
-    rsc_code = "ROWMSCULL2-L----------SFNL000600--"
-    display_name = "Men's Double Sculls Semifinal SE/F 2"
-    return { "subtype": "E/F", "number": 2 }
+    @param rsc_code: The associated rsc-code of a race
+    @param display_name: the associated display name of a race
+    @return: dict, containing the sub
+    """
 
-    # Example 2:
-    race_phase = "Final"
-    rsc_code = "ROWWSCULL1-L----------FNL-000200--"
-    display_name = "Lightweight Women's Single Sculls Final FB"
-    return { "subtype": None, "number": 2 }
+    _, coarse_phase = ut_wr.process_rsc_code(rsc_code)
+    _, subtype = ut_wr.extract_race_phase_from_rsc(coarse_phase)
 
-    # Example 3:
-    race_phase = "Heat"
-    rsc_code = "ROWWSCULL1-L----------HEAT000200--"
-    display_name = "Lightweight Men's Single Sculls Heat 2"
-    return { "subtype": None, "number": 2 }
+    if 'SFNL' in coarse_phase:
+        subtype, number = process_race_display_name(display_name)
+        if subtype == '' or subtype == 'r':
+            # edge-case; no proper display-name was entered in world-rowing-data
+            subtype = 'sfnl'
 
-    # Example 4: Error / Cannot decide
-    return { "subtype": None, "number": None }
+        ret = {'subtype': subtype, 'number': number}
+    else:
+        ret = {'subtype': None, 'number': subtype}
+
+    return ret['subtype'], ret['number']
 
 
 def save(data: dict, fn: str):
