@@ -1,6 +1,8 @@
 import axios from "axios";
 import {defineStore} from "pinia";
 
+const formatMilliseconds = ms => new Date(ms).toISOString().slice(14, -2);
+
 export const useBerichteState = defineStore({
     id: "berichte",
     state: () => ({
@@ -203,6 +205,7 @@ export const useBerichteState = defineStore({
         }],
         matrixdata: [
             {
+            "results": 127973,
               "men": {
                 "junior": {
                   "single": {
@@ -697,16 +700,33 @@ export const useBerichteState = defineStore({
         getTableData(state) {
             return state.data[0]
         },
+        getMatrixTableResults(state) {
+            return state.matrixdata[0].results
+        },
+
         getMatrixTableData(state) {
-            /*
-            const openMen = [];
-            for(const item of Object.keys(state.matrixdata[0].men.adult)) {
-                console.log(item)
+
+            const subHeaders = {
+                "OPEN MEN": Object.values(state.matrixdata[0].men.adult),
+                "OPEN WOMEN": Object.values(state.matrixdata[0].women.adult),
+                "PARA MEN": Object.values(state.matrixdata[0].men.pr),
+                "PARA WOMEN": Object.values(state.matrixdata[0].women.pr),
+                "U23 MEN": Object.values(state.matrixdata[0].men.u23),
+                "U23 WOMEN": Object.values(state.matrixdata[0].women.u23),
+                "U19 MEN": Object.values(state.matrixdata[0].men.u19),
+                "U19 WOMEN": Object.values(state.matrixdata[0].women.u19)
             }
-            */
 
+            let rowValues = []
 
-            return state.matrixdata
+            Object.entries(subHeaders).forEach(([key, value], idx) => {
+                rowValues.push(key)
+                for(const item of value) {
+                    rowValues.push([Object.keys(item)[0], formatMilliseconds(item["WB [t]"]), formatMilliseconds(item["avg [t]"]), formatMilliseconds(item["delta [s]"]), item["num_of_boats"]])
+                }
+            })
+            
+            return rowValues
         },
         getSelectedBoatClass(state) {
             return state.selectedBoatClass[0] === "Alle"

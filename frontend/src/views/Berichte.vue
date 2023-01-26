@@ -47,7 +47,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 <v-alert type="success" variant="tonal" class="ma-0 pa-3" closable>
                   <v-row>
                     <v-col cols="6">
-                      <b><p>{{ tableData.results }} Datensätze</p></b>
+                      <b><p>{{ matrixVisible ? matrixResults : tableData.results }} Datensätze</p></b>
                       <p>Von: {{ tableData.start_date.slice(0, 4) }}</p>
                       <p>Bis: {{ tableData.end_date.slice(0, 4) }}</p>
                     </v-col>
@@ -131,24 +131,18 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                   </tr>
                 </thead>
                 <tbody class="nth-grey">
-                  <th>OPEN MEN</th>
-                  <tr v-for="item in matrixTableData">
-                    <td>{{ item }}</td>
-                  </tr>
-
-
-                  <template v-for="agegroup in agegroups">
-                    <tr>
-                      <th>{{ agegroup }}</th>
+                  <template v-for="row in matrixTableData">
+                    <tr v-if="(typeof row === 'string')" class="subheader">
+                      <th><b>{{ row }}</b></th>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
                     </tr>
-                      
-                    {{ matrixTableData[0].length }}
-
-                    <tr v-for="boatclass, key, idx in matrixTableData[0]">
-                      {{ boatclass }}
-                      <td>{{ Object.keys(boatclass)[0] }}</td>
-                      <td>{{ Object.keys(boatclass)[1] }}</td>
-                      <td>{{ idx }}</td>
+                    <tr v-else>
+                      <td v-for="item in row">
+                        {{ item }}
+                      </td>
                     </tr>
                   </template>
                 </tbody>
@@ -183,6 +177,9 @@ export default {
       tableData: "getTableData"
     }),
     ...mapState(useBerichteState, {
+      matrixResults: "getMatrixTableResults"
+    }),
+    ...mapState(useBerichteState, {
         matrixTableData: 'getMatrixTableData'
     }),
     ...mapState(useBerichteState, {
@@ -215,7 +212,6 @@ export default {
   },
   data() {
     return {
-      agegroups: ['OPEN MEN', 'OPEN WOMEN', 'U23 MEN', 'U23 WOMEN', 'U19 MEN', 'U19 WOMEN'],
       mobile: false,
       filterOpen: false,
       barChartOptions: {
@@ -301,11 +297,11 @@ export default {
   th {
     border: 1px solid #e0e0e0;
     font-size: 14px !important;
-    text-align: right;
+    text-align: left;
   }
 
   td {
-    text-align: right;
+    text-align: left;
     border: 1px solid #e0e0e0;
   }
 }
@@ -313,6 +309,13 @@ export default {
 .nth-grey tr:nth-child(even) {
   background-color: rgba(0, 0, 0, .05);
 }
+
+/*
+.no-border {
+  border-left: none !important;
+  border-right: none !important;
+}
+*/
 
 .filterToggleButton {
   position: fixed;
