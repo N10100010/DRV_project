@@ -262,8 +262,8 @@ class Competition(Base):
     start_date = Column(DateTime)
     end_date = Column(DateTime)
 
+    is_fisa = Column(Boolean)
     competition_code__ = Column(String)
-    is_fisa__ = Column(Boolean)
 
     # relationships
     events = relationship("Event", back_populates="competition")
@@ -300,8 +300,10 @@ class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae
 
     name = Column(String)
     date = Column(DateTime)
-    phase_type = Column(String) # e.g. "Heat", "Final" // TODO: normalize?
-    phase = Column(String) # e.g. "FA", "H3", "SA/B1", etc...
+
+    phase_type = Column(String) # e.g. "heat", "final", "semifinal"
+    phase_subtype = Column(String) # e.g. "SA/B/C 1" -> "A/B/C", "FB" -> NULL, "H3" -> NULL
+    phase_number = Column(Integer) # e.g. "SA/B/C 1" -> 1, "FB" -> 2, "H3" -> 3
 
     progression = Column(String) # e.g. "1-2->SA/B, 3..->R"
     rsc_code = Column(String)

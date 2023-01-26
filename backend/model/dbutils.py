@@ -178,22 +178,31 @@ def wr_map_race_boat(session, entity, data):
     return entity
 
 
-def wr_map_race(session, entity, data):
+def wr_map_race(session, entity: model.Race, data):
     entity.name = get_(data, 'DisplayName')
     with suppress(TypeError, ValueError):
         entity.date = dt.datetime.fromisoformat(get_(data, 'Date', ''))
-    entity.phase_type = get_( get_(data, 'racePhase', {}), 'DisplayName','' ).lower()
-    entity.phase = get_(data, 'FB') # !!! HIGH PRIO TODO: Extract from RSC Code !!!
+
+    # phase details
+    phase_type = get_( get_(data, 'racePhase', {}), 'DisplayName' )
+    rsc_code = get_(data, 'RscCode')
+
+    phase_details = api.extract_race_phase_details(race_phase=phase_type, rsc_code=rsc_code, display_name=entity.name)
+
+    entity.phase_type = phase_type.lower()
+    entity.phase_subtype = get_(phase_details, 'subtype')
+    entity.phase_number  = get_(phase_details, 'number')
+
     entity.progression = get_(data, 'Progression')
-    entity.rsc_code = get_(data, 'RscCode')
+    entity.rsc_code = rsc_code
 
     entity.pdf_url_results = get_(api.select_pdf_(get_(data, 'pdfUrls', []), 'results'), 'url')
     entity.pdf_url_race_data = get_(api.select_pdf_(get_(data, 'pdfUrls', []), 'race data'), 'url')
 
-    entity.race_nr__ = repr( get_(data, 'RaceNr') )
+    entity.race_status__ = str( get_( get_(data, 'raceStatus', {} ), 'DisplayName' ) ).strip().lower()
+    entity.race_nr__ = str( get_(data, 'RaceNr') )
     entity.rescheduled__ = repr( get_(data, 'Rescheduled') )
     entity.rescheduled_from__ = repr( get_(data, 'RescheduledFrom') )
-    entity.race_status__ = repr( get_( get_(data, 'raceStatus', {} ), 'DisplayName' ) )
 
     # Race Boats
     race_boats = map(

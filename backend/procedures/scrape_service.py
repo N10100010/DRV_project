@@ -105,7 +105,7 @@ def _get_competitions_to_scrape(session):
         select(model.Competition)
         .where(model.Competition.scraper_data_provider == DATA_PROVIDER_ID)
         .where(model.Competition.scraper_maintenance_level.in_( [LEVEL_PRESCRAPED, LEVEL_SCRAPED] ))
-    ) 
+    )
     competitions = session.execute(statement).scalars().all()
     N = len(competitions) # TODO: Get rid of all() call and use a count query to get N: https://stackoverflow.com/a/65775282
     return competitions, N
@@ -170,7 +170,7 @@ def maintain():
             if not competition_uuid:
                 logger.error(f"Competition with id={competition.id} has no UUID (w.r.t. World Rowing API); Skip")
                 continue
-            logger.info(f"Competition id={competition.additio}")
+            logger.info(f"Competition id={competition.additional_id_}")
 
             # New concept: api.get_by_competition_id_(..., parse_pdf=True)
             #    -> does it make sense to put validation logic (db/model imports) inside api?

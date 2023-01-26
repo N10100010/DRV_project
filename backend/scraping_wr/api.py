@@ -349,6 +349,31 @@ def process_race_display_name(name: str) -> str:
     return val
 
 
+def extract_race_phase_details(race_phase, rsc_code, display_name):
+    """returns a dict containing the keys "subtype" and "number"
+    """
+    # Example 1: https://world-rowing-api.soticcloud.net/stats/api/race/86e9d017-aac7-44d6-aa1c-802e010801d1?include=racePhase
+    race_phase = "Semifinal"
+    rsc_code = "ROWMSCULL2-L----------SFNL000600--"
+    display_name = "Men's Double Sculls Semifinal SE/F 2"
+    return { "subtype": "E/F", "number": 2 }
+
+    # Example 2:
+    race_phase = "Final"
+    rsc_code = "ROWWSCULL1-L----------FNL-000200--"
+    display_name = "Lightweight Women's Single Sculls Final FB"
+    return { "subtype": None, "number": 2 }
+
+    # Example 3:
+    race_phase = "Heat"
+    rsc_code = "ROWWSCULL1-L----------HEAT000200--"
+    display_name = "Lightweight Men's Single Sculls Heat 2"
+    return { "subtype": None, "number": 2 }
+
+    # Example 4: Error / Cannot decide
+    return { "subtype": None, "number": None }
+
+
 def save(data: dict, fn: str):
     with open(fn, 'w', encoding='ascii') as file:
         jsn.dump(data, file)
