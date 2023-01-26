@@ -5,7 +5,9 @@ import urllib.parse
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.ext.declarative import declarative_base
+
+from sqlalchemy.orm import relationship
 from sqlalchemy import Column, ForeignKey, Integer, BigInteger, Float, String, Boolean, Date, DateTime, Enum
 
 # logging stuff
@@ -80,11 +82,12 @@ def get_rowing_db_url() -> str:
     """
     db_url = "{drivername}://{username}:{password}@{host}:{port}/{database}".format(
         drivername=os.environ.get('DB_SQLALCHEMY_DRIVERNAME', 'postgresql+psycopg2'),
-        username=urllib.parse.quote_plus( os.environ.get('DB_USER', 'postgres') ),
-        password=urllib.parse.quote_plus( os.environ.get('DB_PASS', 'postgres') ),
-        host=os.environ.get('DB_HOST', 'localhost'),
-        port=os.environ.get('DB_PORT', '5432'),
-        database=os.environ.get('DB_NAME', 'rowing')
+
+        username=urllib.parse.quote_plus( os.environ.get('PGUSER', 'postgres') ),
+        password=urllib.parse.quote_plus( os.environ.get('PGPASSWORD', 'postgres') ),
+        host=os.environ.get('PGHOST', 'localhost'),
+        port=os.environ.get('PGPORT', '5432'),
+        database=os.environ.get('PGDATABASE', 'rowing')
     )
     return db_url
 
@@ -96,7 +99,7 @@ def get_rowing_db_url() -> str:
 # - https://towardsdatascience.com/use-flask-and-sqlalchemy-not-flask-sqlalchemy-5a64fafe22a4
 
 __DB_URL = get_rowing_db_url()
-__DB_VERBOSE = 'DB_VERBOSITY' in os.environ
+__DB_VERBOSE = os.environ.get('DB_VERBOSITY','').strip() == '1'
 
 engine = create_engine(__DB_URL, echo=__DB_VERBOSE)
 Scoped_Session = scoped_session(sessionmaker(bind=engine, autoflush=True, autocommit=False))
@@ -106,6 +109,7 @@ Scoped_Session = scoped_session(sessionmaker(bind=engine, autoflush=True, autoco
 # -----
 class Enum_Maintenance_Level(enum.Enum):
     """Enum for Competition Entity"""
+    world_rowing_api_prescraped = 3
     world_rowing_api_grabbed = 5
     world_rowing_postprocessed = 6
 

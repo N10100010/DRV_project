@@ -131,7 +131,7 @@ export const useBerichteState = defineStore({
             "ranks": ["1", "2", "3", "4-6"],
         }],
         data: [{
-            "results": 872,
+            "results": 825,
             "boat_class": "Men's Eight",
             "start_date": "2020-06-16 14:12:00",
             "end_date": "2022-06-16 14:12:00",
@@ -737,14 +737,12 @@ export const useBerichteState = defineStore({
                 datasets: [
                     {
                         type: 'line',
-                        label: 'Anzahl Rennen',
                         backgroundColor: "red",
                         borderColor: "red",
                         data: state.data[0].plot_data.histogram.data,
                     },
                     {
                         type: 'bar',
-                        label: "Anzahl Rennen",
                         backgroundColor: '#5cc5ed',
                         data: state.data[0].plot_data.histogram.data
                     }
@@ -770,14 +768,12 @@ export const useBerichteState = defineStore({
                 datasets: [
                     {
                         type: 'scatter',
-                        label: 'Boote',
                         data: plotData,
                         backgroundColor: '#5cc5ed',
                         borderColor: '#5cc5ed'
                     },
                     {
                         type: 'line',
-                        label: '75. Perzentil',
                         data: percentile75Data,
                         borderColor: "darkgrey",
                         borderWidth: 2,
@@ -787,7 +783,6 @@ export const useBerichteState = defineStore({
                     },
                     {
                         type: 'line',
-                        label: '25. Perzentil',
                         data: percentile25Data,
                         borderColor: "darkgrey",
                         borderWidth: 2,

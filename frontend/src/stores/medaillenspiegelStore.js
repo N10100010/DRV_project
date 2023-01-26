@@ -328,7 +328,12 @@ export const useMedaillenspiegelState = defineStore({
                 "filter_selection": {
                     "start_date": "2020-06-16 14:12:00",
                     "end_date": "2022-06-16 14:12:00",
-                    "results": 23, // amount of races?
+                    "results": 23,
+                    "nation_ioc": "GER (Deutschland)",
+                    "boat_classes": [
+                        {"M1x": "Men's Single Sculls"},
+                        {"M2x": "Men's Double Sculls"}
+                    ]
                 },
                 "table_data": {
                     "rank": {
@@ -337,7 +342,6 @@ export const useMedaillenspiegelState = defineStore({
                         "bronze": 300
                     },
                     "points": 700,
-                    "nation_ioc": "AUS",
                     "medals_gold": 5,
                     "medals_silver": 5,
                     "medals_bronze": 5,
@@ -359,8 +363,8 @@ export const useMedaillenspiegelState = defineStore({
             return state.data[0].filter_selection
         },
         getTableData(state) {
-            let tableData = [["Platz", "Punkte", "Nation", "Gold", "Silber", "Bronze", "Gesamt", "Finale A", "Finale B"]];
-            const valueKeys = ["rank", "points", "nation_ioc", "medals_gold", "medals_silver", "medals_bronze", "medals_total", "final_a", "final_b"];
+            let tableData = [["Platz", "Punkte", "Gold", "Silber", "Bronze", "Gesamt", "Finale A", "Finale B"]];
+            const valueKeys = ["rank", "points", "medals_gold", "medals_silver", "medals_bronze", "medals_total", "final_a", "final_b"];
             let tempArray = []
             for (const valueKey of valueKeys) {
                 tempArray.push(state.data[0].table_data[valueKey]);
@@ -375,7 +379,7 @@ export const useMedaillenspiegelState = defineStore({
                     {
                         type: 'bar',
                         label: "Medaillenübersicht",
-                        backgroundColor: '#64B5F6',
+                        backgroundColor: '#5cc5ed',
                         data: state.medal_bar_chart_data.data
                     },
                 ]

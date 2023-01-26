@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 WR_FILTER_MAPPING = {
     'year': 'Year',
-    'others': 'Others'
+    'category': 'Category'
     # todo: extend me...
 }
 
@@ -70,7 +70,7 @@ def get_all(data: Union[dict, list], key: str):
 
 
 @retry(wait=wait_exponential(max=5), stop=stop_after_attempt(5))
-def load_json(url: str, params=None, timeout=20., **kwargs):
+def load_json(url: str, content_field='data', params=None, timeout=20., **kwargs):
     """
     Loads any json from any URL.
     The function will be retried, if the endpoint might not be reachable atm.
@@ -90,7 +90,7 @@ def load_json(url: str, params=None, timeout=20., **kwargs):
         return {}
 
     if res.text and res.status_code != 404:
-        return res.json()['data']
+        return res.json()[content_field]
     else:
         return {}
 
@@ -121,19 +121,19 @@ def build_filter_string(filter_params: dict) -> str:
     """
     ret = '?'
     splitter = '&'
-    schema = f'filter[KEY]=PARAM'
+    schema = 'filter[{PARAM}]={VALUE}'
 
     if not set(filter_params.keys()).issubset(set(WR_FILTER_MAPPING.keys())):
         # the keys for filters start with capital letters. For ease of use, this is taken care of by the function.
         logger.error(f"A key of the passed filter is not allowed. Allowed filters: {list(WR_FILTER_MAPPING.keys())}")
 
-    last_key = list(filter_params.keys())[-1]
+    param_pairs = []
     for k, v in filter_params.items():
-        ret += schema.replace('KEY', WR_FILTER_MAPPING[k]).replace('PARAM', stringify_params(val=v))
-        if k != last_key:
-            ret += splitter
+        param_pair = schema.format(PARAM=WR_FILTER_MAPPING[k], VALUE=stringify_params(val=v))
+        param_pairs.append(param_pair)
 
-    return ret
+    query_string = ret + "&".join(param_pairs)
+    return query_string
 
 
 def extract_competition_ids(values: dict) -> list[str]:

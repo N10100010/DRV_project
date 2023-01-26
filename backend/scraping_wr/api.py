@@ -1,16 +1,16 @@
 import logging
+import re
 from typing import Union, Optional, Iterator
 from datetime import datetime, date
 import json as jsn
 
 
-import numpy as np
-tqdm = lambda i : i #from tqdm import tqdm
+# from tqdm import tqdm
+tqdm = lambda i : i
 
-from . import utils_wr as ut_wr
-from . import pdf_race_data as pdf_race_data
-from . import pdf_result as pdf_result_data
-
+import utils_wr as ut_wr
+import pdf_race_data as pdf_race_data
+import pdf_result as pdf_result_data
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -72,16 +72,15 @@ OLYMPIC_BOATCLASSES = [
 
 BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
     'men': {
-        'junior': {
+        'junior': {  # also called u19
             'single': ("JM1x", "Junior Men's Single Sculls"),
             'double': ("JM2x", "Junior Men's Double Sculls"),
             'quad': ("JM4x", "Junior Men's Quadruple Sculls"),
             'pair': ("JM2-", "Junior Men's Pair"),
             'coxed_four': ("JM4+", "Junior Men's Coxed Four"),
-            'four': ("JM4-", "Junior Men's Four") ,
+            'four': ("JM4-", "Junior Men's Four"),
             'eight': ("JM8-", "Junior Men's Eight")
         },
-        'u19': {},
         'u23': {
             'single': ("BM1x", "U23 Men's Single Sculls"),
             'double': ("BM2x", "U23 Men's Double Sculls"),
@@ -95,7 +94,7 @@ BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
             'lw_quad': ("BLM4x", "U23 Lightweight Men's Quadruple Sculls"),
             'lw_pair': ("BLM2-", "U23 Lightweight Men's Pair"),
         },
-        'adult': {
+        'elite': {
             'single': ("M1x", "Men's Single Sculls"),
             'double': ("M2x", "Men's Double Sculls"),
             'quad': ("M4x", "Men's Quadruple Sculls"),
@@ -114,16 +113,15 @@ BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
         }
     },
     'women': {
-        'junior': {
+        'junior': {  # also called u19
             'single': ("JW1x", "Junior Women's Single Sculls"),
             'double': ("JW2x", "Junior Women's Double Sculls"),
             'quad': ("JW4x", "Junior Women's Quadruple Sculls"),
             'pair': ("JW2-", "Junior Women's Pair"),
             'coxed_four': ("JW4+", "Junior Women's Coxed Four"),
-            'four': ("JW4-", "Junior Women's Four") ,
+            'four': ("JW4-", "Junior Women's Four"),
             'eight': ("JW8-", "Junior Women's Eight")
         },
-        'u19': {},
         'u23': {
             'single': ("BW1x", "U23 Women's Single Sculls"),
             'double': ("BW2x", "U23 Women's Double Sculls"),
@@ -137,7 +135,7 @@ BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
             'lw_quad': ("BLW4x", "U23 Lightweight Women's Quadruple Sculls"),
             'lw_pair': ("BLW2-", "U23 Lightweight Women's Pair"),
         },
-        'adult': {
+        'elite': {
             'single': ("W1x", "Women's Single Sculls"),
             'double': ("W2x", "Women's Double Sculls"),
             'quad': ("W4x", "Women's Quadruple Sculls"),
@@ -162,17 +160,59 @@ BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
     }
 }
 
-
+# what is this?
+## This constant provides...
+## - list of race-phase-names (the keys fo the dict)
+## - ids to the respective phases (e.g. RACE_PHASES['Test Race']['id'])
+## - processes rsc_code_snippets, that occured in the past, processes by the function 'process_rsc_code' in this file
+# todo: should we make the keys short forms? Or ar least all lower?
+# todo: needed: FA must be mapped to "potentially" to FNL0001000
+## the short version is found in the pdfs, top right
 RACE_PHASES = {
-    'Test Race': '92b34c4e-af58-4e91-8f4a-22c09984a006',
-    'RoundOf16': 'ef6a596d-7de4-4646-81a7-7dbeaf515cfd',
-    'Heat': 'cd3d5ca1-5aed-4146-b39b-a192ae6533f1',
-    'Final': 'e0fc3320-cd66-43af-a5b5-97afd55b2971',
-    'Preliminary': '92b34c4e-af58-4e91-8f4a-22c09984a006',
-    'Seeding': '6c281206-2291-41bc-b9cd-5ecd82b1638c',
-    'Repechage': '0959f5e8-f85a-40fb-93ab-b6c477f6aade',
-    'Semifinal': 'e6693585-d2cf-464c-9f8e-b2e531b26400',
-    'Quarterfinal': 'a0b6ffd8-92b8-427b-a667-ac2ff640031a'
+    'Test Race': {
+        'id': '92b34c4e-af58-4e91-8f4a-22c09984a006',
+        'rsc_code_snippets': []
+    },
+    'RoundOf16': {
+        'id': 'ef6a596d-7de4-4646-81a7-7dbeaf515cfd',
+        'rsc_code_snippets': ['8FNL000100']
+    },
+    'Heat': {
+        'id': 'cd3d5ca1-5aed-4146-b39b-a192ae6533f1',
+        'rsc_code_snippets': ['HEAT000100', 'HEAT0001RR', 'HEAT000200', 'HEAT000300', 'HEAT000400', 'HEAT000500',
+                              'HEAT000600', 'HEAT000700', 'HEAT000800', 'RND2000100', 'RND2000200', 'RND2000300',
+                              'RND2000400', 'RND2000500', 'RND2000600', 'RND3000100', 'RND3000200', 'RND3000300',
+                              'RND3000400', 'RND3000500', 'RND3000600']
+    },
+    'Final': {
+        'id': 'e0fc3320-cd66-43af-a5b5-97afd55b2971',
+        'rsc_code_snippets': ['FNL000100', 'FNL0001RR', 'FNL000200', 'FNL000300', 'FNL000400', 'FNL000500', 'FNL000600',
+                              'FNL000700', 'FNL000800']
+    },
+    'Preliminary': {
+        'id': '92b34c4e-af58-4e91-8f4a-22c09984a006',
+        'rsc_code_snippets': ['PREL000100', 'PREL000200']
+    },
+    'Seeding': {
+        'id': '6c281206-2291-41bc-b9cd-5ecd82b1638c',
+        'rsc_code_snippets': ['RND1000100', 'SEED000100', 'SEED000200', 'SEED000300']
+    },
+    'Repechage': {
+        'id': '0959f5e8-f85a-40fb-93ab-b6c477f6aade',
+        'rsc_code_snippets': ['REP000100', 'REP0001RR', 'REP000200', 'REP000300', 'REP000400', 'REP000500', 'REP000600',
+                              'REP000700', 'REP000800', 'REP005100', 'REP005200', 'REP005300', 'REP005400',
+                              'SFNL000100']
+    },
+    'Semifinal': {
+        'id': 'e6693585-d2cf-464c-9f8e-b2e531b26400',
+        'rsc_code_snippets': ['SFNL000100', 'SFNL000200', 'SFNL000300', 'SFNL000400', 'SFNL000500', 'SFNL000600',
+                              'SFNL000700', 'SFNL000800']
+    },
+    'Quarterfinal': {
+        'id': 'a0b6ffd8-92b8-427b-a667-ac2ff640031a',
+        'rsc_code_snippets': ['QFNL000100', 'QFNL000200', 'QFNL000300', 'QFNL000400', 'QFNL000500', 'QFNL000600',
+                              'QFNL000700', 'QFNL000800']
+    },
 }
 
 RACE_STATUSES = {
@@ -181,7 +221,123 @@ RACE_STATUSES = {
     'Scheduled': 'f89cc288-076b-4bb6-9776-96e66820e1b8',
     'Official': '182f6f15-8e78-41c3-95b3-8b006af2c6a1'
 }
+
 ########################################################################################################################
+
+##  other utils
+STR_NUMBERS_0_10 = ''.join([str(n) for n in range(0, 10)])
+
+
+def process_rsc_code(code: str) -> tuple[str, str]:
+    """
+    Processes the RscCode of a race to extract the phase (Lauf) of the race.
+    @param code: str - total rcs code
+    @return: str - processed rsc code
+    # todo: same here as the todo in function filter_by_race_phase. Add filter parameteres to the database
+    """
+    processed = code.split('---')
+    boat_class = processed[0].strip('--')
+    phase = processed[-1].strip('--')
+    phase = "".join(re.split("[^0-9a-zA-Z*]", phase))
+    phase = phase.lstrip(STR_NUMBERS_0_10)
+
+    return boat_class, phase
+
+
+def extract_race_phase_from_rsc(processed: str) -> (str, int):
+    """
+    This extraction allows to identify a race, within a competition, given the class of a race.
+    CAUTION: Expects the second value from the function process-rsc-code.
+    @param processed: The processed phase of a race, from its rsc-code
+    @return: Extracted race phase, with its respective stage (phase: str, stage: int)
+    """
+    lower = processed.lower()
+
+    if lower[0:4] in ('qfnl', 'sfnl', 'heat', 'prel', 'seed'):
+        start, end = 4, 4
+    elif lower[0:3] in ('fnl', 'rep'):
+        start, end = 3, 4
+    elif lower[0:3] in ('rnd'):
+        start, end = 3, 1
+    else:
+        logger.warning(f"Encountered unknown phase in rsc-code. Seen value: {lower}")
+        return processed, 0
+
+    # remove unwanted parts of the string
+    processed = processed[0: start + end]
+
+    # return only parts that indicate the phase
+    return processed[0: start], int(processed[-1])
+
+
+def process_race_display_name(name: str) -> str:
+    """
+    Processes the display-name of a race to extract the type of it.
+    todo: split up the numbers from the string part and return tuple 
+        -- > semifnl: c/d21 digitiert zu (c/d, 21) # contains error, well...
+    """
+    lower = name.lower()
+
+    def _extract(s: str) -> str:
+        s = s.split(" ")
+        if len(s) >= 2:
+            s = s[-2:len(s)]
+        else:
+            s = s[0]
+        return ''.join(s).replace(' ', '').strip(' ')
+
+    def _process(s: str, t: tuple) -> str:
+        init_s = s
+        _s, _c, fine = t
+        if s.startswith(_c) or s.startswith(_s):
+            s = s.replace(_c + _c[0], _s).replace(_c, _s).replace(_s + _s, _s)
+        return s
+
+    val = lower
+    if 'quarterfinal' in lower:
+        short, coarse, fine = 'qfnl', 'quarterfinal', range(1, 10)
+        lower = lower + str(fine[0]) if lower[-1].isnumeric() and int(lower[-1]) not in fine else lower
+        val = _extract(lower)
+        val = _process(val, (short, coarse, fine))
+    elif 'semifinal' in lower:
+        short, coarse, fine = 'sfnl', 'semifinal', range(1, 5)
+        val = ''.join([v for v in lower if v not in fine])
+        val = _extract(lower)
+        val = _process(val, (short, coarse, fine))
+    elif 'final' in lower:
+        short, coarse, fine = 'fnl', 'final', ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
+
+        # lower = lower + str(fine[0]) if len(lower) == 1 and lower[-1] not in fine else lower
+        if len(lower) == 1 and lower == 'f':
+            lower += fine[0]
+        val = _extract(lower)
+        val = _process(val, (short, coarse, fine))
+        if 'f' in val and 'fnl' not in val and len(val) <= 5:
+            val = val.replace('f', 'fnl')
+
+    elif 'heat' in lower:
+        short, coarse, fine = 'h', 'heat', range(1, 10)
+        lower = lower + str(fine[0]) if lower[-1].isnumeric() and int(lower[-1]) not in fine else lower
+        val = _extract(lower)
+        val = _process(val, (short, coarse, fine))
+    elif 'preliminary' in lower or 'test' in lower:
+        short, coarse, fine = 'prel', 'preliminary', range(1, 5)
+        lower = lower + str(fine[0]) if lower[-1].isnumeric() and int(lower[-1]) not in fine else lower
+        val = _extract(lower)
+        val = _process(val, (short, coarse, fine))
+        val = val.replace('test', '')
+        val = val.replace('race', '')
+    elif 'repechage' in lower or lower == 'r':
+        if lower == 'r' or lower == 'r1':
+            lower = 'rep1'
+        short, coarse, fine = 'rep', 'repechage', range(1, 10)
+        lower = lower + str(fine[0]) if lower[-1].isnumeric() and int(lower[-1]) not in fine else lower
+        val = _extract(lower)
+        val = _process(val, (short, coarse, fine))
+    else:
+        print(f"did not identify lower: {lower}")
+
+    return val
 
 
 def save(data: dict, fn: str):
@@ -214,7 +370,6 @@ def _extract(nested: iter, successor_filter: str = None) -> list:
                 _l.extend(item)
 
     return _l
-
 
 
 def select_pdf_(pdfUrls: list, title: str) -> Union[dict, None]:
@@ -265,6 +420,7 @@ def merge_race_data(race, race_data):
         race[race_idx]['pdf_parsed_race_data'] = race_data[race_data_idx]
 """
 
+
 def get_by_competition_id_(comp_ids: Union[str, list[str]], verbose: bool = False, parse_pdf=False) -> dict:
     """
     Stripped down version of get_by_competition_id()
@@ -276,7 +432,7 @@ def get_by_competition_id_(comp_ids: Union[str, list[str]], verbose: bool = Fals
 
     for event_idx, event in tqdm( enumerate(comp_data.get('events', [])) ):
         for race_idx, race in enumerate(event.get('races', [])):
-            logger.info(f"event_idx {event_idx} race_idx {race_idx}")
+            #logger.info(f"event_idx {event_idx} race_idx {race_idx}")
 
             pdf_info_race_data = select_pdf_(race.get('pdfUrls', []), 'race data')
             pdf_info_results = select_pdf_(race.get('pdfUrls', []), 'results')
@@ -318,7 +474,7 @@ def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Uni
     """
 
     allowed_keys = {
-        'events', 'races', 'pdfs',
+        'events', 'races', 'pdf',
         'raceBoats', 'raceBoatAthletes',
         'raceBoatIntermediates',
         'venue', 'boatClass'
@@ -351,11 +507,11 @@ def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Uni
             )
 
     # if race and pdfs is in the koi's, we want to aggregate the data from the pdf
-    if 'races' in keys_of_interest and 'pdfs' in keys_of_interest:
+    if 'races' in keys_of_interest and 'pdf' in keys_of_interest:
         races = []
         for race in tqdm(ret_val['races'], desc='Aggregating PDF data'):
             race['pdfUrls'] = extract_pdf_urls(race['pdfUrls'])
-
+            races.append(race)
             results_data = pdf_result_data.extract_data_from_pdf_urls(race['pdfUrls']['results'])[0]
             race_data = pdf_race_data.extract_data_from_pdf_url(race['pdfUrls']['race_data'])[0]
             race['results_data'] = results_data
@@ -367,32 +523,45 @@ def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Uni
     return ret_val
 
 
-def get_competition_ids(years: Optional[Union[list, int]] = None) -> list[str]:
+def get_competition_heads(years: Optional[Union[list, int]] = None, single_fetch: bool = False) -> Iterator[dict]:
     """
-    TODO: can we ask ONLY for the comp id, without overhead
-    Gets the competition ids - optional by year.
-    IF years is None aka not passed, the returned competition ids will be over the entire timeframe.
-    @param years: list or int, filtering the result
-    @return: list[str] - a list of strings containing the competition ids for the years contained in the years argument
+    Returns: An Iterator of Competition (dict) not containing any deeper data fields like e.g. Events.
+
+    Param years: Selects years.
+        - Can be a list of years.
+        - Can be an int.
+        - Can be None -> All years from 1900 to 5 years in the future.
+
+    Param single_fetch: Request the selection of years in a single API call.
     """
-    # current year + 5
-    #  This is to make sure we get planned comps as well
-    future_year = date.today().year + 5
-    if years:
-        filter_strings = [ut_wr.build_filter_string({'year': years})]
+
+    # TODO: The following logic should be in a separate function
+    if years == None:
+        # current year -1 to + 5; to make sure we get planned comps as well
+        present_year = date.today().year
+        selected_years = list( range(1900, present_year+5+1) )
+    elif isinstance(years, int):
+        selected_years = [years]
+    elif isinstance(years, list) or isinstance(years, tuple):
+        selected_years = list(years)
     else:
-        filter_strings = [ut_wr.build_filter_string({'year': y}) for y in
-                          np.arange(start=1900, stop=future_year, step=1)]
+        raise TypeError("Param years has to be of type: None, list or int")
 
-    comp_ids = []
-    for fs in filter_strings:
-        comp_ids.extend(
-            ut_wr.extract_competition_ids(
-                ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_COMPETITION + fs)
-            )
-        )
+    if single_fetch:
+        year_batches = [ selected_years ]
+    else:
+        year_batches = [ [year] for year in selected_years ]
 
-    return comp_ids
+    query_strings = ( ut_wr.build_filter_string({'year': year_batch}) for year_batch in year_batches )
+
+    for query_string in query_strings:
+        competitions = ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_COMPETITION + query_string)
+        for competition in competitions:
+            yield competition
+
+def get_competition_ids(*args, **kwargs) -> list[str]:
+    competition_heads_iterator = get_competition_heads(*args, **kwargs)
+    return [ c['id'] for c in competition_heads_iterator ]
 
 
 def extract_pdf_urls(race_urls: list[dict]) -> dict:
@@ -439,6 +608,43 @@ def get_countries(kwargs: dict = {}):
 def get_statistics(kwargs: dict = {}):
     ret_val = ut_wr.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_STATS}', **kwargs)
     return ret_val
+
+
+def get_world_best_times() -> list[dict]:
+    """
+        Use the endpoints '/stats', get the filtered world-best-times and get the urls to the jsons.
+        Extract the relevant information from the results.
+
+        TODO: Only return the boat-class and the competitor (race_boat_id)
+    """
+    fs = ut_wr.build_filter_string(filter_params={'category': 'WBT'})
+    wbts = ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_STATS + fs)
+    ret = []
+    for wbt in wbts:
+        if 'Overall' in wbt['description']:
+            _wbts = ut_wr.load_json(wbt['url'], content_field='BestTimes')
+            for val in _wbts:
+                ret.append({
+                    'race_boat_id': val['Competitor']['Id'],
+                    'boat_class': val['BoatClass'],
+                    'result_time': val['Competitor']['ResultTime']
+                })
+                #athletes = "; ".join([v['Person']['FullName'] for v in val['Competitor']['Athletes']])
+                # todo: remove me, once the data structure has been integrated
+                # the code below represents the needed information
+                #ret.append({
+                #    'boat_class': val['BoatClass'],
+                #    'event_name': val['Competition']['Name'],
+                #    'race_type': val['Race']['Name'],
+                #    'competition_id': val['Competition']['Id'],
+                #    'race_id': val['Race']['Id'],
+                #    'date': val['DateOfBT'],
+                #    'venue': val['Venue']['Name'],
+                #    'names': athletes,
+                #    'time': val['Competitor']['ResultTime']
+                #})
+
+    return ret
 
 
 def get_boatclasses(kwargs: dict = {}):
