@@ -5,8 +5,8 @@ from datetime import datetime, date
 import json as jsn
 
 
-#tqdm = lambda i : i
-from tqdm import tqdm
+# from tqdm import tqdm
+tqdm = lambda i : i
 
 import utils_wr as ut_wr
 import pdf_race_data as pdf_race_data
@@ -432,7 +432,7 @@ def get_by_competition_id_(comp_ids: Union[str, list[str]], verbose: bool = Fals
 
     for event_idx, event in tqdm( enumerate(comp_data.get('events', [])) ):
         for race_idx, race in enumerate(event.get('races', [])):
-            logger.info(f"event_idx {event_idx} race_idx {race_idx}")
+            #logger.info(f"event_idx {event_idx} race_idx {race_idx}")
 
             pdf_info_race_data = select_pdf_(race.get('pdfUrls', []), 'race data')
             pdf_info_results = select_pdf_(race.get('pdfUrls', []), 'results')
@@ -523,33 +523,45 @@ def get_by_competition_id(comp_ids: Union[str, list[str]], keys_of_interest: Uni
     return ret_val
 
 
-def get_competition_ids(years: Optional[Union[list, int]] = None) -> list[str]:
+def get_competition_heads(years: Optional[Union[list, int]] = None, single_fetch: bool = False) -> Iterator[dict]:
     """
-    TODO: can we ask ONLY for the comp id, without overhead
-    Gets the competition ids - optional by year.
-    IF years is None aka not passed, the returned competition ids will be over the entire timeframe.
-    @param years: list or int, filtering the result
-    @return: list[str] - a list of strings containing the competition ids for the years contained in the years argument
-    TODO: if years change year to a range from x-1 to x+5
+    Returns: An Iterator of Competition (dict) not containing any deeper data fields like e.g. Events.
+
+    Param years: Selects years.
+        - Can be a list of years.
+        - Can be an int.
+        - Can be None -> All years from 1900 to 5 years in the future.
+
+    Param single_fetch: Request the selection of years in a single API call.
     """
-    # current year + 5
-    #  This is to make sure we get planned comps as well
-    future_year = date.today().year + 5
-    if years:
-        filter_strings = [ut_wr.build_filter_string({'year': years})]
+
+    # TODO: The following logic should be in a separate function
+    if years == None:
+        # current year -1 to + 5; to make sure we get planned comps as well
+        present_year = date.today().year
+        selected_years = list( range(1900, present_year+5+1) )
+    elif isinstance(years, int):
+        selected_years = [years]
+    elif isinstance(years, list) or isinstance(years, tuple):
+        selected_years = list(years)
     else:
-        filter_strings = [ut_wr.build_filter_string({'year': y}) for y in
-                          range(start=1900, stop=future_year, step=1)]
+        raise TypeError("Param years has to be of type: None, list or int")
 
-    comp_ids = []
-    for fs in filter_strings:
-        comp_ids.extend(
-            ut_wr.extract_competition_ids(
-                ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_COMPETITION + fs)
-            )
-        )
+    if single_fetch:
+        year_batches = [ selected_years ]
+    else:
+        year_batches = [ [year] for year in selected_years ]
 
-    return comp_ids
+    query_strings = ( ut_wr.build_filter_string({'year': year_batch}) for year_batch in year_batches )
+
+    for query_string in query_strings:
+        competitions = ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_COMPETITION + query_string)
+        for competition in competitions:
+            yield competition
+
+def get_competition_ids(*args, **kwargs) -> list[str]:
+    competition_heads_iterator = get_competition_heads(*args, **kwargs)
+    return [ c['id'] for c in competition_heads_iterator ]
 
 
 def extract_pdf_urls(race_urls: list[dict]) -> dict:

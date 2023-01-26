@@ -53,6 +53,12 @@ export default {
   },
 
   methods: {
+    closeMobileNav() {
+      this.mobileNav = false;
+    },
+    include () {
+        return [document.querySelector('.included')]
+      },
     toggleMobileNav() {
       this.mobileNav = !this.mobileNav;
     },
@@ -118,11 +124,11 @@ export default {
           </ul>
         </div>
         <p v-show="mobile" id="mobile-title">U ->- Row</p>
-        <div v-show="mobile" class="icon">
+        <div v-show="mobile" class="icon included">
           <i @click="toggleMobileNav" class="far fa-bars" :class="{ 'icon-active': mobileNav }"></i>
         </div>
         <transition name="mobile-nav">
-          <div v-show="mobileNav" class="dropdown-nav">
+          <div v-show="mobileNav" class="dropdown-nav" v-click-outside="{handler: closeMobileNav, include}">
             <h2 id="nav-header"><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></h2>
             <ul>
               <li v-for="navEntry in navigationLinks">
@@ -226,7 +232,7 @@ header {
       flex-direction: column;
       position: fixed;
       width: 100%;
-      max-width: 260px;
+      max-width: 250px;
       height: 100%;
       background-color: #000000;
       top: 0;

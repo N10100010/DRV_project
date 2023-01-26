@@ -1,8 +1,11 @@
 import axios from "axios";
 import {defineStore} from "pinia";
 
+// function to convert milliseconds to min:sec:ms
+const formatMilliseconds = ms => new Date(ms).toISOString().slice(14, -2);
+// predefined colors for charts
+const COLORS = ['#FF0000', '#FFCC00', '#008000', '#000', '#45E845', '#00E300'];
 
-const COLORS = ['#1E90FF', '#EE7621', '#66CD00', '#CD0000', '#7A67EE', '#32ffff'];
 export const useRennstrukturAnalyseState = defineStore({
     id: "base",
     state: () => ({
@@ -24,8 +27,8 @@ export const useRennstrukturAnalyseState = defineStore({
                 "startDate": "2022-06-16 14:12:00",
                 "venue": "Malta/Poznan, Poland",
                 "boatClass": "Men's Eight",
-                "worldBestTimeBoatClass": "00:05:58,36",
-                "bestTimeBoatClassCurrentOZ": "00:05:58,36",
+                "worldBestTimeBoatClass": 358360,
+                "bestTimeBoatClassCurrentOZ": 358360,
                 "pdf_urls": {
                     "result": "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCH_2018/WCH_2018_ROWWSCULL2------------HEAT000100--_C73X7962.PDF",
                     "race_data": "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/ECM2022/ECM2022_ROWXSCULL2--PR2-------PREL000100--_C77X3426.PDF"
@@ -51,31 +54,31 @@ export const useRennstrukturAnalyseState = defineStore({
                         ],
                         "intermediates": {
                             "500": {
-                                "time [t]": "00:02:24,12",
-                                "pace [t]": "00:02:24,12",
+                                "time [t]": 144200,
+                                "pace [t]": 144200,
                                 "rank": 2,
-                                "deficit [s]": "00:00:03,120",
+                                "deficit [s]": 1500,
                                 "relDiffToAvgSpeed [%]": -1.3
                             },
                             "1000": {
-                                "time [t]": "00:03:13,82",
-                                "pace [t]": "00:01:50,72",
+                                "time [t]": 144200,
+                                "pace [t]": 144200,
                                 "rank": 1,
-                                "deficit [s]": "00:00:00,000",
+                                "deficit [s]": 0,
                                 "relDiffToAvgSpeed [%]": 4.3
                             },
                             "1500": {
-                                "time [t]": "00:04:52,00",
-                                "pace [t]": "00:01:50,72",
+                                "time [t]": 144200,
+                                "pace [t]": 144200,
                                 "rank": 1,
-                                "deficit [s]": "00:00:00,000",
+                                "deficit [s]": 0,
                                 "relDiffToAvgSpeed [%]": 2.3
                             },
                             "2000": {
-                                "time [t]": "00:06:29,14",
-                                "pace [t]": "00:01:50,72",
+                                "time [t]": 144200,
+                                "pace [t]": 144200,
                                 "rank": 1,
-                                "deficit [s]": "00:00:00,000",
+                                "deficit [s]": 0,
                                 "relDiffToAvgSpeed [%]": 1.3
                             }
                         },
@@ -165,31 +168,31 @@ export const useRennstrukturAnalyseState = defineStore({
                         ],
                         "intermediates": {
                             "500": {
-                                "time [t]": "00:01:24,12",
-                                "pace [t]": "00:02:24,12",
+                                "time [t]": 144200,
+                                "pace [t]": 144200,
                                 "rank": 1,
-                                "deficit [s]": "00:00:00,000",
+                                "deficit [s]": 0,
                                 "relDiffToAvgSpeed [%]": -1.3
                             },
                             "1000": {
-                                "time [t]": "00:03:13,82",
-                                "pace [t]": "00:01:50,72",
+                                "time [t]": 144200,
+                                "pace [t]": 144200,
                                 "rank": 2,
-                                "deficit [s]": "00:00:04,000",
+                                "deficit [s]": 2660,
                                 "relDiffToAvgSpeed [%]": 4.3
                             },
                             "1500": {
-                                "time [t]": "00:04:52,00",
-                                "pace [t]": "00:01:50,72",
+                                "time [t]": 144200,
+                                "pace [t]": 144200,
                                 "rank": 2,
-                                "deficit [s]": "00:00:06,670",
+                                "deficit [s]": 4000,
                                 "relDiffToAvgSpeed [%]": 2.3
                             },
                             "2000": {
-                                "time [t]": "00:06:29,14",
-                                "pace [t]": "00:01:50,72",
+                                "time [t]": 144200,
+                                "pace [t]": 144200,
                                 "rank": 2,
-                                "deficit [s]": "00:00:02,340",
+                                "deficit [s]": 5340,
                                 "relDiffToAvgSpeed [%]": 1.3
                             }
                         },
@@ -271,7 +274,10 @@ export const useRennstrukturAnalyseState = defineStore({
             return state.data.analysis
         },
         getCompetitionData(state) {
-            return state.data.raceData[0]
+            const data = state.data.raceData[0]
+            data.worldBestTimeBoatClass = formatMilliseconds(data.worldBestTimeBoatClass);
+            data.bestTimeBoatClassCurrentOZ = formatMilliseconds(data.bestTimeBoatClassCurrentOZ);
+            return data
         },
         getRaceAnalysisFilterOptions(state) {
             return state.data.filterOptions
@@ -318,7 +324,11 @@ export const useRennstrukturAnalyseState = defineStore({
 
                 rowData.push(athleteNames);
                 for (const [index, [key, intermediate]] of Object.entries(dataObj.intermediates).entries()) {
-                    firstArray.push(intermediate["time [t]"], intermediate["pace [t]"], intermediate["deficit [s]"])
+                    firstArray.push(
+                        formatMilliseconds(intermediate["time [t]"]),
+                        formatMilliseconds(intermediate["pace [t]"]),
+                        formatMilliseconds(intermediate["deficit [s]"])
+                    )
                     secondArray.push(["(" + intermediate["rank"] + ")", speedValues[index], strokeValues[index], propulsionValues[index]])
                 }
 
@@ -336,8 +346,46 @@ export const useRennstrukturAnalyseState = defineStore({
 
                 tableData.push(rowData);
             })
-
             return tableData;
+        },
+        getDeficitInMeters(state) {
+            // TODO: How to integrate the time here?
+
+            // determine winner
+            const winnerIdx = state.data.raceData[0].data.findIndex(team => team.rank === 1);
+            const winnerData = state.data.raceData[0].data.map(dataObj => dataObj.gpsData.distance)[winnerIdx]
+            const winnerTeamSpeeds = Object.fromEntries(Object.entries(winnerData).map(
+                ([key, val]) => [key, val["speed [m/s]"]]));
+
+            // calculate difference to winner based on speed
+            let speedPerTeam = {};
+            for (const i in state.data.raceData[0].data) {
+                const speedData = state.data.raceData[0].data.map(dataObj => dataObj.gpsData.distance)[i];
+                let diffSpeedValues = {}
+                for (const [key, val] of Object.entries(speedData)) {
+                    const speedWinner = winnerTeamSpeeds[key]
+                    const speedCurrentTeam = val["speed [m/s]"]
+                    let time = 50 / speedWinner;
+                    diffSpeedValues[key] = (speedWinner * time) - (speedCurrentTeam * time);
+                }
+                speedPerTeam[i] = diffSpeedValues
+            }
+            let colorIndex = 0;
+            const datasets = []
+            Object.entries(speedPerTeam).forEach(([key, value]) => {
+                const label = key;
+                const backgroundColor = COLORS[colorIndex % 6];
+                const borderColor = COLORS[colorIndex % 6];
+                const data = Object.values(value);
+                datasets.push({label, backgroundColor, borderColor, data});
+                colorIndex++;
+            });
+            const allKeys = Object.values(speedPerTeam).map(obj => Object.keys(obj))
+            return {
+                labels: Array.from(new Set([].concat(...allKeys))),
+                datasets
+            };
+            // const timeValues = state.data.raceData[0].data.map(dataObj => dataObj.intermediates)[0];
         },
         getGPSChartData(state) {
             const chartDataKeys = ['speed [m/s]', 'stroke [1/min]', 'propulsion [m/stroke]'];
@@ -348,7 +396,7 @@ export const useRennstrukturAnalyseState = defineStore({
                     const label = dataObj.nation_ioc;
                     const backgroundColor = COLORS[colorIndex % 6];
                     const borderColor = COLORS[colorIndex % 6];
-                    const data = Object.values(dataObj.gpsData.distance).map(distanceObj => distanceObj[key]);
+                    const data = Object.values(dataObj.gpsData.distance).map(obj => obj[key]);
                     datasets.push({label, backgroundColor, borderColor, data});
                     colorIndex++;
                 });
@@ -393,61 +441,61 @@ export const useRennstrukturAnalyseState = defineStore({
         async postFormData(formData) {
             setTimeout(() => {
                 this.data.analysis = [
-                {
-                    "id": 395871,
-                    "display_name": "2022 World Rowing Cup II",
-                    "venue": "Malta/Poznan, Poland",
-                    "start_date": "2022-06-16 00:00:00",
-                    "competition_category": "World Rowing Cup",
-                    "events": [
-                        {
-                            "id": 734839,
-                            "display_name": "Lightweight Women's Single Sculls",
-                            "races": [
-                                {"id": 187573, "display_name": "Final FB"},
-                                {"id": 424754, "display_name": "Heat 1"}
-                            ]
-                        },
-                        {
-                            "id": 748394,
-                            "display_name": "Men's Four",
-                            "races": [
-                                {"id": 195638, "display_name": "Men's Eight Heat 1"},
-                                {"id": 823759, "display_name": "Men's Eight Final FA"},
-                                {"id": 748394, "display_name": "Men's Eight Repechage"},
-                                {"id": 839473, "display_name": "Men's Eight Heat 2"}
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "id": 395871,
-                    "display_name": "2022 World Rowing Cup III",
-                    "venue": "Malta/Poznan, Poland",
-                    "start_date": "2022-06-16 00:00:00",
-                    "competition_category": "World Rowing Cup",
-                    "events": [
-                        {
-                            "id": 734839,
-                            "display_name": "Lightweight Women's Single Sculls",
-                            "races": [
-                                {"id": 187573, "display_name": "Final FB"},
-                                {"id": 424754, "display_name": "Heat 1"}
-                            ]
-                        },
-                        {
-                            "id": 748394,
-                            "display_name": "Men's Four",
-                            "races": [
-                                {"id": 195638, "display_name": "Men's Eight Heat 1"},
-                                {"id": 823759, "display_name": "Men's Eight Final FA"},
-                                {"id": 748394, "display_name": "Men's Eight Repechage"},
-                                {"id": 839473, "display_name": "Men's Eight Heat 2"}
-                            ]
-                        }
-                    ]
-                }
-            ]
+                    {
+                        "id": 395871,
+                        "display_name": "2022 World Rowing Cup II",
+                        "venue": "Malta/Poznan, Poland",
+                        "start_date": "2022-06-16 00:00:00",
+                        "competition_category": "World Rowing Cup",
+                        "events": [
+                            {
+                                "id": 734839,
+                                "display_name": "Lightweight Women's Single Sculls",
+                                "races": [
+                                    {"id": 187573, "display_name": "Final FB"},
+                                    {"id": 424754, "display_name": "Heat 1"}
+                                ]
+                            },
+                            {
+                                "id": 748394,
+                                "display_name": "Men's Four",
+                                "races": [
+                                    {"id": 195638, "display_name": "Men's Eight Heat 1"},
+                                    {"id": 823759, "display_name": "Men's Eight Final FA"},
+                                    {"id": 748394, "display_name": "Men's Eight Repechage"},
+                                    {"id": 839473, "display_name": "Men's Eight Heat 2"}
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "id": 395871,
+                        "display_name": "2022 World Rowing Cup III",
+                        "venue": "Malta/Poznan, Poland",
+                        "start_date": "2022-06-16 00:00:00",
+                        "competition_category": "World Rowing Cup",
+                        "events": [
+                            {
+                                "id": 734839,
+                                "display_name": "Lightweight Women's Single Sculls",
+                                "races": [
+                                    {"id": 187573, "display_name": "Final FB"},
+                                    {"id": 424754, "display_name": "Heat 1"}
+                                ]
+                            },
+                            {
+                                "id": 748394,
+                                "display_name": "Men's Four",
+                                "races": [
+                                    {"id": 195638, "display_name": "Men's Eight Heat 1"},
+                                    {"id": 823759, "display_name": "Men's Eight Final FA"},
+                                    {"id": 748394, "display_name": "Men's Eight Repechage"},
+                                    {"id": 839473, "display_name": "Men's Eight Heat 2"}
+                                ]
+                            }
+                        ]
+                    }
+                ]
                 this.loadingState = false
             }, 800);
             /*

@@ -9,6 +9,7 @@ from sqlalchemy.orm import joinedload
 
 from model import model
 
+
 # app is the main controller for the Flask-Server and will start the app in the main function 
 app = Flask(__name__, template_folder='web/templates')
 
@@ -30,9 +31,9 @@ def get_report():
     return data
 
 
-@app.route('/test')
-def test():
-    return { "msg": "Hello World! This is a test endopoint." }
+@app.route('/healthcheck')
+def healthcheck():
+    return "healthy"
 
 
 @app.route('/competition_category/', methods=['GET'])
@@ -193,6 +194,7 @@ def shutdown_session(exception=None):
 #     return {}
 
 
+# TODO: Remove the following lines or move app.py to parent folder (/backend)
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=True, host='0.0.0.0', port=port)

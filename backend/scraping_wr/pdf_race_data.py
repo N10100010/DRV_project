@@ -13,7 +13,6 @@ Basic stats:
 """
 
 import camelot  # on Mac via 'pip install camelot-py[cv]'
-from tqdm import tqdm
 import itertools
 import pandas as pd
 from typing import Union
