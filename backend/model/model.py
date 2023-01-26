@@ -311,6 +311,8 @@ class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae
     pdf_url_results = Column(String)
     pdf_url_race_data = Column(String)
 
+    # course_length_meter = Column(Integer) # e.g. 2000 for 2000 meter course # Hypothesis: Competition.is_fisa -> 2000m ? TODO: data exploration
+
     # Meaning and importance not exactly clear
     race_nr__ = Column(String) # e.g. "103"
     rescheduled__ = Column(String) # e.g. 0 # maybe map to bool?
