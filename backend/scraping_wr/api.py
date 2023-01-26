@@ -237,7 +237,7 @@ def extract_race_phase_details(rsc_code: str, display_name: str):  # -> dict:
     _, subtype = ut_wr.extract_race_phase_from_rsc(coarse_phase)
 
     if 'SFNL' in coarse_phase:
-        subtype, number = ut_wr.process_race_display_name(display_name)
+        subtype, number = ut_wr.process_semifinal_display_name(display_name)
         if subtype == '' or subtype == 'r':
             # edge-case; no proper display-name was entered in world-rowing-data
             subtype = 'sfnl'

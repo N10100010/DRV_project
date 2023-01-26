@@ -181,7 +181,7 @@ def extract_race_phase_from_rsc(processed: str) -> (str, int):
     return processed[0: start], int(processed[-1])
 
 
-def process_race_display_name(name: str) -> tuple[str, int]:
+def process_semifinal_display_name(name: str) -> tuple[str, int]:
     """
     Processes the display-name of a race to extract the type of it.
     ! This is to cover an edge-case to cover semifinals. this means we know that it is semifinals display-name
