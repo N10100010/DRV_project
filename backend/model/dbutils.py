@@ -1,8 +1,5 @@
-
-
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
-from sqlalchemy_utils import database_exists, create_database
 
 from contextlib import suppress
 import datetime as dt
@@ -327,11 +324,13 @@ if __name__ == '__main__':
     # ----------------------------------
 
     import json
-    from .model import engine, Scoped_Session
 
-    if not database_exists(engine.url): 
-        print("----- Create Database 'rowing' -----")
-        create_database(engine.url)
+    ### NOTE: database_exists() is deprecated if database does not exist the config is wrong.
+    ### this behaviour shouldn't be enforced like that. env var PGDATABASE has to be used.
+    # from sqlalchemy_utils import database_exists, create_database
+    # if not database_exists(engine.url): 
+    #     print("----- Create Database 'rowing' -----")
+    #     create_database(engine.url)
 
     logging.basicConfig(level=logging.DEBUG)
 
