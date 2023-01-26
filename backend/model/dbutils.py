@@ -241,6 +241,7 @@ def wr_map_competition_prescrape(session, entity, data):
         return entity
 
     entity.scraper_maintenance_level = STATE_RESULT_STATE
+    entity.scraper_data_provider = model.Enum_Data_Provider.world_rowing.value
 
     entity.name = get_(data, 'DisplayName')
     with suppress(TypeError, ValueError):
@@ -285,7 +286,7 @@ def __wr_map_competition(session, entity: model.Competition, data):
 
 def wr_map_competition_scrape(session, entity: model.Competition, data: dict):
     # Check maintenance state
-    STATE_RESULT_STATE = model.Enum_Maintenance_Level.world_rowing_api_grabbed.value
+    STATE_RESULT_STATE = model.Enum_Maintenance_Level.world_rowing_api_scraped.value
     STATE_UPPER_LIMIT  = STATE_RESULT_STATE
 
     state = entity.scraper_maintenance_level
@@ -331,6 +332,6 @@ if __name__ == '__main__':
         with Scoped_Session() as session:
             with open(args.insert, mode="r", encoding="utf-8") as fp:
                 competition_data = json.load(fp)
-            wr_insert(session, model.Competition, wr_map_competition_scrape, competition_data)
+            competition = wr_insert(session, model.Competition, wr_map_competition_scrape, competition_data)
             session.commit()
     

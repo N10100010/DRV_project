@@ -5,6 +5,8 @@ import datetime
 
 from sqlalchemy import select
 from sqlalchemy.sql.expression import func
+# https://docs.sqlalchemy.org/en/20/core/sqlelement.html#sqlalchemy.sql.expression.Operators.__and__
+from sqlalchemy import and_, or_, not_
 
 from model import model
 from model import dbutils
@@ -16,6 +18,7 @@ logger = logging.getLogger(__name__)
 SCRAPER_SINGLEPASS = os.environ.get('SCRAPER_SINGLEPASS','').strip() == '1'
 SCRAPER_DEV_MODE = os.environ.get('DRV_SCRAPER_DEV_MODE','').strip() == '1'
 SCRAPER_YEAR_MIN = int(os.environ.get('SCRAPER_YEAR_MIN', '1900').strip())
+SCRAPER_MAINTENANCE_PERIOD_DAYS = int(os.environ.get('SCRAPER_MAINTENANCE_PERIOD_DAYS', '7').strip())
 
 DAY_IN_SECONDS = 60 * 60 * 24
 SCRAPER_SLEEP_TIME_SECONDS = 1 * DAY_IN_SECONDS
@@ -94,9 +97,14 @@ def prescrape(**kwargs):
 
 def _get_competitions_to_scrape(session):
     """Returns tuple: competitions_iterator, number_of_competitions"""
+    LEVEL_PRESCRAPED = model.Enum_Maintenance_Level.world_rowing_api_prescraped.value
+    LEVEL_SCRAPED = model.Enum_Maintenance_Level.world_rowing_api_scraped.value
+    DATA_PROVIDER_ID = model.Enum_Data_Provider.world_rowing.value
+
     statement = (
         select(model.Competition)
-        .where(model.Competition.scraper_maintenance_level == model.Enum_Maintenance_Level.world_rowing_api_prescraped.value)
+        .where(model.Competition.scraper_data_provider == DATA_PROVIDER_ID)
+        .where(model.Competition.scraper_maintenance_level.in_( [LEVEL_PRESCRAPED, LEVEL_SCRAPED] ))
     ) 
     competitions = session.execute(statement).scalars().all()
     N = len(competitions) # TODO: Get rid of all() call and use a count query to get N: https://stackoverflow.com/a/65775282
@@ -112,7 +120,7 @@ def scrape():
         for competition in competitions_iter:
             competition_uuid = competition.additional_id_
             if not competition_uuid:
-                logger.error(f"Competition with id={competition.id} has no UUID w.r.t. (World Rowing API). Skip")
+                logger.error(f"Competition with id={competition.id} has no UUID (w.r.t. World Rowing API); Skip")
                 continue
             
             # High Prio TODO: introduce check if scraping should actually happen
@@ -128,19 +136,50 @@ def scrape():
         session.commit()
         # Race Data PDF here or in maintain()
 
+def _get_competitions_to_maintain(session):
+    """Returns tuple: competitions_iterator, number_of_competitions"""
+    DATA_PROVIDER_ID = model.Enum_Data_Provider.world_rowing.value
+    LEVEL_SCRAPED = model.Enum_Maintenance_Level.world_rowing_api_scraped.value
+    LEVEL_POSTPROCESSED = model.Enum_Maintenance_Level.world_rowing_api_postprocessed.value
+    scrape_before_date = datetime.datetime.now() - datetime.timedelta(days=int(SCRAPER_MAINTENANCE_PERIOD_DAYS))
+
+    statement = (
+        select(model.Competition)
+        .where(model.Competition.scraper_data_provider == DATA_PROVIDER_ID)
+        .where(
+            or_(
+                model.Competition.scraper_maintenance_level == LEVEL_SCRAPED,
+                and_(
+                    model.Competition.scraper_maintenance_level == LEVEL_POSTPROCESSED,
+                    model.Competition.scraper_last_scrape < scrape_before_date
+                )
+            )
+        )
+    )
+    competitions = session.execute(statement).scalars().all()
+    return competitions, len(competitions)
 
 def maintain():
-    logger = logging.getLogger("maintain")
+    logger = logging.getLogger("postprocessing")
+    with model.Scoped_Session() as session:
+        logger.info("Find competitions that have to be maintained")
+        competitions, N = _get_competitions_to_maintain(session)
+        logger.info(f"Found N={N} competitions")
+        for competition in competitions:
+            competition_uuid = competition.additional_id_
+            if not competition_uuid:
+                logger.error(f"Competition with id={competition.id} has no UUID (w.r.t. World Rowing API); Skip")
+                continue
+            logger.info(f"Competition id={competition.additio}")
 
-    logger.info("Find unmaintained competition in db")
+            # New concept: api.get_by_competition_id_(..., parse_pdf=True)
+            #    -> does it make sense to put validation logic (db/model imports) inside api?
 
-    logger.info("Found")
+            logger.info("Fetch & Parse PDF")
 
-    logger.info("Fetch & Parse PDF")
+            logger.info("Check Quality of both Datasets")
 
-    logger.info("Check Quality of both Datasets")
-
-    logger.info("Overwrite in db")
+            logger.info("Overwrite in db")
 
 
 def scheduler(duration=SCRAPER_SLEEP_TIME_SECONDS):
