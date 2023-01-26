@@ -25,24 +25,25 @@ def grab_competition_example(competition_id, out_path='dump.json'):
 
 
 if __name__ == '__main__':
-   #import argparse
+    import argparse
+    from sys import exit as sysexit
 
-   #DEFAULT_COMPETITION = '718b3256-e778-4003-88e9-832c4aad0cc2'
+    DEFAULT_COMPETITION = '718b3256-e778-4003-88e9-832c4aad0cc2'
 
-   #parser = argparse.ArgumentParser()
-   #subparsers = parser.add_subparsers(help='Available sub-commands', dest='command')
-   #parser_cgrab = subparsers.add_parser('grabc', help='Grab a competition and save as JSON')
-   #parser_cgrab.add_argument("-i", "--uuid", help="Scrape competition and save as JSON", default=DEFAULT_COMPETITION)
-   #parser_cgrab.add_argument("-o", "--out", help="Specify path for output", default="dump.json")
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(help='Available sub-commands', dest='command')
+    parser_cgrab = subparsers.add_parser('grabc', help='Grab a competition and save as JSON')
+    parser_cgrab.add_argument("-i", "--uuid", help="Scrape competition and save as JSON", default=DEFAULT_COMPETITION)
+    parser_cgrab.add_argument("-o", "--out", help="Specify path for output", default="dump.json")
 
-   #args = parser.parse_args()
-   #print(args)
+    args = parser.parse_args()
+    print(args)
 
-   #if args.command == 'grabc':
-   #    grab_competition_example(args.uuid, args.out)
-   #    sysexit()
+    if args.command == 'grabc':
+       grab_competition_example(args.uuid, args.out)
+       sysexit()
 
-    ### KEEP FOR TESTING
+    ### KEEP FOR TESTING ----------------------------------
 
     #_ids_all = []
     #for y in np.arange(2000, 2024):
@@ -53,10 +54,10 @@ if __name__ == '__main__':
     #api.save(ret, './races_2000_2024_pdfs.json')
 
     #ret = api.load('./races_2000_2024_pdfs.json')
-#
+    #
     ## import collections
     ## d = dict()
-#
+    #
     #tup_set__rsc_disname = set()
     #tup_set__rsc_disname_short = set()
     ## [race for race in ret['races'] if 'RND' in race["RscCode"]]
