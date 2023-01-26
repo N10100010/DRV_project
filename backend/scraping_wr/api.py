@@ -224,32 +224,10 @@ RACE_STATUSES = {
 }
 
 ########################################################################################################################
-
-def process_race_display_name(name: str) -> tuple[str, int]:
-    """
-    Processes the display-name of a race to extract the type of it.
-    ! This is to cover an edge-case to cover semifinals. this means we know that it is semifinals display-name
-    @param name: The unprocessed display-name of a race
-    @return: The processed short-version of a display-name
-    """
-    lower = name.lower()
-    if 'semifinal' in lower:
-        last_occurrence = lower.rindex('semifinal')
-        #  9 = len(semifinal)
-        lower = lower[last_occurrence + 9: len(lower)]
-
-    org_lower = lower.replace('0', '').lstrip('s')
-    number = re.findall(r'\d+', org_lower)
-    number = number[0] if len(number) > 0 else None
-
-    # strip-fct's can handle None value - does nothing
-    lower = org_lower.lstrip('sf').lstrip('f').rstrip('r').rstrip(number).replace(' ', '').lstrip('s')
-
-    return lower, number
-
-
 def extract_race_phase_details(rsc_code: str, display_name: str):  # -> dict:
     """
+    Extracts detail information about a race.
+    ! Both values to the keys can be None.
     @param rsc_code: The associated rsc-code of a race
     @param display_name: the associated display name of a race
     @return: dict, containing the sub
@@ -259,7 +237,7 @@ def extract_race_phase_details(rsc_code: str, display_name: str):  # -> dict:
     _, subtype = ut_wr.extract_race_phase_from_rsc(coarse_phase)
 
     if 'SFNL' in coarse_phase:
-        subtype, number = process_race_display_name(display_name)
+        subtype, number = ut_wr.process_race_display_name(display_name)
         if subtype == '' or subtype == 'r':
             # edge-case; no proper display-name was entered in world-rowing-data
             subtype = 'sfnl'
@@ -268,7 +246,7 @@ def extract_race_phase_details(rsc_code: str, display_name: str):  # -> dict:
     else:
         ret = {'subtype': None, 'number': subtype}
 
-    return ret['subtype'], ret['number']
+    return ret
 
 
 def save(data: dict, fn: str):

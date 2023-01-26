@@ -181,6 +181,28 @@ def extract_race_phase_from_rsc(processed: str) -> (str, int):
     return processed[0: start], int(processed[-1])
 
 
+def process_race_display_name(name: str) -> tuple[str, int]:
+    """
+    Processes the display-name of a race to extract the type of it.
+    ! This is to cover an edge-case to cover semifinals. this means we know that it is semifinals display-name
+    @param name: The unprocessed display-name of a race
+    @return: The processed short-version of a display-name
+    """
+    lower = name.lower()
+    if 'semifinal' in lower:
+        last_occurrence = lower.rindex('semifinal')
+        #  9 = len(semifinal)
+        lower = lower[last_occurrence + 9: len(lower)]
+
+    org_lower = lower.replace('0', '').lstrip('s')
+    number = re.findall(r'\d+', org_lower)
+    number = number[0] if len(number) > 0 else None
+
+    # strip-fct's can handle None value - does nothing
+    lower = org_lower.lstrip('sf').lstrip('f').rstrip('r').rstrip(number).replace(' ', '').lstrip('s')
+
+    return lower, number
+
 def extract_competition_ids(values: dict) -> list[str]:
     """
     -
