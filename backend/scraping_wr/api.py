@@ -8,9 +8,9 @@ import json as jsn
 # from tqdm import tqdm
 tqdm = lambda i : i
 
-import utils_wr as ut_wr
-import pdf_race_data as pdf_race_data
-import pdf_result as pdf_result_data
+from . import utils_wr as ut_wr
+from . import pdf_race_data as pdf_race_data
+from . import pdf_result as pdf_result_data
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

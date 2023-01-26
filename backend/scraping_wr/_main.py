@@ -1,14 +1,14 @@
 import numpy as np
 
-from api import get_competition_ids, get_by_competition_id, get_by_competition_id_
-from utils_wr import load_json
+from .api import get_competition_ids, get_by_competition_id, get_by_competition_id_
+from .utils_wr import load_json
 import requests
 
 import logging
 
 logger = logging.getLogger(__name__)
 
-import api
+from . import api
 
 ########################################################################################################################
 # NOTE:
