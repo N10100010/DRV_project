@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 WR_FILTER_MAPPING = {
     'year': 'Year',
-    'others': 'Others'
+    'category': 'Category'
     # todo: extend me...
 }
 
@@ -70,7 +70,7 @@ def get_all(data: Union[dict, list], key: str):
 
 
 @retry(wait=wait_exponential(max=5), stop=stop_after_attempt(5))
-def load_json(url: str, params=None, timeout=20., **kwargs):
+def load_json(url: str, content_field='data', params=None, timeout=20., **kwargs):
     """
     Loads any json from any URL.
     The function will be retried, if the endpoint might not be reachable atm.
@@ -90,7 +90,7 @@ def load_json(url: str, params=None, timeout=20., **kwargs):
         return {}
 
     if res.text and res.status_code != 404:
-        return res.json()['data']
+        return res.json()[content_field]
     else:
         return {}
 

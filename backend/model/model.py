@@ -5,7 +5,9 @@ import urllib.parse
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.ext.declarative import declarative_base
+
+from sqlalchemy.orm import relationship
 from sqlalchemy import Column, ForeignKey, Integer, BigInteger, Float, String, Boolean, Date, DateTime, Enum
 
 # logging stuff
@@ -80,6 +82,7 @@ def get_rowing_db_url() -> str:
     """
     db_url = "{drivername}://{username}:{password}@{host}:{port}/{database}".format(
         drivername=os.environ.get('DB_SQLALCHEMY_DRIVERNAME', 'postgresql+psycopg2'),
+
         username=urllib.parse.quote_plus( os.environ.get('PGUSER', 'postgres') ),
         password=urllib.parse.quote_plus( os.environ.get('PGPASSWORD', 'postgres') ),
         host=os.environ.get('PGHOST', 'localhost'),
