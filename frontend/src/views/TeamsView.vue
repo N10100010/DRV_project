@@ -42,6 +42,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
     <v-container class="pa-0 mt-8" style="min-height: 400px">
       <v-row>
         <v-col cols="12">
+          <h2>{{ Object.values(tableData["year"][0])[0] }} bis {{ Object.values(tableData["year"][1])[0] }}</h2>
             <v-table class="tableStyles" density="comfortable">
               <thead>
                 <tr>

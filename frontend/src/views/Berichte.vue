@@ -48,7 +48,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
               <v-alert type="success" variant="tonal" class="my-2" v-if="tableData.results">
                 <v-row>
                   <v-col cols="12">
-                    <p>{{ tableData.results }} Datensätze |
+                    <p>{{ matrixVisible ? matrixResults : tableData.results }} Datensätze |
                       Von {{ tableData.start_date.slice(0, 4) }} Bis {{ tableData.end_date.slice(0, 4) }}</p>
                   </v-col>
                 </v-row>
@@ -61,7 +61,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 </v-row>
               </v-alert>
 
-              <v-table class="tableStyles" density="compact">
+              <v-table class="tableStyles" density="compact" v-if="!matrixVisible">
                 <tbody class="nth-grey">
                 <tr>
                   <th>Weltbestzeit</th>
@@ -122,6 +122,33 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 </tr>
                 </tbody>
               </v-table>
+              <v-table class="tableStyles" density="compact" v-if="matrixVisible">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>WB [t]</th>
+                    <th>Ø [t]</th>
+                    <th>Δ [s]</th>
+                    <th>n</th>
+                  </tr>
+                </thead>
+                <tbody class="nth-grey">
+                  <template v-for="row in matrixTableData">
+                    <tr v-if="(typeof row === 'string')" class="subheader">
+                      <th><b>{{ row }}</b></th>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                    <tr v-else>
+                      <td v-for="item in row">
+                        {{ item }}
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </v-table>
             </v-col>
             <v-col :cols="mobile ? 12 : 7" class="pa-0">
               <v-container style="width: 100%" class="pa-2">
@@ -150,6 +177,12 @@ export default {
       tableData: "getTableData"
     }),
     ...mapState(useBerichteState, {
+      matrixResults: "getMatrixTableResults"
+    }),
+    ...mapState(useBerichteState, {
+        matrixTableData: 'getMatrixTableData'
+    }),
+    ...mapState(useBerichteState, {
       getBarChartData: "getBarChartData"
     }),
     ...mapState(useBerichteState, {
@@ -157,6 +190,9 @@ export default {
     }),
     ...mapState(useBerichteState, {
       filterState: "getFilterState"
+    }),
+    ...mapState(useBerichteState, {
+      matrixVisible: "getSelectedBoatClass"
     })
   },
   methods: {
@@ -280,9 +316,17 @@ export default {
   }
 }
 
-.nth-grey tr:nth-child(even) {
+.nth-grey tr:nth-child(odd) {
   background-color: rgba(0, 0, 0, .05);
 }
+
+/*
+.no-border {
+  border-left: none !important;
+  border-right: none !important;
+}
+*/
+
 .filterToggleButton {
   position: fixed;
   z-index: 10;
