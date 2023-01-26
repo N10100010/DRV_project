@@ -18,8 +18,8 @@ import itertools
 import pandas as pd
 from typing import Union
 
-from .utils_general import write_to_json
-from .utils_pdf import (handle_table_partitions, get_data_loc, print_stats, find_distance_column,
+from utils_general import write_to_json
+from utils_pdf import (handle_table_partitions, get_data_loc, print_stats, find_distance_column,
                        clean_df, get_string_loc, check_speed_stroke, reset_axis, clean_str)
 import logging
 

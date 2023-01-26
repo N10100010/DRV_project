@@ -8,9 +8,9 @@ import json as jsn
 #tqdm = lambda i : i
 from tqdm import tqdm
 
-from . import utils_wr as ut_wr
-from . import pdf_race_data as pdf_race_data
-from . import pdf_result as pdf_result_data
+import utils_wr as ut_wr
+import pdf_race_data as pdf_race_data
+import pdf_result as pdf_result_data
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -269,16 +269,6 @@ def extract_race_phase_from_rsc(processed: str) -> (str, int):
     # return only parts that indicate the phase
     return processed[0: start], int(processed[-1])
 
-## FILTER FUNCTIONS
-def filter_races(races: list, fltr: dict) -> list:
-    # todo: the races should already have the filter present. it might be best to add filter parameters to the db
-    # todo: is this even needed?
-    ret = []
-
-    for race in races:
-        boat_class, phase_stage = process_rsc_code(race['RscCode'])
-
-    return ret
 
 def process_race_display_name(name: str) -> str:
     """
@@ -299,19 +289,19 @@ def process_race_display_name(name: str) -> str:
     def _process(s: str, t: tuple) -> str:
         init_s = s
         _s, _c, fine = t
-        if s.startswith(_c):
+        if s.startswith(_c) or s.startswith(_s):
             s = s.replace(_c + _c[0], _s).replace(_c, _s).replace(_s + _s, _s)
         return s
 
     val = lower
     if 'quarterfinal' in lower:
         short, coarse, fine = 'qfnl', 'quarterfinal', range(1, 10)
-        lower = lower + str(fine[0]) if lower[-1] not in fine else lower
+        lower = lower + str(fine[0]) if lower[-1].isnumeric() and int(lower[-1]) not in fine else lower
         val = _extract(lower)
         val = _process(val, (short, coarse, fine))
     elif 'semifinal' in lower:
-        short, coarse, fine = 'sfnl', 'semifinal', range(1, 4)
-        lower = lower + str(fine[0]) if lower[-1] not in fine else lower
+        short, coarse, fine = 'sfnl', 'semifinal', range(1, 5)
+        val = ''.join([v for v in lower if v not in fine])
         val = _extract(lower)
         val = _process(val, (short, coarse, fine))
     elif 'final' in lower:
@@ -327,24 +317,23 @@ def process_race_display_name(name: str) -> str:
 
     elif 'heat' in lower:
         short, coarse, fine = 'h', 'heat', range(1, 10)
-        lower = lower + str(fine[0]) if lower[-1] not in fine else lower
+        lower = lower + str(fine[0]) if lower[-1].isnumeric() and int(lower[-1]) not in fine else lower
         val = _extract(lower)
         val = _process(val, (short, coarse, fine))
     elif 'preliminary' in lower or 'test' in lower:
         short, coarse, fine = 'prel', 'preliminary', range(1, 5)
-        lower = lower + str(fine[0]) if lower[-1] not in fine else lower
+        lower = lower + str(fine[0]) if lower[-1].isnumeric() and int(lower[-1]) not in fine else lower
         val = _extract(lower)
         val = _process(val, (short, coarse, fine))
         val = val.replace('test', '')
         val = val.replace('race', '')
-    elif 'repechage' in lower:
+    elif 'repechage' in lower or lower == 'r':
+        if lower == 'r' or lower == 'r1':
+            lower = 'rep1'
         short, coarse, fine = 'rep', 'repechage', range(1, 10)
-        lower = lower + str(fine[0]) if lower[-1] not in fine else lower
+        lower = lower + str(fine[0]) if lower[-1].isnumeric() and int(lower[-1]) not in fine else lower
         val = _extract(lower)
         val = _process(val, (short, coarse, fine))
-        #
-    # todo: what about seeding?
-
     else:
         print(f"did not identify lower: {lower}")
 
@@ -430,6 +419,7 @@ def merge_race_data(race, race_data):
         race_idx, race_data_idx = mapping
         race[race_idx]['pdf_parsed_race_data'] = race_data[race_data_idx]
 """
+
 
 def get_by_competition_id_(comp_ids: Union[str, list[str]], verbose: bool = False, parse_pdf=False) -> dict:
     """
@@ -606,6 +596,43 @@ def get_countries(kwargs: dict = {}):
 def get_statistics(kwargs: dict = {}):
     ret_val = ut_wr.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_STATS}', **kwargs)
     return ret_val
+
+
+def get_world_best_times() -> list[dict]:
+    """
+        Use the endpoints '/stats', get the filtered world-best-times and get the urls to the jsons.
+        Extract the relevant information from the results.
+
+        TODO: Only return the boat-class and the competitor (race_boat_id)
+    """
+    fs = ut_wr.build_filter_string(filter_params={'category': 'WBT'})
+    wbts = ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_STATS + fs)
+    ret = []
+    for wbt in wbts:
+        if 'Overall' in wbt['description']:
+            _wbts = ut_wr.load_json(wbt['url'], content_field='BestTimes')
+            for val in _wbts:
+                ret.append({
+                    'race_boat_id': val['Competitor']['Id'],
+                    'boat_class': val['BoatClass'],
+                    'result_time': val['Competitor']['ResultTime']
+                })
+                #athletes = "; ".join([v['Person']['FullName'] for v in val['Competitor']['Athletes']])
+                # todo: remove me, once the data structure has been integrated
+                # the code below represents the needed information
+                #ret.append({
+                #    'boat_class': val['BoatClass'],
+                #    'event_name': val['Competition']['Name'],
+                #    'race_type': val['Race']['Name'],
+                #    'competition_id': val['Competition']['Id'],
+                #    'race_id': val['Race']['Id'],
+                #    'date': val['DateOfBT'],
+                #    'venue': val['Venue']['Name'],
+                #    'names': athletes,
+                #    'time': val['Competitor']['ResultTime']
+                #})
+
+    return ret
 
 
 def get_boatclasses(kwargs: dict = {}):

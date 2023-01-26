@@ -62,6 +62,7 @@ def get_competitions_year_category(year: int, competition_category_id: int) -> d
     @param filter_dict: example for filter_dict {  "year": 2008, "competition_category_id": 5  }
     @return: nested dict/json: structure containing competitions, their events and their races respectively.
     See https://github.com/N10100010/DRV_project/blob/api-design/doc/backend-api.md#user-auswahl-jahr-einzeln-und-wettkampfklasse-zb-olympics for mock of return value.
+
     """
     from datetime import datetime
     session = Scoped_Session()
@@ -83,7 +84,6 @@ def get_competitions_year_category(year: int, competition_category_id: int) -> d
     )
     competitions = session.execute(statement)
     return result
-
 
 
 @app.route('/race/<int:race_id>/', methods=['GET'])
