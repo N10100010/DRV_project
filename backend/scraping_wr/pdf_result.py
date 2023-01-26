@@ -17,8 +17,8 @@ import re
 from typing import Union
 import json
 
-from .utils_general import write_to_json
-from .utils_pdf import (clean, clean_df, get_string_loc, handle_table_partitions,
+from utils_general import write_to_json
+from utils_pdf import (clean, clean_df, get_string_loc, handle_table_partitions,
                        clean_str, print_stats)
 import logging
 

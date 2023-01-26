@@ -4,7 +4,7 @@ import {defineStore} from "pinia";
 // function to convert milliseconds to min:sec:ms
 const formatMilliseconds = ms => new Date(ms).toISOString().slice(14, -2);
 // predefined colors for charts
-const COLORS = ['#1E90FF', '#EE7621', '#66CD00', '#CD0000', '#7A67EE', '#32ffff'];
+const COLORS = ['#FF0000', '#FFCC00', '#008000', '#000', '#45E845', '#00E300'];
 
 export const useRennstrukturAnalyseState = defineStore({
     id: "base",
@@ -346,8 +346,46 @@ export const useRennstrukturAnalyseState = defineStore({
 
                 tableData.push(rowData);
             })
-
             return tableData;
+        },
+        getDeficitInMeters(state) {
+            // TODO: How to integrate the time here?
+
+            // determine winner
+            const winnerIdx = state.data.raceData[0].data.findIndex(team => team.rank === 1);
+            const winnerData = state.data.raceData[0].data.map(dataObj => dataObj.gpsData.distance)[winnerIdx]
+            const winnerTeamSpeeds = Object.fromEntries(Object.entries(winnerData).map(
+                ([key, val]) => [key, val["speed [m/s]"]]));
+
+            // calculate difference to winner based on speed
+            let speedPerTeam = {};
+            for (const i in state.data.raceData[0].data) {
+                const speedData = state.data.raceData[0].data.map(dataObj => dataObj.gpsData.distance)[i];
+                let diffSpeedValues = {}
+                for (const [key, val] of Object.entries(speedData)) {
+                    const speedWinner = winnerTeamSpeeds[key]
+                    const speedCurrentTeam = val["speed [m/s]"]
+                    let time = 50 / speedWinner;
+                    diffSpeedValues[key] = (speedWinner * time) - (speedCurrentTeam * time);
+                }
+                speedPerTeam[i] = diffSpeedValues
+            }
+            let colorIndex = 0;
+            const datasets = []
+            Object.entries(speedPerTeam).forEach(([key, value]) => {
+                const label = key;
+                const backgroundColor = COLORS[colorIndex % 6];
+                const borderColor = COLORS[colorIndex % 6];
+                const data = Object.values(value);
+                datasets.push({label, backgroundColor, borderColor, data});
+                colorIndex++;
+            });
+            const allKeys = Object.values(speedPerTeam).map(obj => Object.keys(obj))
+            return {
+                labels: Array.from(new Set([].concat(...allKeys))),
+                datasets
+            };
+            // const timeValues = state.data.raceData[0].data.map(dataObj => dataObj.intermediates)[0];
         },
         getGPSChartData(state) {
             const chartDataKeys = ['speed [m/s]', 'stroke [1/min]', 'propulsion [m/stroke]'];
@@ -358,7 +396,7 @@ export const useRennstrukturAnalyseState = defineStore({
                     const label = dataObj.nation_ioc;
                     const backgroundColor = COLORS[colorIndex % 6];
                     const borderColor = COLORS[colorIndex % 6];
-                    const data = Object.values(dataObj.gpsData.distance).map(distanceObj => distanceObj[key]);
+                    const data = Object.values(dataObj.gpsData.distance).map(obj => obj[key]);
                     datasets.push({label, backgroundColor, borderColor, data});
                     colorIndex++;
                 });
