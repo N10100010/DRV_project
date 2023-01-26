@@ -280,8 +280,8 @@ def __wr_map_competition(session, entity: model.Competition, data):
     with suppress(TypeError, ValueError):
         entity.end_date = dt.datetime.fromisoformat(get_(data, 'EndDate', ''))
 
+    entity.is_fisa = get_(data, 'IsFisa')
     entity.competition_code__ = get_(data, 'CompetitionCode')
-    entity.is_fisa__ = get_(data, 'IsFisa')
 
     # Events
     # Insert 1:m https://stackoverflow.com/q/16433338

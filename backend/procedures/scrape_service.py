@@ -125,7 +125,7 @@ def scrape():
             
             # High Prio TODO: introduce check if scraping should actually happen
 
-            logger.info(f'''Fetching competition="{competition_uuid}" date="{competition.start_date}" name="{competition.name}"''')
+            logger.info(f'''Fetching competition="{competition_uuid}" year="{competition.year}" name="{competition.name}"''')
             competition_data = api.get_by_competition_id_(comp_ids=[competition_uuid], parse_pdf=False)
 
             logger.info(f"Write competition to database")
