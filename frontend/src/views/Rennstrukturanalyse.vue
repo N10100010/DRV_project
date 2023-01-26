@@ -30,7 +30,7 @@
           </v-tooltip>
         </v-col>
         <v-divider></v-divider>
-        <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 mt-2" :items="breadCrumbs"></v-breadcrumbs>
+        <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 my-2" :items="breadCrumbs"></v-breadcrumbs>
         <v-container class="pa-0" v-if="!displayRaceDataAnalysis">
           <v-row>
             <v-col cols="12">
@@ -215,11 +215,6 @@ export default {
       deficitMeters: "getDeficitInMeters"
     }),
   },
-  /*
-  beforeRouteLeave(to, from, next) {
-    console.log(from.fullPath)
-    next(false)
-  },*/
   data() {
     return {
       filterOpen: false,
@@ -232,6 +227,8 @@ export default {
       displayRaces: false,
       events: {},
       races: {},
+      lastCompId: null,
+      lastEventId: null,
       gpsChartOptions: [{
         responsive: true,
         maintainAspectRatio: false,
@@ -410,25 +407,14 @@ export default {
     },
     getEvents(competition, displayName, compId) {
       router.push("/rennstrukturanalyse/" + compId)
-      /*
-      router.push({
-            path: this.$route.path,
-            query: {comp_id: compId}
-          }
-      )
-      */
+      this.lastCompId = compId
       this.events = competition
       this.breadCrumbs.push({
         title: displayName,
         disabled: false,
         href: '#',
         onclick: () => {
-          router.replace("/rennstrukturanalyse")
-          /*
-          router.replace({
-            query: Object.assign({}, this.$route.query, {event_id: undefined})
-          });
-          */
+          router.replace({path: "/rennstrukturanalyse", query: {}})
           this.displayCompetitions = true
           this.displayRaceDataAnalysis = false
           this.displayEvents = false
@@ -441,16 +427,14 @@ export default {
     },
     getRaces(events, displayName, eventId) {
       router.push(this.$route.fullPath + "/" + eventId)
-
-      //router.push(this.$route.fullPath + `&event_id=${eventId}`)
+      this.lastEventId = eventId
       this.races = events
       this.breadCrumbs.push({
         title: displayName,
         disabled: false,
         href: '#',
         onclick: () => {
-          let newUrl = window.location.href.replace(/&race_id=.*/, "");
-          window.history.pushState({}, "", newUrl);
+          router.replace({path: "/rennstrukturanalyse/" + this.lastEventId, query: {}})
           this.displayCompetitions = false
           this.displayRaceDataAnalysis = false
           this.displayEvents = true
@@ -462,10 +446,8 @@ export default {
       this.displayRaces = true
     },
     loadRaceAnalysis(raceName, raceId) {
-      router.push("/rennstrukturanalyse?race_id="+raceId)
-      //router.push(this.$route.fullPath + `&race_id=${raceId}`)
+      router.push(`/rennstrukturanalyse/${this.lastCompId}/${this.lastEventId}?race_id=${raceId}`)
       this.displayRaceDataAnalysis = true
-      this.breadCrumbs.push(raceName)
     },
     checkScreen() {
       this.windowWidth = window.innerWidth;
@@ -492,50 +474,69 @@ export default {
       deep: true,
       handler(to, from) {
         if (typeof from !== 'undefined' && typeof to !== 'undefined') {
+          // from events backwards to comp
           if (to.path === "/rennstrukturanalyse" && from.path.match(/\/rennstrukturanalyse\/[\w-]+/)) {
+            console.log(1)
             this.displayEvents = false
             this.displayCompetitions = true
             this.displayRaces = false
             this.breadCrumbs.splice(0)
           }
-          else if (to.path.match(/\/rennstrukturanalyse\/[\w-]+/) && from.path.match(/\/rennstrukturanalyse\/[\w-]+\/[\w-]+/)) {
+          // from races backwards to events
+          else if (from.path.match(/\/rennstrukturanalyse\/[\w-]+\/[\w-]+/) && !to.fullPath.includes("?race_id=") && to.path.match(/\/rennstrukturanalyse\/[\w-]+/)) {
+            console.log(2)
             this.displayRaces = false
             this.displayCompetitions = false
             this.displayEvents = true
-            this.breadCrumbs.splice(0)
+            this.breadCrumbs.splice(1)
           }
+          // from comp forward to events
           else if (from.path === "/rennstrukturanalyse" && to.path.match(/\/rennstrukturanalyse\/[\w-]+/)) {
+            console.log(3)
             this.displayRaces = false
             this.displayCompetitions = false
             this.displayEvents = true
+            // only push to breadCrumbs if not yet done
+            if (this.breadCrumbs.length === 0) {
+              this.breadCrumbs.push({
+                title: this.getAnalysis.find(obj => obj.id === this.lastCompId).display_name,
+                disabled: false,
+                href: '#',
+                onclick: () => {
+                  router.replace({ path: '/rennstrukturanalyse', query: {} })
+                  this.displayCompetitions = true
+                  this.displayRaceDataAnalysis = false
+                  this.displayEvents = false
+                  this.displayRaces = false
+                  this.breadCrumbs.splice(0)
+                }
+              })
+              }
+          } // from event forward to races
+          else if (from.path.match(/\/rennstrukturanalyse\/[\w-]+/) && to.path.match(/\/rennstrukturanalyse\/[\w-]+\/[\w-]+/)) {
+            console.log(4)
+            this.displayRaces = true
+            this.displayCompetitions = false
+            this.displayEvents = false
+            if (this.breadCrumbs.length === 1) {
+              this.breadCrumbs.push({
+                title: this.events.find(obj => obj.id === this.lastEventId).display_name,
+                disabled: false,
+                href: '#',
+                onclick: () => {
+                  router.replace({ path: `/rennstrukturanalyse/${this.lastCompId}/${this.lastEventId}`, query: {} })
+                  this.displayEvents = true
+                  this.displayCompetitions = false
+                  this.displayRaceDataAnalysis = false
+                  this.displayRaces = false
+                  this.breadCrumbs.splice(1)
+                }
+              })
+            }
+          } else if (from.fullPath.includes("?race_id=")){
+            router.replace({ path: `/rennstrukturanalyse/${this.lastCompId}`, query: {}})
           }
-
-
-
-
-
         }
-        /*
-        if (typeof from !== 'undefined' && typeof to !== 'undefined') {
-          if (!from.query.hasOwnProperty("comp_id") && !from.query.hasOwnProperty("event_id")) {
-            this.displayCompetitions = true;
-            this.displayEvents = false;
-            this.breadCrumbs.splice(0)
-          }
-          if (from.query.hasOwnProperty("comp_id") && !from.query.hasOwnProperty("event_id")) {
-            this.displayCompetitions = true;
-            this.displayEvents = false;
-            this.breadCrumbs.splice(0)
-          }
-          if (from.query.hasOwnProperty("event_id") && !from.query.hasOwnProperty("comp_id")) {
-            this.displayCompetitions = false;
-            this.displayEvents = true;
-          }
-          if (from.query.hasOwnProperty("comp_id") && from.query.hasOwnProperty("event_id")) {
-            this.displayCompetitions = false;
-            this.displayEvents = true;
-          }
-        }*/
       }
     }
   }
