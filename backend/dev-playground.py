@@ -1,7 +1,7 @@
 import numpy as np
 
-from .utils_wr import process_rsc_code, extract_race_phase_from_rsc
-from .api import get_competition_ids, get_by_competition_id, get_by_competition_id_, extract_race_phase_details, load
+from scraping_wr.utils_wr import process_rsc_code, extract_race_phase_from_rsc
+from scraping_wr.api import get_competition_ids, get_by_competition_id, get_by_competition_id_, extract_race_phase_details, load
 
 import requests
 
@@ -13,7 +13,7 @@ from . import api
 
 ########################################################################################################################
 # NOTE:
-# This main.py is just for rapid testing
+# This dev-playground.py is just for rapid testing
 ########################################################################################################################
 import json
 
