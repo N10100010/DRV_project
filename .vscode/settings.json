@@ -1,0 +1,14 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "driver": "PostgreSQL",
+            "name": "drv-local-test",
+            "database": "rowing",
+            "username": "postgres",
+            "password": "mysecretpassword",
+            "connectString": "postgresql://postgres:postgres@localhost:5432"
+        }
+    ]
+}

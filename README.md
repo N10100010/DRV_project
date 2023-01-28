@@ -1,7 +1,15 @@
-# DRB_project
+# drv-project
 Container for the innovation project WS '22
 
-## How to run things with Docker
+## Deployment on Railway.app
+
+See: [doc/DEPLOYMENT.md](doc/DEPLOYMENT.md)
+
+## Database: Backup & Restore
+
+See: [doc/DATABASE.md](doc/DATABASE.md)
+
+## How to run things with Docker (dev)
 
 Start all the services with
 
@@ -25,18 +33,18 @@ docker compose down --rmi all --volumes
 
 ### Database (PostgreSQL)
 
-- **database/README.md** describes how to
+- **[doc/DATABASE.md](doc/DATABASE.md)** describes how to
     - run a development PostgreSQL based on `docker-compose`
     - initialize tables
-- **backend/scraping_wr/README.md** describes how to
+- **[backend/scraping_wr/README.md](backend/scraping_wr/README.md)** describes how to
     - grab data from World Rowing API
-- **backend/model/README.md** describes how to
+- **[backend/model/README.md](backend/model/README.md)** describes how to
     - create/drop tables
     - insert data
 
 ### Backend Scrape/Maintenance Process (Python)
 
-    python -m backend.procedures.scrape_service
+    python -m procedures.scrape_service
 
 ### Backend API Server (Python/Flask)
 
@@ -62,24 +70,6 @@ python -m flask --app app.app:app --debug run
     - install required packages
     - run the frontend
 
-###
-
-
-## Deployment on Railway.app
-
-See also: https://docs.railway.app/
-- https://docs.railway.app/develop/variables
-
-### Frontend
-
-The following service settings have to be made on *railway.app*:
-
-- Set *Root Directory* `/frontend`
-- Set the following environment variables in the service settings:
-    - `NIXPACKS_NODE_VERSION`: Specifies the major version of Node.js
-        - e.g. `16`
-    - `BACKEND_API_BASE_URL`: Specifies the public base url of backend API
-        - example: `https://backend-api-production-drv-project.up.railway.app/`
 
 
 ## MVP

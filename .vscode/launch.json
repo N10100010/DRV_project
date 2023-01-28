@@ -1,0 +1,98 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Py: Scrape competition to JSON",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
+            "module": "scraping_wr._main",
+            "args": [
+                "grabc",
+                "--out",
+                "tmp.dump.json"
+            ],
+            "justMyCode": true
+        },
+        {
+            "name": "Py: dbutils insert from JSON",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
+            "module": "model.dbutils",
+            "args": [
+                "--create",
+                "--insert",
+                "tmp.dump.json"
+            ],
+            "env": {
+                "DB_VERBOSITY": "1"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Py: dbutils drop/create tables",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
+            "module": "model.dbutils",
+            "args": [
+                "--drop",
+                "--create"
+            ],
+            "env": {
+                "DB_VERBOSITY": "1"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Py: scraper (dev)",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
+            "module": "procedures.scrape_service",
+            "env": {
+                "SCRAPER_SINGLEPASS": "1",
+                "DRV_SCRAPER_DEV_MODE": "1",
+                "DB_VERBOSITY": "0"
+            },
+            "args": [],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Py: flask",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
+            "module": "flask",
+            "env": {
+                "FLASK_ENV": "development"
+            },
+            "args": [
+                "--app",
+                "app.app:app",
+                "--debug",
+                "run",
+                "--no-debugger",
+                "--no-reload",
+                "--port=5000"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Py: Scrape competition - Nick",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
+            "module": "scraping_wr._main",
+            "justMyCode": true
+        },
+    ]
+}

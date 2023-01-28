@@ -1,7 +1,8 @@
-from . import model
+
 
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
+from sqlalchemy_utils import database_exists, create_database
 
 from contextlib import suppress
 import datetime as dt
@@ -10,6 +11,8 @@ from common.helpers import Timedelta_Parser, parse_wr_intermediate_distance_key,
 
 # from ..scraping_wr import utils_wr
 from scraping_wr import api
+
+from . import model
 
 # logging stuff
 import logging
@@ -223,18 +226,33 @@ def wr_map_venue(session, entity, data):
     entity.is_world_rowing_venue = get_(data, 'IsWorldRowingVenue')
 
 
+def wr_map_competition_prescrape(session, entity, data):
+    STATE_RESULT_STATE = model.Enum_Maintenance_Level.world_rowing_api_prescraped.value
+
+    state = entity.maintenance_level
+    update_entity = state == None or state < STATE_RESULT_STATE
+    if not update_entity:
+        return
+
+    entity.maintenance_level = STATE_RESULT_STATE
+
+    entity.name = get_(data, 'DisplayName')
+    with suppress(TypeError, ValueError):
+        entity.start_date = dt.datetime.fromisoformat(get_(data, 'StartDate', ''))
+        entity.end_date = dt.datetime.fromisoformat(get_(data, 'EndDate', ''))
+    
+
 def wr_map_competition(session, entity, data):
     # Check maintenance state
-    STATE_DEFAULT = model.Enum_Maintenance_Level.world_rowing_api_grabbed.value
-    STATE_UPPER_LIMIT = model.Enum_Maintenance_Level.world_rowing_api_grabbed.value
+    STATE_RESULT_STATE = model.Enum_Maintenance_Level.world_rowing_api_grabbed.value
+    STATE_UPPER_LIMIT  = STATE_RESULT_STATE
 
     state = entity.maintenance_level
     update_entity = state == None or state <= STATE_UPPER_LIMIT
     if not update_entity:
-        return entity
+        return
 
-    if entity.maintenance_level == None:
-        entity.maintenance_level = STATE_DEFAULT
+    entity.maintenance_level = STATE_RESULT_STATE
 
     # Competition_Category
     competition_category = wr_insert(
@@ -261,7 +279,7 @@ def wr_map_competition(session, entity, data):
     # Insert 1:m https://stackoverflow.com/q/16433338
     events = map(
         lambda d : wr_insert(session, model.Event, wr_map_event, d),
-        get_(competition_data, 'events', [])
+        get_(data, 'events', [])
     )
     entity.events.extend(events)
 
@@ -288,16 +306,22 @@ if __name__ == '__main__':
     import json
     from .model import engine, Scoped_Session
 
+    if not database_exists(engine.url): 
+        print("----- Create Database 'rowing' -----")
+        create_database(engine.url)
+
+    logging.basicConfig(level=logging.DEBUG)
+
     if args.drop:
-        print("----- Drop All Tables -----")
+        logger.info("----- Drop All Tables -----")
         drop_all_tables(engine)
 
     if args.create:
-        print("----- Create Tables -----")
+        logger.info("----- Create Tables -----")
         create_tables(engine)
 
     if args.insert:
-        print("Load JSON file:", args.insert)
+        logger.info(f"Load JSON file: {args.insert}")
         with Scoped_Session() as session: # implicit commit when leaving context w/o errors
             with open(args.insert, mode="r", encoding="utf-8") as fp:
                 competition_data = json.load(fp)
