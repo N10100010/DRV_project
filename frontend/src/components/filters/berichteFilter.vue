@@ -108,11 +108,11 @@ export default {
       optionsEndYear: [],
       // boat classes
       genderTypeOptions: [],
-      selectedGenders: [0],
+      selectedGenders: [3],
       ageGroupOptions: [],
       selectedAgeGroups: 0,
       optionsBoatClasses: [],
-      selectedBoatClasses: this.optionsBoatClasses,
+      selectedBoatClasses: null,
       // runs
       optionsRuns: [],
       selectedRuns: [0, 1, 2],
@@ -160,7 +160,8 @@ export default {
         })
       }
     });
-    this.selectedBoatClasses = boatClassOptions[0]
+    this.ageGroupOptions = []
+    this.selectedBoatClasses = ["Alle"]
     this.optionsBoatClasses = boatClassOptions
 
     // runs
@@ -210,7 +211,9 @@ export default {
           })
     },
     clearFormInputs() {
-      this.selectedGenders = 0
+      this.selectedGenders = 3
+      this.ageGroupOptions = []
+      this.selectedBoatClasses = ["Alle"]
       this.startYear = 1950
       this.endYear = new Date().getFullYear()
       this.selectedCompTypes = ["Olympics", "World Rowing Championships", "Qualifications"]

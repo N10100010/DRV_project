@@ -208,8 +208,9 @@ export default {
       this.startYear = 1950
       this.endYear = new Date().getFullYear()
       this.selectedCompTypes = ["Olympics", "World Rowing Championships", "Qualifications"]
-      this.selectedRanks = [0, 1, 2, 3]
-      this.selectedRuns = [0, 1, 2]
+      this.selectedNation = "GER (Deutschland)"
+      this.selectedMedalTypes = 0
+      this.selectedBoatClasses = this.optionsBoatClasses[0]
     },
     checkScreen() {
       this.windowWidth = window.innerWidth
