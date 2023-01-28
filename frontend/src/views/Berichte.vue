@@ -45,7 +45,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
           <v-row>
             <v-col :cols="mobile ? 12 : 5">
               <h2>{{ tableData.boat_class }}</h2>
-              <v-alert type="success" variant="tonal" class="my-2" v-if="tableData.results">
+              <v-alert type="success" variant="tonal" class="my-2" v-if="tableData.results || matrixResults">
                 <v-row>
                   <v-col cols="12">
                     <p>{{ matrixVisible ? matrixResults : tableData.results }} Datensätze |
