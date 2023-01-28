@@ -472,6 +472,7 @@ export default {
     $route: {
       immediate: true,
       deep: true,
+      /*
       handler(to, from) {
         if (typeof from !== 'undefined' && typeof to !== 'undefined') {
           // from events backwards to comp
@@ -537,7 +538,7 @@ export default {
             router.replace({ path: `/rennstrukturanalyse/${this.lastCompId}`, query: {}})
           }
         }
-      }
+      }*/
     }
   }
 }
