@@ -187,7 +187,7 @@ def wr_map_race(session, entity: model.Race, data):
     phase_type = get_( get_(data, 'racePhase', {}), 'DisplayName' )
     rsc_code = get_(data, 'RscCode')
 
-    phase_details = api.extract_race_phase_details(race_phase=phase_type, rsc_code=rsc_code, display_name=entity.name)
+    phase_details = api.extract_race_phase_details(rsc_code=rsc_code, display_name=entity.name)
 
     entity.phase_type = phase_type.lower()
     entity.phase_subtype = get_(phase_details, 'subtype')
