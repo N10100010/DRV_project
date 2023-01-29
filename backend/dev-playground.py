@@ -1,20 +1,22 @@
 import numpy as np
 
-from .api import get_competition_ids, get_by_competition_id, get_by_competition_id_
-from .utils_wr import load_json
+from scraping_wr.utils_wr import process_rsc_code, extract_race_phase_from_rsc
+from scraping_wr.api import get_competition_ids, get_by_competition_id, get_by_competition_id_, extract_race_phase_details, load
+
 import requests
 
 import logging
 
 logger = logging.getLogger(__name__)
 
-from . import api
+from scraping_wr import api
+
 ########################################################################################################################
 # NOTE:
-# This main.py is just for rapid testing
+# This dev-playground.py is just for rapid testing
 ########################################################################################################################
 import json
-from sys import exit as sysexit
+
 
 
 def grab_competition_example(competition_id, out_path='dump.json'):
@@ -25,6 +27,7 @@ def grab_competition_example(competition_id, out_path='dump.json'):
 
 if __name__ == '__main__':
     import argparse
+    from sys import exit as sysexit
 
     DEFAULT_COMPETITION = '718b3256-e778-4003-88e9-832c4aad0cc2'
 
@@ -38,10 +41,10 @@ if __name__ == '__main__':
     print(args)
 
     if args.command == 'grabc':
-        grab_competition_example(args.uuid, args.out)
-        sysexit()
+       grab_competition_example(args.uuid, args.out)
+       sysexit()
 
-    ### KEEP FOR TESTING
+    ### KEEP FOR TESTING ----------------------------------
 
     #_ids_all = []
     #for y in np.arange(2000, 2024):
@@ -51,32 +54,43 @@ if __name__ == '__main__':
 
     #api.save(ret, './races_2000_2024_pdfs.json')
 
-    ret = api.load('./races_2000_2024_pdfs.json')
+    ret = load('./races_2000_2024_pdfs.json')
+
+    vals = set()
+    for race in ret['races']:
+        val = extract_race_phase_details(race['RscCode'], race['DisplayName'])
+        if 'SFNL' in race['RscCode']:
+            vals.add(val)
+
+    vals = sorted(vals, key=lambda v: v[0])
+
+    for val in vals:
+        print(val)
 
     import collections
     d = dict()
 
-    tup_set__rsc_disname = set()
-    tup_set__rsc_disname_short = set()
-    # [race for race in ret['races'] if 'RND' in race["RscCode"]]
-    test = set()
-    extracted = set()
-    race_disname = set()
-    for race in ret['races']:
-        boat_class, rsc = api.process_rsc_code(race['RscCode'])
-        tup_set__rsc_disname.add((api.extract_race_phase_from_rsc(rsc), api.process_race_display_name(race['DisplayName']), race['DisplayName']))
-        tup_set__rsc_disname_short.add((rsc, api.process_race_display_name(race['DisplayName'])))
-        #if len(race['pdfUrls']['results']) != 0:
-        #    d[(rsc, api.process_race_display_name(race['DisplayName']))] = race['pdfUrls']
-        race['rsc_race_phase'] = api.extract_race_phase_from_rsc(rsc)
-        test.add(rsc)
-        extracted.add(api.extract_race_phase_from_rsc(rsc))
-        race_disname.add(race['DisplayName'])
-
-    #d = collections.OrderedDict(sorted(d.items()))
-    extracted = sorted(extracted)
-    tup_set = sorted(tup_set__rsc_disname)
-    tup_set_short = sorted(tup_set__rsc_disname_short)
+    #tup_set__rsc_disname = set()
+    #tup_set__rsc_disname_short = set()
+    ## [race for race in ret['races'] if 'RND' in race["RscCode"]]
+    #test = set()
+    #extracted = set()
+    #race_disname = set()
+    #for race in ret['races']:
+    #    boat_class, rsc = process_rsc_code(race['RscCode'])
+    #    tup_set__rsc_disname.add((extract_race_phase_from_rsc(rsc), api.process_race_display_name(race['DisplayName']), race['DisplayName']))
+    #    tup_set__rsc_disname_short.add((rsc, api.process_race_display_name(race['DisplayName'])))
+    #    #if len(race['pdfUrls']['results']) != 0:
+    #    #    d[(rsc, api.process_race_display_name(race['DisplayName']))] = race['pdfUrls']
+    #    race['rsc_race_phase'] = extract_race_phase_from_rsc(rsc)
+    #    test.add(rsc)
+    #    extracted.add(extract_race_phase_from_rsc(rsc))
+    #    race_disname.add(race['DisplayName'])
+    #
+    ##d = collections.OrderedDict(sorted(d.items()))
+    #extracted = sorted(extracted)
+    #tup_set = sorted(tup_set__rsc_disname)
+    #tup_set_short = sorted(tup_set__rsc_disname_short)
 
 
     # tuple_set__rsc_racePhase = set()
@@ -103,10 +117,17 @@ if __name__ == '__main__':
     #     race_genders.add(race['genderId'])
     #
 
-
     #ret = api.get_by_competition_id('718b3256-e778-4003-88e9-832c4aad0cc2', 'everything')
     #ret = api.load('./one_comp_id.json')
 
+    import pandas as pd
+
+    wbts = api.get_world_best_times()
+
+    df = pd.DataFrame.from_records(
+        wbts
+    ).sort_values(by=['boat_class'])
+    df.to_excel('wbts.xlsx')
 
     print()  # breakpoint me
 

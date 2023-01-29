@@ -14,6 +14,7 @@ export const useHomeStore = defineStore({
                     key: 1,
                     customData: {
                         title: 'Olympics',
+                        shortTitle: 'Oly'
                     },
                     dates: {start: new Date(year, month, 14), end: new Date(year, month, 18)},
                 },
@@ -21,6 +22,7 @@ export const useHomeStore = defineStore({
                     key: 2,
                     customData: {
                         title: 'World Rowing',
+                        shortTitle: 'WR'
                     },
                     dates: new Date(year, month, 2),
                 },
@@ -35,6 +37,7 @@ export const useHomeStore = defineStore({
                     key: 4,
                     customData: {
                         title: "U23",
+                        shortTitle: "U23"
                     },
                     dates: {start: new Date(year, month, 8), end: new Date(year, month, 12)},
                 }

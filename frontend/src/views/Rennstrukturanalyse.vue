@@ -16,7 +16,7 @@
           width="500">
         <rennstruktur-filter/>
       </v-navigation-drawer>
-      <v-container :class="mobile ? 'pa-5' : 'pa-10'">
+      <v-container :class="mobile ? 'pa-5 main-container' : 'px-10 pt-0 main-container'">
         <v-col cols="6" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Rennstrukturanalyse</h1>
           <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
@@ -30,12 +30,12 @@
           </v-tooltip>
         </v-col>
         <v-divider></v-divider>
-        <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 mt-2" :items="breadCrumbs"></v-breadcrumbs>
-        <v-container class="pa-0 mt-2" v-if="!displayRaceDataAnalysis">
+        <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 my-2" :items="breadCrumbs"></v-breadcrumbs>
+        <v-container class="pa-0" v-if="!displayRaceDataAnalysis">
           <v-row>
             <v-col cols="12">
               <h2>Suchergebnisse</h2>
-              <v-container class="pa-0 mt-3" style="min-height: 500px">
+              <v-container class="pa-0 mt-3">
                 <v-col :cols="mobile ? 12 : 6" class="pa-0">
                   <v-alert type="info" variant="tonal" v-if="!getAnalysis && !loading">
                     Bitte wähle ein Jahr und eine Wettkampfklasse in den Filterkriterien.
@@ -53,7 +53,7 @@
                         :key="competition"
                         :title="competition.display_name"
                         :subtitle="competition.start_date+' | '+competition.venue"
-                        @click="getEvents(competition.events, competition.id)"
+                        @click="getEvents(competition.events, competition.display_name, competition.id)"
                     ></v-list-item>
                   </v-list>
 
@@ -66,7 +66,7 @@
                         v-for="event in events"
                         :key="event"
                         :title="event.display_name"
-                        @click="getRaces(event.races, event.id)"
+                        @click="getRaces(event.races, event.display_name, event.id)"
                     ></v-list-item>
                   </v-list>
                   <!-- races list -->
@@ -86,43 +86,16 @@
           </v-row>
         </v-container>
 
-        <v-container v-if="displayRaceDataAnalysis && !loading" class="pa-0 mt-8">
+        <v-container v-if="displayRaceDataAnalysis && !loading" class="px-0 py-2">
+
           <v-row no-gutters>
-            <v-col>
-              <v-table>
-                <tbody>
-                <tr>
-                  <td><b>Wettkampf:</b></td>
-                  <td>{{ competitionData.displayName }}</td>
-                </tr>
-                <tr>
-                  <td><b>Austragungsort:</b></td>
-                  <td>{{ competitionData.venue }}</td>
-                </tr>
-                <tr>
-                  <td><b>Datum & Startzeit:</b></td>
-                  <td>{{ competitionData.startDate }}</td>
-                </tr>
-                </tbody>
-              </v-table>
+            <v-col cols="6">
+              <h2>{{ competitionData.displayName }}</h2>
             </v-col>
-            <v-col>
-              <v-table>
-                <tbody>
-                <tr>
-                  <td><b>Bootsklasse:</b></td>
-                  <td>{{ competitionData.boatClass }}</td>
-                </tr>
-                <tr>
-                  <td><b>Weltbestzeit Bootsklasse:</b></td>
-                  <td>{{ competitionData.worldBestTimeBoatClass }}</td>
-                </tr>
-                <tr>
-                  <td><b>Bestzeit Bootsklasse laufender OZ/Jahr:</b></td>
-                  <td>{{ competitionData.bestTimeBoatClassCurrentOZ }}</td>
-                </tr>
-                </tbody>
-              </v-table>
+            <v-col cols="6" class="text-right">
+              <p style="color: grey">Bestzeiten: {{ competitionData.worldBestTimeBoatClass }} (WB) |
+                {{ competitionData.bestTimeBoatClassCurrentOZ }} (OZ/Jahr)</p>
+              <p><b>{{ competitionData.venue }} | {{ competitionData.startDate }}</b></p>
             </v-col>
           </v-row>
 
@@ -138,13 +111,13 @@
               <v-table class="tableStyles" density="compact">
                 <thead>
                 <tr>
-                  <th v-for="tableHead in tableData[0]">{{ tableHead }}</th>
+                  <th v-for="tableHead in tableData[0]" class="px-2">{{ tableHead }}</th>
                   <th>Prog.<br>Code</th>
                 </tr>
                 </thead>
                 <tbody class="nth-grey">
                 <tr v-for="(country, idx) in tableData.slice(1)">
-                  <td v-for="item in country">
+                  <td v-for="item in country" class="px-2">
                     <template v-if="Array.isArray(item)">
                       <p v-for="element in item">
                         {{ element }}
@@ -175,16 +148,20 @@
                 </a>
               </v-col>
             </v-col>
-            <v-divider class="mt-8"></v-divider>
-            <v-col :cols="mobile ? 12 : 6" :class="mobile ? 'pa-0' : null">
-              <v-container v-for="(data, idx) in getGPsData" :class="mobile ? 'pa-0' : null">
-                <LineChart :data="data" :chartOptions="gpsChartOptions[idx]"></LineChart>
+            <v-col :cols="mobile ? 12 : 6" class="pa-0">
+              <v-container v-for="(data, idx) in getGPsData" :class="mobile ? 'pa-0' : 'pa-2'">
+                <LineChart :data="data" :chartOptions="gpsChartOptions[idx]" class="chart-bg"></LineChart>
               </v-container>
             </v-col>
-            <v-col :cols="mobile ? 12 : 6" :class="mobile ? 'pa-0' : null">
-              <v-container v-for="(data, idx) in getIntermediateData" :class="mobile ? 'pa-0' : null">
-                <LineChart :data="data" :chartOptions="intermediateChartOptions[idx]"></LineChart>
+            <v-col :cols="mobile ? 12 : 6" class="pa-0">
+              <v-container v-for="(data, idx) in getIntermediateData" :class="mobile ? 'pa-0' : 'pa-2'">
+                <LineChart :data="data" :chartOptions="intermediateChartOptions[idx]" class="chart-bg"></LineChart>
               </v-container>
+            </v-col>
+            <v-col :cols="mobile ? 12 : 6" class="pa-0">
+              <v-container :class="mobile ? 'pa-0' : 'pa-2'">
+              <LineChart :data="deficitMeters" :chartOptions="deficitChartOptions" class="chart-bg"></LineChart>
+                </v-container>
             </v-col>
           </v-row>
         </v-container>
@@ -233,13 +210,11 @@ export default {
     }),
     ...mapState(useRennstrukturAnalyseState, {
       loading: "getLoadingState"
-    })
+    }),
+    ...mapState(useRennstrukturAnalyseState, {
+      deficitMeters: "getDeficitInMeters"
+    }),
   },
-  /*
-  beforeRouteLeave(to, from, next) {
-    console.log(from.fullPath)
-    next(false)
-  },*/
   data() {
     return {
       filterOpen: false,
@@ -252,6 +227,8 @@ export default {
       displayRaces: false,
       events: {},
       races: {},
+      lastCompId: null,
+      lastEventId: null,
       gpsChartOptions: [{
         responsive: true,
         maintainAspectRatio: false,
@@ -361,18 +338,18 @@ export default {
             y: {
               type: 'time',
               time: {
-                parser: 'hh:mm:ss.SSS',
+                parser: 'mm:ss.SS',
                 displayFormats: {
-                  second: 'ss.SSS',
-                  tooltip: 'mm:ss.SSS'
+                  second: 'mm:ss.SS',
+                  tooltip: 'mm:ss.SS'
                 }
               },
-              min: '00:00:00,000',
-              max: '00:00:20,000',
+              min: '00:00,00',
+              max: '00:20,00',
               unitTimeSteps: 100,
               title: {
                 display: true,
-                text: 'Rückstand [sek]'
+                text: 'Rückstand [mm:ss.ms]'
               }
             }
           },
@@ -383,7 +360,31 @@ export default {
             }
           }
         }
-      ]
+      ],
+      deficitChartOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Strecke [m]'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Rückstand [m]'
+            }
+          }
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: "Rückstand über Distanz"
+          }
+        }
+      },
     }
   },
   created() {
@@ -404,21 +405,16 @@ export default {
       const store = useRennstrukturAnalyseState()
       store.setFilterState(this.filterState)
     },
-    getEvents(competition, compId) {
-      router.push({
-            path: this.$route.path,
-            query: {comp_id: compId}
-          }
-      )
+    getEvents(competition, displayName, compId) {
+      router.push("/rennstrukturanalyse/" + compId)
+      this.lastCompId = compId
       this.events = competition
       this.breadCrumbs.push({
-        title: 'Competition',
+        title: displayName,
         disabled: false,
         href: '#',
         onclick: () => {
-          router.replace({
-            query: Object.assign({}, this.$route.query, { event_id: undefined })
-          });
+          router.replace({path: "/rennstrukturanalyse", query: {}})
           this.displayCompetitions = true
           this.displayRaceDataAnalysis = false
           this.displayEvents = false
@@ -429,16 +425,16 @@ export default {
       this.displayCompetitions = false
       this.displayEvents = true
     },
-    getRaces(events, eventId) {
-      router.push(this.$route.fullPath + `&event_id=${eventId}`)
+    getRaces(events, displayName, eventId) {
+      router.push(this.$route.fullPath + "/" + eventId)
+      this.lastEventId = eventId
       this.races = events
       this.breadCrumbs.push({
-        title: 'Event',
+        title: displayName,
         disabled: false,
         href: '#',
         onclick: () => {
-          let newUrl = window.location.href.replace(/&race_id=.*/, "");
-          window.history.pushState({}, "", newUrl);
+          router.replace({path: "/rennstrukturanalyse/" + this.lastEventId, query: {}})
           this.displayCompetitions = false
           this.displayRaceDataAnalysis = false
           this.displayEvents = true
@@ -450,13 +446,14 @@ export default {
       this.displayRaces = true
     },
     loadRaceAnalysis(raceName, raceId) {
-      router.push(this.$route.fullPath + `&race_id=${raceId}`)
+      router.push(`/rennstrukturanalyse/${this.lastCompId}/${this.lastEventId}?race_id=${raceId}`)
       this.displayRaceDataAnalysis = true
-      this.breadCrumbs.push(raceName)
     },
     checkScreen() {
       this.windowWidth = window.innerWidth;
       this.mobile = this.windowWidth <= 750
+       let navbarHeight = window.innerWidth < 750 ? '71.25px' : '160px';
+      document.documentElement.style.setProperty('--navbar-height', navbarHeight);
     }
   },
   watch: {
@@ -475,29 +472,73 @@ export default {
     $route: {
       immediate: true,
       deep: true,
+      /*
       handler(to, from) {
-        /*
         if (typeof from !== 'undefined' && typeof to !== 'undefined') {
-          if (!from.query.hasOwnProperty("comp_id") && !from.query.hasOwnProperty("event_id")) {
-            this.displayCompetitions = true;
-            this.displayEvents = false;
+          // from events backwards to comp
+          if (to.path === "/rennstrukturanalyse" && from.path.match(/\/rennstrukturanalyse\/[\w-]+/)) {
+            console.log(1)
+            this.displayEvents = false
+            this.displayCompetitions = true
+            this.displayRaces = false
             this.breadCrumbs.splice(0)
           }
-          if (from.query.hasOwnProperty("comp_id") && !from.query.hasOwnProperty("event_id")) {
-            this.displayCompetitions = true;
-            this.displayEvents = false;
-            this.breadCrumbs.splice(0)
+          // from races backwards to events
+          else if (from.path.match(/\/rennstrukturanalyse\/[\w-]+\/[\w-]+/) && !to.fullPath.includes("?race_id=") && to.path.match(/\/rennstrukturanalyse\/[\w-]+/)) {
+            console.log(2)
+            this.displayRaces = false
+            this.displayCompetitions = false
+            this.displayEvents = true
+            this.breadCrumbs.splice(1)
           }
-          if (from.query.hasOwnProperty("event_id") && !from.query.hasOwnProperty("comp_id")) {
-            this.displayCompetitions = false;
-            this.displayEvents = true;
+          // from comp forward to events
+          else if (from.path === "/rennstrukturanalyse" && to.path.match(/\/rennstrukturanalyse\/[\w-]+/)) {
+            console.log(3)
+            this.displayRaces = false
+            this.displayCompetitions = false
+            this.displayEvents = true
+            // only push to breadCrumbs if not yet done
+            if (this.breadCrumbs.length === 0) {
+              this.breadCrumbs.push({
+                title: this.getAnalysis.find(obj => obj.id === this.lastCompId).display_name,
+                disabled: false,
+                href: '#',
+                onclick: () => {
+                  router.replace({ path: '/rennstrukturanalyse', query: {} })
+                  this.displayCompetitions = true
+                  this.displayRaceDataAnalysis = false
+                  this.displayEvents = false
+                  this.displayRaces = false
+                  this.breadCrumbs.splice(0)
+                }
+              })
+              }
+          } // from event forward to races
+          else if (from.path.match(/\/rennstrukturanalyse\/[\w-]+/) && to.path.match(/\/rennstrukturanalyse\/[\w-]+\/[\w-]+/)) {
+            console.log(4)
+            this.displayRaces = true
+            this.displayCompetitions = false
+            this.displayEvents = false
+            if (this.breadCrumbs.length === 1) {
+              this.breadCrumbs.push({
+                title: this.events.find(obj => obj.id === this.lastEventId).display_name,
+                disabled: false,
+                href: '#',
+                onclick: () => {
+                  router.replace({ path: `/rennstrukturanalyse/${this.lastCompId}/${this.lastEventId}`, query: {} })
+                  this.displayEvents = true
+                  this.displayCompetitions = false
+                  this.displayRaceDataAnalysis = false
+                  this.displayRaces = false
+                  this.breadCrumbs.splice(1)
+                }
+              })
+            }
+          } else if (from.fullPath.includes("?race_id=")){
+            router.replace({ path: `/rennstrukturanalyse/${this.lastCompId}`, query: {}})
           }
-          if (from.query.hasOwnProperty("comp_id") && from.query.hasOwnProperty("event_id")) {
-            this.displayCompetitions = false;
-            this.displayEvents = true;
-          }
-        }*/
-      }
+        }
+      }*/
     }
   }
 }
@@ -508,21 +549,20 @@ export default {
   border: 1px solid #e0e0e0;
 
   th {
-    border: 1px solid #e0e0e0;
+    border: 0.5px solid #e0e0e0;
     font-size: 14px !important;
     text-align: left;
   }
 
   td {
     text-align: left;
-    border: 1px solid #e0e0e0;
+    border: 0.5px solid #e0e0e0;
   }
 }
 
 .nth-grey tr:nth-of-type(odd) {
-  background-color: rgba(0, 0, 0, .05);
+  background-color: #f8f8f8;
 }
-
 .filterToggleButton {
   position: fixed;
   z-index: 10;
@@ -538,5 +578,11 @@ export default {
   color: #1369b0;
   bottom: 10px;
 }
-
+.chart-bg {
+  background-color: #fbfbfb;
+  border-radius: 3px;
+}
+.main-container {
+  min-height: calc(100vh - (var(--navbar-height)) - 100px);
+}
 </style>

@@ -183,9 +183,13 @@ export default {
       })
     },
     clearFormInputs() {
-      this.birthYear = null
+      this.startYear = 1950
+      this.endYear = new Date().getFullYear()
       this.selectedCompTypes = ["Olympics", "World Rowing Championships", "Qualifications"]
       this.selectedNation = "GER (Deutschland)"
+      this.selectedGenders = 0
+      this.selectedAgeGroups = 0
+      this.selectedBoatClasses = this.optionsBoatClasses[0]
     },
     checkScreen() {
       this.windowWidth = window.innerWidth
