@@ -36,7 +36,7 @@ docker compose down --rmi all --volumes
 - **[doc/DATABASE.md](doc/DATABASE.md)** describes how to
     - run a development PostgreSQL based on `docker-compose`
     - initialize tables
-- **[backend/scraping_wr/README.md](backend/scraping_wr/README.md)** describes how to
+- **[backend/README.md](backend/README.md)** describes how to
     - grab data from World Rowing API
 - **[backend/model/README.md](backend/model/README.md)** describes how to
     - create/drop tables
