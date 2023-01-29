@@ -71,6 +71,7 @@ OLYMPIC_BOATCLASSES = [
     "W4-",
 ]
 
+# TODO: move this generic information into commons module
 BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
     'men': {
         'junior': {  # also called u19

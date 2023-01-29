@@ -113,7 +113,7 @@ class Enum_Maintenance_Level(enum.Enum):
     manually_entered_data = 1000
 
 class Enum_Data_Provider(enum.Enum):
-    manual = 1
+    manually_entered = 1
     world_rowing = 2
 
 class Enum_Data_Source(enum.Enum):
@@ -221,7 +221,7 @@ class Boat_Class(Base):
     additional_id_ = Column(String, index=True, unique=True)
 
     abbreviation = Column(String, nullable=False)
-    # name = Column(String) # TODO: full name not in API data
+    name = Column(String) # e.g. Lightweight Men's Quadruple Sculls // NOTE: full name not in API data
 
     # relationships
     events = relationship("Event", back_populates="boat_class")
@@ -308,6 +308,10 @@ class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae
     progression = Column(String) # e.g. "1-2->SA/B, 3..->R"
     rsc_code = Column(String)
 
+    # To be able to filter for standard 2000m races // inferred by year threshold
+    # NOTE: Consider to hold this info at event or even competition level
+    course_length = Column(Integer)
+    
     pdf_url_results = Column(String)
     pdf_url_race_data = Column(String)
 

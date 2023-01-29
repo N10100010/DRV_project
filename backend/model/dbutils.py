@@ -5,6 +5,7 @@ from contextlib import suppress
 import datetime as dt
 
 from common.helpers import Timedelta_Parser, parse_wr_intermediate_distance_key, get_
+from common import rowing
 
 # from ..scraping_wr import utils_wr
 from scraping_wr import api
@@ -39,7 +40,7 @@ def query_by_uuid_(session, Entity_Class, uuid):
     return result_entity
 
 
-def wr_insert(session, Entity_Class, map_func, data, add_session=True, **kwargs):
+def wr_insert(session, Entity_Class, map_func, data, overwrite_existing=True, add_session=True, **kwargs):
     """Proxy function to fetch or create an entity.
     Usage: wr_insert(session, model.Country, wr_map_country, data_dict)"""
     if data == None:
@@ -53,7 +54,8 @@ def wr_insert(session, Entity_Class, map_func, data, add_session=True, **kwargs)
         entity = Entity_Class()
         entity.additional_id_ = uuid
 
-    entity = map_func(session, entity, data, **kwargs)
+    if create_entity or overwrite_existing:
+        entity = map_func(session, entity, data, **kwargs)
 
     if create_entity and add_session:
         session.add(entity)
@@ -190,11 +192,13 @@ def wr_map_race(session, entity: model.Race, data):
     phase_details = api.extract_race_phase_details(rsc_code=rsc_code, display_name=entity.name)
 
     entity.phase_type = phase_type.lower()
-    entity.phase_subtype = get_(phase_details, 'subtype')
+    entity.phase_subtype = get_(phase_details, 'subtype').upper()
     entity.phase_number  = get_(phase_details, 'number')
 
     entity.progression = get_(data, 'Progression')
     entity.rsc_code = rsc_code
+
+    # entity.course_length = rowing.get_course_length(...) # done in maintenace
 
     entity.pdf_url_results = get_(api.select_pdf_(get_(data, 'pdfUrls', []), 'results'), 'url')
     entity.pdf_url_race_data = get_(api.select_pdf_(get_(data, 'pdfUrls', []), 'race data'), 'url')

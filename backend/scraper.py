@@ -6,7 +6,8 @@ import datetime
 from sqlalchemy import select
 from sqlalchemy.sql.expression import func
 # https://docs.sqlalchemy.org/en/20/core/sqlelement.html#sqlalchemy.sql.expression.Operators.__and__
-from sqlalchemy import and_, or_, not_
+from sqlalchemy import desc, and_, or_, not_
+from sqlalchemy.orm import joinedload
 
 from model import model
 from model import dbutils
@@ -48,6 +49,10 @@ def _scrape_range_full_year_window():
     today = datetime.date.today()
     return today.year-1, today.year+1
 
+def _scrape_range_max():
+    today = datetime.date.today()
+    return SCRAPER_YEAR_MIN, today.year+1
+
 def _detect_wr_scrapes(session):
     # HIGH-PRIO TODO: Introduce a field for source == WorldRowing
     statement = select(model.Competition.id).where(model.Competition.additional_id_ != None) 
@@ -69,7 +74,8 @@ def _scrape_competition_heads(session, year_min, year_max, logger=logger):
                 session,
                 model.Competition,
                 dbutils.wr_map_competition_prescrape,
-                competition_data
+                competition_data,
+                overwrite_existing=False
             )
 
 
@@ -78,20 +84,10 @@ def prescrape(**kwargs):
     logger.info("Initialize Database")
     dbutils.create_tables(model.engine)
 
-    year_min, year_max = _scrape_range_full_year_window() # smaller window with _scrape_range_half_year_window()
+    year_min, year_max = _scrape_range_max()
 
     with model.Scoped_Session() as session:
-        logger.info("Trying to detect an earlier World Rowing API prescrape")
-        wr_detected = _detect_wr_scrapes(session)
-        if not wr_detected:
-            logger.info("No World Rowing API scrapes detected: Extending scrape range to maximum")
-            year_min = SCRAPER_YEAR_MIN
-            # if SCRAPER_DEV_MODE:
-            #     year_min = datetime.date.today().year-5
-            # TODO: add a full_scrape / rescrape option
-
         logger.info(f"Final decision for year range selection: {year_min}-{year_max}")
-
         _scrape_competition_heads(session=session, year_min=year_min, year_max=year_max, logger=logger)
         session.commit()
 
@@ -106,14 +102,61 @@ def _get_competitions_to_scrape(session):
         select(model.Competition)
         .where(model.Competition.scraper_data_provider == DATA_PROVIDER_ID)
         .where(model.Competition.scraper_maintenance_level.in_( [LEVEL_PRESCRAPED, LEVEL_SCRAPED] ))
+        .order_by(
+            desc(model.Competition.year),
+            desc(model.Competition.start_date),
+            desc(model.Competition.end_date)
+        )
     )
     competitions = session.execute(statement).scalars().all()
     N = len(competitions) # TODO: Get rid of all() call and use a count query to get N: https://stackoverflow.com/a/65775282
     return competitions, N
 
 
+def _scrape_competition(session, competition, uuid, parse_pdf_race_data=True, parse_pdf_intermediates=True, logger=logger):
+    uuid = competition.additional_id_
+    assert not uuid == None
+
+    logger.info(f'''Fetching competition="{uuid}" year="{competition.year}" name="{competition.name}"''')
+    competition_data = api.get_by_competition_id_(comp_ids=[uuid], parse_pdf=False)
+
+    logger.info(f"Write competition to database")
+    # let's use the mapper func directly since we already have the ORM instance
+    competition = dbutils.wr_map_competition_scrape(session, competition, competition_data)
+    session.commit()
+
+
+def _competition_within_rescrape_window(comp: model.Competition) -> bool:
+    # LEVEL_SCRAPED is assumed
+    rescrape_limit = datetime.datetime.now() - datetime.timedelta(days=int(SCRAPER_RESCRAPE_LIMIT_DAYS))
+    # if only start date is given, assume X days for competition to take
+    competition_duration_default_assumption = 10
+    start_date_limit = rescrape_limit - datetime.timedelta(days=competition_duration_default_assumption)
+    
+    if comp.end_date:
+        if comp.end_date >= rescrape_limit:
+            return True
+        return False
+
+    if comp.start_date:
+        if comp.start_date >= start_date_limit:
+            return True
+        return False
+
+    if comp.year:
+        if comp.year >= start_date_limit.year:
+            return True
+        return False
+
+    # no date data found
+    return True
+
+
 def scrape():
     logger = logging.getLogger("scrape")
+    LEVEL_PRESCRAPED = model.Enum_Maintenance_Level.world_rowing_api_prescraped.value
+    LEVEL_SCRAPED = model.Enum_Maintenance_Level.world_rowing_api_scraped.value
+    
     with model.Scoped_Session() as session:
         competitions_iter, num_competitions = _get_competitions_to_scrape(session=session)
         logger.info(f"Competitions that have to be scraped N={num_competitions}")
@@ -125,14 +168,25 @@ def scrape():
                 continue
             
             # High Prio TODO: introduce check if scraping should actually happen
+            scrape = True
+            if competition.scraper_maintenance_level >= LEVEL_SCRAPED:
+                scrape = _competition_within_rescrape_window(competition=competition)
 
-            logger.info(f'''Fetching competition="{competition_uuid}" year="{competition.year}" name="{competition.name}"''')
-            competition_data = api.get_by_competition_id_(comp_ids=[competition_uuid], parse_pdf=False)
+            parse_pdf = ...
 
-            logger.info(f"Write competition to database")
-            # let's use the mapper func directly since we already have the ORM instance
-            competition = dbutils.wr_map_competition_scrape(session, competition, competition_data)
-            session.commit()
+            if scrape:
+                _scrape_competition(
+                    session=session,
+                    uuid=competition_uuid,
+                    parse_pdf_intermediates=parse_pdf,
+                    parse_pdf_race_data=parse_pdf,
+                    logger=logger
+                )
+
+            # HIGH PRIO TODO:
+            #   - course_length
+            #   - introduce deep_scrape/parse_pdf param?
+            #   - set maintenance state in the end
 
         session.commit()
         # Race Data PDF here or in maintain()
