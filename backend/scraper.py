@@ -36,6 +36,65 @@ TODO
 
 """
 
+def _scrape_range_half_year_window():
+    today = datetime.date.today()
+    second_half = today.month > 6
+    if today.month > 6:
+        return today.year, today.year+1
+    return today.year-1, today.year
+
+def _scrape_range_full_year_window():
+    today = datetime.date.today()
+    return today.year-1, today.year+1
+
+def _detect_wr_scrapes(session):
+    # HIGH-PRIO TODO: Introduce a field for source == WorldRowing
+    statement = select(model.Competition.id).where(model.Competition.additional_id_ != None) 
+    rows = session.execute(statement).first()
+    detected = not rows == None
+    return detected
+
+def _scrape_competition_heads(session, year_min, year_max, logger=logger):
+    if year_min > year_max:
+        raise Exception(f"Year range is invalid: {year_min}-{year_max}")
+    
+    logger.info("Fetch all competition heads and write to db")
+    for year in range(year_min, year_max+1):
+        logger.info(f"Begin year={year} ---------------")
+        competitions_wr = api.get_competition_heads([year], single_fetch=False)
+        for competition_data in competitions_wr:
+            logger.info(f'''Adding year={year} competition="{competition_data.get('id')}" name="{competition_data.get('DisplayName')}"''')
+            dbutils.wr_insert(
+                session,
+                model.Competition,
+                dbutils.wr_map_competition_prescrape,
+                competition_data
+            )
+
+
+def prescrape(**kwargs):
+    logger = logging.getLogger("prescrape")
+    logger.info("Initialize Database")
+    dbutils.create_tables(model.engine)
+
+    year_min, year_max = _scrape_range_full_year_window() # smaller window with _scrape_range_half_year_window()
+
+    with model.Scoped_Session() as session:
+        logger.info("Trying to detect an earlier World Rowing API prescrape")
+        wr_detected = _detect_wr_scrapes(session)
+        if not wr_detected:
+            logger.info("No World Rowing API scrapes detected: Extending scrape range to maximum")
+            year_min = SCRAPER_YEAR_MIN
+            # if SCRAPER_DEV_MODE:
+            #     year_min = datetime.date.today().year-5
+            # TODO: add a full_scrape / rescrape option
+
+        logger.info(f"Final decision for year range selection: {year_min}-{year_max}")
+
+        _scrape_competition_heads(session=session, year_min=year_min, year_max=year_max, logger=logger)
+        session.commit()
+
+
 def _get_competitions_to_scrape(session):
     """Returns tuple: competitions_iterator, number_of_competitions"""
     LEVEL_PRESCRAPED = model.Enum_Maintenance_Level.world_rowing_api_prescraped.value
