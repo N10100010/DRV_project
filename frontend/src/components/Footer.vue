@@ -19,5 +19,6 @@
   background-color: #5cc5ed;
   justify-self: center;
   min-height: 100px;
+  bottom: 0;
 }
 </style>

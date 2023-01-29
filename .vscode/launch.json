@@ -1,15 +1,12 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Py: Scrape competition",
+            "name": "Py: Scrape competition to JSON",
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}/backend",
-            "module": "scraping_wr._main",
+            "program": "dev-playground.py",
             "args": [
                 "grabc",
                 "--out",
@@ -18,7 +15,7 @@
             "justMyCode": true
         },
         {
-            "name": "Py: dbutils insert",
+            "name": "Py: dbutils insert from JSON",
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}/backend",
@@ -51,6 +48,21 @@
             "justMyCode": true
         },
         {
+            "name": "Py: scraper (dev)",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
+            "program": "scraper.py",
+            "env": {
+                "SCRAPER_SINGLEPASS": "1",
+                "DRV_SCRAPER_DEV_MODE": "1",
+                "DB_VERBOSITY": "0"
+            },
+            "args": [],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "Py: flask",
             "type": "python",
             "request": "launch",
@@ -61,7 +73,7 @@
             },
             "args": [
                 "--app",
-                "app.app:app",
+                "api_server:app",
                 "--debug",
                 "run",
                 "--no-debugger",
@@ -69,6 +81,14 @@
                 "--port=5000"
             ],
             "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Py: Dev Playground (Nick)",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
+            "program": "dev-playground.py",
             "justMyCode": true
         }
     ]

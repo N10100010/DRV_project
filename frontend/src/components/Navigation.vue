@@ -10,19 +10,9 @@ export default {
       showSubMenu: false,
       windowWidth: null,
       navigationLinks: [
-          {
-            displayName: "Dashboard",
-            link: "/",
-            subPages: [
-              {
-                subPageName: "Lorem ipsum dolor",
-                linkTo: "/"
-              },
-              {
-                subPageName: "Sit amet",
-                linkTo: "/"
-              }
-            ]
+        {
+          displayName: "Kalender",
+          link: "/"
         },
         {
           displayName: "Berichte",
@@ -51,14 +41,22 @@ export default {
     window.addEventListener('resize', this.checkScreen);
     this.checkScreen();
   },
-
   methods: {
+     isActive(link, linkName) {
+       if (linkName !== "Kalender") {
+         return this.$route.path.startsWith(link);
+       } else {
+         return false;
+       }
+    },
+    closeMobileNav() {
+      this.mobileNav = false;
+    },
+    include () {
+        return [document.querySelector('.included')]
+      },
     toggleMobileNav() {
       this.mobileNav = !this.mobileNav;
-    },
-    expandSubPageMenu(linkData) {
-      this.currentSubMenu = linkData.subPages
-      this.showSubMenu = true;
     },
     onMouseOverSubMenu() {
       this.showSubMenu = true;
@@ -68,7 +66,7 @@ export default {
     },
     checkScreen() {
       this.windowWidth = window.innerWidth;
-      if(this.windowWidth <= 750){
+      if (this.windowWidth <= 750) {
         this.mobile = true;
         document.querySelector('body').style.paddingTop = '4.5em';
         return;
@@ -106,7 +104,9 @@ export default {
           <ul v-show="!mobile" class="navigation" :class="{'collapsed-nav': !showSubMenu, 'expanded': showSubMenu}">
             <li v-for="navEntry in navigationLinks">
               <!-- To activate the submenu add this (@mouseover="expandSubPageMenu(navEntry)") to the Link below -->
-              <RouterLink :to="navEntry.link">{{ navEntry.displayName }}</RouterLink>
+              <RouterLink :class="isActive(navEntry.link, navEntry.displayName) ?
+                'router-link-exact-active' : null"
+              :to="navEntry.link">{{ navEntry.displayName }}</RouterLink>
             </li>
           </ul>
         </div>
@@ -118,11 +118,11 @@ export default {
           </ul>
         </div>
         <p v-show="mobile" id="mobile-title">U ->- Row</p>
-        <div v-show="mobile" class="icon">
+        <div v-show="mobile" class="icon included">
           <i @click="toggleMobileNav" class="far fa-bars" :class="{ 'icon-active': mobileNav }"></i>
         </div>
         <transition name="mobile-nav">
-          <div v-show="mobileNav" class="dropdown-nav">
+          <div v-show="mobileNav" class="dropdown-nav" v-click-outside="{handler: closeMobileNav, include}">
             <h2 id="nav-header"><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></h2>
             <ul>
               <li v-for="navEntry in navigationLinks">
@@ -149,8 +149,8 @@ header {
   z-index: 99;
 
   a.router-link-exact-active {
-  color: #1369b0;
-}
+    color: #1369b0;
+  }
 
   nav {
     display: flex;
@@ -226,7 +226,7 @@ header {
       flex-direction: column;
       position: fixed;
       width: 100%;
-      max-width: 260px;
+      max-width: 250px;
       height: 100%;
       background-color: #000000;
       top: 0;
@@ -239,9 +239,9 @@ header {
       }
 
       #nav-header {
-          font-size: 12px;
-          padding: 1.5em;
-        }
+        font-size: 12px;
+        padding: 1.5em;
+      }
     }
 
     .mobile-nav-enter-active,
@@ -260,17 +260,17 @@ header {
   }
 
   header::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  @media(min-width: 750px) {
-    border-top: 0.5rem solid #008000;
-    border-bottom: 1rem solid #1369b0;
-  }
-  border-top: 0.25rem solid #008000;
-  border-bottom: 0.5rem solid #1369b0;
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    @media(min-width: 750px) {
+      border-top: 0.5rem solid #008000;
+      border-bottom: 1rem solid #1369b0;
+    }
+    border-top: 0.25rem solid #008000;
+    border-bottom: 0.5rem solid #1369b0;
   }
 }
 
@@ -328,7 +328,7 @@ p {
 }
 
 #sub-menu li a:hover {
-    color: #1369b0;
+  color: #1369b0;
 }
 
 .nav-links-wrapper {

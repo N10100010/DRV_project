@@ -343,8 +343,8 @@ export const useAthletenState = defineStore({
                 "medals_bronze": 2,
                 "placements_final_A": 2,
                 "placements_final_B": 4,
-                "bestTimeBoatClass": "00:05:58,36",
-                "bestTimeBoatClassCurrentOZ": "00:05:58,36",
+                "bestTimeBoatClass": 358360,
+                "bestTimeBoatClassCurrentOZ": 358360,
                 "raceList": [{
                     "race_id": 195638,
                     "raceName": "Junior's Eight Heat 1",
