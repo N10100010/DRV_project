@@ -11,7 +11,7 @@ from model import model
 from . import mocks
 
 # app is the main controller for the Flask-Server and will start the app in the main function 
-app = Flask(__name__, template_folder='web/templates')
+app = Flask(__name__, template_folder=None)
 
 # used similar to a context manager. using the constructor creates a scoped session, bound to its creating function scope 
 Scoped_Session = model.Scoped_Session
