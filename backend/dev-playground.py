@@ -9,7 +9,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from . import api
+from scraping_wr import api
 
 ########################################################################################################################
 # NOTE:

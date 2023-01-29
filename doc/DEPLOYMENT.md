@@ -27,7 +27,7 @@ pip install -r api.requirements.txt
 
 **Step 3:** Set *Start Command* as follows
 ```
-python -m waitress --host 0.0.0.0 --port ${PORT} app.app:app
+python -m waitress --host 0.0.0.0 --port ${PORT} api_server:app
 ```
 
 Notes:
@@ -51,7 +51,7 @@ pip install -r scraper.requirements.txt
 
 **Step 3:** Set *Start Command* as follows
 ```
-python -m procedures.scrape_service
+python scraper.py
 ```
 
 Notes:
