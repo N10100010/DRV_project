@@ -94,11 +94,11 @@
                 </tr>
                 <tr>
                   <th>Bestzeit Bootsklasse</th>
-                  <td>{{ tableData.bestTimeBoatClass }}</td>
+                  <td>{{ formatMilliseconds(tableData.bestTimeBoatClass) }}</td>
                 </tr>
                 <tr>
                   <th>Bestzeit Bootsklasse OZ/Jahr</th>
-                  <td>{{ tableData.bestTimeBoatClassCurrentOZ }}</td>
+                  <td>{{ formatMilliseconds(tableData.bestTimeBoatClassCurrentOZ) }}</td>
                 </tr>
                 </tbody>
               </v-table>
@@ -185,6 +185,9 @@ export default {
       let navbarHeight = window.innerWidth < 750 ? '71.25px' : '160px';
       document.documentElement.style.setProperty('--navbar-height', navbarHeight);
     },
+    formatMilliseconds(ms) {
+      return new Date(ms).toISOString().slice(14, -2)
+    }
   },
   created() {
     window.addEventListener('resize', this.checkScreen);

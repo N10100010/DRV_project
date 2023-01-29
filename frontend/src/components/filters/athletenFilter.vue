@@ -42,7 +42,7 @@
                 :items="optionsBoatClasses" v-model="selectedBoatClasses" variant="outlined"
       ></v-select>
       <v-container class="pa-0 pt-8 text-right">
-        <v-btn color="grey" class="mx-2">
+        <v-btn color="grey" class="mx-2" @click="clearFormInputs">
           <v-icon>mdi-backspace-outline</v-icon>
         </v-btn>
         <v-btn color="blue" class="mx-2" type="submit" @click="setFilterState">Übernehmen</v-btn>
@@ -83,7 +83,7 @@ export default {
       selectedAthlete: null,
 
       // year
-      birthYear: 0,
+      birthYear: null,
       optionsBirthYear: [],
 
       // nations
@@ -181,7 +181,12 @@ export default {
       })
     },
     clearFormInputs() {
-      // Add default state here
+      this.selectedAthlete = null
+      this.selectedNation = "GER (Deutschland)"
+      this.selectedBirthYear = null
+      this.selectedGenders = 0
+      this.selectedAgeGroups = 0
+      this.selectedBoatClasses = this.optionsBoatClasses[0]
     },
     checkScreen() {
       this.windowWidth = window.innerWidth

@@ -10,19 +10,9 @@ export default {
       showSubMenu: false,
       windowWidth: null,
       navigationLinks: [
-          {
-            displayName: "Dashboard",
-            link: "/",
-            subPages: [
-              {
-                subPageName: "Lorem ipsum dolor",
-                linkTo: "/"
-              },
-              {
-                subPageName: "Sit amet",
-                linkTo: "/"
-              }
-            ]
+        {
+          displayName: "Kalender",
+          link: "/"
         },
         {
           displayName: "Berichte",
@@ -51,8 +41,14 @@ export default {
     window.addEventListener('resize', this.checkScreen);
     this.checkScreen();
   },
-
   methods: {
+     isActive(link, linkName) {
+       if (linkName !== "Kalender") {
+         return this.$route.path.startsWith(link);
+       } else {
+         return false;
+       }
+    },
     closeMobileNav() {
       this.mobileNav = false;
     },
@@ -62,10 +58,6 @@ export default {
     toggleMobileNav() {
       this.mobileNav = !this.mobileNav;
     },
-    expandSubPageMenu(linkData) {
-      this.currentSubMenu = linkData.subPages
-      this.showSubMenu = true;
-    },
     onMouseOverSubMenu() {
       this.showSubMenu = true;
     },
@@ -74,7 +66,7 @@ export default {
     },
     checkScreen() {
       this.windowWidth = window.innerWidth;
-      if(this.windowWidth <= 750){
+      if (this.windowWidth <= 750) {
         this.mobile = true;
         document.querySelector('body').style.paddingTop = '4.5em';
         return;
@@ -112,7 +104,9 @@ export default {
           <ul v-show="!mobile" class="navigation" :class="{'collapsed-nav': !showSubMenu, 'expanded': showSubMenu}">
             <li v-for="navEntry in navigationLinks">
               <!-- To activate the submenu add this (@mouseover="expandSubPageMenu(navEntry)") to the Link below -->
-              <RouterLink :to="navEntry.link">{{ navEntry.displayName }}</RouterLink>
+              <RouterLink :class="isActive(navEntry.link, navEntry.displayName) ?
+                'router-link-exact-active' : null"
+              :to="navEntry.link">{{ navEntry.displayName }}</RouterLink>
             </li>
           </ul>
         </div>
@@ -155,8 +149,8 @@ header {
   z-index: 99;
 
   a.router-link-exact-active {
-  color: #1369b0;
-}
+    color: #1369b0;
+  }
 
   nav {
     display: flex;
@@ -245,9 +239,9 @@ header {
       }
 
       #nav-header {
-          font-size: 12px;
-          padding: 1.5em;
-        }
+        font-size: 12px;
+        padding: 1.5em;
+      }
     }
 
     .mobile-nav-enter-active,
@@ -266,17 +260,17 @@ header {
   }
 
   header::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  @media(min-width: 750px) {
-    border-top: 0.5rem solid #008000;
-    border-bottom: 1rem solid #1369b0;
-  }
-  border-top: 0.25rem solid #008000;
-  border-bottom: 0.5rem solid #1369b0;
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    @media(min-width: 750px) {
+      border-top: 0.5rem solid #008000;
+      border-bottom: 1rem solid #1369b0;
+    }
+    border-top: 0.25rem solid #008000;
+    border-bottom: 0.5rem solid #1369b0;
   }
 }
 
@@ -334,7 +328,7 @@ p {
 }
 
 #sub-menu li a:hover {
-    color: #1369b0;
+  color: #1369b0;
 }
 
 .nav-links-wrapper {
