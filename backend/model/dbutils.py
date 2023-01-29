@@ -309,7 +309,7 @@ def wr_map_competition_scrape(session, entity: model.Competition, data: dict):
 
     entity.scraper_maintenance_level = STATE_RESULT_STATE
     entity.scraper_data_provider = model.Enum_Data_Provider.world_rowing.value
-    entity.scraper_last_scrape = dt.datetime.today()
+    entity.scraper_last_scrape = dt.datetime.now()
 
     entity = __wr_map_competition(session, entity, data)
     return entity
