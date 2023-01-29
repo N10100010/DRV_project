@@ -1,14 +1,12 @@
-# Usage: _main.py
-
-
+# Usage: dev-playground.py
 
 ## Grab a competition and save dump to a JSON file
 
 **Usage**
 
 ```
-$ python -m scraping_wr._main grabc --help
-usage: _main.py grabc [-h] [-i UUID] [-o OUT]
+$ python dev-playground.py grabc --help
+usage: dev-playground.py grabc [-h] [-i UUID] [-o OUT]
 
 options:
   -h, --help            show this help message and exit
@@ -19,12 +17,12 @@ options:
 **Example:**
 
 ```sh
-python -m scraping_wr._main grabc --uuid 718b3256-e778-4003-88e9-832c4aad0cc2 --out dump.json
+python dev-playground.py grabc --uuid 718b3256-e778-4003-88e9-832c4aad0cc2 --out dump.json
 ```
 
 
 ## Run remaining test code
 
 ```sh
-python -m scraping_wr._main
+python dev-playground.py
 ```
