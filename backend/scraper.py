@@ -2,6 +2,7 @@ import logging
 import os
 from time import sleep
 import datetime
+from contextlib import suppress
 
 from sqlalchemy import select
 from sqlalchemy.sql.expression import func
@@ -12,6 +13,7 @@ from sqlalchemy.orm import joinedload
 from model import model
 from model import dbutils
 from scraping_wr import api
+from common import rowing
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -113,7 +115,43 @@ def _get_competitions_to_scrape(session):
     return competitions, N
 
 
-def _scrape_competition(session, competition, uuid, parse_pdf_race_data=True, parse_pdf_intermediates=True, logger=logger):
+def _competition_within_rescrape_window(comp: model.Competition) -> bool:
+    # LEVEL_SCRAPED is assumed
+    rescrape_limit = datetime.datetime.now() - datetime.timedelta(days=int(SCRAPER_RESCRAPE_LIMIT_DAYS))
+    # if only start date is given, assume X days for competition to take
+    competition_duration_default_assumption = 10
+    gracious_date_limit = rescrape_limit - datetime.timedelta(days=competition_duration_default_assumption)
+    
+    if comp.end_date:
+        if comp.end_date >= rescrape_limit:
+            return True
+        return False
+
+    if comp.start_date:
+        if comp.start_date >= gracious_date_limit:
+            return True
+        return False
+
+    if comp.year:
+        if comp.year >= gracious_date_limit.year:
+            return True
+        return False
+
+    if comp.scraper_last_scrape < gracious_date_limit:
+        return False
+
+    # no date data found
+    return True
+
+
+def _date_of_competition(comp: model.Competition) -> datetime.date:
+    year = None
+    with suppress(Exception):
+        year = datetime.date(year=comp.year, month=1, day=1)
+    return comp.end_date.date() or comp.start_date.date() or year
+
+
+def _scrape_competition(session, competition: model.Competition, uuid, parse_pdf_race_data=True, parse_pdf_intermediates=True, logger=logger):
     uuid = competition.additional_id_
     assert not uuid == None
 
@@ -123,36 +161,21 @@ def _scrape_competition(session, competition, uuid, parse_pdf_race_data=True, pa
     logger.info(f"Write competition to database")
     # let's use the mapper func directly since we already have the ORM instance
     competition = dbutils.wr_map_competition_scrape(session, competition, competition_data)
+    session.commit() # TODO: consider removing multiple commits
+
+    logger.info(f"Determine course lengths")
+    for event in competition.events:
+        race: model.Race
+        for race in event.races:
+            race.course_length = rowing.get_course_length(
+                boat_class=event.boat_class.abbreviation,
+                date=_date_of_competition(competition)
+            )
     session.commit()
 
 
-def _competition_within_rescrape_window(comp: model.Competition) -> bool:
-    # LEVEL_SCRAPED is assumed
-    rescrape_limit = datetime.datetime.now() - datetime.timedelta(days=int(SCRAPER_RESCRAPE_LIMIT_DAYS))
-    # if only start date is given, assume X days for competition to take
-    competition_duration_default_assumption = 10
-    start_date_limit = rescrape_limit - datetime.timedelta(days=competition_duration_default_assumption)
-    
-    if comp.end_date:
-        if comp.end_date >= rescrape_limit:
-            return True
-        return False
 
-    if comp.start_date:
-        if comp.start_date >= start_date_limit:
-            return True
-        return False
-
-    if comp.year:
-        if comp.year >= start_date_limit.year:
-            return True
-        return False
-
-    # no date data found
-    return True
-
-
-def scrape():
+def scrape(parse_pdf=True):
     logger = logging.getLogger("scrape")
     LEVEL_PRESCRAPED = model.Enum_Maintenance_Level.world_rowing_api_prescraped.value
     LEVEL_SCRAPED = model.Enum_Maintenance_Level.world_rowing_api_scraped.value
@@ -167,7 +190,6 @@ def scrape():
                 logger.error(f"Competition with id={competition.id} has no UUID (w.r.t. World Rowing API); Skip")
                 continue
             
-            # High Prio TODO: introduce check if scraping should actually happen
             scrape = True
             if competition.scraper_maintenance_level >= LEVEL_SCRAPED:
                 scrape = _competition_within_rescrape_window(competition=competition)
@@ -182,11 +204,12 @@ def scrape():
                     parse_pdf_race_data=parse_pdf,
                     logger=logger
                 )
+            
 
             # HIGH PRIO TODO:
-            #   - course_length
             #   - introduce deep_scrape/parse_pdf param?
             #   - set maintenance state in the end
+            #   - set scraper_last_scrape in the end
 
         session.commit()
         # Race Data PDF here or in maintain()
@@ -235,6 +258,8 @@ def maintain():
             logger.info("Check Quality of both Datasets")
 
             logger.info("Overwrite in db")
+
+            logger.info("Mark maintenance state in db")
 
 
 def scheduler(duration=SCRAPER_SLEEP_TIME_SECONDS):

@@ -1,4 +1,4 @@
-import datetime
+from datetime import date
 
 import logging
 logger = logging.getLogger(__name__)
@@ -6,12 +6,12 @@ logger = logging.getLogger(__name__)
 from .helpers import make_keys_lowercase
 
 __course_length_2000m_lookup_table = make_keys_lowercase({
-    "LW1x": 1998,
-    "PR3 W2-": 2007
+    "LW1x": date(1998,1,1),
+    "PR3 W2-": date(2007,1,1)
     # ... TODO: Kay ...
 })
 
-def get_course_length(boat_class: str, date: datetime.date, **kwargs) -> int:
+def get_course_length(boat_class: str, race_date: date, **kwargs) -> int:
     """
     Returns course length
 
@@ -28,5 +28,5 @@ def get_course_length(boat_class: str, date: datetime.date, **kwargs) -> int:
         logger.error(f"Boat class '{boat_class}' not found in course length lookup table (2km)")
         return DEFAULT_LENGTH
 
-    if date > threshold_date:
+    if race_date > threshold_date:
         return 2000
