@@ -3,12 +3,12 @@
         {
             "previewLimit": 50,
             "server": "localhost",
+            "port": 5432,
             "driver": "PostgreSQL",
             "name": "drv-local-test",
             "database": "rowing",
             "username": "postgres",
-            "password": "mysecretpassword",
-            "connectString": "postgresql://postgres:postgres@localhost:5432"
+            "password": "postgres"
         }
     ]
 }

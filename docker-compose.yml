@@ -43,6 +43,7 @@ services:
   db:
     image: postgres:14.1-alpine
     restart: unless-stopped
+    user: postgres
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"

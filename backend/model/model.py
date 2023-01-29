@@ -5,9 +5,7 @@ import urllib.parse
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
-from sqlalchemy.ext.declarative import declarative_base
-
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy import Column, ForeignKey, Integer, BigInteger, Float, String, Boolean, Date, DateTime, Enum
 
 # logging stuff
@@ -82,7 +80,6 @@ def get_rowing_db_url() -> str:
     """
     db_url = "{drivername}://{username}:{password}@{host}:{port}/{database}".format(
         drivername=os.environ.get('DB_SQLALCHEMY_DRIVERNAME', 'postgresql+psycopg2'),
-
         username=urllib.parse.quote_plus( os.environ.get('PGUSER', 'postgres') ),
         password=urllib.parse.quote_plus( os.environ.get('PGPASSWORD', 'postgres') ),
         host=os.environ.get('PGHOST', 'localhost'),
@@ -109,16 +106,19 @@ Scoped_Session = scoped_session(sessionmaker(bind=engine, autoflush=True, autoco
 # -----
 class Enum_Maintenance_Level(enum.Enum):
     """Enum for Competition Entity"""
-    world_rowing_api_prescraped = 3
-    world_rowing_api_grabbed = 5
-    world_rowing_postprocessed = 6
+    world_rowing_api_prescraped = 25
+    world_rowing_api_scraped = 50
+    world_rowing_api_postprocessed = 100
 
     manually_entered_data = 1000
+
+class Enum_Data_Provider(enum.Enum):
+    manual = 1
+    world_rowing = 2
 
 class Enum_Data_Source(enum.Enum):
     world_rowing_api = 1
     world_rowing_pdf = 2
-
 
 # Many-To-Many Association Tables
 # -------------------------------
@@ -248,7 +248,9 @@ class Competition(Base):
     additional_id_ = Column(String, index=True, unique=True)
 
     # holds info about the state of postprocessing using Enum_Maintenance_Level
-    maintenance_level = Column(Integer, nullable=False)
+    scraper_maintenance_level = Column(Integer, nullable=False)
+    scraper_last_scrape = Column(DateTime)
+    scraper_data_provider = Column(Integer) # Use Enum_Data_Provider
 
     competition_category_id = Column(ForeignKey("competition_category.id"))
     competition_category    = relationship("Competition_Category", back_populates="competitions")
@@ -256,10 +258,12 @@ class Competition(Base):
     venue    = relationship("Venue", back_populates="competitions")
 
     name = Column(String)
+    year = Column(Integer)
     start_date = Column(DateTime)
     end_date = Column(DateTime)
+
+    is_fisa = Column(Boolean)
     competition_code__ = Column(String)
-    is_fisa__ = Column(Boolean)
 
     # relationships
     events = relationship("Event", back_populates="competition")
@@ -296,14 +300,18 @@ class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae
 
     name = Column(String)
     date = Column(DateTime)
-    phase_type = Column(String) # e.g. "Heat", "Final" // TODO: normalize?
-    phase = Column(String) # e.g. "FA", "H3", "SA/B1", etc...
+
+    phase_type = Column(String) # e.g. "heat", "final", "semifinal"
+    phase_subtype = Column(String) # e.g. "SA/B/C 1" -> "A/B/C", "FB" -> NULL, "H3" -> NULL
+    phase_number = Column(Integer) # e.g. "SA/B/C 1" -> 1, "FB" -> 2, "H3" -> 3
 
     progression = Column(String) # e.g. "1-2->SA/B, 3..->R"
     rsc_code = Column(String)
 
     pdf_url_results = Column(String)
     pdf_url_race_data = Column(String)
+
+    # course_length_meter = Column(Integer) # e.g. 2000 for 2000 meter course # Hypothesis: Competition.is_fisa -> 2000m ? TODO: data exploration
 
     # Meaning and importance not exactly clear
     race_nr__ = Column(String) # e.g. "103"
