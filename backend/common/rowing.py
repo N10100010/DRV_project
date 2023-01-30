@@ -25,7 +25,8 @@ def get_course_length(boat_class: str, race_date: date, **kwargs) -> int:
     threshold_date = __course_length_2000m_lookup_table.get(boat_class.strip())
     
     if not threshold_date:
-        logger.error(f"Boat class '{boat_class}' not found in course length lookup table (2km)")
+        # TODO: uncomment logging when lookup table is complete
+        # logger.error(f"Boat class '{boat_class}' not found in course length lookup table (2km)")
         return DEFAULT_LENGTH
 
     if race_date > threshold_date:

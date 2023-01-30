@@ -166,7 +166,7 @@ def wr_map_race_boat(session, entity, data):
 
         with suppress(TypeError, ValueError):
             intermediate.distance_meter = parse_wr_intermediate_distance_key(distance_key)
-            intermediate.data_source_ = model.Enum_Data_Source.world_rowing_api.value
+            intermediate.data_source = model.Enum_Data_Source.world_rowing_api.value
             intermediate.rank = get_(interm_data, 'Rank')
             intermediate.result_time_ms = Timedelta_Parser.to_millis( get_(interm_data, 'ResultTime') )
 
@@ -190,9 +190,11 @@ def wr_map_race(session, entity: model.Race, data):
     rsc_code = get_(data, 'RscCode')
 
     phase_details = api.extract_race_phase_details(rsc_code=rsc_code, display_name=entity.name)
+    subtype = get_(phase_details, 'subtype')
+    subtype = subtype.upper() if subtype else None
 
     entity.phase_type = phase_type.lower()
-    entity.phase_subtype = get_(phase_details, 'subtype').upper()
+    entity.phase_subtype = subtype
     entity.phase_number  = get_(phase_details, 'number')
 
     entity.progression = get_(data, 'Progression')
@@ -229,6 +231,12 @@ def wr_map_event(session, entity, data):
         get_(data, 'races', [])
     )
     entity.races.extend(races)
+    return entity
+
+
+def wr_map_competition_type(session, entity, data):
+    entity.name = get_(data, 'DisplayName')
+    entity.abbreviation = get_(data, 'Abbreviation')
     return entity
 
 
@@ -270,6 +278,16 @@ def __wr_map_competition(session, entity: model.Competition, data):
         wr_map_competition_category,
         get_(get_(data, 'competitionType'), 'competitionCategory')
     )
+
+    # Competition_Type
+    competition_type = wr_insert(
+        session,
+        model.Competition_Type,
+        wr_map_competition_type,
+        get_(data, 'competitionType')
+    )
+
+    competition_category.competition_type = competition_type
 
     # Venue
     venue = wr_insert(session, model.Venue, wr_map_venue, get_(data, 'venue'))

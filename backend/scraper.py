@@ -7,22 +7,23 @@ from contextlib import suppress
 from sqlalchemy import select
 from sqlalchemy.sql.expression import func
 # https://docs.sqlalchemy.org/en/20/core/sqlelement.html#sqlalchemy.sql.expression.Operators.__and__
-from sqlalchemy import desc, and_, or_, not_
+from sqlalchemy import func, desc, and_, or_, not_
 from sqlalchemy.orm import joinedload
 
 from model import model
 from model import dbutils
-from scraping_wr import api
+from scraping_wr import api, pdf_race_data
 from common import rowing
+from common.helpers import Timedelta_Parser, get_
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 SCRAPER_SINGLEPASS = os.environ.get('SCRAPER_SINGLEPASS','').strip() == '1'
 SCRAPER_DEV_MODE = os.environ.get('DRV_SCRAPER_DEV_MODE','').strip() == '1'
 SCRAPER_YEAR_MIN = int(os.environ.get('SCRAPER_YEAR_MIN', '1900').strip())
 SCRAPER_MAINTENANCE_PERIOD_DAYS = int(os.environ.get('SCRAPER_MAINTENANCE_PERIOD_DAYS', '7').strip())
-SCRAPER_RESCRAPE_LIMIT_DAYS = int(os.environ.get('SCRAPER_RESCRAPE_LIMIT_DAYS', '14').strip())
+SCRAPER_RESCRAPE_LIMIT_DAYS = int(os.environ.get('SCRAPER_RESCRAPE_LIMIT_DAYS', '31').strip())
 
 DAY_IN_SECONDS = 60 * 60 * 24
 SCRAPER_SLEEP_TIME_SECONDS = 1 * DAY_IN_SECONDS
@@ -151,7 +152,7 @@ def _date_of_competition(comp: model.Competition) -> datetime.date:
     return comp.end_date.date() or comp.start_date.date() or year
 
 
-def _scrape_competition(session, competition: model.Competition, uuid, parse_pdf_race_data=True, parse_pdf_intermediates=True, logger=logger):
+def _scrape_competition(session, competition: model.Competition, parse_pdf_race_data=True, parse_pdf_intermediates=True, logger=logger):
     uuid = competition.additional_id_
     assert not uuid == None
 
@@ -169,17 +170,68 @@ def _scrape_competition(session, competition: model.Competition, uuid, parse_pdf
         for race in event.races:
             race.course_length = rowing.get_course_length(
                 boat_class=event.boat_class.abbreviation,
-                date=_date_of_competition(competition)
+                race_date=_date_of_competition(competition)
             )
     session.commit()
 
+    logger.info(f'Fetch & parse PDF race data')
+    if parse_pdf_race_data:
+        for event in competition.events:
+            race: model.Race
+            for race in event.races:
+                url = race.pdf_url_race_data
+                logger.info(f'Fetch & parse PDF race data race="{race.additional_id_}" url="{url}"')
+                pdf_race_data_, _ = pdf_race_data.extract_data_from_pdf_url([url])
+                if not pdf_race_data_:
+                    logger.info(f'Failed to parse (or fetch)')
+                
+                # Ideas:
+                # - sanity check with parsed ranks
+                # - check for multiple matches on either side.
+                #       (pop out of pdf_result_list; or with seen in set() pattern from wr_map_race_boat)
+                # - check if all race_boats were matched.
+                race_boat: model.Race_Boat
+                for race_boat in race.race_boats:
+                    for pdf_boat in pdf_race_data_.get('data', []):
+                        matched_name = race_boat.name.lower().strip() == pdf_boat.get('country','').lower().strip()
+                        
+                        parsed_rank = None
+                        with suppress(Exception):
+                            parsed_rank = int(pdf_boat.get('rank'))
+                        matched_rank = race_boat.rank == parsed_rank
 
+                        if matched_name and matched_rank:
+                            logger.info(f'Race data matched for "{race_boat.name}"')
+                            data_ = get_(pdf_boat, 'data', {})
+                            dists   = get_(data_, 'dist [m]', [])
+                            speeds  = get_(data_, 'speed', [])
+                            strokes = get_(data_, 'stroke', [])
+                            is_consistent = len(dists) == len(speeds) == len(strokes)
+                            
+                            if not is_consistent:
+                                logger.error(f'Data is inconsistent: Arrays have different lengths')
+                                continue # TODO: consider not commiting for this Race_Boat at all
+                            
+                            race_boat.race_data.clear()
+                            for dist, speed, stroke in zip(dists, speeds, strokes):
+                                try:
+                                    race_data_point = model.Race_Data(data_source=model.Enum_Data_Source.world_rowing_pdf.value)
+                                    race_data_point.distance_meter = dist
+                                    race_data_point.speed_meter_per_sec = speed
+                                    race_data_point.stroke = stroke
+                                except Exception:
+                                    logger.error(f'Failed to write dist="{dist}" speed="{speed}" stroke="{stroke}"')
+                                else:
+                                    session.add(race_data_point)
+                                    race_boat.race_data.append(race_data_point)
+                            
 
 def scrape(parse_pdf=True):
     logger = logging.getLogger("scrape")
-    LEVEL_PRESCRAPED = model.Enum_Maintenance_Level.world_rowing_api_prescraped.value
-    LEVEL_SCRAPED = model.Enum_Maintenance_Level.world_rowing_api_scraped.value
-    
+    LEVEL_PRESCRAPED    = model.Enum_Maintenance_Level.world_rowing_api_prescraped.value
+    LEVEL_SCRAPED       = model.Enum_Maintenance_Level.world_rowing_api_scraped.value
+    LEVEL_POSTPROCESSED = model.Enum_Maintenance_Level.world_rowing_api_postprocessed.value
+
     with model.Scoped_Session() as session:
         competitions_iter, num_competitions = _get_competitions_to_scrape(session=session)
         logger.info(f"Competitions that have to be scraped N={num_competitions}")
@@ -191,20 +243,18 @@ def scrape(parse_pdf=True):
                 continue
             
             scrape = True
-            if competition.scraper_maintenance_level >= LEVEL_SCRAPED:
-                scrape = _competition_within_rescrape_window(competition=competition)
-
-            parse_pdf = ...
+            if competition.scraper_maintenance_level in [LEVEL_SCRAPED, LEVEL_POSTPROCESSED]:
+                scrape = _competition_within_rescrape_window(comp=competition)
 
             if scrape:
+                # this also advances the maintenance_level
                 _scrape_competition(
                     session=session,
-                    uuid=competition_uuid,
+                    competition=competition,
                     parse_pdf_intermediates=parse_pdf,
                     parse_pdf_race_data=parse_pdf,
                     logger=logger
                 )
-            
 
             # HIGH PRIO TODO:
             #   - introduce deep_scrape/parse_pdf param?
@@ -214,32 +264,78 @@ def scrape(parse_pdf=True):
         session.commit()
         # Race Data PDF here or in maintain()
 
-def _get_competitions_to_maintain(session):
-    """Returns tuple: competitions_iterator, number_of_competitions"""
-    DATA_PROVIDER_ID = model.Enum_Data_Provider.world_rowing.value
-    LEVEL_SCRAPED = model.Enum_Maintenance_Level.world_rowing_api_scraped.value
-    LEVEL_POSTPROCESSED = model.Enum_Maintenance_Level.world_rowing_api_postprocessed.value
-    scrape_before_date = datetime.datetime.now() - datetime.timedelta(days=int(SCRAPER_MAINTENANCE_PERIOD_DAYS))
 
-    statement = (
-        select(model.Competition)
-        .where(model.Competition.scraper_data_provider == DATA_PROVIDER_ID)
-        .where(
-            or_(
-                model.Competition.scraper_maintenance_level == LEVEL_SCRAPED,
-                and_(
-                    model.Competition.scraper_maintenance_level == LEVEL_POSTPROCESSED,
-                    model.Competition.scraper_last_scrape < scrape_before_date
-                )
-            )
+def _refresh_world_best_times(session, logger=logger):
+    wbts = api.get_world_best_times()
+    for wbt in wbts:
+        boat_class_abbr = wbt.get('boat_class','')
+        race_boat_uuid = wbt.get('race_boat_id')
+        result_time_ms = None
+        with suppress(Exception):
+            result_time_ms = Timedelta_Parser.to_millis( wbt.get('race_boat_id') )
+
+        statement = (
+            select(model.Boat_Class)
+            .where(func.lower(model.Boat_Class.abbreviation) == boat_class_abbr.lower())
         )
-    )
-    competitions = session.execute(statement).scalars().all()
-    return competitions, len(competitions)
+        boat_class = session.execute(statement).scalars().first()
+        if not boat_class:
+            logger.error(f'Boat Class "{boat_class_abbr}" not found in db')
+            continue
+        
+        statement = (
+            select(model.Race_Boat)
+            .where(model.Race_Boat.additional_id_ == race_boat_uuid)
+        )
+        race_boat = session.execute(statement).scalars().first()
+        if not race_boat:
+            logger.error(f'Race Boat "{race_boat_uuid}" not found in db')
+            continue
+
+        if not race_boat.result_time_ms == result_time_ms:
+            logger.error(f'''!!!!! Integrity Problem: Result time does not match race_boat has "{race_boat.result_time_ms}" wbt says "{result_time_ms}" ({wbt.get('race_boat_id')})''')
+
+        boat_class.world_best_race_boat = race_boat
+
+    session.commit()
+
+
+# def _get_competitions_to_maintain(session):
+#     """Returns tuple: competitions_iterator, number_of_competitions"""
+#     DATA_PROVIDER_ID = model.Enum_Data_Provider.world_rowing.value
+#     LEVEL_SCRAPED = model.Enum_Maintenance_Level.world_rowing_api_scraped.value
+#     LEVEL_POSTPROCESSED = model.Enum_Maintenance_Level.world_rowing_api_postprocessed.value
+#     scrape_before_date = datetime.datetime.now() - datetime.timedelta(days=int(SCRAPER_MAINTENANCE_PERIOD_DAYS))
+
+#     statement = (
+#         select(model.Competition)
+#         .where(model.Competition.scraper_data_provider == DATA_PROVIDER_ID)
+#         .where(
+#             or_(
+#                 model.Competition.scraper_maintenance_level == LEVEL_SCRAPED,
+#                 and_(
+#                     model.Competition.scraper_maintenance_level == LEVEL_POSTPROCESSED,
+#                     model.Competition.scraper_last_scrape < scrape_before_date
+#                 )
+#             )
+#         )
+#     )
+#     competitions = session.execute(statement).scalars().all()
+#     return competitions, len(competitions)
+
 
 def maintain():
     logger = logging.getLogger("postprocessing")
     with model.Scoped_Session() as session:
+        logger.info(f"Fetch & write world best times")
+        _refresh_world_best_times(session=session, logger=logger)
+
+        # -------------------------------------
+
+        logger.info("Check Quality of both Datasets")
+
+
+"""
         logger.info("Find competitions that have to be maintained")
         competitions, N = _get_competitions_to_maintain(session)
         logger.info(f"Found N={N} competitions")
@@ -257,10 +353,8 @@ def maintain():
 
             logger.info("Check Quality of both Datasets")
 
-            logger.info("Overwrite in db")
-
-            logger.info("Mark maintenance state in db")
-
+            # logger.info("Mark maintenance state in db") # Deprecated (?)
+"""
 
 def scheduler(duration=SCRAPER_SLEEP_TIME_SECONDS):
     logger = logging.getLogger("scheduler")
