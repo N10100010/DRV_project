@@ -76,3 +76,6 @@ def parse_wr_intermediate_distance_key(distancy_key: str) -> int:
 
     meters = result.group(1)
     return int(meters)
+
+def make_keys_lowercase(dict_: dict) -> dict:
+    return {k.lower():v for k,v in dict_.items()}

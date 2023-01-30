@@ -5,6 +5,7 @@ from contextlib import suppress
 import datetime as dt
 
 from common.helpers import Timedelta_Parser, parse_wr_intermediate_distance_key, get_
+from common import rowing
 
 # from ..scraping_wr import utils_wr
 from scraping_wr import api
@@ -39,7 +40,7 @@ def query_by_uuid_(session, Entity_Class, uuid):
     return result_entity
 
 
-def wr_insert(session, Entity_Class, map_func, data, add_session=True, **kwargs):
+def wr_insert(session, Entity_Class, map_func, data, overwrite_existing=True, add_session=True, **kwargs):
     """Proxy function to fetch or create an entity.
     Usage: wr_insert(session, model.Country, wr_map_country, data_dict)"""
     if data == None:
@@ -53,7 +54,8 @@ def wr_insert(session, Entity_Class, map_func, data, add_session=True, **kwargs)
         entity = Entity_Class()
         entity.additional_id_ = uuid
 
-    entity = map_func(session, entity, data, **kwargs)
+    if create_entity or overwrite_existing:
+        entity = map_func(session, entity, data, **kwargs)
 
     if create_entity and add_session:
         session.add(entity)
@@ -164,7 +166,7 @@ def wr_map_race_boat(session, entity, data):
 
         with suppress(TypeError, ValueError):
             intermediate.distance_meter = parse_wr_intermediate_distance_key(distance_key)
-            intermediate.data_source_ = model.Enum_Data_Source.world_rowing_api.value
+            intermediate.data_source = model.Enum_Data_Source.world_rowing_api.value
             intermediate.rank = get_(interm_data, 'Rank')
             intermediate.result_time_ms = Timedelta_Parser.to_millis( get_(interm_data, 'ResultTime') )
 
@@ -188,13 +190,17 @@ def wr_map_race(session, entity: model.Race, data):
     rsc_code = get_(data, 'RscCode')
 
     phase_details = api.extract_race_phase_details(rsc_code=rsc_code, display_name=entity.name)
+    subtype = get_(phase_details, 'subtype')
+    subtype = subtype.upper() if subtype else None
 
     entity.phase_type = phase_type.lower()
-    entity.phase_subtype = get_(phase_details, 'subtype')
+    entity.phase_subtype = subtype
     entity.phase_number  = get_(phase_details, 'number')
 
     entity.progression = get_(data, 'Progression')
     entity.rsc_code = rsc_code
+
+    # entity.course_length = rowing.get_course_length(...) # done in maintenace
 
     entity.pdf_url_results = get_(api.select_pdf_(get_(data, 'pdfUrls', []), 'results'), 'url')
     entity.pdf_url_race_data = get_(api.select_pdf_(get_(data, 'pdfUrls', []), 'race data'), 'url')
@@ -225,6 +231,12 @@ def wr_map_event(session, entity, data):
         get_(data, 'races', [])
     )
     entity.races.extend(races)
+    return entity
+
+
+def wr_map_competition_type(session, entity, data):
+    entity.name = get_(data, 'DisplayName')
+    entity.abbreviation = get_(data, 'Abbreviation')
     return entity
 
 
@@ -267,6 +279,16 @@ def __wr_map_competition(session, entity: model.Competition, data):
         get_(get_(data, 'competitionType'), 'competitionCategory')
     )
 
+    # Competition_Type
+    competition_type = wr_insert(
+        session,
+        model.Competition_Type,
+        wr_map_competition_type,
+        get_(data, 'competitionType')
+    )
+
+    competition_category.competition_type = competition_type
+
     # Venue
     venue = wr_insert(session, model.Venue, wr_map_venue, get_(data, 'venue'))
 
@@ -305,7 +327,7 @@ def wr_map_competition_scrape(session, entity: model.Competition, data: dict):
 
     entity.scraper_maintenance_level = STATE_RESULT_STATE
     entity.scraper_data_provider = model.Enum_Data_Provider.world_rowing.value
-    entity.scraper_last_scrape = dt.datetime.today()
+    entity.scraper_last_scrape = dt.datetime.now()
 
     entity = __wr_map_competition(session, entity, data)
     return entity

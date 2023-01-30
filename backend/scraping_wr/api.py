@@ -71,6 +71,7 @@ OLYMPIC_BOATCLASSES = [
     "W4-",
 ]
 
+# TODO: move this generic information into commons module
 BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
     'men': {
         'junior': {  # also called u19
@@ -465,7 +466,7 @@ def get_competition_heads(years: Optional[Union[list, int]] = None, single_fetch
         competitions = ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_COMPETITION + query_string)
         for competition in competitions:
             yield competition
-            
+
 
 def get_competition_ids(*args, **kwargs) -> list[str]:
     competition_heads_iterator = get_competition_heads(*args, **kwargs)
@@ -516,6 +517,43 @@ def get_countries(kwargs: dict = {}):
 def get_statistics(kwargs: dict = {}):
     ret_val = ut_wr.load_json(url=f'{WR_BASE_URL}{WR_ENDPOINT_STATS}', **kwargs)
     return ret_val
+
+
+def get_world_best_times() -> list[dict]:
+    """
+        Use the endpoints '/stats', get the filtered world-best-times and get the urls to the jsons.
+        Extract the relevant information from the results.
+
+        TODO: Only return the boat-class and the competitor (race_boat_id)
+    """
+    fs = ut_wr.build_filter_string(filter_params={'category': 'WBT'})
+    wbts = ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_STATS + fs)
+    ret = []
+    for wbt in wbts:
+        if 'Overall' in wbt['description']:
+            _wbts = ut_wr.load_json(wbt['url'], content_field='BestTimes')
+            for val in _wbts:
+                ret.append({
+                    'race_boat_id': val['Competitor']['Id'],
+                    'boat_class': val['BoatClass'],
+                    'result_time': val['Competitor']['ResultTime']
+                })
+                #athletes = "; ".join([v['Person']['FullName'] for v in val['Competitor']['Athletes']])
+                # todo: remove me, once the data structure has been integrated
+                # the code below represents the needed information
+                #ret.append({
+                #    'boat_class': val['BoatClass'],
+                #    'event_name': val['Competition']['Name'],
+                #    'race_type': val['Race']['Name'],
+                #    'competition_id': val['Competition']['Id'],
+                #    'race_id': val['Race']['Id'],
+                #    'date': val['DateOfBT'],
+                #    'venue': val['Venue']['Name'],
+                #    'names': athletes,
+                #    'time': val['Competitor']['ResultTime']
+                #})
+
+    return ret
 
 
 def get_boatclasses(kwargs: dict = {}):

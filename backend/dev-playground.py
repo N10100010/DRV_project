@@ -6,10 +6,16 @@ from scraping_wr.api import get_competition_ids, get_by_competition_id, get_by_c
 import requests
 
 import logging
-
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 from scraping_wr import api
+
+from sqlalchemy import select
+from sqlalchemy import func
+from sqlalchemy.orm import Bundle
+from model import model
+from scraper import outlier_detection
 
 ########################################################################################################################
 # NOTE:
@@ -23,6 +29,14 @@ def grab_competition_example(competition_id, out_path='dump.json'):
     comp_data = get_by_competition_id_(comp_ids=[str(competition_id)], parse_pdf=False)
     with open(out_path, "w", encoding='ascii') as fp:
         json.dump(comp_data, fp)
+
+
+def scraper_postprocessing():
+    with model.Scoped_Session() as session:
+        statement = select(model.Boat_Class)
+        iterator = session.execute(statement).scalars()
+        for boat_class in iterator:
+            outlier_detection.outlier_detection(session=session, boat_class=boat_class)
 
 
 if __name__ == '__main__':
@@ -43,6 +57,11 @@ if __name__ == '__main__':
     if args.command == 'grabc':
        grab_competition_example(args.uuid, args.out)
        sysexit()
+
+    ### Playground for validation of intermediates --------
+    if True:
+        scraper_postprocessing()
+        sysexit()
 
     ### KEEP FOR TESTING ----------------------------------
 

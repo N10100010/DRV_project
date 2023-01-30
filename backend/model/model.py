@@ -113,7 +113,7 @@ class Enum_Maintenance_Level(enum.Enum):
     manually_entered_data = 1000
 
 class Enum_Data_Provider(enum.Enum):
-    manual = 1
+    manually_entered = 1
     world_rowing = 2
 
 class Enum_Data_Source(enum.Enum):
@@ -220,21 +220,42 @@ class Boat_Class(Base):
     id = Column(Integer, primary_key=True)
     additional_id_ = Column(String, index=True, unique=True)
 
-    abbreviation = Column(String, nullable=False)
-    # name = Column(String) # TODO: full name not in API data
+    abbreviation = Column(String, nullable=False, unique=True)
+    name = Column(String) # e.g. Lightweight Men's Quadruple Sculls // NOTE: full name not in API data
+
+    # world best time
+    world_best_race_boat_id = Column(ForeignKey("race_boats.id"))
+    world_best_race_boat    = relationship("Race_Boat")
 
     # relationships
     events = relationship("Event", back_populates="boat_class")
 
 
+class Competition_Type(Base):
+    """https://world-rowing-api.soticcloud.net/stats/api/competition/b56cf9a5-a7d3-4e64-9571-38218f39413b/?include=competitionType,competitionType.competitionCategory"""
+    __tablename__ = "competition_types"
+
+    id = Column(Integer, primary_key=True)
+    additional_id_ = Column(String, index=True, unique=True)
+
+    abbreviation = Column(String)
+    name = Column(String)
+
+    # relationships
+    competition_categories = relationship("Competition_Category", back_populates="competition_type")
+
+
 class Competition_Category(Base):
     """https://world-rowing-api.soticcloud.net/stats/api/competition/b56cf9a5-a7d3-4e64-9571-38218f39413b/?include=competitionType,competitionType.competitionCategory"""
-    __tablename__ = "competition_category"
+    __tablename__ = "competition_categories"
 
     id = Column(Integer, primary_key=True)
     additional_id_ = Column(String, index=True, unique=True)
 
     name = Column(String)
+
+    competition_type_id = Column(ForeignKey("competition_types.id"))
+    competition_type    = relationship("Competition_Type", back_populates="competition_categories")
 
     # relationships
     competitions = relationship("Competition", back_populates="competition_category")
@@ -252,7 +273,7 @@ class Competition(Base):
     scraper_last_scrape = Column(DateTime)
     scraper_data_provider = Column(Integer) # Use Enum_Data_Provider
 
-    competition_category_id = Column(ForeignKey("competition_category.id"))
+    competition_category_id = Column(ForeignKey("competition_categories.id"))
     competition_category    = relationship("Competition_Category", back_populates="competitions")
     venue_id = Column(ForeignKey("venues.id"))
     venue    = relationship("Venue", back_populates="competitions")
@@ -308,6 +329,10 @@ class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae
     progression = Column(String) # e.g. "1-2->SA/B, 3..->R"
     rsc_code = Column(String)
 
+    # To be able to filter for standard 2000m races // inferred by year threshold
+    # NOTE: Consider to hold this info at event or even competition level
+    course_length = Column(Integer, index=True)
+    
     pdf_url_results = Column(String)
     pdf_url_race_data = Column(String)
 
@@ -387,11 +412,14 @@ class Race_Data(Base):
     race_boat    = relationship("Race_Boat", back_populates="race_data")
     distance_meter = Column(Integer, primary_key=True, autoincrement=False)
 
-    data_source_ = Column(Integer) # Use Enum_Data_Source class
+    data_source = Column(Integer) # Use Enum_Data_Source class
 
     # Data fields from race data PDFs
     speed_meter_per_sec = Column(Float)
     stroke = Column(Float)
+
+    # outlier detection
+    is_outlier = Column(Boolean)
 
 
 class Intermediate_Time(Base):
@@ -402,7 +430,7 @@ class Intermediate_Time(Base):
     race_boat    = relationship("Race_Boat", back_populates="intermediates")
     distance_meter = Column(Integer, primary_key=True, autoincrement=False)
 
-    data_source_ = Column(Integer) # Use Enum_Data_Source class
+    data_source = Column(Integer) # Use Enum_Data_Source class
 
     # E.g. "DNS" Did not start; "BUW" Boat under weight, etc.
     invalid_mark_result_code_id = Column(ForeignKey("invalid_mark_result_codes.id"))
@@ -411,6 +439,11 @@ class Intermediate_Time(Base):
     # Data fields from JSON Web API aka "Intermediates"
     rank = Column(Integer)
     result_time_ms = Column(Integer) # in milliseconds // TODO: as String?
+
+    # outlier detection
+    is_outlier = Column(Boolean)
+
+    # other wr API fields
     difference__ = Column(String)
     start_position__ = Column(String)
 
