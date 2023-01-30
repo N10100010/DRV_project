@@ -1,12 +1,12 @@
 <template>
   <v-container>
     <v-row>
-       <v-col>
-      <h2>Filter</h2>
-       </v-col>
-    <v-col class="text-right">
-      <i class="mdi mdi-close" style="font-size: 25px; color: darkgrey" @click="hideFilter"></i>
-    </v-col>
+      <v-col>
+        <h2>Filter</h2>
+      </v-col>
+      <v-col class="text-right">
+        <i class="mdi mdi-close" style="font-size: 25px; color: darkgrey" @click="hideFilter"></i>
+      </v-col>
     </v-row>
     <v-divider></v-divider>
     <v-form class="mt-2" id="berichteFilterFormular" @submit.prevent="onSubmit"
@@ -28,7 +28,7 @@
         </v-col>
       </v-container>
       <v-select class="pt-2" clearable chips multiple color="blue"
-                label="Wettkampfklassen" :items="optionsCompTypes"
+                label="Event(s)" :items="optionsCompTypes"
                 v-model="selectedCompTypes" variant="outlined"
                 :rules="[v => v.length > 0 || 'Wähle mindestens eine Wettkampfklasse']"
       ></v-select>
@@ -40,8 +40,6 @@
                       variant="outlined" color="blue" label="Nation" density="comfortable"
                       :rules="[v => !!v || 'Wähle mindestens eine Nation']"
       ></v-autocomplete>
-
-
 
 
       <!--
@@ -150,15 +148,17 @@ export default {
 
     // boat classes
     let boatClassValues = []
-     function getMostInnerValue(o) {
-        for (let key in o) {
-            if (typeof o[key] === 'object') {
-                getMostInnerValue(o[key]);
-            } else {
-                boatClassValues.push(o[key]);
-            }
+
+    function getMostInnerValue(o) {
+      for (let key in o) {
+        if (typeof o[key] === 'object') {
+          getMostInnerValue(o[key]);
+        } else {
+          boatClassValues.push(o[key]);
         }
+      }
     }
+
     getMostInnerValue(Object.values(this.filterOptions[0].boat_class))
 
     this.selectedBoatClasses = boatClassValues[0]
@@ -222,7 +222,7 @@ export default {
 </script>
 
 <style scoped>
-.mdi-close:hover{
+.mdi-close:hover {
   cursor: pointer;
 }
 </style>
