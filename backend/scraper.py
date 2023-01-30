@@ -272,7 +272,7 @@ def _refresh_world_best_times(session, logger=logger):
         race_boat_uuid = wbt.get('race_boat_id')
         result_time_ms = None
         with suppress(Exception):
-            result_time_ms = Timedelta_Parser.to_millis( wbt.get('race_boat_id') )
+            result_time_ms = Timedelta_Parser.to_millis( wbt.get('result_time') )
 
         statement = (
             select(model.Boat_Class)
@@ -324,7 +324,7 @@ def _refresh_world_best_times(session, logger=logger):
 #     return competitions, len(competitions)
 
 
-def maintain():
+def postprocess():
     logger = logging.getLogger("postprocessing")
     with model.Scoped_Session() as session:
         logger.info(f"Fetch & write world best times")
@@ -368,7 +368,7 @@ def start_service(singlepass=False):
     while True:
         prescrape()
         scrape()
-        maintain()
+        postprocess()
 
         if SCRAPER_SINGLEPASS or singlepass:
             logger.info("Override Scheduler")
@@ -383,7 +383,7 @@ if __name__ == '__main__':
     procedures = {
         "prescrape": prescrape,
         "scrape": scrape,
-        "maintain": maintain
+        "postprocess": postprocess
     }
 
     parser = argparse.ArgumentParser()
@@ -400,5 +400,5 @@ if __name__ == '__main__':
         start_service(singlepass=args.singlepass)
     else:
         for procedure_id in args.procedure:
-            func = procedures[procedure_id]
-            func()
+            function = procedures[procedure_id]
+            function()
