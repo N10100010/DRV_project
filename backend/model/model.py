@@ -418,6 +418,9 @@ class Race_Data(Base):
     speed_meter_per_sec = Column(Float)
     stroke = Column(Float)
 
+    # outlier detection
+    is_outlier = Column(Boolean)
+
 
 class Intermediate_Time(Base):
     __tablename__ = "intermediate_times"
@@ -436,6 +439,11 @@ class Intermediate_Time(Base):
     # Data fields from JSON Web API aka "Intermediates"
     rank = Column(Integer)
     result_time_ms = Column(Integer) # in milliseconds // TODO: as String?
+
+    # outlier detection
+    is_outlier = Column(Boolean)
+
+    # other wr API fields
     difference__ = Column(String)
     start_position__ = Column(String)
 
