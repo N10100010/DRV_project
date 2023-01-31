@@ -256,6 +256,6 @@ export default {
   bottom: 10px;
 }
 .main-container {
-  min-height: calc(100vh - (var(--navbar-height)) - 100px);
+  min-height: calc(100vh - (var(--navbar-height)) - 95px);
 }
 </style>
