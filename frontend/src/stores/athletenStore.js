@@ -334,7 +334,10 @@ export const useAthletenState = defineStore({
                 "nation_ioc": "CZE",
                 "weight": 80,
                 "height": 180,
-                "discipline": "Scull",
+                "disciplines": [
+                    "Scull",
+                    "Riemen"
+                ],
                 "currentBoatClass": "Men's Eight",
                 "numberOfRaces": 13,
                 "medals_total": 5,

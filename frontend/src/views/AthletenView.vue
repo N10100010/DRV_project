@@ -61,8 +61,8 @@
                   <td>{{ tableData.currentBoatClass }}</td>
                 </tr>
                 <tr>
-                  <th>Disziplin</th>
-                  <td>{{ tableData.discipline }}</td>
+                  <th>Disziplin(en)</th>
+                  <td><p v-for="item in tableData.disciplines">{{ item }}</p></td>
                 </tr>
                 <tr>
                   <th>Rennanzahl</th>
