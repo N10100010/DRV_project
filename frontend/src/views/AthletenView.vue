@@ -258,4 +258,10 @@ export default {
 .main-container {
   min-height: calc(100vh - (var(--navbar-height)) - 100px);
 }
+
+@media print {
+  i, .filterToggleButton, .filterToggleButtonMobile {
+    display: none;
+  }
+}
 </style>
