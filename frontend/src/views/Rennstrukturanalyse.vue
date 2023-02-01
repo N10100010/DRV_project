@@ -19,8 +19,7 @@
       <v-container :class="mobile ? 'pa-5 main-container' : 'px-10 pt-0 main-container'">
         <v-col cols="6" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Rennstrukturanalyse</h1>
-          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
-          </v-icon>
+          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>
           <v-tooltip
               activator="#tooltip-analyis-icon"
               location="end"
@@ -28,6 +27,7 @@
           >Die Rennstrukturanalyse erlaubt die gezielte Betrachtung des Rennverlaufs auf Basis von Ergebnis- und GPS
             Daten.
           </v-tooltip>
+          <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
         </v-col>
         <v-divider></v-divider>
         <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 my-2" :items="breadCrumbs"></v-breadcrumbs>
@@ -400,6 +400,9 @@ export default {
     }
   },
   methods: {
+    openPrintDialog() {
+      window.print();
+    },
     setFilterState() {
       this.filterOpen = !this.filterOpen;
       const store = useRennstrukturAnalyseState()
