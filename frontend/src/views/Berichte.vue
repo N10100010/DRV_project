@@ -31,14 +31,14 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
       <v-container :class="mobile ? 'px-5 py-0 main-container' : 'px-10 py-0 main-container'">
         <v-col cols="12" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Berichte</h1>
-          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
-          </v-icon>
+          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>
           <v-tooltip
               activator="#tooltip-analyis-icon"
               location="end"
               open-on-hover
           >In Berichte kannst du Analysen über längere Zeiträume und weitere Filterkriterien erstellen.
           </v-tooltip>
+          <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
         </v-col>
         <v-divider></v-divider>
         <v-container class="pa-0 mt-2 pb-8">
@@ -196,6 +196,9 @@ export default {
     })
   },
   methods: {
+    openPrintDialog() {
+      window.print();
+    },
     setFilterState() {
       this.filterOpen = !this.filterOpen;
       const store = useBerichteState()
@@ -351,5 +354,11 @@ export default {
 }
 .main-container {
   min-height: calc(100vh - (var(--navbar-height)) - 100px);
+}
+
+@media print {
+  i, .filterToggleButton, .filterToggleButtonMobile {
+    display: none;
+  }
 }
 </style>

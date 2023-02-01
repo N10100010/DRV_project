@@ -15,3 +15,18 @@ a {
     color: #1369b0;
   }
 }
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+
+  nav, header, footer {
+    display: none;
+  }
+
+  body {
+    padding-top: 0em !important;
+  }
+}

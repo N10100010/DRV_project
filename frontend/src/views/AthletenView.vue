@@ -19,8 +19,7 @@
       <v-container :class="mobile ? 'px-5 py-0 pb-8 main-container' : 'px-10 py-0 pb-8 main-container'">
         <v-col cols="12" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Athleten</h1>
-          <v-icon id="tooltip-athlete-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
-          </v-icon>
+          <v-icon id="tooltip-athlete-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>
           <v-tooltip
               activator="#tooltip-athlete-icon"
               location="end"
@@ -28,6 +27,7 @@
           >Auf der Athleten-Seite findest du die Stammdaten des Athletens und kannst
             eine Übersicht zu seinen Ergebnissen (inkl. Medaillenspiegel) betrachten.
           </v-tooltip>
+          <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
         </v-col>
         <v-divider></v-divider>
         <v-container class="pa-0 mt-8" style="min-height: 400px">
@@ -174,6 +174,9 @@ export default {
     }),
   },
   methods: {
+    openPrintDialog() {
+      window.print();
+    },
     setFilterState() {
       this.filterOpen = !this.filterOpen;
       const store = useAthletenState()
@@ -257,5 +260,11 @@ export default {
 }
 .main-container {
   min-height: calc(100vh - (var(--navbar-height)) - 100px);
+}
+
+@media print {
+  i, .filterToggleButton, .filterToggleButtonMobile {
+    display: none;
+  }
 }
 </style>
