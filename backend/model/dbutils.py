@@ -272,11 +272,13 @@ def wr_map_competition_prescrape(session, entity, data):
 
 def __wr_map_competition(session, entity: model.Competition, data):
     # Competition_Category
+    if isinstance(data, str): 
+        print()
     competition_category = wr_insert(
         session,
         model.Competition_Category,
         wr_map_competition_category,
-        get_(get_(data, 'competitionType'), 'competitionCategory')
+        get_(get_(data, 'competitionType', 'NONE_TYPE'), 'competitionCategory', 'NONE_TYPE')
     )
 
     # Competition_Type
@@ -284,7 +286,7 @@ def __wr_map_competition(session, entity: model.Competition, data):
         session,
         model.Competition_Type,
         wr_map_competition_type,
-        get_(data, 'competitionType')
+        get_(data, 'competitionType', None)
     )
 
     competition_category.competition_type = competition_type

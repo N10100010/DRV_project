@@ -11,12 +11,15 @@ logging.basicConfig(level=logging.INFO)
 
 from scraping_wr import api
 
+
+from tqdm import tqdm 
+
 from sqlalchemy import select
 from sqlalchemy import func
 from sqlalchemy.orm import Bundle
 from model import model
 from scraper import outlier_detection
-
+from scrape_procedures import postprocess
 ########################################################################################################################
 # NOTE:
 # This dev-playground.py is just for rapid testing
@@ -32,6 +35,7 @@ def grab_competition_example(competition_id, out_path='dump.json'):
 
 
 def scraper_postprocessing():
+    postprocess()
     with model.Scoped_Session() as session:
         statement = select(model.Boat_Class)
         iterator = session.execute(statement).scalars()
@@ -54,14 +58,21 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(args)
 
-    if args.command == 'grabc':
-       grab_competition_example(args.uuid, args.out)
-       sysexit()
+    grab_competition_example('dc5e7e36-a25c-4044-b1b2-e18786c49db0', './some_comp.json')
+
+    print()
+    #if args.command == 'grabc':
+    #   grab_competition_example(args.uuid, args.out)
+    #   sysexit()
+
+    boat_classes = api.get_boatclasses()
+    wbts = api.get_world_best_times()
 
     ### Playground for validation of intermediates --------
     if True:
         scraper_postprocessing()
-        sysexit()
+        print()
+    #    sysexit()
 
     ### KEEP FOR TESTING ----------------------------------
 
@@ -73,21 +84,29 @@ if __name__ == '__main__':
 
     #api.save(ret, './races_2000_2024_pdfs.json')
 
-    ret = load('./races_2000_2024_pdfs.json')
+    # ret = load('./scraping_wr/races_2000_2024_pdfs.json')
+    # 
+    # the_race = []
+    # for race in ret['races']: 
+    #     if 'ROWMSCULL1------------SFNL000100--' == race['RscCode']: 
+    #         the_race.append(race)
+    #         break
+    # 
+    # print()
 
-    vals = set()
-    for race in ret['races']:
-        val = extract_race_phase_details(race['RscCode'], race['DisplayName'])
-        if 'SFNL' in race['RscCode']:
-            vals.add(val)
+    #vals = set()
+    #for race in ret['races']:
+    #    val = extract_race_phase_details(race['RscCode'], race['DisplayName'])
+    #    if 'SFNL' in race['RscCode']:
+    #        vals.add(val)
 
-    vals = sorted(vals, key=lambda v: v[0])
+    #vals = sorted(vals, key=lambda v: v[0])
 
-    for val in vals:
-        print(val)
+    #for val in vals:
+    #    print(val)
 
-    import collections
-    d = dict()
+    #import collections
+    #d = dict()
 
     #tup_set__rsc_disname = set()
     #tup_set__rsc_disname_short = set()
@@ -141,7 +160,6 @@ if __name__ == '__main__':
 
     import pandas as pd
 
-    wbts = api.get_world_best_times()
 
     df = pd.DataFrame.from_records(
         wbts

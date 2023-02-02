@@ -284,8 +284,12 @@ def _extract(nested: iter, successor_filter: str = None) -> list:
 
 def select_pdf_(pdfUrls: list, title: str) -> Union[dict, None]:
     for pdf_info in pdfUrls:
-        if pdf_info['title'].lower() == title.lower():
-            return pdf_info
+        try:
+            if pdf_info['title'].lower() == title.lower():
+                return pdf_info
+        except Exception as e: 
+            logger.error(e)
+            return None 
 
     return None # or raise error?
 
@@ -470,7 +474,8 @@ def get_competition_heads(years: Optional[Union[list, int]] = None, single_fetch
 
 def get_competition_ids(*args, **kwargs) -> list[str]:
     competition_heads_iterator = get_competition_heads(*args, **kwargs)
-    return [ c['id'] for c in competition_heads_iterator ]
+    # todo: delete the if 
+    return [ c['id'] for c in competition_heads_iterator if c['id'] not in ['dc5e7e36-a25c-4044-b1b2-e18786c49db0'] ]
 
 
 def extract_pdf_urls(race_urls: list[dict]) -> dict:

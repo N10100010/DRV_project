@@ -1,0 +1,29 @@
+INFO:root:Extract of FOQR_2020_2_ROWMSCULL1------------SFNL000100--_C77X1916.PDF successful.
+
+Traceback (most recent call last):
+
+  File "/usr/src/app/scraper.py", line 400, in <module>
+
+    start_service(singlepass=args.singlepass)
+
+  File "/usr/src/app/scraper.py", line 370, in start_service
+
+    scrape()
+
+  File "/usr/src/app/scraper.py", line 251, in scrape
+
+    _scrape_competition(
+
+  File "/usr/src/app/scraper.py", line 164, in _scrape_competition
+
+    competition = dbutils.wr_map_competition_scrape(session, competition, competition_data)
+
+  File "/usr/src/app/model/dbutils.py", line 332, in wr_map_competition_scrape
+
+    entity = __wr_map_competition(session, entity, data)
+
+  File "/usr/src/app/model/dbutils.py", line 290, in __wr_map_competition
+
+    competition_category.competition_type = competition_type
+
+AttributeError: 'NoneType' object has no attribute 'competition_type'
