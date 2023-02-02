@@ -163,6 +163,7 @@ import AthletenFilter from "@/components/filters/athletenFilter.vue";
 <script>
 import {mapState} from "pinia";
 import {useAthletenState} from "@/stores/athletenStore";
+import router from "@/router";
 
 export default {
   computed: {
@@ -192,6 +193,18 @@ export default {
   created() {
     window.addEventListener('resize', this.checkScreen);
     this.checkScreen();
+
+    // possible solution for permanent url --> in the real scenario there must be a fetch to the backend
+    window.onload = () => {
+      const url = new URL(window.location.href);
+      const race_id = url.searchParams.get("athlete_id");
+      if (race_id !== null) {
+        console.log("Permanent URL active: " + race_id)
+        // make api call with respective id here
+        // ...
+        // ...
+      }
+    }
   },
   data() {
     return {
@@ -209,6 +222,13 @@ export default {
         store.setFilterState(oldVal)
       }
     },
+    tableData: function (newVal,) {
+      /*
+      if (newVal !== undefined) {
+        router.push(this.$route.path + `?athlete_id=${newVal.id}`)
+      }
+      */
+    }
   }
 }
 </script>

@@ -110,9 +110,9 @@ export default {
     this.checkScreen()
 
     //handle form data
-    this.startYear = Object.values(this.filterOptions[0].year[0])[0]
-    this.endYear = Object.values(this.filterOptions[0].year[1])[0]
-    this.optionsBirthYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
+    const startYear = Object.values(this.filterOptions[0].birth_year[0])[0]
+    const endYear = Object.values(this.filterOptions[0].birth_year[1])[0]
+    this.optionsBirthYear = Array.from({length: endYear - startYear + 1}, (_, i) => startYear + i)
 
     // competition category id
     this.compTypes = this.filterOptions[0].competition_category_ids

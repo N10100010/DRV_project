@@ -28,6 +28,10 @@
           >Die Rennstrukturanalyse erlaubt die gezielte Betrachtung des Rennverlaufs auf Basis von Ergebnis- und GPS
             Daten.
           </v-tooltip>
+          <a :href="emailLink" v-show="showEmailIcon">
+          <v-icon color="grey" class="ml-2 v-icon--size-large">mdi-email-outline
+          </v-icon>
+          </a>
         </v-col>
         <v-divider></v-divider>
         <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 my-2" :items="breadCrumbs"></v-breadcrumbs>
@@ -220,6 +224,8 @@ export default {
       filterOpen: false,
       breadCrumbs: [],
       mobile: false,
+      showEmailIcon: false,
+      emailLink: '',
       showTooltip: false,
       displayRaceDataAnalysis: false,
       displayCompetitions: true,
@@ -422,8 +428,13 @@ export default {
       this.displayRaces = true
     },
     loadRaceAnalysis(raceName, raceId) {
-      router.push(`/rennstrukturanalyse/${this.lastCompId}/${this.lastEventId}?race_id=${raceId}`)
+      this.showEmailIcon = true
+      const newPath = `/rennstrukturanalyse/${this.lastCompId}/${this.lastEventId}?race_id=${raceId}`
+      router.push(newPath)
       this.displayRaceDataAnalysis = true
+      const subject = "Wettkampfergebnisse"
+      const body = `Sieh dir diese Wettkampfergebnisse an: http://${window.location.host + newPath}`
+      this.emailLink = `mailto:?subject=${subject}&body=${body}`
     },
     checkScreen() {
       this.windowWidth = window.innerWidth;
@@ -492,6 +503,7 @@ export default {
             this.displayRaceDataAnalysis = false
             this.displayEvents = false
             this.displayRaces = true
+            this.showEmailIcon = false
             router.replace({path: `/rennstrukturanalyse/${this.lastCompId}/${this.lastEventId}`, query: {}})
           } else if (to.fullPath.includes("?race_id=")) {
             this.displayRaces = false

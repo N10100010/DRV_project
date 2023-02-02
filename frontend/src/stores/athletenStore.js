@@ -6,7 +6,7 @@ export const useAthletenState = defineStore({
     state: () => ({
         filterOpen: false,
         filterOptions: [{
-            "year": [{ "start_year": 1950 }, { "end_year": 2025 }],
+            "birth_year": [{ "start_year": 1950 }, { "end_year": 2025 }],
             "boat_class": {
                 'men': {
                     'junior': {
