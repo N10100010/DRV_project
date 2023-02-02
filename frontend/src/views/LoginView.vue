@@ -4,18 +4,18 @@
       <h1 class="py-3">Login</h1>
       <v-col cols="6" class="px-0">
         <v-alert type="info" variant="tonal">
-          Die Seite ist passwortgeschützt. Bitte melde dich an um fortzufahren.
+          Diese Seite ist passwortgeschützt. Bitte melde dich an um fortzufahren.
         </v-alert>
       </v-col>
       <v-col cols="12" sm="8" md="4" class="px-0">
         <v-form class="px-0">
           <v-text-field
-              label="Username"
+              label="Nutzername"
               v-model="username"
               variant="outlined"
               density="compact"></v-text-field>
           <v-text-field
-              label="Password"
+              label="Passwort"
               type="password"
               v-model="password"
               variant="outlined"
@@ -53,7 +53,7 @@ export default {
         localStorage.removeItem('token')
         localStorage.removeItem('expires')
       } else {
-        console.log("Valid token found.")
+        alert("Valid token found. You can now access all pages.")
       }
     },
     checkScreen() {
