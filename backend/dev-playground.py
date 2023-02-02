@@ -1,18 +1,25 @@
 import numpy as np
 
-from api import get_competition_ids, get_by_competition_id, get_by_competition_id_
-from utils_wr import load_json
+from scraping_wr.utils_wr import process_rsc_code, extract_race_phase_from_rsc
+from scraping_wr.api import get_competition_ids, get_by_competition_id, get_by_competition_id_, extract_race_phase_details, load
+
 import requests
 
 import logging
-
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
-import api
+from scraping_wr import api
+
+from sqlalchemy import select
+from sqlalchemy import func
+from sqlalchemy.orm import Bundle
+from model import model
+from scraper import outlier_detection
 
 ########################################################################################################################
 # NOTE:
-# This main.py is just for rapid testing
+# This dev-playground.py is just for rapid testing
 ########################################################################################################################
 import json
 
@@ -24,25 +31,39 @@ def grab_competition_example(competition_id, out_path='dump.json'):
         json.dump(comp_data, fp)
 
 
+def scraper_postprocessing():
+    with model.Scoped_Session() as session:
+        statement = select(model.Boat_Class)
+        iterator = session.execute(statement).scalars()
+        for boat_class in iterator:
+            outlier_detection.outlier_detection(session=session, boat_class=boat_class)
+
+
 if __name__ == '__main__':
-   #import argparse
+    import argparse
+    from sys import exit as sysexit
 
-   #DEFAULT_COMPETITION = '718b3256-e778-4003-88e9-832c4aad0cc2'
+    DEFAULT_COMPETITION = '718b3256-e778-4003-88e9-832c4aad0cc2'
 
-   #parser = argparse.ArgumentParser()
-   #subparsers = parser.add_subparsers(help='Available sub-commands', dest='command')
-   #parser_cgrab = subparsers.add_parser('grabc', help='Grab a competition and save as JSON')
-   #parser_cgrab.add_argument("-i", "--uuid", help="Scrape competition and save as JSON", default=DEFAULT_COMPETITION)
-   #parser_cgrab.add_argument("-o", "--out", help="Specify path for output", default="dump.json")
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(help='Available sub-commands', dest='command')
+    parser_cgrab = subparsers.add_parser('grabc', help='Grab a competition and save as JSON')
+    parser_cgrab.add_argument("-i", "--uuid", help="Scrape competition and save as JSON", default=DEFAULT_COMPETITION)
+    parser_cgrab.add_argument("-o", "--out", help="Specify path for output", default="dump.json")
 
-   #args = parser.parse_args()
-   #print(args)
+    args = parser.parse_args()
+    print(args)
 
-   #if args.command == 'grabc':
-   #    grab_competition_example(args.uuid, args.out)
-   #    sysexit()
+    if args.command == 'grabc':
+       grab_competition_example(args.uuid, args.out)
+       sysexit()
 
-    ### KEEP FOR TESTING
+    ### Playground for validation of intermediates --------
+    if True:
+        scraper_postprocessing()
+        sysexit()
+
+    ### KEEP FOR TESTING ----------------------------------
 
     #_ids_all = []
     #for y in np.arange(2000, 2024):
@@ -52,11 +73,22 @@ if __name__ == '__main__':
 
     #api.save(ret, './races_2000_2024_pdfs.json')
 
-    #ret = api.load('./races_2000_2024_pdfs.json')
-#
-    ## import collections
-    ## d = dict()
-#
+    ret = load('./races_2000_2024_pdfs.json')
+
+    vals = set()
+    for race in ret['races']:
+        val = extract_race_phase_details(race['RscCode'], race['DisplayName'])
+        if 'SFNL' in race['RscCode']:
+            vals.add(val)
+
+    vals = sorted(vals, key=lambda v: v[0])
+
+    for val in vals:
+        print(val)
+
+    import collections
+    d = dict()
+
     #tup_set__rsc_disname = set()
     #tup_set__rsc_disname_short = set()
     ## [race for race in ret['races'] if 'RND' in race["RscCode"]]
@@ -64,20 +96,20 @@ if __name__ == '__main__':
     #extracted = set()
     #race_disname = set()
     #for race in ret['races']:
-    #    boat_class, rsc = api.process_rsc_code(race['RscCode'])
-    #    tup_set__rsc_disname.add((api.extract_race_phase_from_rsc(rsc), api.process_race_display_name(race['DisplayName']), race['DisplayName']))
+    #    boat_class, rsc = process_rsc_code(race['RscCode'])
+    #    tup_set__rsc_disname.add((extract_race_phase_from_rsc(rsc), api.process_race_display_name(race['DisplayName']), race['DisplayName']))
     #    tup_set__rsc_disname_short.add((rsc, api.process_race_display_name(race['DisplayName'])))
     #    #if len(race['pdfUrls']['results']) != 0:
     #    #    d[(rsc, api.process_race_display_name(race['DisplayName']))] = race['pdfUrls']
-    #    race['rsc_race_phase'] = api.extract_race_phase_from_rsc(rsc)
+    #    race['rsc_race_phase'] = extract_race_phase_from_rsc(rsc)
     #    test.add(rsc)
-    #    extracted.add(api.extract_race_phase_from_rsc(rsc))
+    #    extracted.add(extract_race_phase_from_rsc(rsc))
     #    race_disname.add(race['DisplayName'])
-
-    # #d = collections.OrderedDict(sorted(d.items()))
-    # extracted = sorted(extracted)
-    # tup_set = sorted(tup_set__rsc_disname)
-    # tup_set_short = sorted(tup_set__rsc_disname_short)
+    #
+    ##d = collections.OrderedDict(sorted(d.items()))
+    #extracted = sorted(extracted)
+    #tup_set = sorted(tup_set__rsc_disname)
+    #tup_set_short = sorted(tup_set__rsc_disname_short)
 
 
     # tuple_set__rsc_racePhase = set()

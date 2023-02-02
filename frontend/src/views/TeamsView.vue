@@ -12,7 +12,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
          :height="mobile ? 100: 180"
          size="x-small"
   >
-    <v-icon>mdi-filter</v-icon>
+  <p style="writing-mode: vertical-rl; font-size: 16px; transform: rotate(180deg);"><v-icon style="transform: rotate(180deg); font-size: 14px; padding-left: 6px; padding-top: 10px;">mdi-filter</v-icon>FILTER</p>
   </v-btn>
   <v-card style="box-shadow: none; z-index: 1">
       <v-layout>
@@ -28,15 +28,15 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
   <v-container :class="mobile ? 'px-5 py-0 main-container' : 'px-10 py-0 main-container'">
     <v-col cols="12" class="d-flex flex-row px-0" style="align-items: center">
     <h1>Teams</h1>
-      <v-icon id="tooltip-teams-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
-          </v-icon>
-          <v-tooltip
-              activator="#tooltip-teams-icon"
-              location="end"
-              open-on-hover
-          >Hier findest du die Zusammensetzung der gewählten Nationalmannschaft
-            mit Besetzung der Bootsklassen.
-          </v-tooltip>
+      <v-icon id="tooltip-teams-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>
+      <v-tooltip
+          activator="#tooltip-teams-icon"
+          location="end"
+          open-on-hover
+      >Hier findest du die Zusammensetzung der gewählten Nationalmannschaft
+          mit Besetzung der Bootsklassen.
+      </v-tooltip>
+      <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
     </v-col>
     <v-divider></v-divider>
     <v-container class="pa-0 mt-8" style="min-height: 400px">
@@ -131,6 +131,9 @@ export default {
     })
   },
   methods: {
+    openPrintDialog() {
+      window.print();
+    },
     setFilterState() {
       this.filterOpen = !this.filterOpen;
       const store = useTeamsState()
@@ -214,5 +217,11 @@ export default {
 }
 .main-container {
   min-height: calc(100vh - (var(--navbar-height)) - 95px);
+}
+
+@media print {
+  i, .filterToggleButton, .filterToggleButtonMobile {
+    display: none;
+  }
 }
 </style>

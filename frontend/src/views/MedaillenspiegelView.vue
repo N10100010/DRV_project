@@ -5,7 +5,7 @@
          :height="mobile ? 100: 180"
          size="x-small"
   >
-    <v-icon>mdi-filter</v-icon>
+  <p style="writing-mode: vertical-rl; font-size: 16px; transform: rotate(180deg);"><v-icon style="transform: rotate(180deg); font-size: 14px; padding-left: 6px; padding-top: 10px;">mdi-filter</v-icon>FILTER</p>
   </v-btn>
   <v-card style="box-shadow: none; z-index: 1">
     <v-layout>
@@ -21,8 +21,7 @@
 
         <v-col :cols="mobile ? 12 : 6" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Medaillenspiegel</h1>
-          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
-          </v-icon>
+          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>
           <v-tooltip
               activator="#tooltip-analyis-icon"
               location="end"
@@ -30,6 +29,7 @@
           >Im Rahmen des Medaillenspiegels können die Erfolge von Nationen betrachtet werden.<br>
             Wähle hierzu aus den Filteroptionen im Filter (links) einen Zeitraum und eine Nation aus.
           </v-tooltip>
+          <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
         </v-col>
         <v-divider></v-divider>
         <v-container class="pa-0 mt-8">
@@ -113,6 +113,9 @@ export default {
     })
   },
   methods: {
+    openPrintDialog() {
+      window.print();
+    },
     setFilterState() {
       this.filterOpen = !this.filterOpen;
       const store = useMedaillenspiegelState()
@@ -194,4 +197,9 @@ export default {
   min-height: calc(100vh - (var(--navbar-height)) - 95px);
 }
 
+@media print {
+  i, .filterToggleButton, .filterToggleButtonMobile {
+    display: none;
+  }
+}
 </style>

@@ -15,7 +15,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
          :height="mobile ? 100: 180"
          size="x-small"
   >
-    <v-icon>mdi-filter</v-icon>
+  <p style="writing-mode: vertical-rl; font-size: 16px; transform: rotate(180deg);"><v-icon style="transform: rotate(180deg); font-size: 14px; padding-left: 6px; padding-top: 10px;">mdi-filter</v-icon>FILTER</p>
   </v-btn>
   <v-card style="box-shadow: none; z-index: 1">
     <v-layout>
@@ -31,21 +31,21 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
       <v-container :class="mobile ? 'px-5 py-0 main-container' : 'px-10 py-0 main-container'">
         <v-col cols="12" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Berichte</h1>
-          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
-          </v-icon>
+          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>
           <v-tooltip
               activator="#tooltip-analyis-icon"
               location="end"
               open-on-hover
           >In Berichte kannst du Analysen über längere Zeiträume und weitere Filterkriterien erstellen.
           </v-tooltip>
+          <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
         </v-col>
         <v-divider></v-divider>
         <v-container class="pa-0 mt-2 pb-8">
           <v-row>
             <v-col :cols="mobile ? 12 : 5">
               <h2>{{ tableData.boat_class }}</h2>
-              <v-alert type="success" variant="tonal" class="my-2" v-if="tableData.results">
+              <v-alert type="success" variant="tonal" class="my-2" v-if="tableData.results || matrixResults">
                 <v-row>
                   <v-col cols="12">
                     <p>{{ matrixVisible ? matrixResults : tableData.results }} Datensätze |
@@ -201,6 +201,9 @@ export default {
     })
   },
   methods: {
+    openPrintDialog() {
+      window.print();
+    },
     setFilterState() {
       this.filterOpen = !this.filterOpen;
       const store = useBerichteState()
@@ -356,5 +359,11 @@ export default {
 }
 .main-container {
   min-height: calc(100vh - (var(--navbar-height)) - 95px);
+}
+
+@media print {
+  i, .filterToggleButton, .filterToggleButtonMobile {
+    display: none;
+  }
 }
 </style>

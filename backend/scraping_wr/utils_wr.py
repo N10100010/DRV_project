@@ -2,6 +2,7 @@ from tenacity import retry, wait_exponential, stop_after_attempt
 from datetime import datetime
 from typing import Union
 
+import re
 import requests
 import pandas as pd
 import numpy as np
@@ -20,6 +21,8 @@ WR_FILTER_MAPPING = {
     'category': 'Category'
     # todo: extend me...
 }
+
+STR_NUMBERS_0_10 = ''.join([str(n) for n in range(0, 10)])
 
 
 def procedure_init():
@@ -136,6 +139,70 @@ def build_filter_string(filter_params: dict) -> str:
     return query_string
 
 
+def process_rsc_code(code: str) -> tuple[str, str]:
+    """
+    Processes the RscCode of a race to extract the phase (Lauf) of the race.
+    @param code: str - total rcs code
+    @return: str - processed rsc code
+    # todo: same here as the todo in function filter_by_race_phase. Add filter parameteres to the database
+    """
+    processed = code.split('---')
+    boat_class = processed[0].strip('--')
+    phase = processed[-1].strip('--')
+    phase = "".join(re.split("[^0-9a-zA-Z*]", phase))
+    phase = phase.lstrip(STR_NUMBERS_0_10)
+
+    return boat_class, phase
+
+
+def extract_race_phase_from_rsc(processed: str) -> (str, int):
+    """
+    This extraction allows to identify a race, within a competition, given the class of a race.
+    CAUTION: Expects the second value from the function process-rsc-code.
+    @param processed: The processed phase of a race, from its rsc-code
+    @return: Extracted race phase, with its respective stage (phase: str, stage: int)
+    """
+    lower = processed.lower()
+
+    if lower[0:4] in ('qfnl', 'sfnl', 'heat', 'prel', 'seed'):
+        start, end = 4, 4
+    elif lower[0:3] in ('fnl', 'rep'):
+        start, end = 3, 4
+    elif lower[0:3] in ('rnd'):
+        start, end = 3, 1
+    else:
+        logger.warning(f"Encountered unknown phase in rsc-code. Seen value: {lower}")
+        return processed, 0
+
+    # remove unwanted parts of the string
+    processed = processed[0: start + end]
+
+    # return only parts that indicate the phase
+    return processed[0: start], int(processed[-1])
+
+
+def process_semifinal_display_name(name: str) -> tuple[str, int]:
+    """
+    Processes the display-name of a race to extract the type of it.
+    ! This is to cover an edge-case to cover semifinals. this means we know that it is semifinals display-name
+    @param name: The unprocessed display-name of a race
+    @return: The processed short-version of a display-name
+    """
+    lower = name.lower()
+    if 'semifinal' in lower:
+        last_occurrence = lower.rindex('semifinal')
+        #  9 = len(semifinal)
+        lower = lower[last_occurrence + 9: len(lower)]
+
+    org_lower = lower.replace('0', '').lstrip('s')
+    number = re.findall(r'\d+', org_lower)
+    number = number[0] if len(number) > 0 else None
+
+    # strip-fct's can handle None value - does nothing
+    lower = org_lower.lstrip('sf').lstrip('f').rstrip('r').rstrip(number).replace(' ', '').lstrip('s')
+
+    return lower, number
+
 def extract_competition_ids(values: dict) -> list[str]:
     """
     -
@@ -147,27 +214,6 @@ def extract_competition_ids(values: dict) -> list[str]:
 ########################################################################################################################
 # NICK - OLD
 ########################################################################################################################
-
-
-def extract_rsc_codes(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Identifies rsc-code columns, extracts the code from the values and adds them as separate column/s.
-    The original columns will be suffixed with '_ORG' and the new values will replace the existing ones.
-
-    NOTE: the function can be called without changing the df,
-        IF there are no column names, containing the substring 'rsccode'
-    """
-
-    def _extract_code(val: str) -> str:
-        return val.split('---')[0]
-
-    rsc_col_names = df.filter(like='rsccode').columns.to_list()
-    # usually, the rcs_col_names should not be longer than 2 and generally only 1
-    for col in rsc_col_names:
-        df[f'{col}_ORG'] = df[col]
-        df[col] = df[col].map(_extract_code)
-
-    return df
 
 
 def preprocess_json_to_dataframe(json: dict) -> pd.DataFrame:

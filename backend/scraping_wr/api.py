@@ -1,16 +1,17 @@
 import logging
-import re
 from typing import Union, Optional, Iterator
 from datetime import datetime, date
 import json as jsn
+
+import re
 
 
 # from tqdm import tqdm
 tqdm = lambda i : i
 
-import utils_wr as ut_wr
-import pdf_race_data as pdf_race_data
-import pdf_result as pdf_result_data
+from . import utils_wr as ut_wr
+from . import pdf_race_data as pdf_race_data
+from . import pdf_result as pdf_result_data
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -70,6 +71,7 @@ OLYMPIC_BOATCLASSES = [
     "W4-",
 ]
 
+# TODO: move this generic information into commons module
 BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
     'men': {
         'junior': {  # also called u19
@@ -223,121 +225,29 @@ RACE_STATUSES = {
 }
 
 ########################################################################################################################
-
-##  other utils
-STR_NUMBERS_0_10 = ''.join([str(n) for n in range(0, 10)])
-
-
-def process_rsc_code(code: str) -> tuple[str, str]:
+def extract_race_phase_details(rsc_code: str, display_name: str):  # -> dict:
     """
-    Processes the RscCode of a race to extract the phase (Lauf) of the race.
-    @param code: str - total rcs code
-    @return: str - processed rsc code
-    # todo: same here as the todo in function filter_by_race_phase. Add filter parameteres to the database
+    Extracts detail information about a race.
+    ! Both values to the keys can be None.
+    @param rsc_code: The associated rsc-code of a race
+    @param display_name: the associated display name of a race
+    @return: dict, containing the sub
     """
-    processed = code.split('---')
-    boat_class = processed[0].strip('--')
-    phase = processed[-1].strip('--')
-    phase = "".join(re.split("[^0-9a-zA-Z*]", phase))
-    phase = phase.lstrip(STR_NUMBERS_0_10)
 
-    return boat_class, phase
+    _, coarse_phase = ut_wr.process_rsc_code(rsc_code)
+    _, subtype = ut_wr.extract_race_phase_from_rsc(coarse_phase)
 
+    if 'SFNL' in coarse_phase:
+        subtype, number = ut_wr.process_semifinal_display_name(display_name)
+        if subtype == '' or subtype == 'r':
+            # edge-case; no proper display-name was entered in world-rowing-data
+            subtype = 'sfnl'
 
-def extract_race_phase_from_rsc(processed: str) -> (str, int):
-    """
-    This extraction allows to identify a race, within a competition, given the class of a race.
-    CAUTION: Expects the second value from the function process-rsc-code.
-    @param processed: The processed phase of a race, from its rsc-code
-    @return: Extracted race phase, with its respective stage (phase: str, stage: int)
-    """
-    lower = processed.lower()
-
-    if lower[0:4] in ('qfnl', 'sfnl', 'heat', 'prel', 'seed'):
-        start, end = 4, 4
-    elif lower[0:3] in ('fnl', 'rep'):
-        start, end = 3, 4
-    elif lower[0:3] in ('rnd'):
-        start, end = 3, 1
+        ret = {'subtype': subtype, 'number': number}
     else:
-        logger.warning(f"Encountered unknown phase in rsc-code. Seen value: {lower}")
-        return processed, 0
+        ret = {'subtype': None, 'number': subtype}
 
-    # remove unwanted parts of the string
-    processed = processed[0: start + end]
-
-    # return only parts that indicate the phase
-    return processed[0: start], int(processed[-1])
-
-
-def process_race_display_name(name: str) -> str:
-    """
-    Processes the display-name of a race to extract the type of it.
-    todo: split up the numbers from the string part and return tuple 
-        -- > semifnl: c/d21 digitiert zu (c/d, 21) # contains error, well...
-    """
-    lower = name.lower()
-
-    def _extract(s: str) -> str:
-        s = s.split(" ")
-        if len(s) >= 2:
-            s = s[-2:len(s)]
-        else:
-            s = s[0]
-        return ''.join(s).replace(' ', '').strip(' ')
-
-    def _process(s: str, t: tuple) -> str:
-        init_s = s
-        _s, _c, fine = t
-        if s.startswith(_c) or s.startswith(_s):
-            s = s.replace(_c + _c[0], _s).replace(_c, _s).replace(_s + _s, _s)
-        return s
-
-    val = lower
-    if 'quarterfinal' in lower:
-        short, coarse, fine = 'qfnl', 'quarterfinal', range(1, 10)
-        lower = lower + str(fine[0]) if lower[-1].isnumeric() and int(lower[-1]) not in fine else lower
-        val = _extract(lower)
-        val = _process(val, (short, coarse, fine))
-    elif 'semifinal' in lower:
-        short, coarse, fine = 'sfnl', 'semifinal', range(1, 5)
-        val = ''.join([v for v in lower if v not in fine])
-        val = _extract(lower)
-        val = _process(val, (short, coarse, fine))
-    elif 'final' in lower:
-        short, coarse, fine = 'fnl', 'final', ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
-
-        # lower = lower + str(fine[0]) if len(lower) == 1 and lower[-1] not in fine else lower
-        if len(lower) == 1 and lower == 'f':
-            lower += fine[0]
-        val = _extract(lower)
-        val = _process(val, (short, coarse, fine))
-        if 'f' in val and 'fnl' not in val and len(val) <= 5:
-            val = val.replace('f', 'fnl')
-
-    elif 'heat' in lower:
-        short, coarse, fine = 'h', 'heat', range(1, 10)
-        lower = lower + str(fine[0]) if lower[-1].isnumeric() and int(lower[-1]) not in fine else lower
-        val = _extract(lower)
-        val = _process(val, (short, coarse, fine))
-    elif 'preliminary' in lower or 'test' in lower:
-        short, coarse, fine = 'prel', 'preliminary', range(1, 5)
-        lower = lower + str(fine[0]) if lower[-1].isnumeric() and int(lower[-1]) not in fine else lower
-        val = _extract(lower)
-        val = _process(val, (short, coarse, fine))
-        val = val.replace('test', '')
-        val = val.replace('race', '')
-    elif 'repechage' in lower or lower == 'r':
-        if lower == 'r' or lower == 'r1':
-            lower = 'rep1'
-        short, coarse, fine = 'rep', 'repechage', range(1, 10)
-        lower = lower + str(fine[0]) if lower[-1].isnumeric() and int(lower[-1]) not in fine else lower
-        val = _extract(lower)
-        val = _process(val, (short, coarse, fine))
-    else:
-        print(f"did not identify lower: {lower}")
-
-    return val
+    return ret
 
 
 def save(data: dict, fn: str):
@@ -419,7 +329,6 @@ def merge_race_data(race, race_data):
         race_idx, race_data_idx = mapping
         race[race_idx]['pdf_parsed_race_data'] = race_data[race_data_idx]
 """
-
 
 def get_by_competition_id_(comp_ids: Union[str, list[str]], verbose: bool = False, parse_pdf=False) -> dict:
     """
@@ -552,12 +461,12 @@ def get_competition_heads(years: Optional[Union[list, int]] = None, single_fetch
     else:
         year_batches = [ [year] for year in selected_years ]
 
-    query_strings = ( ut_wr.build_filter_string({'year': year_batch}) for year_batch in year_batches )
-
-    for query_string in query_strings:
+    for year_batch in year_batches:
+        query_string = ut_wr.build_filter_string({'year': year_batch})
         competitions = ut_wr.load_json(WR_BASE_URL + WR_ENDPOINT_COMPETITION + query_string)
         for competition in competitions:
             yield competition
+
 
 def get_competition_ids(*args, **kwargs) -> list[str]:
     competition_heads_iterator = get_competition_heads(*args, **kwargs)

@@ -5,7 +5,7 @@
          :height="mobile ? 100: 180"
          size="x-small"
   >
-    <v-icon>mdi-filter</v-icon>
+  <p style="writing-mode: vertical-rl; font-size: 16px; transform: rotate(180deg);"><v-icon style="transform: rotate(180deg); font-size: 14px; padding-left: 6px; padding-top: 10px;">mdi-filter</v-icon>FILTER</p>
   </v-btn>
   <v-card style="box-shadow: none; z-index: 1">
     <v-layout>
@@ -19,8 +19,7 @@
       <v-container :class="mobile ? 'px-5 py-0 pb-8 main-container' : 'px-10 py-0 pb-8 main-container'">
         <v-col cols="12" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Athleten</h1>
-          <v-icon id="tooltip-athlete-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
-          </v-icon>
+          <v-icon id="tooltip-athlete-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>
           <v-tooltip
               activator="#tooltip-athlete-icon"
               location="end"
@@ -28,6 +27,7 @@
           >Auf der Athleten-Seite findest du die Stammdaten des Athletens und kannst
             eine Übersicht zu seinen Ergebnissen (inkl. Medaillenspiegel) betrachten.
           </v-tooltip>
+          <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
         </v-col>
         <v-divider></v-divider>
         <v-container class="pa-0 mt-8" style="min-height: 400px">
@@ -61,8 +61,8 @@
                   <td>{{ tableData.currentBoatClass }}</td>
                 </tr>
                 <tr>
-                  <th>Disziplin</th>
-                  <td>{{ tableData.discipline }}</td>
+                  <th>Disziplin(en)</th>
+                  <td><p v-for="item in tableData.disciplines">{{ item }}</p></td>
                 </tr>
                 <tr>
                   <th>Rennanzahl</th>
@@ -175,6 +175,9 @@ export default {
     }),
   },
   methods: {
+    openPrintDialog() {
+      window.print();
+    },
     setFilterState() {
       this.filterOpen = !this.filterOpen;
       const store = useAthletenState()
@@ -277,5 +280,11 @@ export default {
 }
 .main-container {
   min-height: calc(100vh - (var(--navbar-height)) - 95px);
+}
+
+@media print {
+  i, .filterToggleButton, .filterToggleButtonMobile {
+    display: none;
+  }
 }
 </style>

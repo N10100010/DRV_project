@@ -1,7 +1,4 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
@@ -9,7 +6,7 @@
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}/backend",
-            "module": "scraping_wr._main",
+            "program": "dev-playground.py",
             "args": [
                 "grabc",
                 "--out",
@@ -55,13 +52,29 @@
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}/backend",
-            "module": "procedures.scrape_service",
+            "program": "scraper.py",
             "env": {
                 "SCRAPER_SINGLEPASS": "1",
                 "DRV_SCRAPER_DEV_MODE": "1",
                 "DB_VERBOSITY": "0"
             },
             "args": [],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Py: scraper (only postprocessing)",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
+            "program": "scraper.py",
+            "env": {
+                "SCRAPER_SINGLEPASS": "1",
+                "DRV_SCRAPER_DEV_MODE": "1",
+                "DB_VERBOSITY": "0",
+                "SCRAPER_YEAR_MIN": "2022"
+            },
+            "args": ["--procedure", "postprocess"],
             "console": "integratedTerminal",
             "justMyCode": true
         },
@@ -76,7 +89,7 @@
             },
             "args": [
                 "--app",
-                "app.app:app",
+                "api_server:app",
                 "--debug",
                 "run",
                 "--no-debugger",
@@ -87,12 +100,12 @@
             "justMyCode": true
         },
         {
-            "name": "Py: Scrape competition - Nick",
+            "name": "Py: Dev Playground (Nick)",
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}/backend",
-            "module": "scraping_wr._main",
+            "program": "dev-playground.py",
             "justMyCode": true
-        },
+        }
     ]
 }
