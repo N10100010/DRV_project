@@ -44,12 +44,14 @@ export const useRennstrukturAnalyseState = defineStore({
                             {
                                 "id": 98245435,
                                 "firstName": "Lukas",
-                                "lastName": "Helesic"
+                                "lastName": "Helesic",
+                                "position": "b"
                             },
                             {
                                 "id": 954345365,
                                 "firstName": "S Jakub",
-                                "lastName": "Podrazil"
+                                "lastName": "Podrazil",
+                                "position": "s"
                             }
                         ],
                         "intermediates": {
@@ -158,12 +160,14 @@ export const useRennstrukturAnalyseState = defineStore({
                             {
                                 "id": 98245435,
                                 "firstName": "Max",
-                                "lastName": "Maier"
+                                "lastName": "Maier",
+                                "position": "b"
                             },
                             {
                                 "id": 954345365,
                                 "firstName": "S Jakub",
-                                "lastName": "Podrazil"
+                                "lastName": "Podrazil",
+                                "position": "s"
                             }
                         ],
                         "intermediates": {
@@ -302,7 +306,9 @@ export const useRennstrukturAnalyseState = defineStore({
                 const athleteNames = [];
                 rowData.push(dataObj.rank, dataObj.lane, dataObj.nation_ioc);
                 for (const [key, athlete] of Object.entries(dataObj.athletes)) {
-                    athleteNames.push(athlete.firstName.concat(" ", athlete.lastName))
+                    athleteNames.push("(" + athlete.position +") " + athlete.firstName
+                        .concat(" ", athlete.lastName)
+                    )
                 }
                 const firstArray = [];
                 const secondArray = [];

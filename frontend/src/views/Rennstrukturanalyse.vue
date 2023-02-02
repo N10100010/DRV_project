@@ -27,6 +27,10 @@
           >Die Rennstrukturanalyse erlaubt die gezielte Betrachtung des Rennverlaufs auf Basis von Ergebnis- und GPS
             Daten.
           </v-tooltip>
+          <a :href="emailLink" v-show="showEmailIcon">
+          <v-icon color="grey" class="ml-2 v-icon--size-large">mdi-email-outline
+          </v-icon>
+          </a>
           <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
         </v-col>
         <v-divider></v-divider>
@@ -160,8 +164,8 @@
             </v-col>
             <v-col :cols="mobile ? 12 : 6" class="pa-0">
               <v-container :class="mobile ? 'pa-0' : 'pa-2'">
-              <LineChart :data="deficitMeters" :chartOptions="deficitChartOptions" class="chart-bg"></LineChart>
-                </v-container>
+                <LineChart :data="deficitMeters" :chartOptions="deficitChartOptions" class="chart-bg"></LineChart>
+              </v-container>
             </v-col>
           </v-row>
         </v-container>
@@ -220,6 +224,8 @@ export default {
       filterOpen: false,
       breadCrumbs: [],
       mobile: false,
+      showEmailIcon: false,
+      emailLink: '',
       showTooltip: false,
       displayRaceDataAnalysis: false,
       displayCompetitions: true,
@@ -412,19 +418,7 @@ export default {
       router.push("/rennstrukturanalyse/" + compId)
       this.lastCompId = compId
       this.events = competition
-      this.breadCrumbs.push({
-        title: displayName,
-        disabled: false,
-        href: '#',
-        onclick: () => {
-          router.replace({path: "/rennstrukturanalyse", query: {}})
-          this.displayCompetitions = true
-          this.displayRaceDataAnalysis = false
-          this.displayEvents = false
-          this.displayRaces = false
-          this.breadCrumbs.splice(0)
-        }
-      })
+      this.breadCrumbs.push({title: displayName})
       this.displayCompetitions = false
       this.displayEvents = true
     },
@@ -432,30 +426,23 @@ export default {
       router.push(this.$route.fullPath + "/" + eventId)
       this.lastEventId = eventId
       this.races = events
-      this.breadCrumbs.push({
-        title: displayName,
-        disabled: false,
-        href: '#',
-        onclick: () => {
-          router.replace({path: "/rennstrukturanalyse/" + this.lastEventId, query: {}})
-          this.displayCompetitions = false
-          this.displayRaceDataAnalysis = false
-          this.displayEvents = true
-          this.displayRaces = false
-          this.breadCrumbs.splice(1)
-        }
-      })
+      this.breadCrumbs.push({title: displayName})
       this.displayEvents = false
       this.displayRaces = true
     },
     loadRaceAnalysis(raceName, raceId) {
-      router.push(`/rennstrukturanalyse/${this.lastCompId}/${this.lastEventId}?race_id=${raceId}`)
+      this.showEmailIcon = true
+      const newPath = `/rennstrukturanalyse/${this.lastCompId}/${this.lastEventId}?race_id=${raceId}`
+      router.push(newPath)
       this.displayRaceDataAnalysis = true
+      const subject = "Wettkampfergebnisse"
+      const body = `Sieh dir diese Wettkampfergebnisse an: http://${window.location.host + newPath}`
+      this.emailLink = `mailto:?subject=${subject}&body=${body}`
     },
     checkScreen() {
       this.windowWidth = window.innerWidth;
       this.mobile = this.windowWidth <= 750
-       let navbarHeight = window.innerWidth < 750 ? '71.25px' : '160px';
+      let navbarHeight = window.innerWidth < 750 ? '71.25px' : '160px';
       document.documentElement.style.setProperty('--navbar-height', navbarHeight);
     }
   },
@@ -475,20 +462,18 @@ export default {
     $route: {
       immediate: true,
       deep: true,
-      /*
       handler(to, from) {
         if (typeof from !== 'undefined' && typeof to !== 'undefined') {
           // from events backwards to comp
           if (to.path === "/rennstrukturanalyse" && from.path.match(/\/rennstrukturanalyse\/[\w-]+/)) {
-            console.log(1)
             this.displayEvents = false
             this.displayCompetitions = true
             this.displayRaces = false
             this.breadCrumbs.splice(0)
           }
           // from races backwards to events
-          else if (from.path.match(/\/rennstrukturanalyse\/[\w-]+\/[\w-]+/) && !to.fullPath.includes("?race_id=") && to.path.match(/\/rennstrukturanalyse\/[\w-]+/)) {
-            console.log(2)
+          else if (from.path.match(/\/rennstrukturanalyse\/[\w-]+\/[\w-]+/) && !to.fullPath.includes("?race_id=")
+              && !from.fullPath.includes("?race_id=") && to.path.match(/\/rennstrukturanalyse\/[\w-]+/)) {
             this.displayRaces = false
             this.displayCompetitions = false
             this.displayEvents = true
@@ -496,7 +481,6 @@ export default {
           }
           // from comp forward to events
           else if (from.path === "/rennstrukturanalyse" && to.path.match(/\/rennstrukturanalyse\/[\w-]+/)) {
-            console.log(3)
             this.displayRaces = false
             this.displayCompetitions = false
             this.displayEvents = true
@@ -504,44 +488,32 @@ export default {
             if (this.breadCrumbs.length === 0) {
               this.breadCrumbs.push({
                 title: this.getAnalysis.find(obj => obj.id === this.lastCompId).display_name,
-                disabled: false,
-                href: '#',
-                onclick: () => {
-                  router.replace({ path: '/rennstrukturanalyse', query: {} })
-                  this.displayCompetitions = true
-                  this.displayRaceDataAnalysis = false
-                  this.displayEvents = false
-                  this.displayRaces = false
-                  this.breadCrumbs.splice(0)
-                }
               })
-              }
+            }
           } // from event forward to races
-          else if (from.path.match(/\/rennstrukturanalyse\/[\w-]+/) && to.path.match(/\/rennstrukturanalyse\/[\w-]+\/[\w-]+/)) {
-            console.log(4)
+          else if (from.path.match(/\/rennstrukturanalyse\/[\w-]+/) && to.path.match(/\/rennstrukturanalyse\/[\w-]+\/[\w-]+/)
+              && !to.fullPath.includes("?race_id=") && !from.fullPath.includes("?race_id=")) {
             this.displayRaces = true
             this.displayCompetitions = false
             this.displayEvents = false
             if (this.breadCrumbs.length === 1) {
               this.breadCrumbs.push({
                 title: this.events.find(obj => obj.id === this.lastEventId).display_name,
-                disabled: false,
-                href: '#',
-                onclick: () => {
-                  router.replace({ path: `/rennstrukturanalyse/${this.lastCompId}/${this.lastEventId}`, query: {} })
-                  this.displayEvents = true
-                  this.displayCompetitions = false
-                  this.displayRaceDataAnalysis = false
-                  this.displayRaces = false
-                  this.breadCrumbs.splice(1)
-                }
               })
             }
-          } else if (from.fullPath.includes("?race_id=")){
-            router.replace({ path: `/rennstrukturanalyse/${this.lastCompId}`, query: {}})
+          } else if (from.fullPath.includes("?race_id=") && !to.fullPath.includes("?race_id=") &&
+              to.path.match(/\/rennstrukturanalyse\/[\w-]+\/[\w-]+/)) {
+            this.displayRaceDataAnalysis = false
+            this.displayEvents = false
+            this.displayRaces = true
+            this.showEmailIcon = false
+            router.replace({path: `/rennstrukturanalyse/${this.lastCompId}/${this.lastEventId}`, query: {}})
+          } else if (to.fullPath.includes("?race_id=")) {
+            this.displayRaces = false
+            this.displayRaceDataAnalysis = true
           }
         }
-      }*/
+      }
     }
   }
 }
@@ -566,6 +538,7 @@ export default {
 .nth-grey tr:nth-of-type(odd) {
   background-color: #f8f8f8;
 }
+
 .filterToggleButton {
   position: fixed;
   z-index: 10;
@@ -573,6 +546,7 @@ export default {
   border-radius: 0 5px 5px 0;
   color: #1369b0;
 }
+
 .filterToggleButtonMobile {
   position: fixed;
   z-index: 10;
@@ -581,12 +555,14 @@ export default {
   color: #1369b0;
   bottom: 10px;
 }
+
 .chart-bg {
   background-color: #fbfbfb;
   border-radius: 3px;
 }
+
 .main-container {
-  min-height: calc(100vh - (var(--navbar-height)) - 100px);
+  min-height: calc(100vh - (var(--navbar-height)) - 95px);
 }
 
 @media print {

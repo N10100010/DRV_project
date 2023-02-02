@@ -19,17 +19,17 @@
       <h2 class="pt-3">Filter</h2>
       <v-divider></v-divider>
       <v-row class="pt-4">
-      <v-col>
-        <v-autocomplete :items="optionsNations" v-model="selectedNation"
-                      variant="outlined" color="blue" label="Nation (optional)" clearable
-                      density="comfortable"
-      ></v-autocomplete>
-      </v-col>
-       <v-col>
+        <v-col>
+          <v-autocomplete :items="optionsNations" v-model="selectedNation"
+                          variant="outlined" color="blue" label="Nation (optional)" clearable
+                          density="comfortable"
+          ></v-autocomplete>
+        </v-col>
+        <v-col>
           <v-select clearable :items="optionsBirthYear" variant="outlined"
-                v-model="selectedBirthYear" label="Jahrgang (optional)" density="comfortable"
-      ></v-select>
-       </v-col>
+                    v-model="selectedBirthYear" label="Jahrgang (optional)" density="comfortable"
+          ></v-select>
+        </v-col>
       </v-row>
       <v-chip-group filter color="blue" v-model="selectedGenders">
         <v-chip v-for="genderType in genderTypeOptions">{{ genderType.charAt(0).toUpperCase() + genderType.slice(1) }}
@@ -37,6 +37,9 @@
       </v-chip-group>
       <v-chip-group filter color="blue" v-model="selectedAgeGroups">
         <v-chip v-for="ageGroup in ageGroupOptions">{{ ageGroup.charAt(0).toUpperCase() + ageGroup.slice(1) }}</v-chip>
+      </v-chip-group>
+      <v-chip-group filter color="blue" v-model="selectedDiscipline">
+        <v-chip v-for="discipline in optionsDisciplines">{{ discipline }}</v-chip>
       </v-chip-group>
       <v-select class="pt-3" label="Bootsklasse (optional)" clearable chips density="comfortable"
                 :items="optionsBoatClasses" v-model="selectedBoatClasses" variant="outlined"
@@ -85,6 +88,7 @@ export default {
       // year
       birthYear: null,
       optionsBirthYear: [],
+      selectedBirthYear: null,
 
       // nations
       optionsNations: [],
@@ -95,7 +99,8 @@ export default {
       selectedGenders: [0],
       ageGroupOptions: [],
       selectedAgeGroups: 0,
-      selectedBirthYear: null,
+      optionsDisciplines: ["Skull", "Riemen"],
+      selectedDiscipline: 0,
       optionsBoatClasses: [],
       selectedBoatClasses: this.optionsBoatClasses,
     }
@@ -105,9 +110,9 @@ export default {
     this.checkScreen()
 
     //handle form data
-    this.startYear = Object.values(this.filterOptions[0].year[0])[0]
-    this.endYear = Object.values(this.filterOptions[0].year[1])[0]
-    this.optionsBirthYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
+    const startYear = Object.values(this.filterOptions[0].birth_year[0])[0]
+    const endYear = Object.values(this.filterOptions[0].birth_year[1])[0]
+    this.optionsBirthYear = Array.from({length: endYear - startYear + 1}, (_, i) => startYear + i)
 
     // competition category id
     this.compTypes = this.filterOptions[0].competition_category_ids
@@ -205,9 +210,11 @@ export default {
         let optionsList = []
         if (newVal === 0) { // men
           optionsList.push(...Object.keys(this.filterOptions[0].boat_class.men))
+          this.optionsDisciplines = ["Skull", "Riemen"]
         }
         if (newVal === 1) { // women
           optionsList.push(...Object.keys(this.filterOptions[0].boat_class.women))
+          this.optionsDisciplines = ["Skull", "Riemen"]
         }
         if (newVal === 2) { // mixed
           optionsList = []
@@ -216,27 +223,25 @@ export default {
             test.push(Object.values(mixedOption))
           }
           this.optionsBoatClasses = test.map(item => item[0]).flat()
-        }
-        if (newVal === 3) { // all
-          this.ageGroupOptions = []
-          this.optionsBoatClasses = ["Alle"]
-          this.selectedBoatClasses = this.optionsBoatClasses
+          this.optionsDisciplines = ["Skull", "Riemen"]
         }
         this.ageGroupOptions = optionsList.filter((v, i, a) => a.indexOf(v) === i); // exclude non-unique values
         let boatClassOptions = []
         Object.entries(Object.values(this.filterOptions[0].boat_class)[newVal]).forEach(([key, value], index) => {
-          if (index === this.selectedAgeGroups) {
+          if (index === this.selectedAgeGroups || this.selectedGenders === 2) {
             Object.entries(value).forEach(([, val]) => {
               if (typeof val === "object") {
                 boatClassOptions.push(Object.values(val)[0])
+              } else {
+                boatClassOptions.push(val)
               }
             })
           }
         });
-        if (newVal !== 2 && newVal !== 3) {
-          this.optionsBoatClasses = boatClassOptions
-          this.selectedBoatClasses = boatClassOptions[0]
-        } else if (newVal === 2) {
+        boatClassOptions = boatClassOptions.filter(item => this.selectedDiscipline ? !item.includes("Sculls") : item.includes("Sculls"));
+        this.optionsBoatClasses = boatClassOptions
+        this.selectedBoatClasses = boatClassOptions[0]
+        if (newVal === 2) {
           this.selectedBoatClasses = this.optionsBoatClasses[0]
         }
       }
@@ -246,7 +251,6 @@ export default {
         this.selectedBoatClasses = null
         let genderObj = Object.values(this.filterOptions[0].boat_class)[this.selectedGenders]
         let boatClassOptions = []
-
         Object.entries(genderObj).forEach(([key, value], index) => {
           if (index === newVal) {
             Object.entries(value).forEach(([, val]) => {
@@ -256,19 +260,41 @@ export default {
             })
           }
         });
+        boatClassOptions = boatClassOptions.filter(item => this.selectedDiscipline ? !item.includes("Sculls") : item.includes("Sculls"));
         this.selectedBoatClasses = boatClassOptions[0]
-        if (this.selectedGenders !== 2 && this.selectedGenders !== 3) {
+        this.optionsBoatClasses = boatClassOptions
+      }
+    },
+    selectedDiscipline: function (newVal,) {
+      if (newVal !== undefined) {
+        this.selectedBoatClasses = null
+        let genderObj = Object.values(this.filterOptions[0].boat_class)[this.selectedGenders]
+        let boatClassOptions = []
+        Object.entries(genderObj).forEach(([key, value], index) => {
+          if (index === this.selectedAgeGroups || this.selectedGenders === 2) {
+            Object.entries(value).forEach(([, val]) => {
+              if (typeof val === "object") {
+                boatClassOptions.push(Object.values(val)[0])
+              } else {
+                boatClassOptions.push(val)
+              }
+            })
+          }
+        });
+        boatClassOptions = boatClassOptions.filter(item => newVal ? !item.includes("Sculls") : item.includes("Sculls"));
+        this.selectedBoatClasses = boatClassOptions[0]
+        if (this.selectedGenders !== 3) {
           this.optionsBoatClasses = boatClassOptions
         }
       }
-    }
+    },
   }
 }
 
 </script>
 
 <style scoped>
-.mdi-close:hover{
+.mdi-close:hover {
   cursor: pointer;
 }
 </style>

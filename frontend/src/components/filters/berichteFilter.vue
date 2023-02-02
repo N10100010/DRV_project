@@ -1,12 +1,12 @@
 <template>
   <v-container :style="{'height': mobile ? '135%' : '100%'}">
     <v-row>
-       <v-col>
-      <h2>Filter</h2>
-       </v-col>
-    <v-col class="text-right">
-      <i class="mdi mdi-close" style="font-size: 25px; color: darkgrey" @click="hideFilter"></i>
-    </v-col>
+      <v-col>
+        <h2>Filter</h2>
+      </v-col>
+      <v-col class="text-right">
+        <i class="mdi mdi-close" style="font-size: 25px; color: darkgrey" @click="hideFilter"></i>
+      </v-col>
     </v-row>
     <v-divider></v-divider>
     <v-form class="mt-2" id="berichteFilterFormular"
@@ -20,8 +20,12 @@
       <v-chip-group filter color="blue" v-model="selectedAgeGroups">
         <v-chip v-for="ageGroup in ageGroupOptions">{{ ageGroup.charAt(0).toUpperCase() + ageGroup.slice(1) }}</v-chip>
       </v-chip-group>
+      <v-chip-group filter color="blue" v-model="selectedDiscipline">
+        <v-chip v-for="discipline in optionsDisciplines">{{ discipline }}</v-chip>
+      </v-chip-group>
       <v-select class="pt-3" label="Bootsklassen" clearable chips density="comfortable"
-                :items="optionsBoatClasses" v-model="selectedBoatClasses" variant="outlined"
+                :items="optionsBoatClasses"
+                v-model="selectedBoatClasses" variant="outlined"
                 :rules="[v => !!v || 'Wähle mindestens eine Bootsklasse']"
       ></v-select>
 
@@ -43,7 +47,7 @@
         </v-col>
       </v-container>
       <v-select class="pt-3" chips multiple density="comfortable"
-                label="Wettkampfklassen" :items="optionsCompTypes"
+                label="Event(s)" :items="optionsCompTypes"
                 v-model="selectedCompTypes" variant="outlined"
                 :rules="[v => v.length > 0 || 'Wähle mindestens eine Wettkampfklasse']"
       ></v-select>
@@ -111,6 +115,8 @@ export default {
       selectedGenders: [3],
       ageGroupOptions: [],
       selectedAgeGroups: 0,
+      optionsDisciplines: [],
+      selectedDiscipline: 0,
       optionsBoatClasses: [],
       selectedBoatClasses: null,
       // runs
@@ -232,9 +238,11 @@ export default {
         let optionsList = []
         if (newVal === 0) { // men
           optionsList.push(...Object.keys(this.reportFilterOptions[0].boat_class.men))
+          this.optionsDisciplines = ["Skull", "Riemen"]
         }
         if (newVal === 1) { // women
           optionsList.push(...Object.keys(this.reportFilterOptions[0].boat_class.women))
+          this.optionsDisciplines = ["Skull", "Riemen"]
         }
         if (newVal === 2) { // mixed
           optionsList = []
@@ -243,24 +251,29 @@ export default {
             test.push(Object.values(mixedOption))
           }
           this.optionsBoatClasses = test.map(item => item[0]).flat()
+          this.optionsDisciplines = ["Skull", "Riemen"]
         }
         if (newVal === 3) { // all
           this.ageGroupOptions = []
           this.optionsBoatClasses = ["Alle"]
           this.selectedBoatClasses = this.optionsBoatClasses
+          this.optionsDisciplines = []
         }
         this.ageGroupOptions = optionsList.filter((v, i, a) => a.indexOf(v) === i); // exclude non-unique values
         let boatClassOptions = []
         Object.entries(Object.values(this.reportFilterOptions[0].boat_class)[newVal]).forEach(([key, value], index) => {
-          if (index === this.selectedAgeGroups) {
+          if (index === this.selectedAgeGroups || this.selectedGenders === 2) {
             Object.entries(value).forEach(([, val]) => {
               if (typeof val === "object") {
                 boatClassOptions.push(Object.values(val)[0])
+              } else {
+                boatClassOptions.push(val)
               }
             })
           }
         });
-        if (newVal !== 2 && newVal !== 3) {
+        if (newVal !== 3) {
+          boatClassOptions = boatClassOptions.filter(item => this.selectedDiscipline ? !item.includes("Sculls") : item.includes("Sculls"));
           this.optionsBoatClasses = boatClassOptions
           this.selectedBoatClasses = boatClassOptions[0]
         } else if (newVal === 2) {
@@ -273,7 +286,6 @@ export default {
         this.selectedBoatClasses = null
         let genderObj = Object.values(this.reportFilterOptions[0].boat_class)[this.selectedGenders]
         let boatClassOptions = []
-
         Object.entries(genderObj).forEach(([key, value], index) => {
           if (index === newVal) {
             Object.entries(value).forEach(([, val]) => {
@@ -283,8 +295,34 @@ export default {
             })
           }
         });
+        // filter discipline
+        boatClassOptions = boatClassOptions.filter(item => this.selectedDiscipline ? !item.includes("Sculls") : item.includes("Sculls"));
+        // set boat class options
         this.selectedBoatClasses = boatClassOptions[0]
-        if (this.selectedGenders !== 2 && this.selectedGenders !== 3) {
+        if (this.selectedGenders !== 3) {
+          this.optionsBoatClasses = boatClassOptions
+        }
+      }
+    },
+    selectedDiscipline: function (newVal,) {
+      if (newVal !== undefined) {
+        this.selectedBoatClasses = null
+        let genderObj = Object.values(this.reportFilterOptions[0].boat_class)[this.selectedGenders]
+        let boatClassOptions = []
+        Object.entries(genderObj).forEach(([key, value], index) => {
+          if (index === this.selectedAgeGroups || this.selectedGenders === 2) {
+            Object.entries(value).forEach(([, val]) => {
+              if (typeof val === "object") {
+                boatClassOptions.push(Object.values(val)[0])
+              } else {
+                boatClassOptions.push(val)
+              }
+            })
+          }
+        });
+        boatClassOptions = boatClassOptions.filter(item => newVal ? !item.includes("Sculls") : item.includes("Sculls"));
+        this.selectedBoatClasses = boatClassOptions[0]
+        if (this.selectedGenders !== 3) {
           this.optionsBoatClasses = boatClassOptions
         }
       }
@@ -307,7 +345,7 @@ export default {
 </script>
 
 <style scoped>
-.mdi-close:hover{
+.mdi-close:hover {
   cursor: pointer;
 }
 </style>

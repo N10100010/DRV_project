@@ -31,7 +31,7 @@
 
 
       <v-select class="pt-2" clearable chips multiple color="blue"
-                label="Wettkampfklassen" :items="optionsCompTypes"
+                label="Event(s)" :items="optionsCompTypes"
                 v-model="selectedCompTypes" variant="outlined"
                 :rules="[v => v.length > 0 || 'Wähle mindestens eine Wettkampfklasse']"
       ></v-select>

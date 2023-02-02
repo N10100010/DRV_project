@@ -72,15 +72,20 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                   <td>{{ formatMilliseconds(tableData.best_in_period) }}</td>
                 </tr>
                 <tr>
-                  <th>Mittelwerte</th>
-                  <td>
-                    <p>
-                      {{ tableData["mean"]["m/s"] }} [m/s]<br>
-                      {{ formatMilliseconds(tableData["mean"]["pace 500m"]) }} [500m]<br>
-                      {{ formatMilliseconds(tableData["mean"]["pace 1000m"]) }} [1000m]<br>
-                      {{ formatMilliseconds(tableData["mean"]["mm:ss,00"]) }} [2000m]
-                    </p>
-                  </td>
+                  <th>Ø Geschwindigkeit (m/s)</th>
+                  <td>{{ tableData["mean"]["m/s"] }}</td>
+                </tr>
+                <tr>
+                  <th>Ø t über 500m</th>
+                  <td>{{ formatMilliseconds(tableData["mean"]["pace 500m"]) }}</td>
+                </tr>
+                <tr>
+                  <th>Ø t über 1000m</th>
+                  <td>{{ formatMilliseconds(tableData["mean"]["pace 1000m"]) }}</td>
+                </tr>
+                <tr>
+                  <th>Ø t über 2000m</th>
+                  <td>{{ formatMilliseconds(tableData["mean"]["mm:ss,00"]) }}</td>
                 </tr>
                 <tr>
                   <th>Standardabweichung</th>
@@ -353,7 +358,7 @@ export default {
   border-radius: 3px;
 }
 .main-container {
-  min-height: calc(100vh - (var(--navbar-height)) - 100px);
+  min-height: calc(100vh - (var(--navbar-height)) - 95px);
 }
 
 @media print {
