@@ -15,10 +15,13 @@ export const useRennstrukturAnalyseState = defineStore({
             filterOptions: [{
                 "year": [{"start_year": 1950}, {"end_year": 2025}],
                 "competition_category_ids": [
-                    {"displayName": "Olympics", "id": "89346342"},
-                    {"displayName": "World Rowing Championships", "id": "89346362"},
-                    {"displayName": "World Championships", "id": "89346366"},
-                    {"displayName": "Qualifications", "id": "89346323"},
+                    {"displayName": "European Championships", "id": "89346342"},
+                    {"displayName": "Olympics", "id": "89346362"},
+                    {"displayName": "Qualifications", "id": "89346362"},
+                    {"displayName": "World Championships I", "id": "89346362"},
+                    {"displayName": "World Championships II", "id": "89346362"},
+                    {"displayName": "World Championships III", "id": "89346362"},
+                    {"displayName": "World Rowing Cup", "id": "89346362"}
                 ],
             }],
             raceData: [{
@@ -306,7 +309,7 @@ export const useRennstrukturAnalyseState = defineStore({
                 const athleteNames = [];
                 rowData.push(dataObj.rank, dataObj.lane, dataObj.nation_ioc);
                 for (const [key, athlete] of Object.entries(dataObj.athletes)) {
-                    athleteNames.push("(" + athlete.position +") " + athlete.firstName
+                    athleteNames.push("(" + athlete.position + ") " + athlete.firstName
                         .concat(" ", athlete.lastName)
                     )
                 }

@@ -99,9 +99,13 @@ export const useMedaillenspiegelState = defineStore({
                 }
             },
             "competition_category_ids": [
-                {"displayName": "Olympics", "id": "89346342"},
-                {"displayName": "World Rowing Championships", "id": "89346362"},
+                {"displayName": "European Championships", "id": "89346342"},
+                {"displayName": "Olympics", "id": "89346362"},
                 {"displayName": "Qualifications", "id": "89346362"},
+                {"displayName": "World Championships I", "id": "89346362"},
+                {"displayName": "World Championships II", "id": "89346362"},
+                {"displayName": "World Championships III", "id": "89346362"},
+                {"displayName": "World Rowing Cup", "id": "89346362"}
             ],
             "runs": [{"displayName": "FA", "id": "89346342"}],
             "ranks": ["1", "2", "3", "4-6"],

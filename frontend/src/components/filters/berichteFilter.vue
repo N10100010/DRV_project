@@ -103,8 +103,17 @@ export default {
       formValid: true,
       // competition type
       compTypes: [], // list of dicts with objects containing displayName, id and key
-      optionsCompTypes: ["Olympics", "World Rowing Championships", "Qualifications"],
-      selectedCompTypes: ["Olympics", "World Rowing Championships", "Qualifications"],
+      optionsCompTypes: [],
+      selectedCompTypes: [
+        "European Championships",
+        "Olympics",
+        "World Rowing Championships",
+        "Qualifications",
+        "World Championships I",
+        "World Championships II",
+        "World Championships III",
+        "World Rowing Cup"
+      ],
       // year
       startYear: 0,
       endYear: 0,
