@@ -12,7 +12,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
          :height="mobile ? 100: 180"
          size="x-small"
   >
-    <v-icon>mdi-filter</v-icon>
+  <p style="writing-mode: vertical-rl; font-size: 16px; transform: rotate(180deg);"><v-icon style="transform: rotate(180deg); font-size: 14px; padding-left: 6px; padding-top: 10px;">mdi-filter</v-icon>FILTER</p>
   </v-btn>
   <v-card style="box-shadow: none; z-index: 1">
       <v-layout>
