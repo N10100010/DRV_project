@@ -472,7 +472,6 @@ export default {
     $route: {
       immediate: true,
       deep: true,
-      /*
       handler(to, from) {
         if (typeof from !== 'undefined' && typeof to !== 'undefined') {
           // from events backwards to comp
@@ -484,7 +483,8 @@ export default {
             this.breadCrumbs.splice(0)
           }
           // from races backwards to events
-          else if (from.path.match(/\/rennstrukturanalyse\/[\w-]+\/[\w-]+/) && !to.fullPath.includes("?race_id=") && to.path.match(/\/rennstrukturanalyse\/[\w-]+/)) {
+          else if (from.path.match(/\/rennstrukturanalyse\/[\w-]+\/[\w-]+/) && !to.fullPath.includes("?race_id=")
+              && !from.fullPath.includes("?race_id=") && to.path.match(/\/rennstrukturanalyse\/[\w-]+/)) {
             console.log(2)
             this.displayRaces = false
             this.displayCompetitions = false
@@ -514,7 +514,8 @@ export default {
               })
               }
           } // from event forward to races
-          else if (from.path.match(/\/rennstrukturanalyse\/[\w-]+/) && to.path.match(/\/rennstrukturanalyse\/[\w-]+\/[\w-]+/)) {
+          else if (from.path.match(/\/rennstrukturanalyse\/[\w-]+/) && to.path.match(/\/rennstrukturanalyse\/[\w-]+\/[\w-]+/)
+          && !to.fullPath.includes("?race_id=") && !from.fullPath.includes("?race_id=")) {
             console.log(4)
             this.displayRaces = true
             this.displayCompetitions = false
@@ -535,10 +536,15 @@ export default {
               })
             }
           } else if (from.fullPath.includes("?race_id=")){
-            router.replace({ path: `/rennstrukturanalyse/${this.lastCompId}`, query: {}})
+            if (!to.fullPath.includes("?race_id=")) {
+              this.displayRaceDataAnalysis = false
+              this.displayEvents = false
+              this.displayRaces = true
+              router.replace({ path: `/rennstrukturanalyse/${this.lastCompId}/${this.lastEventId}`, query: {}})
+            }
           }
         }
-      }*/
+      }
     }
   }
 }
