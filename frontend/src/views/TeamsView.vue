@@ -39,76 +39,57 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
       <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
     </v-col>
     <v-divider></v-divider>
-    <v-container class="pa-0 mt-8" style="min-height: 400px">
+    <v-container class="pa-0 mt-2 pb-8" style="min-height: 400px">
       <v-row>
         <v-col cols="12">
-          <h2>{{ Object.values(tableData["year"][0])[0] }} bis {{ Object.values(tableData["year"][1])[0] }}</h2>
-            <v-table class="tableStyles" density="comfortable">
-              <thead>
-                <tr>
-                  <th>Team</th>
-                  <th>Nation</th>
-                  <th>Bootsklasse</th>
-                  <th>Athleten</th>
-                </tr>
-              </thead>
-              <tbody class="nth-grey">
-                <tr v-for="(team, idx) in tableData.teams">
-                  <td>{{ idx + 1 }}</td>
-                  <td>{{ team.nation_ioc }}</td>
-                  <td>{{ team.boatClass }}</td>
-
-                  <!--
-                  <td>
-                    <p v-for="item, idx in team.athletes">
-                      {{ team.athletes[idx].firstName }} {{ team.athletes[idx].lastName }}<br>
-                    </p>
-                  </td>
-                  <td>
-                    <p v-for="item, idx in team.athletes">
-                      {{ team.athletes[idx].discipline }}<br>
-                    </p>
-                  </td>
-                  <td>
-                    <p v-for="item, idx in team.athletes">
-                      {{ team.athletes[idx].gender == 'male' ? 'Männlich' : 'Weiblich' }}<br>
-                    </p>
-                  </td>
-                  -->
-
-                  <!--
-                  <td>
-                    <template v-for="athlete, idx in team.athletes">
-                      <p class="distance">{{ athlete.firstName }} {{ athlete.lastName }}</p>                    
-                      <p class="distance">{{ athlete.gender == 'male' ? 'Männlich' : 'Weiblich' }}</p>
-                      <p class="distance">{{ athlete.discipline }}</p>
-                      
-                      <br v-if="idx+1 < team.athletes.length">
-                    </template>
-                  </td>
-                  -->
-
-                  <!--
-                  <td>
-                    <p v-for="athlete, idx in team.athletes" class="distance">
-                      <p>{{ athlete.firstName }} {{ athlete.lastName }}</p>                    
-                      <p>{{ athlete.gender == 'male' ? 'Männlich' : 'Weiblich' }}</p>
-                      <p>{{ athlete.discipline }}</p>
-                    </p>
-                  </td>
-                  -->
-
-                  <td>
-                    <template v-for="(athlete, idx) in team.athletes" class="pt-1 pb-1 distance">
-                      <p>
-                        <b>{{ athlete.firstName }} {{ athlete.lastName }}</b>
-                      ({{ athlete.discipline }})</p>
-                    </template>
-                  </td>
-
-                </tr>
-              </tbody>
-            </v-table>
+          <h2>{{ metaData.nation_ioc }}</h2>
+          <v-col cols="6" class="pa-0">
+            <v-alert type="success" variant="tonal" class="my-2" v-if="metaData.results">
+                <v-row>
+                  <v-col cols="12">
+                    <p> {{ metaData.results }} Datensätze |
+                      Von {{ Object.values(metaData["year"][0])[0] }} Bis {{ Object.values(metaData["year"][1])[0] }}</p>
+                  </v-col>
+                </v-row>
+              </v-alert>
+              <v-alert type="error" variant="tonal" class="my-2" v-else>
+                <v-row>
+                  <v-col cols="12">
+                    <p>Leider keine Ergebnisse gefunden.</p>
+                  </v-col>
+                </v-row>
+              </v-alert>
+            </v-col>
+            
+            <v-col cols="6" class="pa-0">
+            <v-table class="tableStyles" density="compact">
+                <tbody class="nth-grey">
+                  <template v-for="row in tableData">
+                    <tr v-if="(typeof row === 'string')" class="subheader">
+                      <th><b>{{ row }}</b></th>
+                      <td></td>
+                    </tr>
+                    <tr v-else>
+                      <template v-for="item in row">
+                        <td v-if="(typeof item === 'string')">{{ item }}</td>
+                        <td v-else>
+                          <p>
+                            <template v-for="athlete, idx in item">
+                              <template v-if="idx < item.length - 1">
+                                {{ athlete }},
+                              </template>
+                              <template v-else>
+                                {{ athlete }}
+                              </template>
+                            </template>
+                          </p>
+                        </td>
+                      </template>
+                    </tr>
+                  </template>
+                </tbody>
+              </v-table>
+              </v-col>
         </v-col>
       </v-row>
     </v-container>
@@ -125,6 +106,9 @@ export default {
   computed: {
     ...mapState(useTeamsState, {
       filterState: "getFilterState"
+    }),
+    ...mapState(useTeamsState, {
+      metaData: "getMetaData"
     }),
     ...mapState(useTeamsState, {
       tableData: "getTableData"
