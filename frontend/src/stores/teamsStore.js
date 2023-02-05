@@ -1,111 +1,107 @@
 import axios from "axios";
-import {defineStore} from "pinia";
+import { defineStore } from "pinia";
 
 export const useTeamsState = defineStore({
     id: "teams",
     state: () => ({
         filterOpen: false,
         filterOptions: [{
-            "year": [{"start_year": 1950}, {"end_year": 2025}],
+            "year": [{ "start_year": 1950 }, { "end_year": 2025 }],
             "boat_class": {
                 'men': {
                     'junior': {
-                        'single': {"JM1x": "Junior Men's Single Sculls"},
-                        'double': {"JM2x": "Junior Men's Double Sculls"},
-                        'quad': {"JM4x": "Junior Men's Quadruple Sculls"},
-                        'pair': {"JM2-": "Junior Men's Pair"},
-                        'coxed_four': {"JM4+": "Junior Men's Coxed Four"},
-                        'four': {"JM4-": "Junior Men's Four"},
-                        'eight': {"JM8-": "Junior Men's Eight"}
+                        'single': { "JM1x": "Junior Men's Single Sculls" },
+                        'double': { "JM2x": "Junior Men's Double Sculls" },
+                        'quad': { "JM4x": "Junior Men's Quadruple Sculls" },
+                        'pair': { "JM2-": "Junior Men's Pair" },
+                        'coxed_four': { "JM4+": "Junior Men's Coxed Four" },
+                        'four': { "JM4-": "Junior Men's Four" },
+                        'eight': { "JM8-": "Junior Men's Eight" }
                     },
                     'u19': {},
                     'u23': {
-                        'single': {"BM1x": "U23 Men's Single Sculls"},
-                        'double': {"BM2x": "U23 Men's Double Sculls"},
-                        'quad': {"BM4x": "U23 Men's Quadruple Sculls"},
-                        'pair': {"BM2-": "U23 Men's Pair"},
-                        'coxed_four': {"BM4+": "U23 Men's Coxed Four"},
-                        'four': {"BM4-": "U23 Men's Four"},
-                        'eight': {"BM8+": "U23 Men's Eight"},
-                        'lw_single': {"BLM1x": "U23 Lightweight Men's Single Sculls"},
-                        'lw_double': {"BLM2x": "U23 Lightweight Men's Double Sculls"},
-                        'lw_quad': {"BLM4x": "U23 Lightweight Men's Quadruple Sculls"},
-                        'lw_pair': {"BLM2-": "U23 Lightweight Men's Pair"},
+                        'single': { "BM1x": "U23 Men's Single Sculls" },
+                        'double': { "BM2x": "U23 Men's Double Sculls" },
+                        'quad': { "BM4x": "U23 Men's Quadruple Sculls" },
+                        'pair': { "BM2-": "U23 Men's Pair" },
+                        'coxed_four': { "BM4+": "U23 Men's Coxed Four" },
+                        'four': { "BM4-": "U23 Men's Four" },
+                        'eight': { "BM8+": "U23 Men's Eight" },
+                        'lw_single': { "BLM1x": "U23 Lightweight Men's Single Sculls" },
+                        'lw_double': { "BLM2x": "U23 Lightweight Men's Double Sculls" },
+                        'lw_quad': { "BLM4x": "U23 Lightweight Men's Quadruple Sculls" },
+                        'lw_pair': { "BLM2-": "U23 Lightweight Men's Pair" },
                     },
                     'adult': {
-                        'single': {"M1x": "Men's Single Sculls"},
-                        'double': {"M2x": "Men's Double Sculls"},
-                        'quad': {"M4x": "Men's Quadruple Sculls"},
-                        'pair': {"M2-": "Men's Pair"},
-                        'four': {"M4-": "Men's Four"},
-                        'eight': {"M8+": "Men's Eight"},
-                        'lw_single': {"LM1x": "Lightweight Men's Single Sculls"},
-                        'lw_double': {"LM2x": "Lightweight Men's Double Sculls"},
-                        'lw_quad': {"LM4x": "Lightweight Men's Quadruple Sculls"},
-                        'lw_pair': {"LM2-": "Lightweight Men's Pair"},
+                        'single': { "M1x": "Men's Single Sculls" },
+                        'double': { "M2x": "Men's Double Sculls" },
+                        'quad': { "M4x": "Men's Quadruple Sculls" },
+                        'pair': { "M2-": "Men's Pair" },
+                        'four': { "M4-": "Men's Four" },
+                        'eight': { "M8+": "Men's Eight" },
+                        'lw_single': { "LM1x": "Lightweight Men's Single Sculls" },
+                        'lw_double': { "LM2x": "Lightweight Men's Double Sculls" },
+                        'lw_quad': { "LM4x": "Lightweight Men's Quadruple Sculls" },
+                        'lw_pair': { "LM2-": "Lightweight Men's Pair" },
                     },
                     'pr': {
-                        '1': {"PR1 M1x": "PR1 Men's Single Sculls"},
-                        '2': {"PR2 M1x": "PR2 Men's Single Sculls"},
-                        '3': {"PR3 M2-": "PR3 Men's Pair"}
+                        '1': { "PR1 M1x": "PR1 Men's Single Sculls" },
+                        '2': { "PR2 M1x": "PR2 Men's Single Sculls" },
+                        '3': { "PR3 M2-": "PR3 Men's Pair" }
                     }
                 },
                 'women': {
                     'junior': {
-                        'single': {"JW1x": "Junior Women's Single Sculls"},
-                        'double': {"JW2x": "Junior Women's Double Sculls"},
-                        'quad': {"JW4x": "Junior Women's Quadruple Sculls"},
-                        'pair': {"JW2-": "Junior Women's Pair"},
-                        'coxed_four': {"JW4+": "Junior Women's Coxed Four"},
-                        'four': {"JW4-": "Junior Women's Four"},
-                        'eight': {"JW8-": "Junior Women's Eight"}
+                        'single': { "JW1x": "Junior Women's Single Sculls" },
+                        'double': { "JW2x": "Junior Women's Double Sculls" },
+                        'quad': { "JW4x": "Junior Women's Quadruple Sculls" },
+                        'pair': { "JW2-": "Junior Women's Pair" },
+                        'coxed_four': { "JW4+": "Junior Women's Coxed Four" },
+                        'four': { "JW4-": "Junior Women's Four" },
+                        'eight': { "JW8-": "Junior Women's Eight" }
                     },
                     'u19': {},
                     'u23': {
-                        'single': {"BW1x": "U23 Women's Single Sculls"},
-                        'double': {"BW2x": "U23 Women's Double Sculls"},
-                        'quad': {"BW4x": "U23 Women's Quadruple Sculls"},
-                        'pair': {"BW2-": "U23 Women's Pair"},
-                        'coxed_four': {"BW4+": "U23 Women's Coxed Four"},
-                        'four': {"BW4-": "U23 Women's Four"},
-                        'eight': {"BW8+": "U23 Women's Eight"},
-                        'lw_single': {"BLW1x": "U23 Lightweight Women's Single Sculls"},
-                        'lw_double': {"BLW2x": "U23 Lightweight Women's Double Sculls"},
-                        'lw_quad': {"BLW4x": "U23 Lightweight Women's Quadruple Sculls"},
-                        'lw_pair': {"BLW2-": "U23 Lightweight Women's Pair"},
+                        'single': { "BW1x": "U23 Women's Single Sculls" },
+                        'double': { "BW2x": "U23 Women's Double Sculls" },
+                        'quad': { "BW4x": "U23 Women's Quadruple Sculls" },
+                        'pair': { "BW2-": "U23 Women's Pair" },
+                        'coxed_four': { "BW4+": "U23 Women's Coxed Four" },
+                        'four': { "BW4-": "U23 Women's Four" },
+                        'eight': { "BW8+": "U23 Women's Eight" },
+                        'lw_single': { "BLW1x": "U23 Lightweight Women's Single Sculls" },
+                        'lw_double': { "BLW2x": "U23 Lightweight Women's Double Sculls" },
+                        'lw_quad': { "BLW4x": "U23 Lightweight Women's Quadruple Sculls" },
+                        'lw_pair': { "BLW2-": "U23 Lightweight Women's Pair" },
                     },
                     'adult': {
-                        'single': {"W1x": "Women's Single Sculls"},
-                        'double': {"W2x": "Women's Double Sculls"},
-                        'quad': {"W4x": "Women's Quadruple Sculls"},
-                        'pair': {"W2-": "Women's Pair"},
-                        'four': {"W4-": "Women's Four"},
-                        'eight': {"W8+": "Women's Eight"},
-                        'lw_single': {"LW1x": "Lightweight Women's Single Sculls"},
-                        'lw_double': {"LW2x": "Lightweight Women's Double Sculls"},
-                        'lw_quad': {"LW4x": "Lightweight Women's Quadruple Sculls"},
-                        'lw_pair': {"LW2-": "Lightweight Women's Pair"},
+                        'single': { "W1x": "Women's Single Sculls" },
+                        'double': { "W2x": "Women's Double Sculls" },
+                        'quad': { "W4x": "Women's Quadruple Sculls" },
+                        'pair': { "W2-": "Women's Pair" },
+                        'four': { "W4-": "Women's Four" },
+                        'eight': { "W8+": "Women's Eight" },
+                        'lw_single': { "LW1x": "Lightweight Women's Single Sculls" },
+                        'lw_double': { "LW2x": "Lightweight Women's Double Sculls" },
+                        'lw_quad': { "LW4x": "Lightweight Women's Quadruple Sculls" },
+                        'lw_pair': { "LW2-": "Lightweight Women's Pair" },
                     },
                     'pr': {
-                        '1': {"PR1 W1x": "PR1 Women's Single Sculls"},
-                        '2': {"PR2 W1x": "PR2 Women's Single Sculls"},
-                        '3': {"PR3 W2-": "PR3 Women's Pair"}
+                        '1': { "PR1 W1x": "PR1 Women's Single Sculls" },
+                        '2': { "PR2 W1x": "PR2 Women's Single Sculls" },
+                        '3': { "PR3 W2-": "PR3 Women's Pair" }
                     }
                 },
                 'mixed': {
-                    'double_2': {"PR2 Mix2x": "PR2 Mixed Double Sculls"},
-                    'double_3': {"PR3 Mix2x": "PR3 Mixed Double Sculls"},
-                    'four': {"PR3 Mix4+": "PR3 Mixed Coxed Four"},
+                    'double_2': { "PR2 Mix2x": "PR2 Mixed Double Sculls" },
+                    'double_3': { "PR3 Mix2x": "PR3 Mixed Double Sculls" },
+                    'four': { "PR3 Mix4+": "PR3 Mixed Coxed Four" },
                 }
             },
             "competition_category_ids": [
-                {"displayName": "European Championships", "id": "89346342"},
-                {"displayName": "Olympics", "id": "89346362"},
-                {"displayName": "Qualifications", "id": "89346362"},
-                {"displayName": "World Championships I", "id": "89346362"},
-                {"displayName": "World Championships II", "id": "89346362"},
-                {"displayName": "World Championships III", "id": "89346362"},
-                {"displayName": "World Rowing Cup", "id": "89346362"}
+                { "displayName": "Olympics", "id": "89346342" },
+                { "displayName": "World Rowing Championships", "id": "89346362" },
+                { "displayName": "Qualifications", "id": "89346362" },
             ],
             "nations": {
                 "AFG": "Afghanistan",
@@ -316,55 +312,948 @@ export const useTeamsState = defineStore({
                 "RPC": null
             },
         }],
-        data: {
-            "year": [{"start_year": 1950}, {"end_year": 2025}],
-            teams: [{
-                "id": 1,
+        data: [{
+                "year": [{ "start_year": 1950 }, { "end_year": 2025 }],
                 "nation_ioc": "GER",
-                "date": "2022-06-16 14:12:00",
-                "boatClass": "Men's Eight",
-                "athletes": [
-                    {
-                        "id": 98245435,
-                        "firstName": "Lukas",
-                        "lastName": "Helesic",
-                        "gender": "male",
-                        "discipline": "Para Scull"
-                    },
-                    {
-                        "id": 95434533,
-                        "firstName": "Julia",
-                        "lastName": "Hannelore",
-                        "gender": "female",
-                        "discipline": "Para Scull"
-                    }
-                ],
-            },
-                {
-                    "id": 2,
-                    "nation_ioc": "CZE",
-                    "date": "2022-06-16 14:12:00",
-                    "boatClass": "Men's Eight",
-                    "athletes": [
-                        {
-                            "id": 98245435,
-                            "firstName": "Alfons",
-                            "lastName": "Helesic",
-                            "gender": "male",
-                            "discipline": "Para Scull"
-
+                "results": 127973,
+                "men": {
+                    "junior": {
+                        "single": {
+                            "JM1x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
                         },
-                        {
-                            "id": 95434533,
-                            "firstName": "Ulrike",
-                            "lastName": "Hannelore",
-                            "gender": "female",
-                            "discipline": "Riemen"
+                        "double": {
+                            "JM2x": [
+                                {
+                                    "id": 1113333,
+                                    "firstName": "Kay",
+                                    "lastName": "Winkert"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "quad": {
+                            "JM4x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "pair": {
+                            "JM2-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "coxed_four": {
+                            "JM4+": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "four": {
+                            "JM4-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "eight": {
+                            "JM8-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
                         }
-                    ],
+                    },
+                    "u19": {
+                    },
+                    "u23": {
+                        "single": {
+                            "BM1x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "double": {
+                            "BM2x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "quad": {
+                            "BM4x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "pair": {
+                            "BM2-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "coxed_four": {
+                            "BM4+": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "four": {
+                            "BM4-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "eight": {
+                            "BM8+": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "lw_single": {
+                            "BLM1x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "lw_double": {
+                            "BLM2x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "lw_quad": {
+                            "BLM4x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "lw_pair": {
+                            "BLM2-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        }
+                    },
+                    "adult": {
+                        "single": {
+                            "M1x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "double": {
+                            "M2x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "quad": {
+                            "M4x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "pair": {
+                            "M2-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "four": {
+                            "M4-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "eight": {
+                            "M8+": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "lw_single": {
+                            "LM1x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "lw_double": {
+                            "LM2x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "lw_quad": {
+                            "LM4x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "lw_pair": {
+                            "LM2-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        }
+                    },
+                    "pr": {
+                        "1": {
+                            "PR1 M1x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Kai",
+                                    "lastName": "Winkert"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "2": {
+                            "PR2 M1x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        },
+                        "3": {
+                            "PR3 M2-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "women": {
+                    "junior": {
+                        "single": {
+                            "JW1x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "double": {
+                            "JW2x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "quad": {
+                            "JW4x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "pair": {
+                            "JW2-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "coxed_four": {
+                            "JW4+": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "four": {
+                            "JW4-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "eight": {
+                            "JW8-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        }
+                    },
+                    "u19": {
+                    },
+                    "u23": {
+                        "single": {
+                            "BW1x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "double": {
+                            "BW2x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "quad": {
+                            "BW4x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "pair": {
+                            "BW2-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "coxed_four": {
+                            "BW4+": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "four": {
+                            "BW4-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "eight": {
+                            "BW8+": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "lw_single": {
+                            "BLW1x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "lw_double": {
+                            "BLW2x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "lw_quad": {
+                            "BLW4x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "lw_pair": {
+                            "BLW2-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        }
+                    },
+                    "adult": {
+                        "single": {
+                            "W1x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "double": {
+                            "W2x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "quad": {
+                            "W4x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "pair": {
+                            "W2-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "four": {
+                            "W4-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "eight": {
+                            "W8+": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "lw_single": {
+                            "LW1x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "lw_double": {
+                            "LW2x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "lw_quad": {
+                            "LW4x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "lw_pair": {
+                            "LW2-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        }
+                    },
+                    "pr": {
+                        "1": {
+                            "PR1 W1x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "2": {
+                            "PR2 W1x": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        },
+                        "3": {
+                            "PR3 W2-": [
+                                {
+                                    "id": 1111111,
+                                    "firstName": "Jan",
+                                    "lastName": "Kuster"
+                                },
+                                {
+                                    "id": 2222222,
+                                    "firstName": "Markus",
+                                    "lastName": "Last"
+                                },
+                            ]
+                        }
+                    }
+                },
+                "mixed": {
+                    "double_2": {
+                        "PR2 Mix2x": [
+                            {
+                                "id": 1111111,
+                                "firstName": "Jan",
+                                "lastName": "Kuster"
+                            },
+                            {
+                                "id": 2222222,
+                                "firstName": "Markus",
+                                "lastName": "Last"
+                            },
+                        ]
+                    },
+                    "double_3": {
+                        "PR3 Mix2x": [
+                            {
+                                "id": 1111111,
+                                "firstName": "Jan",
+                                "lastName": "Kuster"
+                            },
+                            {
+                                "id": 2222222,
+                                "firstName": "Markus",
+                                "lastName": "Last"
+                            },
+                        ]
+                    },
+                    "four": {
+                        "PR3 Mix4+": [
+                            {
+                                "id": 1111111,
+                                "firstName": "Jan",
+                                "lastName": "Kuster"
+                            },
+                            {
+                                "id": 2222222,
+                                "firstName": "Markus",
+                                "lastName": "Last"
+                            },
+                        ]
+                    }
                 }
-            ]
-        }
+            }
+        ]
     }),
     getters: {
         getFilterState(state) {
@@ -373,13 +1262,49 @@ export const useTeamsState = defineStore({
         getTeamsFilterOptions(state) {
             return state.filterOptions
         },
+        getMetaData(state) {
+            return state.data[0]
+        },
         getTableData(state) {
-            return state.data
+
+            const subHeaders = {
+                "OPEN MEN": Object.values(state.data[0].men.adult),
+                "OPEN WOMEN": Object.values(state.data[0].women.adult),
+                "PARA MEN": Object.values(state.data[0].men.pr),
+                "PARA WOMEN": Object.values(state.data[0].women.pr),
+                "U23 MEN": Object.values(state.data[0].men.u23),
+                "U23 WOMEN": Object.values(state.data[0].women.u23),
+                "U19 MEN": Object.values(state.data[0].men.u19),
+                "U19 WOMEN": Object.values(state.data[0].women.u19)
+            }
+
+            let rowValues = []
+
+            Object.entries(subHeaders).forEach(([key, value], idx) => {
+                rowValues.push(key)
+                for (const item of value) {
+                    let members = []
+
+                    const itemList = Object.values(item)
+                    itemList.forEach((value, idx) => {
+                        value.forEach(entry => {
+                            members.push(entry.firstName + " " + entry.lastName)
+                        })
+            
+                        
+                        
+                    })
+
+                    rowValues.push([Object.keys(item)[0], members])
+                }
+            })
+
+            return rowValues
         }
     },
     actions: {
         async postFormData(formData) {
-            await axios.post('https://jsonplaceholder.typicode.com/users', {formData})
+            await axios.post('https://jsonplaceholder.typicode.com/users', { formData })
                 .then(response => {
                     // Bearbeite die Antwort des Backends hier
 
