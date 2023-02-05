@@ -196,7 +196,13 @@ export default {
       getBarChartData: "getBarChartData"
     }),
     ...mapState(useBerichteState, {
+      barChartOptions: "getBarChartOptions"
+    }),
+    ...mapState(useBerichteState, {
       getScatterChartData: "getScatterChartData"
+    }),
+    ...mapState(useBerichteState, {
+      scatterChartOptions: "getScatterChartOptions"
     }),
     ...mapState(useBerichteState, {
       filterState: "getFilterState"
@@ -231,77 +237,7 @@ export default {
   data() {
     return {
       mobile: false,
-      filterOpen: false,
-      barChartOptions: {
-        responsive: true,
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: 'Zeit [mm:ss]'
-            }
-          },
-          y: {
-            ticks: {
-              max: 500,
-            },
-            title: {
-              display: true,
-              text: 'Anzahl Rennen'
-            }
-          }
-        },
-        plugins: {
-          legend: {
-            display: true
-          },
-          title: {
-            display: true,
-            text: "Histogram Men's Single Sculls"
-          }
-        }
-      },
-      scatterChartOptions: {
-        responsive: true,
-        scales: {
-          x: {
-            type: 'time',
-            time: {
-              unit: 'year',
-              parser: 'yyyy-mm-dd'
-            },
-            title: {
-              display: true,
-              text: 'Jahr'
-            }
-          },
-          y: {
-            type: 'time',
-            time: {
-              parser: 'HH:mm:ss',
-              unit: "seconds",
-              tooltipFormat: 'HH:mm:ss',
-              displayFormats: {
-                'seconds': "HH:mm:ss"
-              },
-              unitStepSize: 30
-            },
-            title: {
-              display: true,
-              text: 'Zeit [mm:ss.ms]'
-            }
-          }
-        },
-        plugins: {
-          legend: {
-            display: true,
-          },
-          title: {
-            display: true,
-            text: "Men's Single Sculls"
-          }
-        }
-      }
+      filterOpen: false
     }
   },
   watch: {
