@@ -160,7 +160,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 </tbody>
               </v-table>
             </v-col>
-            <v-col :cols="mobile ? 12 : 7" class="pa-0">
+            <v-col :cols="mobile ? 12 : 7" class="pa-0" v-if="!matrixVisible">
               <v-container style="width: 100%" class="pa-2">
                 <BarChart :height="'100%'" :width="'100%'" :data="getBarChartData"
                           :chartOptions="barChartOptions" class="chart-bg"></BarChart>
