@@ -5,7 +5,11 @@
          :height="mobile ? 100: 180"
          size="x-small"
   >
-  <p style="writing-mode: vertical-rl; font-size: 16px; transform: rotate(180deg);"><v-icon style="transform: rotate(180deg); font-size: 14px; padding-left: 6px; padding-top: 10px;">mdi-filter</v-icon>FILTER</p>
+    <p style="writing-mode: vertical-rl; font-size: 16px; transform: rotate(180deg);">
+      <v-icon style="transform: rotate(180deg); font-size: 14px; padding-left: 6px; padding-top: 10px;">mdi-filter
+      </v-icon>
+      FILTER
+    </p>
   </v-btn>
   <v-card style="box-shadow: none; z-index: 1">
     <v-layout>
@@ -21,7 +25,8 @@
 
         <v-col :cols="mobile ? 12 : 6" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Medaillenspiegel</h1>
-          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>
+          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
+          </v-icon>
           <v-tooltip
               activator="#tooltip-analyis-icon"
               location="end"
@@ -33,29 +38,27 @@
         </v-col>
         <v-divider></v-divider>
         <v-container class="pa-0 mt-8">
-          <v-col :cols="mobile ? 12 : 6" class="pa-0">
-            <h2>Men's Single Sculls</h2>
-            <v-alert type="success" variant="tonal" class="my-2 mr-2" v-if="filterSelection.results">
-              <v-row>
-                <v-col>
-                  <p>{{ filterSelection.results }} Datensätze |
-                  Von {{ filterSelection.start_date.slice(0, 4) }}
-                  Bis {{ filterSelection.end_date.slice(0, 4) }}<br>
-                  in {{filterSelection.nation_ioc}}
-                  </p>
-                </v-col>
-              </v-row>
-            </v-alert>
-            <v-alert type="error" variant="tonal" class="my-2" v-else>
+          <v-row>
+            <v-col :cols="mobile ? 12 : 6" class="pa-0">
+              <h2>Men's Single Sculls</h2>
+              <v-alert type="success" variant="tonal" class="my-2" v-if="filterSelection.results">
+                <v-row>
+                  <v-col>
+                    <p>{{ filterSelection.results }} Datensätze |
+                      Von {{ filterSelection.start_date.slice(0, 4) }}
+                      Bis {{ filterSelection.end_date.slice(0, 4) }}<br>
+                      in {{ filterSelection.nation_ioc }}
+                    </p>
+                  </v-col>
+                </v-row>
+              </v-alert>
+              <v-alert type="error" variant="tonal" class="my-2" v-else>
                 <v-row>
                   <v-col cols="12">
                     <p>Leider keine Ergebnisse gefunden.</p>
                   </v-col>
                 </v-row>
               </v-alert>
-          </v-col>
-          <v-row>
-            <v-col :cols="mobile ? 12 : 6">
               <v-table class="tableStyles mb-4" density="compact">
                 <tbody class="nth-grey">
                 <tr v-for="(el, idx) in tableData[0]">
@@ -74,8 +77,8 @@
             </v-col>
             <v-col :cols="mobile ? 12 : 6">
               <v-container class="chart-bg">
-              <BarChart :data="medalChartData"></BarChart>
-                </v-container>
+                <BarChart :data="medalChartData" :chartOptions="medalChartOptions"></BarChart>
+              </v-container>
             </v-col>
           </v-row>
         </v-container>
@@ -132,6 +135,17 @@ export default {
     return {
       mobile: false,
       filterOpen: false,
+      medalChartOptions: {
+        plugins: {
+          legend: {
+            display: true
+          },
+          title: {
+            display: true,
+            text: "Mediallenspiegel Übersicht"
+          }
+        }
+      }
     }
   },
   created() {
@@ -193,6 +207,7 @@ export default {
   background-color: #fbfbfb;
   border-radius: 3px;
 }
+
 .main-container {
   min-height: calc(100vh - (var(--navbar-height)) - 95px);
 }

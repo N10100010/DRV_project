@@ -13,16 +13,9 @@ export const useRennstrukturAnalyseState = defineStore({
         loadingState: false,
         data: {
             filterOptions: [{
+                // TODO: Year also has to be defined by backend data
                 "year": [{"start_year": 1950}, {"end_year": 2025}],
-                "competition_category_ids": [
-                    {"displayName": "European Championships", "id": "89346342"},
-                    {"displayName": "Olympics", "id": "89346362"},
-                    {"displayName": "Qualifications", "id": "89346362"},
-                    {"displayName": "World Championships I", "id": "89346362"},
-                    {"displayName": "World Championships II", "id": "89346362"},
-                    {"displayName": "World Championships III", "id": "89346362"},
-                    {"displayName": "World Rowing Cup", "id": "89346362"}
-                ],
+                "competition_category_ids": []
             }],
             raceData: [{
                 "race_id": 195638,
@@ -440,18 +433,18 @@ export const useRennstrukturAnalyseState = defineStore({
         }
     },
     actions: {
-        // define actions here
-        async fetchData() {
+        async getFilterOptions() {
             try {
-                const response = await axios.get(
-                    'https://test.com/get_report_filter_options'
-                );
-                this.data = response.data[0];
+                this.data.filterOptions[0].competition_category_ids = await axios.get(
+                    'http://localhost:5000/competition_category/'
+                )
             } catch (error) {
-                console.error(error);
+                console.error(error)
             }
         },
         async postFormData(formData) {
+
+
             setTimeout(() => {
                 this.data.analysis = [
                     {
@@ -512,7 +505,7 @@ export const useRennstrukturAnalyseState = defineStore({
                 this.loadingState = false
             }, 800);
             /*
-            await axios.post('https://jsonplaceholder.typicode.com/users', {formData})
+            await axios.post('http://localhost:5000//competition', {formData})
                 .then(response => {
                     // Bearbeite die Antwort des Backends hier
                 }).catch(error => {

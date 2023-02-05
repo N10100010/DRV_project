@@ -382,7 +382,7 @@ export const useMedaillenspiegelState = defineStore({
                 datasets: [
                     {
                         type: 'bar',
-                        label: "Medaillenübersicht",
+                        label: "Anzahl Medaillen",
                         backgroundColor: '#5cc5ed',
                         data: state.medal_bar_chart_data.data
                     },

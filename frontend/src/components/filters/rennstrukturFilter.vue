@@ -30,8 +30,7 @@
 <script>
 import Checkbox from "@/components/filters/checkbox.vue";
 import {useRennstrukturAnalyseState} from "@/stores/baseStore";
-import {mapActions, mapState} from "pinia";
-import {useBerichteState} from "@/stores/berichteStore";
+import { mapState} from "pinia";
 
 export default {
   components: {Checkbox},
@@ -67,14 +66,20 @@ export default {
     window.addEventListener('resize', this.checkScreen);
     this.checkScreen();
 
-    // year
-    this.startYear = Object.values(this.raceAnalysisFilterOptions[0].year[0])[0]
-    this.endYear = Object.values(this.raceAnalysisFilterOptions[0].year[1])[0]
-    this.optionsYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.endYear - i)
+    const store = useRennstrukturAnalyseState()
 
-    // competition category id
-    this.compTypes = this.raceAnalysisFilterOptions[0].competition_category_ids
-    this.optionsCompTypes = this.compTypes.map(item => item.displayName)
+    const setFilterValues = async () => {
+      this.raceAnalysisFilterOptions = await store.getFilterOptions()
+      // year
+      this.startYear = Object.values(this.raceAnalysisFilterOptions[0].year[0])[0]
+      this.endYear = Object.values(this.raceAnalysisFilterOptions[0].year[1])[0]
+      this.optionsYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.endYear - i)
+
+      // competition category id
+      this.compTypes = this.raceAnalysisFilterOptions[0].competition_category_ids.data
+      this.optionsCompTypes = this.compTypes.map(item => item.display_name)
+    }
+    setFilterValues()
   },
   methods: {
     async onSubmit() {

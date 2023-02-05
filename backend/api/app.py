@@ -1,4 +1,5 @@
 import os
+import datetime
 
 from flask import Flask
 from flask import request
@@ -192,3 +193,31 @@ def shutdown_session(exception=None):
 #     todo:
 #     """
 #     return {}
+
+
+@app.route('/calendar/', methods=['GET'])
+def get_calendar():
+    """
+    TODO: If the db is complete there will be many competitions; perhaps we need some kind of pagination here.
+    This route delivers calendar data for all competitions.
+    @return: key (relevant for frontend), title, dates for competition
+    """
+    result = []
+    session = Scoped_Session()
+    iterator = session.execute(select(model.Competition)).scalars()
+    for entity in iterator:
+        # only include competitions that have a start and end date
+        if entity.start_date and entity.end_date:
+            result.append({
+                "key": entity.id,
+                "customData": {
+                    "title": entity.name
+                },
+                "dates": {
+                    "start": datetime.datetime.strptime(str(entity.start_date),
+                                                        '%Y-%m-%d %H:%M:%S').strftime('%a, %d %b %Y %H:%M:%S GMT'),
+                    "end": datetime.datetime.strptime(str(entity.end_date),
+                                                      '%Y-%m-%d %H:%M:%S').strftime('%a, %d %b %Y %H:%M:%S GMT')
+                }
+            })
+    return result
