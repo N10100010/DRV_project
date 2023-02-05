@@ -22,7 +22,7 @@ const router = createRouter({
                 if (token) {
                     next()
                 } else {
-                    next({path: '/auth'})
+                    next({path: '/auth', query: {redirect_to: '/'}})
                 }
             }
         },
@@ -35,7 +35,7 @@ const router = createRouter({
                 if (token) {
                     next()
                 } else {
-                    next({path: '/auth'})
+                    next({path: '/auth', query: {redirect_to: '/berichte'}})
                 }
             }
         },
@@ -48,7 +48,7 @@ const router = createRouter({
                 if (token) {
                     next()
                 } else {
-                    next({path: '/auth'})
+                    next({path: '/auth', query: {redirect_to: '/rennstrukturanalyse'}})
                 }
             }
         },
@@ -61,7 +61,7 @@ const router = createRouter({
                 if (token) {
                     next()
                 } else {
-                    next({path: '/auth'})
+                    next({path: '/auth', query: {redirect_to: '/athleten'}})
                 }
             }
         },
@@ -74,7 +74,7 @@ const router = createRouter({
                 if (token) {
                     next()
                 } else {
-                    next({path: '/auth'})
+                    next({path: '/auth', query: {redirect_to: '/teams'}})
                 }
             }
         },
@@ -87,7 +87,7 @@ const router = createRouter({
                 if (token) {
                     next()
                 } else {
-                    next({path: '/auth'})
+                    next({path: '/auth', query: {redirect_to: '/medaillenspiegel'}})
                 }
             }
         },
@@ -110,7 +110,7 @@ const router = createRouter({
                 if (token) {
                     next()
                 } else {
-                    next({path: '/auth'})
+                    next({path: '/auth', query: {redirect_to: '/hilfe'}})
                 }
             }
         },

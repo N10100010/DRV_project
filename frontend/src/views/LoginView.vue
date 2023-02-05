@@ -53,7 +53,12 @@ export default {
         localStorage.removeItem('token')
         localStorage.removeItem('expires')
       } else {
-        alert("Valid token found. You can now access all pages.")
+        console.log("Wird ausgeüfhrt.")
+        const url = new URL(window.location.href);
+        const redirectTo = url.searchParams.get("redirect_to");
+        if (redirectTo) {
+          window.location.href = redirectTo;
+        }
       }
     },
     checkScreen() {
