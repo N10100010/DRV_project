@@ -15,7 +15,11 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
          :height="mobile ? 100: 180"
          size="x-small"
   >
-  <p style="writing-mode: vertical-rl; font-size: 16px; transform: rotate(180deg);"><v-icon style="transform: rotate(180deg); font-size: 14px; padding-left: 6px; padding-top: 10px;">mdi-filter</v-icon>FILTER</p>
+    <p style="writing-mode: vertical-rl; font-size: 16px; transform: rotate(180deg);">
+      <v-icon style="transform: rotate(180deg); font-size: 14px; padding-left: 6px; padding-top: 10px;">mdi-filter
+      </v-icon>
+      FILTER
+    </p>
   </v-btn>
   <v-card style="box-shadow: none; z-index: 1">
     <v-layout>
@@ -31,7 +35,8 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
       <v-container :class="mobile ? 'px-5 py-0 main-container' : 'px-10 py-0 main-container'">
         <v-col cols="12" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Berichte</h1>
-          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>
+          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
+          </v-icon>
           <v-tooltip
               activator="#tooltip-analyis-icon"
               location="end"
@@ -115,7 +120,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 <tr>
                   <th>Abstufung langsam</th>
                   <td>(n={{ tableData["gradation_slow"]["no_of_samples"] }}) {{
-                     formatMilliseconds(tableData["gradation_slow"]["time"])
+                      formatMilliseconds(tableData["gradation_slow"]["time"])
                     }}
                   </td>
                 </tr>
@@ -129,29 +134,29 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
               </v-table>
               <v-table class="tableStyles" density="compact" v-if="matrixVisible">
                 <thead>
-                  <tr>
-                    <th></th>
-                    <th>WB [t]</th>
-                    <th>Ø [t]</th>
-                    <th>Δ [s]</th>
-                    <th>n</th>
-                  </tr>
+                <tr>
+                  <th></th>
+                  <th>WB [t]</th>
+                  <th>Ø [t]</th>
+                  <th>Δ [s]</th>
+                  <th>n</th>
+                </tr>
                 </thead>
                 <tbody class="nth-grey">
-                  <template v-for="row in matrixTableData">
-                    <tr v-if="(typeof row === 'string')" class="subheader">
-                      <th><b>{{ row }}</b></th>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                    <tr v-else>
-                      <td v-for="item in row">
-                        {{ item }}
-                      </td>
-                    </tr>
-                  </template>
+                <template v-for="row in matrixTableData">
+                  <tr v-if="(typeof row === 'string')" class="subheader">
+                    <th><b>{{ row }}</b></th>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                  <tr v-else>
+                    <td v-for="item in row">
+                      {{ item }}
+                    </td>
+                  </tr>
+                </template>
                 </tbody>
               </v-table>
             </v-col>
@@ -185,7 +190,7 @@ export default {
       matrixResults: "getMatrixTableResults"
     }),
     ...mapState(useBerichteState, {
-        matrixTableData: 'getMatrixTableData'
+      matrixTableData: 'getMatrixTableData'
     }),
     ...mapState(useBerichteState, {
       getBarChartData: "getBarChartData"
@@ -215,13 +220,13 @@ export default {
     },
     formatMilliseconds(ms) {
       return new Date(ms).toISOString().slice(14, -2)
-    }
+    },
   },
   created() {
     window.addEventListener('resize', this.checkScreen);
     this.checkScreen();
     let navbarHeight = window.innerWidth < 750 ? '71.25px' : '160px';
-      document.documentElement.style.setProperty('--navbar-height', navbarHeight);
+    document.documentElement.style.setProperty('--navbar-height', navbarHeight);
   },
   data() {
     return {
@@ -237,6 +242,9 @@ export default {
             }
           },
           y: {
+            ticks: {
+              max: 500,
+            },
             title: {
               display: true,
               text: 'Anzahl Rennen'
@@ -245,7 +253,7 @@ export default {
         },
         plugins: {
           legend: {
-            display: false
+            display: true
           },
           title: {
             display: true,
@@ -286,7 +294,7 @@ export default {
         },
         plugins: {
           legend: {
-            display: false,
+            display: true,
           },
           title: {
             display: true,
@@ -345,6 +353,7 @@ export default {
   border-radius: 0 5px 5px 0;
   color: #1369b0;
 }
+
 .filterToggleButtonMobile {
   position: fixed;
   z-index: 10;
@@ -353,10 +362,12 @@ export default {
   color: #1369b0;
   bottom: 10px;
 }
+
 .chart-bg {
   background-color: #fbfbfb;
   border-radius: 3px;
 }
+
 .main-container {
   min-height: calc(100vh - (var(--navbar-height)) - 95px);
 }

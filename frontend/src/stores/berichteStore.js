@@ -189,7 +189,7 @@ export const useBerichteState = defineStore({
                         394360, 386360, 380360, 388360, 378360,
                     ]
                 },
-                "percentile_75": {
+                "scatter_percentile_75": {
                     "labels": [
                         '1930-01-01', '2020-01-01'
                     ],
@@ -197,7 +197,7 @@ export const useBerichteState = defineStore({
                         388360, 388360
                     ]
                 },
-                "percentile_25": {
+                "scatter_percentile_25": {
                     "labels": [
                         '1930-01-01', '2020-01-01'
                     ],
@@ -742,22 +742,50 @@ export const useBerichteState = defineStore({
                 datasets: [
                     {
                         type: 'line',
+                        data: [
+                            {x: formatMilliseconds(366360), y: 0},
+                            {x: formatMilliseconds(366360), y: Math.max(...Object.values(state.data[0].plot_data.histogram.data))}],
+                        label: "25. Perzentil",
+                        borderColor: "darkgrey",
+                        backgroundColor: "darkgrey",
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                    },
+                    {
+                        type: 'line',
+                        data: [
+                            {x: formatMilliseconds(376360), y: 0},
+                            {x: formatMilliseconds(376360), y: Math.max(...Object.values(state.data[0].plot_data.histogram.data))}],
+                        label: "75. Perzentil",
+                        borderColor: "darkgrey",
+                        backgroundColor: "darkgrey",
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                    },
+                    {
+                        type: 'line',
                         backgroundColor: "red",
                         borderColor: "red",
+                        borderWidth: 2,
+                        label: "Anzahl Boote",
                         data: state.data[0].plot_data.histogram.data,
                     },
                     {
                         type: 'bar',
                         backgroundColor: '#5cc5ed',
-                        data: state.data[0].plot_data.histogram.data
+                        data: state.data[0].plot_data.histogram.data,
+                        label: "Anzahl Boote",
+                        barThickness: 40,
                     }
                 ]
             }
         },
         getScatterChartData(state) {
             const scatterData = state.data[0].plot_data.scatterPlot;
-            const firstPercentileData = state.data[0].plot_data.percentile_75;
-            const secondPercentileData = state.data[0].plot_data.percentile_25;
+            const firstPercentileData = state.data[0].plot_data.scatter_percentile_75;
+            const secondPercentileData = state.data[0].plot_data.scatter_percentile_25;
 
             const plotData = scatterData.labels.map((label, i) => (
                 {
@@ -779,24 +807,27 @@ export const useBerichteState = defineStore({
                     {
                         type: 'scatter',
                         data: plotData,
+                        label: "Einzelergebnisse",
                         backgroundColor: '#5cc5ed',
                         borderColor: '#5cc5ed'
                     },
                     {
                         type: 'line',
                         data: percentile75Data,
+                        label: "75. Perzentil",
                         borderColor: "darkgrey",
-                        borderWidth: 2,
                         backgroundColor: "darkgrey",
+                        borderWidth: 2,
                         pointRadius: 0,
                         pointHoverRadius: 0,
                     },
                     {
                         type: 'line',
                         data: percentile25Data,
+                        label: "25. Perzentil",
                         borderColor: "darkgrey",
-                        borderWidth: 2,
                         backgroundColor: "darkgrey",
+                        borderWidth: 2,
                         pointRadius: 0,
                         pointHoverRadius: 0,
                     }
