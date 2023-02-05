@@ -87,9 +87,18 @@ export default {
       formValid: true,
 
       // competition type
-      compTypes: [], // list of dicts with objects containing displayName, id and key
-      optionsCompTypes: ["Olympics", "World Rowing Championships", "Qualifications"], // default strings
-      selectedCompTypes: ["Olympics", "World Rowing Championships", "Qualifications"],
+      compTypes: [],
+      optionsCompTypes: [],
+      selectedCompTypes: [
+        "European Championships",
+        "Olympics",
+        "World Rowing Championships",
+        "Qualifications",
+        "World Championships I",
+        "World Championships II",
+        "World Championships III",
+        "World Rowing Cup"
+      ],
 
       // year
       birthYear: null,
@@ -185,7 +194,16 @@ export default {
     clearFormInputs() {
       this.startYear = 1950
       this.endYear = new Date().getFullYear()
-      this.selectedCompTypes = ["Olympics", "World Rowing Championships", "Qualifications"]
+      this.selectedCompTypes = [
+        "European Championships",
+        "Olympics",
+        "World Rowing Championships",
+        "Qualifications",
+        "World Championships I",
+        "World Championships II",
+        "World Championships III",
+        "World Rowing Cup"
+      ]
       this.selectedNation = "GER (Deutschland)"
       this.selectedGenders = 0
       this.selectedAgeGroups = 0

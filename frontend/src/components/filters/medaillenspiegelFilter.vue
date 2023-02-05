@@ -98,8 +98,17 @@ export default {
 
       // competition type
       compTypes: [], // list of dicts with objects containing displayName, id and key
-      optionsCompTypes: ["Olympics", "World Rowing Championships", "Qualifications"], // default strings
-      selectedCompTypes: ["Olympics", "World Rowing Championships", "Qualifications"],
+      optionsCompTypes: [],
+      selectedCompTypes: [
+        "European Championships",
+        "Olympics",
+        "World Rowing Championships",
+        "Qualifications",
+        "World Championships I",
+        "World Championships II",
+        "World Championships III",
+        "World Rowing Cup"
+      ],
 
       // year
       startYear: 0,
@@ -207,7 +216,16 @@ export default {
       this.selectedGenders = 0
       this.startYear = 1950
       this.endYear = new Date().getFullYear()
-      this.selectedCompTypes = ["Olympics", "World Rowing Championships", "Qualifications"]
+      this.selectedCompTypes = [
+        "European Championships",
+        "Olympics",
+        "World Rowing Championships",
+        "Qualifications",
+        "World Championships I",
+        "World Championships II",
+        "World Championships III",
+        "World Rowing Cup"
+      ]
       this.selectedNation = "GER (Deutschland)"
       this.selectedMedalTypes = 0
       this.selectedBoatClasses = this.optionsBoatClasses[0]
