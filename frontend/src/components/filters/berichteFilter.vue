@@ -12,24 +12,10 @@
     <v-form class="mt-2" id="berichteFilterFormular"
             v-model="formValid" lazy-validation
             @submit.prevent="onSubmit" ref="filterForm">
-
-      <v-chip-group filter color="blue" v-model="selectedGenders">
-        <v-chip v-for="genderType in genderTypeOptions">{{ genderType.charAt(0).toUpperCase() + genderType.slice(1) }}
+      <v-chip-group filter color="blue" v-model="selectedYearShortCutOptions">
+        <v-chip v-for="yearShortCut in yearShortCutOptions">{{ yearShortCut }}
         </v-chip>
       </v-chip-group>
-      <v-chip-group filter color="blue" v-model="selectedAgeGroups">
-        <v-chip v-for="ageGroup in ageGroupOptions">{{ ageGroup.charAt(0).toUpperCase() + ageGroup.slice(1) }}</v-chip>
-      </v-chip-group>
-      <v-chip-group filter color="blue" v-model="selectedDiscipline">
-        <v-chip v-for="discipline in optionsDisciplines">{{ discipline }}</v-chip>
-      </v-chip-group>
-      <v-select class="pt-3" label="Bootsklassen" clearable chips density="comfortable"
-                :items="optionsBoatClasses"
-                v-model="selectedBoatClasses" variant="outlined"
-                :rules="[v => !!v || 'Wähle mindestens eine Bootsklasse']"
-      ></v-select>
-
-
       <v-container class="pa-0 d-flex pt-3">
         <v-col cols="6" class="pa-0 pr-2">
           <v-select clearable label="Von" :items="optionsStartYear"
@@ -46,6 +32,22 @@
           ></v-select>
         </v-col>
       </v-container>
+
+      <v-chip-group filter color="blue" v-model="selectedGenders">
+        <v-chip v-for="genderType in genderTypeOptions">{{ genderType.charAt(0).toUpperCase() + genderType.slice(1) }}
+        </v-chip>
+      </v-chip-group>
+      <v-chip-group filter color="blue" v-model="selectedAgeGroups">
+        <v-chip v-for="ageGroup in ageGroupOptions">{{ ageGroup.charAt(0).toUpperCase() + ageGroup.slice(1) }}</v-chip>
+      </v-chip-group>
+      <v-chip-group filter color="blue" v-model="selectedDiscipline">
+        <v-chip v-for="discipline in optionsDisciplines">{{ discipline }}</v-chip>
+      </v-chip-group>
+      <v-select class="pt-3" label="Bootsklassen" clearable chips density="comfortable"
+                :items="optionsBoatClasses"
+                v-model="selectedBoatClasses" variant="outlined"
+                :rules="[v => !!v || 'Wähle mindestens eine Bootsklasse']"
+      ></v-select>
       <v-select class="pt-3" chips multiple density="comfortable"
                 label="Event(s)" :items="optionsCompTypes"
                 v-model="selectedCompTypes" variant="outlined"
@@ -119,6 +121,8 @@ export default {
       endYear: 0,
       optionsStartYear: [],
       optionsEndYear: [],
+      yearShortCutOptions: ["Aktuelles Jahr", "Aktueller OZ", "letzter OZ"],
+      selectedYearShortCutOptions: [0],
       // boat classes
       genderTypeOptions: [],
       selectedGenders: [3],
@@ -144,8 +148,8 @@ export default {
     this.checkScreen()
 
     // handle form data
-    this.startYear = Object.values(this.reportFilterOptions[0].year[0])[0]
-    this.endYear = Object.values(this.reportFilterOptions[0].year[1])[0]
+    this.startYear = new Date().getFullYear(); // Object.values(this.reportFilterOptions[0].year[0])[0]
+    this.endYear = new Date().getFullYear(); // Object.values(this.reportFilterOptions[0].year[1])[0]
     this.optionsStartYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
     this.optionsEndYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.endYear - i)
 
@@ -241,6 +245,18 @@ export default {
     }
   },
   watch: {
+    selectedYearShortCutOptions: function (newVal, ) {
+      if (newVal !== 'undefined') {
+        if (newVal === 0) {
+          this.startYear = new Date().getFullYear();
+          this.endYear = new Date().getFullYear();
+        } else if (newVal === 1) {
+          // TODO: implement OZ
+        } else if (newVal === 2) {
+          // TODO: implement last OZ
+        }
+      }
+    },
     selectedGenders: function (newVal,) {
       if (newVal !== undefined) {
         this.selectedBoatClasses = null
