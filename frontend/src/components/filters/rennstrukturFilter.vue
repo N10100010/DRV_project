@@ -55,7 +55,7 @@ export default {
       // competition type
       compTypes: [], // list of dicts with objects containing displayName, id and key
       optionsCompTypes: [],
-      selectedCompTypes: ["Olympics"],
+      selectedCompTypes: ["OG"],
       // year
       optionsYear: [],
       selectedYear: new Date().getFullYear(),

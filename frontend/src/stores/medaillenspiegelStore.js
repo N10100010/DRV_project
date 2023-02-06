@@ -5,6 +5,7 @@ export const useMedaillenspiegelState = defineStore({
     id: "medaillenspiegel",
     state: () => ({
         filterOpen: false,
+        tableExport: [],
         filterOptions: [{
             "year": [{"start_year": 1950}, {"end_year": 2025}],
             "boat_class": {
@@ -99,13 +100,13 @@ export const useMedaillenspiegelState = defineStore({
                 }
             },
             "competition_category_ids": [
-                {"displayName": "European Championships", "id": "89346342"},
-                {"displayName": "Olympics", "id": "89346362"},
-                {"displayName": "Qualifications", "id": "89346362"},
-                {"displayName": "World Championships I", "id": "89346362"},
-                {"displayName": "World Championships II", "id": "89346362"},
-                {"displayName": "World Championships III", "id": "89346362"},
-                {"displayName": "World Rowing Cup", "id": "89346362"}
+                 { "displayName": "OG", "id": "89346342" },
+                { "displayName": "EM", "id": "89346362" },
+                { "displayName": "WCh", "id": "89346362" },
+                { "displayName": "WCI", "id": "89346362" },
+                { "displayName": "WCII", "id": "89346362" },
+                { "displayName": "WCIII", "id": "89346362" },
+                { "displayName": "LS", "id": "89346362" }
             ],
             "runs": [{"displayName": "FA", "id": "89346342"}],
             "ranks": ["1", "2", "3", "4-6"],
@@ -350,8 +351,8 @@ export const useMedaillenspiegelState = defineStore({
                     "medals_silver": 5,
                     "medals_bronze": 5,
                     "medals_total": 15,
-                    "final_a": true,
-                    "final_b": false
+                    "final_a": 12,
+                    "final_b": 6
                 }
             }
         ]
@@ -374,6 +375,7 @@ export const useMedaillenspiegelState = defineStore({
                 tempArray.push(state.data[0].table_data[valueKey]);
             }
             tableData.push(tempArray)
+            state.tableExport = tableData
             return tableData
         },
         getBarChartData(state) {
@@ -402,6 +404,15 @@ export const useMedaillenspiegelState = defineStore({
         },
         setFilterState(filterState) {
             this.filterOpen = !filterState
+        },
+        exportTableData() {
+            const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(e => e.join(",")).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "medaillenspiegel.csv");
+            document.body.appendChild(link);
+            link.click();
         }
     }
 })

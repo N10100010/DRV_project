@@ -7,10 +7,11 @@ export const useBerichteState = defineStore({
     id: "berichte",
     state: () => ({
         filterOpen: false,
+        tableExport: [],
         selectedBoatClass: {0: "Alle"},
         filterOptions: [{
-            "year": [{"start_year": 1950}, {"end_year": 2025}],
-            "boat_class": {
+            "years": [{"start_year": 1950}, {"end_year": 2025}],
+            "boat_classes": {
                 'men': {
                     'junior': {
                         'single': {"JM1x": "Junior Men's Single Sculls"},
@@ -35,7 +36,7 @@ export const useBerichteState = defineStore({
                         'lw_quad': {"BLM4x": "U23 Lightweight Men's Quadruple Sculls"},
                         'lw_pair': {"BLM2-": "U23 Lightweight Men's Pair"},
                     },
-                    'adult': {
+                    'elite': {
                         'single': {"M1x": "Men's Single Sculls"},
                         'double': {"M2x": "Men's Double Sculls"},
                         'quad': {"M4x": "Men's Quadruple Sculls"},
@@ -47,7 +48,7 @@ export const useBerichteState = defineStore({
                         'lw_quad': {"LM4x": "Lightweight Men's Quadruple Sculls"},
                         'lw_pair': {"LM2-": "Lightweight Men's Pair"},
                     },
-                    'pr': {
+                    'para': {
                         '1': {"PR1 M1x": "PR1 Men's Single Sculls"},
                         '2': {"PR2 M1x": "PR2 Men's Single Sculls"},
                         '3': {"PR3 M2-": "PR3 Men's Pair"}
@@ -77,7 +78,7 @@ export const useBerichteState = defineStore({
                         'lw_quad': {"BLW4x": "U23 Lightweight Women's Quadruple Sculls"},
                         'lw_pair': {"BLW2-": "U23 Lightweight Women's Pair"},
                     },
-                    'adult': {
+                    'elite': {
                         'single': {"W1x": "Women's Single Sculls"},
                         'double': {"W2x": "Women's Double Sculls"},
                         'quad': {"W4x": "Women's Quadruple Sculls"},
@@ -89,7 +90,7 @@ export const useBerichteState = defineStore({
                         'lw_quad': {"LW4x": "Lightweight Women's Quadruple Sculls"},
                         'lw_pair': {"LW2-": "Lightweight Women's Pair"},
                     },
-                    'pr': {
+                    'para': {
                         '1': {"PR1 W1x": "PR1 Women's Single Sculls"},
                         '2': {"PR2 W1x": "PR2 Women's Single Sculls"},
                         '3': {"PR3 W2-": "PR3 Women's Pair"}
@@ -101,36 +102,36 @@ export const useBerichteState = defineStore({
                     'four': {"PR3 Mix4+": "PR3 Mixed Coxed Four"},
                 },
                 'all': {
-                    'all': 'all'
+                    'all': {"Alle Bootsklassen": "Alle"}
                 },
             },
-            "competition_category_ids": [
-                {"displayName": "European Championships", "id": "89346342"},
-                {"displayName": "Olympics", "id": "89346362"},
-                {"displayName": "Qualifications", "id": "89346362"},
-                {"displayName": "World Championships I", "id": "89346362"},
-                {"displayName": "World Championships II", "id": "89346362"},
-                {"displayName": "World Championships III", "id": "89346362"},
-                {"displayName": "World Rowing Cup", "id": "89346362"}
+            "competition_categories": [
+                { "display_name": "OG", "id": "89346342" },
+                { "display_name": "EM", "id": "89346362" },
+                { "display_name": "WCh", "id": "89346362" },
+                { "display_name": "WCI", "id": "89346362" },
+                { "display_name": "WCII", "id": "89346362" },
+                { "display_name": "WCIII", "id": "89346362" },
+                { "display_name": "LS", "id": "89346362" }
             ],
             "runs": {
                 "finale": [
-                    {"displayName": "fa"},
-                    {"displayName": "fb"},
-                    {"displayName": "fc"},
-                    {"displayName": "fd"},
-                    {"displayName": "f..."}
+                    {"display_name": "fa"},
+                    {"display_name": "fb"},
+                    {"display_name": "fc"},
+                    {"display_name": "fd"},
+                    {"display_name": "f..."}
                 ],
                 "halbfinale": [
-                    {"displayName": "sa/b, sa/b/c"},
-                    {"displayName": "sc/d, sd/e/f"},
-                    {"displayName": "s..."}
+                    {"display_name": "sa/b, sa/b/c"},
+                    {"display_name": "sc/d, sd/e/f"},
+                    {"display_name": "s..."}
                 ],
                 "viertelfinale": [
-                    {"displayName": "q1-4"},
+                    {"display_name": "q1-4"},
                 ],
-                "hoffnungslaeufe": null,
-                "vorlaeufe": null,
+                "hoffnungslauf": null,
+                "vorlauf": null,
             },
             "ranks": ["1", "2", "3", "4-6"],
         }],
@@ -343,7 +344,7 @@ export const useBerichteState = defineStore({
                             "num_of_boats": 2401
                         }
                     },
-                    "adult": {
+                    "elite": {
                         "single": {
                             "M1x": "Men's Single Sculls",
                             "WB [t]": 983745083745,
@@ -415,7 +416,7 @@ export const useBerichteState = defineStore({
                             "num_of_boats": 2411
                         }
                     },
-                    "pr": {
+                    "para": {
                         "1": {
                             "PR1 M1x": "PR1 Men's Single Sculls",
                             "WB [t]": 983745083745,
@@ -571,7 +572,7 @@ export const useBerichteState = defineStore({
                             "num_of_boats": 2432
                         }
                     },
-                    "adult": {
+                    "elite": {
                         "single": {
                             "W1x": "Women's Single Sculls",
                             "WB [t]": 983745083745,
@@ -643,7 +644,7 @@ export const useBerichteState = defineStore({
                             "num_of_boats": 2442
                         }
                     },
-                    "pr": {
+                    "para": {
                         "1": {
                             "PR1 W1x": "PR1 Women's Single Sculls",
                             "WB [t]": 983745083745,
@@ -706,14 +707,13 @@ export const useBerichteState = defineStore({
         getMatrixTableResults(state) {
             return state.matrixdata[0].results
         },
-
         getMatrixTableData(state) {
 
             const subHeaders = {
-                "OPEN MEN": Object.values(state.matrixdata[0].men.adult),
-                "OPEN WOMEN": Object.values(state.matrixdata[0].women.adult),
-                "PARA MEN": Object.values(state.matrixdata[0].men.pr),
-                "PARA WOMEN": Object.values(state.matrixdata[0].women.pr),
+                "OPEN MEN": Object.values(state.matrixdata[0].men.elite),
+                "OPEN WOMEN": Object.values(state.matrixdata[0].women.elite),
+                "PARA MEN": Object.values(state.matrixdata[0].men.para),
+                "PARA WOMEN": Object.values(state.matrixdata[0].women.para),
                 "U23 MEN": Object.values(state.matrixdata[0].men.u23),
                 "U23 WOMEN": Object.values(state.matrixdata[0].women.u23),
                 "U19 MEN": Object.values(state.matrixdata[0].men.u19),
@@ -728,7 +728,7 @@ export const useBerichteState = defineStore({
                     rowValues.push([Object.keys(item)[0], formatMilliseconds(item["WB [t]"]), formatMilliseconds(item["avg [t]"]), formatMilliseconds(item["delta [s]"]), item["num_of_boats"]])
                 }
             })
-
+            state.tableExport = rowValues
             return rowValues
         },
         getSelectedBoatClass(state) {
@@ -772,8 +772,9 @@ export const useBerichteState = defineStore({
                         type: 'line',
                         backgroundColor: "red",
                         borderColor: "red",
-                        borderWidth: 2,
-                        pointRadius: 2,
+                        borderWidth: 1.5,
+                        pointRadius: 1.5,
+                        tension: 0.2,
                         label: "Anzahl Boote",
                         data: state.data[0].plot_data.histogram.data,
                     },
@@ -912,6 +913,15 @@ export const useBerichteState = defineStore({
         }
     },
     actions: {
+        async fetchReportFilterOptions() {
+            await axios.get('http://localhost:5000/get_report_filter_options')
+                .then(response => {
+                    this.filterOptions = response.data
+                    return response.data
+                }).catch(error => {
+                    // Bearbeite den Fehler hier
+                })
+        },
         async postFormData(formData) {
             this.selectedBoatClass = formData.boat_classes
             await axios.post('https://jsonplaceholder.typicode.com/users', {formData})
@@ -924,6 +934,25 @@ export const useBerichteState = defineStore({
         },
         setFilterState(filterState) {
             this.filterOpen = !filterState
+        },
+        exportTableData() {
+            const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(row => {
+                if (Array.isArray(row)) {
+                    return row.map(cell => {
+                        if (typeof cell === "string") {
+                            return `"${cell}"`;
+                        }
+                        return cell;
+                    }).join(",");
+                }
+                return row;
+            }).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "berichte.csv");
+            document.body.appendChild(link);
+            link.click();
         }
     }
 })

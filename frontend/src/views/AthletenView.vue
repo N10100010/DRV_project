@@ -28,6 +28,7 @@
             eine Übersicht zu seinen Ergebnissen (inkl. Medaillenspiegel) betrachten.
           </v-tooltip>
           <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
+          <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
         </v-col>
         <v-divider></v-divider>
         <v-container class="pa-0 mt-8" style="min-height: 400px">
@@ -164,6 +165,7 @@ import AthletenFilter from "@/components/filters/athletenFilter.vue";
 import {mapState} from "pinia";
 import {useAthletenState} from "@/stores/athletenStore";
 import router from "@/router";
+import {useRennstrukturAnalyseState} from "@/stores/baseStore";
 
 export default {
   computed: {
@@ -177,6 +179,10 @@ export default {
   methods: {
     openPrintDialog() {
       window.print();
+    },
+    exportTableData() {
+      const store = useAthletenState()
+      store.exportTableData()
     },
     setFilterState() {
       this.filterOpen = !this.filterOpen;

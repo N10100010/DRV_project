@@ -37,6 +37,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
           mit Besetzung der Bootsklassen.
       </v-tooltip>
       <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
+      <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
     </v-col>
     <v-divider></v-divider>
     <v-container class="pa-0 mt-2 pb-8" style="min-height: 400px">
@@ -101,6 +102,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
 <script>
 import { mapState } from "pinia";
 import { useTeamsState } from "@/stores/teamsStore";
+import {useRennstrukturAnalyseState} from "@/stores/baseStore";
 
 export default {
   computed: {
@@ -117,6 +119,10 @@ export default {
   methods: {
     openPrintDialog() {
       window.print();
+    },
+     exportTableData() {
+      const store = useTeamsState()
+      store.exportTableData()
     },
     setFilterState() {
       this.filterOpen = !this.filterOpen;

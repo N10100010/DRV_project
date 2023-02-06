@@ -35,6 +35,7 @@
             Wähle hierzu aus den Filteroptionen im Filter (links) einen Zeitraum und eine Nation aus.
           </v-tooltip>
           <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
+          <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
         </v-col>
         <v-divider></v-divider>
         <v-container class="pa-0 mt-8">
@@ -118,6 +119,10 @@ export default {
   methods: {
     openPrintDialog() {
       window.print();
+    },
+    exportTableData() {
+      const store = useMedaillenspiegelState()
+      store.exportTableData()
     },
     setFilterState() {
       this.filterOpen = !this.filterOpen;

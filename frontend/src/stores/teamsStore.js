@@ -5,6 +5,7 @@ export const useTeamsState = defineStore({
     id: "teams",
     state: () => ({
         filterOpen: false,
+        tableExport: [],
         filterOptions: [{
             "year": [{ "start_year": 1950 }, { "end_year": 2025 }],
             "boat_class": {
@@ -32,7 +33,7 @@ export const useTeamsState = defineStore({
                         'lw_quad': { "BLM4x": "U23 Lightweight Men's Quadruple Sculls" },
                         'lw_pair': { "BLM2-": "U23 Lightweight Men's Pair" },
                     },
-                    'adult': {
+                    'elite': {
                         'single': { "M1x": "Men's Single Sculls" },
                         'double': { "M2x": "Men's Double Sculls" },
                         'quad': { "M4x": "Men's Quadruple Sculls" },
@@ -44,7 +45,7 @@ export const useTeamsState = defineStore({
                         'lw_quad': { "LM4x": "Lightweight Men's Quadruple Sculls" },
                         'lw_pair': { "LM2-": "Lightweight Men's Pair" },
                     },
-                    'pr': {
+                    'para': {
                         '1': { "PR1 M1x": "PR1 Men's Single Sculls" },
                         '2': { "PR2 M1x": "PR2 Men's Single Sculls" },
                         '3': { "PR3 M2-": "PR3 Men's Pair" }
@@ -74,7 +75,7 @@ export const useTeamsState = defineStore({
                         'lw_quad': { "BLW4x": "U23 Lightweight Women's Quadruple Sculls" },
                         'lw_pair': { "BLW2-": "U23 Lightweight Women's Pair" },
                     },
-                    'adult': {
+                    'elite': {
                         'single': { "W1x": "Women's Single Sculls" },
                         'double': { "W2x": "Women's Double Sculls" },
                         'quad': { "W4x": "Women's Quadruple Sculls" },
@@ -86,7 +87,7 @@ export const useTeamsState = defineStore({
                         'lw_quad': { "LW4x": "Lightweight Women's Quadruple Sculls" },
                         'lw_pair': { "LW2-": "Lightweight Women's Pair" },
                     },
-                    'pr': {
+                    'para': {
                         '1': { "PR1 W1x": "PR1 Women's Single Sculls" },
                         '2': { "PR2 W1x": "PR2 Women's Single Sculls" },
                         '3': { "PR3 W2-": "PR3 Women's Pair" }
@@ -99,9 +100,13 @@ export const useTeamsState = defineStore({
                 }
             },
             "competition_category_ids": [
-                { "displayName": "Olympics", "id": "89346342" },
-                { "displayName": "World Rowing Championships", "id": "89346362" },
-                { "displayName": "Qualifications", "id": "89346362" },
+                { "displayName": "OG", "id": "89346342" },
+                { "displayName": "EM", "id": "89346362" },
+                { "displayName": "WCh", "id": "89346362" },
+                { "displayName": "WCI", "id": "89346362" },
+                { "displayName": "WCII", "id": "89346362" },
+                { "displayName": "WCIII", "id": "89346362" },
+                { "displayName": "LS", "id": "89346362" }
             ],
             "nations": {
                 "AFG": "Afghanistan",
@@ -1266,7 +1271,6 @@ export const useTeamsState = defineStore({
             return state.data[0]
         },
         getTableData(state) {
-
             const subHeaders = {
                 "OPEN MEN": Object.values(state.data[0].men.adult),
                 "OPEN WOMEN": Object.values(state.data[0].women.adult),
@@ -1277,28 +1281,21 @@ export const useTeamsState = defineStore({
                 "U19 MEN": Object.values(state.data[0].men.u19),
                 "U19 WOMEN": Object.values(state.data[0].women.u19)
             }
-
             let rowValues = []
-
             Object.entries(subHeaders).forEach(([key, value], idx) => {
                 rowValues.push(key)
                 for (const item of value) {
                     let members = []
-
                     const itemList = Object.values(item)
                     itemList.forEach((value, idx) => {
                         value.forEach(entry => {
                             members.push(entry.firstName + " " + entry.lastName)
                         })
-            
-                        
-                        
                     })
-
                     rowValues.push([Object.keys(item)[0], members])
                 }
             })
-
+            state.tableExport = rowValues
             return rowValues
         }
     },
@@ -1314,6 +1311,25 @@ export const useTeamsState = defineStore({
         },
         setFilterState(filterState) {
             this.filterOpen = !filterState
+        },
+        exportTableData() {
+             const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(row => {
+                if (Array.isArray(row)) {
+                    return row.map(cell => {
+                        if (typeof cell === "string") {
+                            return `"${cell}"`;
+                        }
+                        return cell;
+                    }).join(",");
+                }
+                return row;
+            }).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "teams.csv");
+            document.body.appendChild(link);
+            link.click();
         }
     }
 })

@@ -39,6 +39,8 @@
                       variant="outlined" color="blue" label="Nation" density="comfortable"
                       :rules="[v => !!v || 'Wähle mindestens eine Nation']"
       ></v-autocomplete>
+
+      <!--
       <v-label>Bootsklasse</v-label>
       <v-chip-group filter color="blue" v-model="selectedGenders">
         <v-chip v-for="genderType in genderTypeOptions">{{ genderType.charAt(0).toUpperCase() + genderType.slice(1) }}
@@ -47,10 +49,15 @@
       <v-chip-group filter color="blue" v-model="selectedAgeGroups">
         <v-chip v-for="ageGroup in ageGroupOptions">{{ ageGroup.charAt(0).toUpperCase() + ageGroup.slice(1) }}</v-chip>
       </v-chip-group>
+      <v-chip-group filter color="blue" v-model="selectedDiscipline">
+        <v-chip v-for="discipline in optionsDisciplines">{{ discipline }}</v-chip>
+      </v-chip-group>
       <v-select class="pt-3" label="Bootsklassen" clearable chips density="comfortable"
                 :items="optionsBoatClasses" v-model="selectedBoatClasses" variant="outlined"
                 :rules="[v => !!v || 'Wähle mindestens eine Bootsklasse']"
       ></v-select>
+      -->
+
       <v-container class="pa-0 pt-8 text-right">
         <v-btn color="grey" class="mx-2" @click="clearFormInputs">
           <v-icon>mdi-backspace-outline</v-icon>
@@ -89,16 +96,7 @@ export default {
       // competition type
       compTypes: [],
       optionsCompTypes: [],
-      selectedCompTypes: [
-        "European Championships",
-        "Olympics",
-        "World Rowing Championships",
-        "Qualifications",
-        "World Championships I",
-        "World Championships II",
-        "World Championships III",
-        "World Rowing Cup"
-      ],
+      selectedCompTypes: ["OG", "EM", "WCh", "WCI", "WCII", "WCIII", "LS"],
 
       // year
       birthYear: null,
@@ -113,9 +111,11 @@ export default {
 
       // boat classes
       genderTypeOptions: [],
-      selectedGenders: [0],
+      selectedGenders: [3],
       ageGroupOptions: [],
       selectedAgeGroups: 0,
+      optionsDisciplines: [],
+      selectedDiscipline: 0,
       optionsBoatClasses: [],
       selectedBoatClasses: this.optionsBoatClasses,
     }
@@ -143,7 +143,7 @@ export default {
     }
     this.optionsNations = finalCountryNames
 
-    // boat classes
+    // boatclasses
     this.genderTypeOptions = Object.keys(this.filterOptions[0].boat_class)
     let ageGroupOptions = Object.keys(this.filterOptions[0].boat_class.men)
     ageGroupOptions.push(...Object.keys(this.filterOptions[0].boat_class.women))
@@ -154,13 +154,12 @@ export default {
     Object.entries(values).forEach(([key, value], index) => {
       if (index === 0) {
         Object.entries(value).forEach(([, val]) => {
-          if (typeof val === "object") {
-            boatClassOptions.push(Object.values(val)[0])
-          }
+            boatClassOptions.push(Object.keys(val)[0])
         })
       }
     });
-    this.selectedBoatClasses = boatClassOptions[0]
+    this.ageGroupOptions = []
+    this.selectedBoatClasses = ["Alle"]
     this.optionsBoatClasses = boatClassOptions
   },
   methods: {
@@ -194,18 +193,9 @@ export default {
     clearFormInputs() {
       this.startYear = 1950
       this.endYear = new Date().getFullYear()
-      this.selectedCompTypes = [
-        "European Championships",
-        "Olympics",
-        "World Rowing Championships",
-        "Qualifications",
-        "World Championships I",
-        "World Championships II",
-        "World Championships III",
-        "World Rowing Cup"
-      ]
+      this.selectedCompTypes = ["OG", "EM", "WCh", "WCI", "WCII", "WCIII", "LS"]
       this.selectedNation = "GER (Deutschland)"
-      this.selectedGenders = 0
+      this.selectedGenders = [3]
       this.selectedAgeGroups = 0
       this.selectedBoatClasses = this.optionsBoatClasses[0]
     },
@@ -235,9 +225,11 @@ export default {
         let optionsList = []
         if (newVal === 0) { // men
           optionsList.push(...Object.keys(this.filterOptions[0].boat_class.men))
+          this.optionsDisciplines = ["Skull", "Riemen"]
         }
         if (newVal === 1) { // women
           optionsList.push(...Object.keys(this.filterOptions[0].boat_class.women))
+          this.optionsDisciplines = ["Skull", "Riemen"]
         }
         if (newVal === 2) { // mixed
           optionsList = []
@@ -246,6 +238,7 @@ export default {
             test.push(Object.values(mixedOption))
           }
           this.optionsBoatClasses = test.map(item => item[0]).flat()
+          this.optionsDisciplines = ["Skull", "Riemen"]
         }
         if (newVal === 3) { // all
           this.ageGroupOptions = []

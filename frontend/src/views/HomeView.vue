@@ -4,6 +4,10 @@
       <h1 class="py-3">Kalender</h1>
       <v-divider></v-divider>
       <div class="text-center section pt-5">
+        <v-chip-group filter color="blue" v-model="selectedView">
+        <v-chip>Monat</v-chip>
+        <v-chip>Jahr</v-chip>
+      </v-chip-group>
         <v-calendar
             class="custom-calendar"
             :masks="masks"
@@ -11,7 +15,8 @@
             disable-page-swipe
             is-expanded
             style="border-radius: 0"
-            nextMonthComps
+            :rows="selectedView ? 3 : 1"
+            :columns="selectedView ? 4 : 1"
         >
           <template v-slot:day-content="{ day, attributes }">
             <div class="h-full z-10" style="min-height: 60px; display: flex; flex-direction: column;">
@@ -27,7 +32,7 @@
                       lineHeight: 'normal', maxWidth: mobile ? '45px' : '120px', fontSize: mobile ? '11px' : '14px'
                     }"
                     >
-                      {{ attr.customData.title }}
+                      {{ selectedView ? "" : attr.customData.title}}
                     </p>
                   </div>
                 </router-link>
@@ -58,6 +63,7 @@ export default {
         weekdays: 'WWW',
       },
       attributes: [],
+      selectedView: 0
     };
   },
   created() {
