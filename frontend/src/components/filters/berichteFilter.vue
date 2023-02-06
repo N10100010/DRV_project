@@ -173,9 +173,7 @@ export default {
     Object.entries(values).forEach(([key, value], index) => {
       if (index === 0) {
         Object.entries(value).forEach(([, val]) => {
-          if (typeof val === "object") {
-            boatClassOptions.push(Object.values(val)[0])
-          }
+            boatClassOptions.push(Object.keys(val)[0])
         })
       }
     });
@@ -273,7 +271,7 @@ export default {
           optionsList = []
           let test = []
           for (const mixedOption of Object.values(this.reportFilterOptions[0].boat_class.mixed)) {
-            test.push(Object.values(mixedOption))
+            test.push(Object.keys(mixedOption))
           }
           this.optionsBoatClasses = test.map(item => item[0]).flat()
           this.optionsDisciplines = ["Skull", "Riemen"]
@@ -287,22 +285,21 @@ export default {
         this.ageGroupOptions = optionsList.filter((v, i, a) => a.indexOf(v) === i); // exclude non-unique values
         let boatClassOptions = []
         Object.entries(Object.values(this.reportFilterOptions[0].boat_class)[newVal]).forEach(([key, value], index) => {
-          if (index === this.selectedAgeGroups || this.selectedGenders === 2) {
+          if (index === this.selectedAgeGroups && this.selectedGenders !== 2) {
             Object.entries(value).forEach(([, val]) => {
-              if (typeof val === "object") {
-                boatClassOptions.push(Object.values(val)[0])
-              } else {
-                boatClassOptions.push(val)
-              }
+                boatClassOptions.push(Object.keys(val)[0])
+            })
+          } else if (this.selectedGenders === 2) {
+             Object.entries(value).forEach(([key, val]) => {
+              boatClassOptions.push(key)
             })
           }
         });
         if (newVal !== 3) {
-          boatClassOptions = boatClassOptions.filter(item => this.selectedDiscipline ? !item.includes("Sculls") : item.includes("Sculls"));
+          boatClassOptions = boatClassOptions.filter(item => this.selectedDiscipline ?
+              !(item[item.length - 1] === 'x') : (item[item.length - 1] === 'x'))
           this.optionsBoatClasses = boatClassOptions
           this.selectedBoatClasses = boatClassOptions[0]
-        } else if (newVal === 2) {
-          this.selectedBoatClasses = this.optionsBoatClasses[0]
         }
       }
     },
@@ -314,17 +311,14 @@ export default {
         Object.entries(genderObj).forEach(([key, value], index) => {
           if (index === newVal) {
             Object.entries(value).forEach(([, val]) => {
-              if (typeof val === "object") {
-                boatClassOptions.push(Object.values(val)[0])
-              }
+              boatClassOptions.push(Object.keys(val)[0])
             })
           }
         });
-        // filter discipline
-        boatClassOptions = boatClassOptions.filter(item => this.selectedDiscipline ? !item.includes("Sculls") : item.includes("Sculls"));
-        // set boat class options
-        this.selectedBoatClasses = boatClassOptions[0]
         if (this.selectedGenders !== 3) {
+          boatClassOptions = boatClassOptions.filter(item => this.selectedDiscipline ?
+              !(item[item.length - 1] === 'x') : (item[item.length - 1] === 'x'))
+          this.selectedBoatClasses = boatClassOptions[0]
           this.optionsBoatClasses = boatClassOptions
         }
       }
@@ -335,17 +329,18 @@ export default {
         let genderObj = Object.values(this.reportFilterOptions[0].boat_class)[this.selectedGenders]
         let boatClassOptions = []
         Object.entries(genderObj).forEach(([key, value], index) => {
-          if (index === this.selectedAgeGroups || this.selectedGenders === 2) {
+          if (index === this.selectedAgeGroups && this.selectedGenders !== 2) {
             Object.entries(value).forEach(([, val]) => {
-              if (typeof val === "object") {
-                boatClassOptions.push(Object.values(val)[0])
-              } else {
-                boatClassOptions.push(val)
-              }
+              boatClassOptions.push(Object.keys(val)[0])
+            })
+          } else if (this.selectedGenders === 2) {
+             Object.entries(value).forEach(([key, val]) => {
+              boatClassOptions.push(key)
             })
           }
         });
-        boatClassOptions = boatClassOptions.filter(item => newVal ? !item.includes("Sculls") : item.includes("Sculls"));
+        boatClassOptions = boatClassOptions.filter(item => newVal ?
+            !(item[item.length - 1] === 'x') : (item[item.length - 1] === 'x'))
         this.selectedBoatClasses = boatClassOptions[0]
         if (this.selectedGenders !== 3) {
           this.optionsBoatClasses = boatClassOptions

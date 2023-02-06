@@ -34,7 +34,7 @@ export const useAthletenState = defineStore({
                         'lw_quad': {"BLM4x": "U23 Lightweight Men's Quadruple Sculls"},
                         'lw_pair': {"BLM2-": "U23 Lightweight Men's Pair"},
                     },
-                    'adult': {
+                    'elite': {
                         'single': {"M1x": "Men's Single Sculls"},
                         'double': {"M2x": "Men's Double Sculls"},
                         'quad': {"M4x": "Men's Quadruple Sculls"},
@@ -46,7 +46,7 @@ export const useAthletenState = defineStore({
                         'lw_quad': {"LM4x": "Lightweight Men's Quadruple Sculls"},
                         'lw_pair': {"LM2-": "Lightweight Men's Pair"},
                     },
-                    'pr': {
+                    'para': {
                         '1': {"PR1 M1x": "PR1 Men's Single Sculls"},
                         '2': {"PR2 M1x": "PR2 Men's Single Sculls"},
                         '3': {"PR3 M2-": "PR3 Men's Pair"}
@@ -76,7 +76,7 @@ export const useAthletenState = defineStore({
                         'lw_quad': {"BLW4x": "U23 Lightweight Women's Quadruple Sculls"},
                         'lw_pair': {"BLW2-": "U23 Lightweight Women's Pair"},
                     },
-                    'adult': {
+                    'elite': {
                         'single': {"W1x": "Women's Single Sculls"},
                         'double': {"W2x": "Women's Double Sculls"},
                         'quad': {"W4x": "Women's Quadruple Sculls"},
@@ -88,7 +88,7 @@ export const useAthletenState = defineStore({
                         'lw_quad': {"LW4x": "Lightweight Women's Quadruple Sculls"},
                         'lw_pair': {"LW2-": "Lightweight Women's Pair"},
                     },
-                    'pr': {
+                    'para': {
                         '1': {"PR1 W1x": "PR1 Women's Single Sculls"},
                         '2': {"PR2 W1x": "PR2 Women's Single Sculls"},
                         '3': {"PR3 W2-": "PR3 Women's Pair"}
@@ -98,7 +98,10 @@ export const useAthletenState = defineStore({
                     'double_2': {"PR2 Mix2x": "PR2 Mixed Double Sculls"},
                     'double_3': {"PR3 Mix2x": "PR3 Mixed Double Sculls"},
                     'four': {"PR3 Mix4+": "PR3 Mixed Coxed Four"},
-                }
+                },
+                'all': {
+                    'all': {"Alle Bootsklassen": "Alle"}
+                },
             },
             "competition_category_ids": [
                 {"displayName": "Olympics", "id": "89346342"},
@@ -315,16 +318,6 @@ export const useAthletenState = defineStore({
                 "ZIM": "Simbabwe",
                 "RPC": null
             }
-
-            /*
-            [
-                {"displayName": "DEU", "id": "98132421"},
-                {"displayName": "FRA", "id": "92348234"},
-                {"displayName": "GBR", "id": "92348236"}
-            ]
-             */
-            ,
-
         }],
         data: {
             athlete: [{
