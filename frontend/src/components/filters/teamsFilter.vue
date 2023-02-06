@@ -96,16 +96,7 @@ export default {
       // competition type
       compTypes: [],
       optionsCompTypes: [],
-      selectedCompTypes: [
-        "European Championships",
-        "Olympics",
-        "World Rowing Championships",
-        "Qualifications",
-        "World Championships I",
-        "World Championships II",
-        "World Championships III",
-        "World Rowing Cup"
-      ],
+      selectedCompTypes: ["OG", "EM", "WCh", "WCI", "WCII", "WCIII", "LS"],
 
       // year
       birthYear: null,
@@ -202,16 +193,7 @@ export default {
     clearFormInputs() {
       this.startYear = 1950
       this.endYear = new Date().getFullYear()
-      this.selectedCompTypes = [
-        "European Championships",
-        "Olympics",
-        "World Rowing Championships",
-        "Qualifications",
-        "World Championships I",
-        "World Championships II",
-        "World Championships III",
-        "World Rowing Cup"
-      ]
+      this.selectedCompTypes = ["OG", "EM", "WCh", "WCI", "WCII", "WCIII", "LS"]
       this.selectedNation = "GER (Deutschland)"
       this.selectedGenders = [3]
       this.selectedAgeGroups = 0

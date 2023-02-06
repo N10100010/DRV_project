@@ -100,9 +100,13 @@ export const useTeamsState = defineStore({
                 }
             },
             "competition_category_ids": [
-                { "displayName": "Olympics", "id": "89346342" },
-                { "displayName": "World Rowing Championships", "id": "89346362" },
-                { "displayName": "Qualifications", "id": "89346362" },
+                { "displayName": "OG", "id": "89346342" },
+                { "displayName": "EM", "id": "89346362" },
+                { "displayName": "WCh", "id": "89346362" },
+                { "displayName": "WCI", "id": "89346362" },
+                { "displayName": "WCII", "id": "89346362" },
+                { "displayName": "WCIII", "id": "89346362" },
+                { "displayName": "LS", "id": "89346362" }
             ],
             "nations": {
                 "AFG": "Afghanistan",
