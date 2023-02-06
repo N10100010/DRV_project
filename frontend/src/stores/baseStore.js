@@ -4,13 +4,14 @@ import {defineStore} from "pinia";
 // function to convert milliseconds to min:sec:ms
 const formatMilliseconds = ms => new Date(ms).toISOString().slice(14, -2);
 // predefined colors for charts
-const COLORS = ['#FF0000', '#FFCC00', '#008000', '#000', '#45E845', '#00E300'];
+const COLORS = ['#0C67F7', '#93E9ED', '#E0A9FA', '#E0B696', '#E0FAAC', '#F0E95A'];
 
 export const useRennstrukturAnalyseState = defineStore({
     id: "base",
     state: () => ({
         filterOpen: false,
         loadingState: false,
+        tableExport: [],
         data: {
             filterOptions: [{
                 // TODO: Year also has to be defined by backend data
@@ -348,6 +349,7 @@ export const useRennstrukturAnalyseState = defineStore({
 
                 tableData.push(rowData);
             })
+            state.tableExport = tableData
             return tableData;
         },
 
@@ -518,6 +520,15 @@ export const useRennstrukturAnalyseState = defineStore({
         },
         setToLoadingState() {
             this.loadingState = true
+        },
+        exportTableData() {
+            const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(e => e.join(",")).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "rennstruktur.csv");
+            document.body.appendChild(link);
+            link.click();
         }
     }
 });

@@ -32,6 +32,7 @@
           </v-icon>
           </a>
           <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
+           <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large" v-if="displayRaceDataAnalysis">mdi-table-arrow-right</v-icon>
         </v-col>
         <v-divider></v-divider>
         <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 my-2" :items="breadCrumbs"></v-breadcrumbs>
@@ -188,6 +189,7 @@ ChartJS.register(Tooltip, Legend, TimeScale);
 import {useRennstrukturAnalyseState} from "@/stores/baseStore";
 import {mapState} from "pinia";
 import router from "@/router";
+import {useMedaillenspiegelState} from "@/stores/medaillenspiegelStore";
 
 export default {
   computed: {
@@ -408,6 +410,10 @@ export default {
   methods: {
     openPrintDialog() {
       window.print();
+    },
+     exportTableData() {
+      const store = useRennstrukturAnalyseState()
+      store.exportTableData()
     },
     setFilterState() {
       this.filterOpen = !this.filterOpen;

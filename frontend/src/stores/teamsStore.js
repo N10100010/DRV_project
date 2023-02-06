@@ -5,6 +5,7 @@ export const useTeamsState = defineStore({
     id: "teams",
     state: () => ({
         filterOpen: false,
+        tableExport: [],
         filterOptions: [{
             "year": [{ "start_year": 1950 }, { "end_year": 2025 }],
             "boat_class": {
@@ -1266,7 +1267,6 @@ export const useTeamsState = defineStore({
             return state.data[0]
         },
         getTableData(state) {
-
             const subHeaders = {
                 "OPEN MEN": Object.values(state.data[0].men.adult),
                 "OPEN WOMEN": Object.values(state.data[0].women.adult),
@@ -1277,28 +1277,21 @@ export const useTeamsState = defineStore({
                 "U19 MEN": Object.values(state.data[0].men.u19),
                 "U19 WOMEN": Object.values(state.data[0].women.u19)
             }
-
             let rowValues = []
-
             Object.entries(subHeaders).forEach(([key, value], idx) => {
                 rowValues.push(key)
                 for (const item of value) {
                     let members = []
-
                     const itemList = Object.values(item)
                     itemList.forEach((value, idx) => {
                         value.forEach(entry => {
                             members.push(entry.firstName + " " + entry.lastName)
                         })
-            
-                        
-                        
                     })
-
                     rowValues.push([Object.keys(item)[0], members])
                 }
             })
-
+            state.tableExport = rowValues
             return rowValues
         }
     },
@@ -1314,6 +1307,25 @@ export const useTeamsState = defineStore({
         },
         setFilterState(filterState) {
             this.filterOpen = !filterState
+        },
+        exportTableData() {
+             const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(row => {
+                if (Array.isArray(row)) {
+                    return row.map(cell => {
+                        if (typeof cell === "string") {
+                            return `"${cell}"`;
+                        }
+                        return cell;
+                    }).join(",");
+                }
+                return row;
+            }).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "teams.csv");
+            document.body.appendChild(link);
+            link.click();
         }
     }
 })

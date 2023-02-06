@@ -7,6 +7,7 @@ export const useBerichteState = defineStore({
     id: "berichte",
     state: () => ({
         filterOpen: false,
+        tableExport: [],
         selectedBoatClass: {0: "Alle"},
         filterOptions: [{
             "year": [{"start_year": 1950}, {"end_year": 2025}],
@@ -728,7 +729,7 @@ export const useBerichteState = defineStore({
                     rowValues.push([Object.keys(item)[0], formatMilliseconds(item["WB [t]"]), formatMilliseconds(item["avg [t]"]), formatMilliseconds(item["delta [s]"]), item["num_of_boats"]])
                 }
             })
-
+            state.tableExport = rowValues
             return rowValues
         },
         getSelectedBoatClass(state) {
@@ -924,6 +925,25 @@ export const useBerichteState = defineStore({
         },
         setFilterState(filterState) {
             this.filterOpen = !filterState
+        },
+        exportTableData() {
+            const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(row => {
+                if (Array.isArray(row)) {
+                    return row.map(cell => {
+                        if (typeof cell === "string") {
+                            return `"${cell}"`;
+                        }
+                        return cell;
+                    }).join(",");
+                }
+                return row;
+            }).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "berichte.csv");
+            document.body.appendChild(link);
+            link.click();
         }
     }
 })
