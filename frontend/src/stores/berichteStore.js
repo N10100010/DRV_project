@@ -10,8 +10,8 @@ export const useBerichteState = defineStore({
         tableExport: [],
         selectedBoatClass: {0: "Alle"},
         filterOptions: [{
-            "year": [{"start_year": 1950}, {"end_year": 2025}],
-            "boat_class": {
+            "years": [{"start_year": 1950}, {"end_year": 2025}],
+            "boat_classes": {
                 'men': {
                     'junior': {
                         'single': {"JM1x": "Junior Men's Single Sculls"},
@@ -105,30 +105,30 @@ export const useBerichteState = defineStore({
                     'all': {"Alle Bootsklassen": "Alle"}
                 },
             },
-            "competition_category_ids": [
-                { "displayName": "OG", "id": "89346342" },
-                { "displayName": "EM", "id": "89346362" },
-                { "displayName": "WCh", "id": "89346362" },
-                { "displayName": "WCI", "id": "89346362" },
-                { "displayName": "WCII", "id": "89346362" },
-                { "displayName": "WCIII", "id": "89346362" },
-                { "displayName": "LS", "id": "89346362" }
+            "competition_categories": [
+                { "display_name": "OG", "id": "89346342" },
+                { "display_name": "EM", "id": "89346362" },
+                { "display_name": "WCh", "id": "89346362" },
+                { "display_name": "WCI", "id": "89346362" },
+                { "display_name": "WCII", "id": "89346362" },
+                { "display_name": "WCIII", "id": "89346362" },
+                { "display_name": "LS", "id": "89346362" }
             ],
             "runs": {
                 "finale": [
-                    {"displayName": "fa"},
-                    {"displayName": "fb"},
-                    {"displayName": "fc"},
-                    {"displayName": "fd"},
-                    {"displayName": "f..."}
+                    {"display_name": "fa"},
+                    {"display_name": "fb"},
+                    {"display_name": "fc"},
+                    {"display_name": "fd"},
+                    {"display_name": "f..."}
                 ],
                 "halbfinale": [
-                    {"displayName": "sa/b, sa/b/c"},
-                    {"displayName": "sc/d, sd/e/f"},
-                    {"displayName": "s..."}
+                    {"display_name": "sa/b, sa/b/c"},
+                    {"display_name": "sc/d, sd/e/f"},
+                    {"display_name": "s..."}
                 ],
                 "viertelfinale": [
-                    {"displayName": "q1-4"},
+                    {"display_name": "q1-4"},
                 ],
                 "hoffnungslauf": null,
                 "vorlauf": null,
@@ -707,7 +707,6 @@ export const useBerichteState = defineStore({
         getMatrixTableResults(state) {
             return state.matrixdata[0].results
         },
-
         getMatrixTableData(state) {
 
             const subHeaders = {
@@ -914,6 +913,15 @@ export const useBerichteState = defineStore({
         }
     },
     actions: {
+        async fetchReportFilterOptions() {
+            await axios.get('http://localhost:5000/get_report_filter_options')
+                .then(response => {
+                    this.filterOptions = response.data
+                    return response.data
+                }).catch(error => {
+                    // Bearbeite den Fehler hier
+                })
+        },
         async postFormData(formData) {
             this.selectedBoatClass = formData.boat_classes
             await axios.post('https://jsonplaceholder.typicode.com/users', {formData})
