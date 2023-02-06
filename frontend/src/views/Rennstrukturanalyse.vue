@@ -257,7 +257,7 @@ export default {
         plugins: {
           title: {
             display: true,
-            text: "Geschwindigkeit über Distanz"
+            text: "Geschwindigkeit"
           }
         }
       },
@@ -281,7 +281,7 @@ export default {
           plugins: {
             title: {
               display: true,
-              text: "Schlagfrequenz über Distanz"
+              text: "Schlagfrequenz"
             }
           }
         }, {
@@ -304,7 +304,7 @@ export default {
           plugins: {
             title: {
               display: true,
-              text: "Vortrieb über Distanz "
+              text: "Vortrieb"
             }
           }
         }
@@ -329,7 +329,7 @@ export default {
         plugins: {
           title: {
             display: true,
-            text: "Platzierung über Distanz"
+            text: "Platzierung"
           }
         }
       },
@@ -364,7 +364,7 @@ export default {
           plugins: {
             title: {
               display: true,
-              text: "Rückstand über Distanz [sek]"
+              text: "Rückstand zum Führenden [sek]"
             }
           }
         }
@@ -389,7 +389,7 @@ export default {
         plugins: {
           title: {
             display: true,
-            text: "Rückstand über Distanz"
+            text: "Rückstand zum Führenden [m]"
           }
         }
       },
