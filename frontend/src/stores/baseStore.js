@@ -297,9 +297,6 @@ export const useRennstrukturAnalyseState = defineStore({
             return state.loadingState
         },
         getTableData(state) {
-            if (!state.data.raceData[0].data[0].intermediates.hasOwnProperty('0')) {
-                return
-            }
             const tableHead = ['Platz', 'Bahn', 'Nation', 'Mannschaft'];
             const intermediateDistances = state.data.raceData[0].data[0].intermediates
             for (const key in intermediateDistances) {
@@ -308,50 +305,45 @@ export const useRennstrukturAnalyseState = defineStore({
                     tableHead.push(key + "m", "Position")
                 }
             }
-
             const tableData = [];
             tableData.push(tableHead);
+
             state.data.raceData[0].data.forEach(dataObj => {
-                console.log(dataObj.intermediates)
                 if (dataObj.intermediates !== '0') {
-                    const rowData = [];
-                    const athleteNames = [];
-                    rowData.push(dataObj.rank, dataObj.lane, dataObj.nation_ioc);
-                    for (const [key, athlete] of Object.entries(dataObj.athletes)) {
-                        athleteNames.push("(" + athlete.position + ") " + athlete.firstName
-                            .concat(" ", athlete.lastName)
-                        )
-                    }
+                    const rowData = [dataObj.rank, dataObj.lane, dataObj.nation_ioc];
+                    const athleteNames = Object.values(dataObj.athletes).map(athlete =>
+                        `(${athlete.position}) ${athlete.firstName} ${athlete.lastName}`)
+
                     const firstArray = [];
                     const secondArray = [];
                     const speedValues = [];
                     const strokeValues = [];
                     const propulsionValues = [];
 
-                    for (const [key, gpsData] of Object.entries(dataObj.gpsData)) {
-                        for (const intermediateDistance in intermediateDistances) {
-                            const objectKeys = Object.keys(gpsData);
-                            if (objectKeys.includes(intermediateDistance)) {
-                                speedValues.push(gpsData[intermediateDistance]["speed [m/s]"] + "[m/s]")
-                                strokeValues.push(gpsData[intermediateDistance]["stroke [1/min]"] + "[1/min]")
-                                propulsionValues.push(gpsData[intermediateDistance]["propulsion [m/stroke]"] + "[m/Schlag]")
-                            }
-                        }
-                    }
+                    Object.values(dataObj.gpsData).forEach(gpsData => {
+                        Object.keys(gpsData)
+                            .filter(intermediateDistance => intermediateDistance !== '0')
+                            .forEach(intermediateDistance => {
+                                speedValues.push(gpsData[intermediateDistance]["speed [m/s]"] + "[m/s]");
+                                strokeValues.push(gpsData[intermediateDistance]["stroke [1/min]"] + "[1/min]");
+                                propulsionValues.push(gpsData[intermediateDistance]["propulsion [m/stroke]"] + "[m/Schlag]");
+                            });
+                    });
                     rowData.push(athleteNames);
                     for (const [index, [key, intermediate]] of Object.entries(dataObj.intermediates).entries()) {
-                        firstArray.push(
-                            formatMilliseconds(intermediate["time [t]"]),
-                            formatMilliseconds(intermediate["pace [t]"]),
-                            formatMilliseconds(intermediate["deficit [s]"])
-                        )
-                        secondArray.push(["(" + intermediate["rank"] + ")", speedValues[index], strokeValues[index], propulsionValues[index]])
+                        if (key !== '0') {
+                            firstArray.push(
+                                formatMilliseconds(intermediate["time [t]"]),
+                                formatMilliseconds(intermediate["pace [t]"]),
+                                formatMilliseconds(intermediate["deficit [s]"])
+                            )
+                            secondArray.push(["(" + intermediate["rank"] + ")", speedValues[index], strokeValues[index], propulsionValues[index]])
+                        }
                     }
                     const chunkSize = 3;
                     const tempArray = [];
                     for (let i = 0; i < firstArray.length; i += chunkSize) {
                         tempArray.push(firstArray.slice(i, i + chunkSize));
-
                     }
                     tempArray.forEach((value, index) => {
                         rowData.push(value)
@@ -434,7 +426,7 @@ export const useRennstrukturAnalyseState = defineStore({
                     const backgroundColor = COLORS[colorIndex % 6];
                     const borderColor = COLORS[colorIndex % 6];
                     // add zero values as start point
-                    dataObj.intermediates["0"] = {"rank": 0, "deficit [s]": 0}
+                    dataObj.intermediates["0"] = {"rank": 1, "deficit [s]": 0}
                     let data = Object.values(dataObj.intermediates).map(distanceObj => distanceObj[key]);
                     if (key === "deficit [s]") {
                         data = data.map(x => formatMilliseconds(x))
