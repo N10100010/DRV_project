@@ -8,7 +8,7 @@ export const useTeamsState = defineStore({
         tableExport: [],
         filterOptions: [{
             "years": [{ "start_year": "" }, { "end_year": ""}],
-            "competition_categories": [{ "": ""}],
+            "competition_categories": [{"": ""}],
             "nations": {},
         }],
         data: [{

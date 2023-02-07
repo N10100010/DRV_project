@@ -59,7 +59,6 @@
 import Checkbox from "@/components/filters/checkbox.vue";
 import {mapState} from "pinia";
 import {useAthletenState} from "@/stores/athletenStore";
-import {useBerichteState} from "@/stores/berichteStore";
 
 export default {
   components: {Checkbox},
@@ -76,6 +75,7 @@ export default {
   },
   data() {
     return {
+      filterData: [],
       // general
       mobile: false,
       hoverFilter: false,
@@ -109,46 +109,47 @@ export default {
     window.addEventListener('resize', this.checkScreen)
     this.checkScreen()
 
-    //handle form data
-    const startYear = Object.values(this.filterOptions[0].birth_year[0])[0]
-    const endYear = Object.values(this.filterOptions[0].birth_year[1])[0]
-    this.optionsBirthYear = Array.from({length: endYear - startYear + 1}, (_, i) => startYear + i)
-
-    // competition category id
-    this.compTypes = this.filterOptions[0].competition_category_ids
-    this.optionsCompTypes = this.compTypes.map(item => item.displayName)
-
-    // nation_code
-    let countryCodes = Object.keys(this.filterOptions[0].nations)
-    let countryNames = Object.values(this.filterOptions[0].nations)
-    let finalCountryNames = []
-    for (const [idx, countryCode] of countryCodes.entries()) {
-      finalCountryNames.push(countryCode + " (" + countryNames[idx] + ")")
-    }
-    this.optionsNations = finalCountryNames
-
-    // boatclasses
-    this.genderTypeOptions = Object.keys(this.filterOptions[0].boat_class)
-    let ageGroupOptions = Object.keys(this.filterOptions[0].boat_class.men)
-    ageGroupOptions.push(...Object.keys(this.filterOptions[0].boat_class.women))
-    this.ageGroupOptions = ageGroupOptions.filter((v, i, a) => a.indexOf(v) === i); // exclude non-unique values
-
-    let boatClassOptions = []
-    let values = Object.values(this.filterOptions[0].boat_class)[0]
-    Object.entries(values).forEach(([key, value], index) => {
-      if (index === 0) {
-        Object.entries(value).forEach(([, val]) => {
-          if (typeof val === "object") {
-            boatClassOptions.push(Object.values(val)[0])
-          }
-        })
-      }
-    });
-    this.ageGroupOptions = []
-    this.selectedBoatClasses = ["Alle"]
-    this.optionsBoatClasses = boatClassOptions
+    const store = useAthletenState()
+    store.fetchAthletesFilterOptions()
+    this.initializeFilter(this.filterOptions[0])
   },
   methods: {
+    initializeFilter(data) {
+      //handle form data
+      const startYear = Object.values(data.birth_years[0])[0]
+      const endYear = Object.values(data.birth_years[1])[0]
+      this.optionsBirthYear = Array.from({length: endYear - startYear + 1}, (_, i) => startYear + i)
+
+      // nation_code
+      let countryCodes = Object.keys(data.nations)
+      let countryNames = Object.values(data.nations)
+      let finalCountryNames = []
+      for (const [idx, countryCode] of countryCodes.entries()) {
+        finalCountryNames.push(countryCode + " (" + countryNames[idx] + ")")
+      }
+      this.optionsNations = finalCountryNames
+
+      // boatclasses
+      this.genderTypeOptions = Object.keys(data.boat_classes)
+      let ageGroupOptions = Object.keys(data.boat_classes.men)
+      ageGroupOptions.push(...Object.keys(data.boat_classes.women))
+      this.ageGroupOptions = ageGroupOptions.filter((v, i, a) => a.indexOf(v) === i); // exclude non-unique values
+
+      let boatClassOptions = []
+      let values = Object.values(data.boat_classes)[0]
+      Object.entries(values).forEach(([key, value], index) => {
+        if (index === 0) {
+          Object.entries(value).forEach(([, val]) => {
+            if (typeof val === "object") {
+              boatClassOptions.push(Object.values(val)[0])
+            }
+          })
+        }
+      });
+      this.ageGroupOptions = []
+      this.selectedBoatClasses = ["Alle"]
+      this.optionsBoatClasses = boatClassOptions
+    },
     searchAthletes(e) {
       const store = useAthletenState()
       const searchInput = e.target.value
@@ -177,7 +178,7 @@ export default {
         "athlete_name": this.selectedAthlete,
         "birth_year": this.birthYear,
         "gender": this.selectedGenders,
-        "competition_category_ids": this.compTypes.filter(item => this.optionsCompTypes.includes(item.displayName)).map(item => item.id),
+        "competition_categories": this.compTypes.filter(item => this.optionsCompTypes.includes(item.display_name)).map(item => item.id),
         "nation_ioc": this.selectedNation
       }).then(() => {
         console.log("Form data sent...")
@@ -209,17 +210,17 @@ export default {
         this.selectedBoatClasses = null
         let optionsList = []
         if (newVal === 0) { // men
-          optionsList.push(...Object.keys(this.filterOptions[0].boat_class.men))
+          optionsList.push(...Object.keys(this.filterData.boat_classes.men))
           this.optionsDisciplines = ["Skull", "Riemen"]
         }
         if (newVal === 1) { // women
-          optionsList.push(...Object.keys(this.filterOptions[0].boat_class.women))
+          optionsList.push(...Object.keys(this.filterData.boat_classes.women))
           this.optionsDisciplines = ["Skull", "Riemen"]
         }
         if (newVal === 2) { // mixed
           optionsList = []
           let test = []
-          for (const mixedOption of Object.values(this.filterOptions[0].boat_class.mixed)) {
+          for (const mixedOption of Object.values(this.filterData.boat_classes.mixed)) {
             test.push(Object.keys(mixedOption))
           }
           this.optionsBoatClasses = test.map(item => item[0]).flat()
@@ -233,13 +234,13 @@ export default {
         }
         this.ageGroupOptions = optionsList.filter((v, i, a) => a.indexOf(v) === i); // exclude non-unique values
         let boatClassOptions = []
-        Object.entries(Object.values(this.filterOptions[0].boat_class)[newVal]).forEach(([key, value], index) => {
+        Object.entries(Object.values(this.filterData.boat_classes)[newVal]).forEach(([key, value], index) => {
           if (index === this.selectedAgeGroups && this.selectedGenders !== 2) {
             Object.entries(value).forEach(([, val]) => {
-                boatClassOptions.push(Object.keys(val)[0])
+              boatClassOptions.push(Object.keys(val)[0])
             })
           } else if (this.selectedGenders === 2) {
-             Object.entries(value).forEach(([key, val]) => {
+            Object.entries(value).forEach(([key, val]) => {
               boatClassOptions.push(key)
             })
           }
@@ -255,7 +256,7 @@ export default {
     selectedAgeGroups: function (newVal,) {
       if (newVal !== undefined) {
         this.selectedBoatClasses = null
-        let genderObj = Object.values(this.filterOptions[0].boat_class)[this.selectedGenders]
+        let genderObj = Object.values(this.filterData.boat_classes)[this.selectedGenders]
         let boatClassOptions = []
         Object.entries(genderObj).forEach(([key, value], index) => {
           if (index === newVal) {
@@ -275,7 +276,7 @@ export default {
     selectedDiscipline: function (newVal,) {
       if (newVal !== undefined) {
         this.selectedBoatClasses = null
-        let genderObj = Object.values(this.filterOptions[0].boat_class)[this.selectedGenders]
+        let genderObj = Object.values(this.filterData.boat_classes)[this.selectedGenders]
         let boatClassOptions = []
         Object.entries(genderObj).forEach(([key, value], index) => {
           if (index === this.selectedAgeGroups && this.selectedGenders !== 2) {
@@ -283,7 +284,7 @@ export default {
               boatClassOptions.push(Object.keys(val)[0])
             })
           } else if (this.selectedGenders === 2) {
-             Object.entries(value).forEach(([key, val]) => {
+            Object.entries(value).forEach(([key, val]) => {
               boatClassOptions.push(key)
             })
           }
@@ -296,6 +297,12 @@ export default {
         }
       }
     },
+    async filterOptions(newVal,) {
+      this.filterData = newVal[0]
+    },
+    filterData: function (newVal,) {
+      this.initializeFilter(newVal)
+    }
   }
 }
 
