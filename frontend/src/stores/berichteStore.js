@@ -106,13 +106,13 @@ export const useBerichteState = defineStore({
                 },
             },
             "competition_categories": [
-                { "display_name": "OG", "id": "89346342" },
-                { "display_name": "EM", "id": "89346362" },
-                { "display_name": "WCh", "id": "89346362" },
-                { "display_name": "WCI", "id": "89346362" },
-                { "display_name": "WCII", "id": "89346362" },
-                { "display_name": "WCIII", "id": "89346362" },
-                { "display_name": "LS", "id": "89346362" }
+                {"display_name": "OG", "id": "89346342"},
+                {"display_name": "EM", "id": "89346362"},
+                {"display_name": "WCh", "id": "89346362"},
+                {"display_name": "WCI", "id": "89346362"},
+                {"display_name": "WCII", "id": "89346362"},
+                {"display_name": "WCIII", "id": "89346362"},
+                {"display_name": "LS", "id": "89346362"}
             ],
             "runs": {
                 "finale": [
@@ -790,6 +790,7 @@ export const useBerichteState = defineStore({
         getBarChartOptions(state) {
             return {
                 responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     x: {
                         title: {
@@ -871,6 +872,7 @@ export const useBerichteState = defineStore({
         getScatterChartOptions(state) {
             return {
                 responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     x: {
                         type: 'time',
