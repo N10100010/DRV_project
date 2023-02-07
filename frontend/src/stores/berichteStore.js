@@ -919,9 +919,8 @@ export const useBerichteState = defineStore({
             await axios.get('http://localhost:5000/get_report_filter_options')
                 .then(response => {
                     this.filterOptions = response.data
-                    return response.data
                 }).catch(error => {
-                    // Bearbeite den Fehler hier
+                    console.error(`Request failed: ${error}`)
                 })
         },
         async postFormData(formData) {
