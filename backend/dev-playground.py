@@ -49,14 +49,14 @@ if __name__ == '__main__':
 
     DEFAULT_COMPETITION = '718b3256-e778-4003-88e9-832c4aad0cc2'
 
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(help='Available sub-commands', dest='command')
-    parser_cgrab = subparsers.add_parser('grabc', help='Grab a competition and save as JSON')
-    parser_cgrab.add_argument("-i", "--uuid", help="Scrape competition and save as JSON", default=DEFAULT_COMPETITION)
-    parser_cgrab.add_argument("-o", "--out", help="Specify path for output", default="dump.json")
-
-    args = parser.parse_args()
-    print(args)
+    #parser = argparse.ArgumentParser()
+    #subparsers = parser.add_subparsers(help='Available sub-commands', dest='command')
+    #parser_cgrab = subparsers.add_parser('grabc', help='Grab a competition and save as JSON')
+    #parser_cgrab.add_argument("-i", "--uuid", help="Scrape competition and save as JSON", default=DEFAULT_COMPETITION)
+    #parser_cgrab.add_argument("-o", "--out", help="Specify path for output", default="dump.json")
+#
+    #args = parser.parse_args()
+    #print(args)
 
     grab_competition_example('dc5e7e36-a25c-4044-b1b2-e18786c49db0', './some_comp.json')
 
