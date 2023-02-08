@@ -198,6 +198,7 @@ def shutdown_session(exception=None):
 #     """
 #     return {}
 
+
 @app.route('/get_report_boat_class', methods=['POST'])
 def get_report_boat_class():
     """
@@ -290,30 +291,52 @@ def get_report_boat_class():
     })
 
 
+@app.route('/get_athlete/<int:athlete_id>', methods=['GET'])
+def get_athlete(athlete_id: int):
+    """
+    Give athlete data for specific athlete
+    """
+    session = Scoped_Session()
+    athlete = session.query(model.Athlete).filter(model.Athlete.id == athlete_id).one()
+
+    return json.dumps({
+        "id": athlete.id,
+        "name": f"{athlete.last_name__}, {athlete.first_name__}",
+        "nation": None,
+        "dob": str(athlete.birthdate),
+        "gender": None,
+        "weight": athlete.weight_kg__,
+        "height": athlete.height_cm__
+    })
+
+
 @app.route('/get_athlete_by_name/<search_query>', methods=['GET'])
 def get_athlete_by_name(search_query: str):
     """
     Delivers the athlete search result depending on the search query.
     @Params: search_query string (currently only first name)
+    # TODO: Convert to post request and include filter params from frontend
     """
     session = Scoped_Session()
     athletes = session.execute(select(
         model.Athlete.first_name__,
         model.Athlete.last_name__,
-        model.Athlete.id
+        model.Athlete.id,
+        model.Athlete.birthdate
     ).where(or_(
         model.Athlete.last_name__ == search_query.upper(),
         model.Athlete.first_name__ == search_query
     )))
 
     return json.dumps([{
-        "name": f"{athlete.last_name__}, {athlete.first_name__}",
+        "name": f"{athlete.last_name__}, {athlete.first_name__} ({athlete.birthdate})",
         "id": athlete.id
     } for athlete in athletes])
 
 
 """
 ENDPOINTS TO GET FILTER SELECTION OPTIONS
+
 """
 
 
