@@ -202,7 +202,8 @@ def shutdown_session(exception=None):
 @app.route('/get_athlete_by_name/<search_query>', methods=['GET'])
 def get_athlete_by_name(search_query: str):
     """
-    Delivers the filter options for the athletes page.
+    Delivers the athlete search result depending on the search query.
+    @Params: search_query string (currently only first name)
     """
     session = Scoped_Session()
     athletes = session.execute(select(
