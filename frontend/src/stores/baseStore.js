@@ -2,24 +2,28 @@ import axios from "axios";
 import {defineStore} from "pinia";
 
 // function to convert milliseconds to min:sec:ms
-const formatMilliseconds = ms => new Date(ms).toISOString().slice(14, -2);
+const formatMilliseconds = ms => {
+    if (!ms) {
+        return '00:00.000';
+    }
+    return new Date(ms).toISOString().slice(14, -2);
+};
+
+
 // predefined colors for charts
-const COLORS = ['#FF0000', '#FFCC00', '#008000', '#000', '#45E845', '#00E300'];
+const COLORS = ['#0C67F7', '#93E9ED', '#E0A9FA', '#E0B696', '#E0FAAC', '#F0E95A'];
 
 export const useRennstrukturAnalyseState = defineStore({
     id: "base",
     state: () => ({
         filterOpen: false,
         loadingState: false,
+        tableExport: [],
         data: {
             filterOptions: [{
+                // TODO: Year also has to be defined by backend data
                 "year": [{"start_year": 1950}, {"end_year": 2025}],
-                "competition_category_ids": [
-                    {"displayName": "Olympics", "id": "89346342"},
-                    {"displayName": "World Rowing Championships", "id": "89346362"},
-                    {"displayName": "World Championships", "id": "89346366"},
-                    {"displayName": "Qualifications", "id": "89346323"},
-                ],
+                "competition_category_ids": []
             }],
             raceData: [{
                 "race_id": 195638,
@@ -44,12 +48,14 @@ export const useRennstrukturAnalyseState = defineStore({
                             {
                                 "id": 98245435,
                                 "firstName": "Lukas",
-                                "lastName": "Helesic"
+                                "lastName": "Helesic",
+                                "position": "b"
                             },
                             {
                                 "id": 954345365,
                                 "firstName": "S Jakub",
-                                "lastName": "Podrazil"
+                                "lastName": "Podrazil",
+                                "position": "s"
                             }
                         ],
                         "intermediates": {
@@ -158,12 +164,14 @@ export const useRennstrukturAnalyseState = defineStore({
                             {
                                 "id": 98245435,
                                 "firstName": "Max",
-                                "lastName": "Maier"
+                                "lastName": "Maier",
+                                "position": "b"
                             },
                             {
                                 "id": 954345365,
                                 "firstName": "S Jakub",
-                                "lastName": "Podrazil"
+                                "lastName": "Podrazil",
+                                "position": "s"
                             }
                         ],
                         "intermediates": {
@@ -292,60 +300,59 @@ export const useRennstrukturAnalyseState = defineStore({
             const tableHead = ['Platz', 'Bahn', 'Nation', 'Mannschaft'];
             const intermediateDistances = state.data.raceData[0].data[0].intermediates
             for (const key in intermediateDistances) {
-                tableHead.push(key + "m", "Position")
+                // ignore first as this is the starting value
+                if (key !== '0') {
+                    tableHead.push(key + "m", "Position")
+                }
             }
-
             const tableData = [];
             tableData.push(tableHead);
+
             state.data.raceData[0].data.forEach(dataObj => {
-                const rowData = [];
-                const athleteNames = [];
-                rowData.push(dataObj.rank, dataObj.lane, dataObj.nation_ioc);
-                for (const [key, athlete] of Object.entries(dataObj.athletes)) {
-                    athleteNames.push(athlete.firstName.concat(" ", athlete.lastName))
-                }
-                const firstArray = [];
-                const secondArray = [];
+                if (dataObj.intermediates !== '0') {
+                    const rowData = [dataObj.rank, dataObj.lane, dataObj.nation_ioc];
+                    const athleteNames = Object.values(dataObj.athletes).map(athlete =>
+                        `(${athlete.position}) ${athlete.firstName} ${athlete.lastName}`)
 
-                const speedValues = [];
-                const strokeValues = [];
-                const propulsionValues = [];
+                    const firstArray = [];
+                    const secondArray = [];
+                    const speedValues = [];
+                    const strokeValues = [];
+                    const propulsionValues = [];
 
-                for (const [key, gpsData] of Object.entries(dataObj.gpsData)) {
-                    for (const intermediateDistance in intermediateDistances) {
-                        const objectKeys = Object.keys(gpsData);
-                        if (objectKeys.includes(intermediateDistance)) {
-                            speedValues.push(gpsData[intermediateDistance]["speed [m/s]"] + "[m/s]")
-                            strokeValues.push(gpsData[intermediateDistance]["stroke [1/min]"] + "[1/min]")
-                            propulsionValues.push(gpsData[intermediateDistance]["propulsion [m/stroke]"] + "[m/Schlag]")
+                    Object.values(dataObj.gpsData).forEach(gpsData => {
+                        Object.keys(gpsData)
+                            .filter(intermediateDistance => intermediateDistance !== '0')
+                            .forEach(intermediateDistance => {
+                                speedValues.push(gpsData[intermediateDistance]["speed [m/s]"] + "[m/s]");
+                                strokeValues.push(gpsData[intermediateDistance]["stroke [1/min]"] + "[1/min]");
+                                propulsionValues.push(gpsData[intermediateDistance]["propulsion [m/stroke]"] + "[m/Schlag]");
+                            });
+                    });
+                    rowData.push(athleteNames);
+                    for (const [index, [key, intermediate]] of Object.entries(dataObj.intermediates).entries()) {
+                        if (key !== '0') {
+                            firstArray.push(
+                                formatMilliseconds(intermediate["time [t]"]),
+                                formatMilliseconds(intermediate["pace [t]"]),
+                                formatMilliseconds(intermediate["deficit [s]"])
+                            )
+                            secondArray.push(["(" + intermediate["rank"] + ")", speedValues[index], strokeValues[index], propulsionValues[index]])
                         }
                     }
+                    const chunkSize = 3;
+                    const tempArray = [];
+                    for (let i = 0; i < firstArray.length; i += chunkSize) {
+                        tempArray.push(firstArray.slice(i, i + chunkSize));
+                    }
+                    tempArray.forEach((value, index) => {
+                        rowData.push(value)
+                        rowData.push(secondArray[index])
+                    })
+                    tableData.push(rowData);
                 }
-
-                rowData.push(athleteNames);
-                for (const [index, [key, intermediate]] of Object.entries(dataObj.intermediates).entries()) {
-                    firstArray.push(
-                        formatMilliseconds(intermediate["time [t]"]),
-                        formatMilliseconds(intermediate["pace [t]"]),
-                        formatMilliseconds(intermediate["deficit [s]"])
-                    )
-                    secondArray.push(["(" + intermediate["rank"] + ")", speedValues[index], strokeValues[index], propulsionValues[index]])
-                }
-
-                const chunkSize = 3;
-                const tempArray = [];
-                for (let i = 0; i < firstArray.length; i += chunkSize) {
-                    tempArray.push(firstArray.slice(i, i + chunkSize));
-
-                }
-
-                tempArray.forEach((value, index) => {
-                    rowData.push(value)
-                    rowData.push(secondArray[index])
-                })
-
-                tableData.push(rowData);
             })
+            state.tableExport = tableData
             return tableData;
         },
 
@@ -365,7 +372,10 @@ export const useRennstrukturAnalyseState = defineStore({
                 for (const [key, val] of Object.entries(speedData)) {
                     const speedWinner = winnerTeamSpeeds[key]
                     const speedCurrentTeam = val["speed [m/s]"]
-                    let time = 50 / speedWinner;
+                    let time = 0
+                    if (speedWinner !== 0) {
+                        time = 50 / speedWinner;
+                    }
                     diffSpeedValues[key] = (speedWinner * time) - (speedCurrentTeam * time);
                 }
                 speedPerTeam[i] = diffSpeedValues
@@ -385,7 +395,6 @@ export const useRennstrukturAnalyseState = defineStore({
                 labels: Array.from(new Set([].concat(...allKeys))),
                 datasets
             };
-            // const timeValues = state.data.raceData[0].data.map(dataObj => dataObj.intermediates)[0];
         },
         getGPSChartData(state) {
             const chartDataKeys = ['speed [m/s]', 'stroke [1/min]', 'propulsion [m/stroke]'];
@@ -396,6 +405,7 @@ export const useRennstrukturAnalyseState = defineStore({
                     const label = dataObj.nation_ioc;
                     const backgroundColor = COLORS[colorIndex % 6];
                     const borderColor = COLORS[colorIndex % 6];
+                    dataObj.gpsData.distance["0"] = {'speed [m/s]': 0, 'stroke [1/min]': 0, 'propulsion [m/stroke]': 0}
                     const data = Object.values(dataObj.gpsData.distance).map(obj => obj[key]);
                     datasets.push({label, backgroundColor, borderColor, data});
                     colorIndex++;
@@ -415,6 +425,8 @@ export const useRennstrukturAnalyseState = defineStore({
                     const label = dataObj.nation_ioc;
                     const backgroundColor = COLORS[colorIndex % 6];
                     const borderColor = COLORS[colorIndex % 6];
+                    // add zero values as start point
+                    dataObj.intermediates["0"] = {"rank": 1, "deficit [s]": 0}
                     let data = Object.values(dataObj.intermediates).map(distanceObj => distanceObj[key]);
                     if (key === "deficit [s]") {
                         data = data.map(x => formatMilliseconds(x))
@@ -431,15 +443,13 @@ export const useRennstrukturAnalyseState = defineStore({
         }
     },
     actions: {
-        // define actions here
-        async fetchData() {
+        async getFilterOptions() {
             try {
-                const response = await axios.get(
-                    'https://test.com/get_report_filter_options'
-                );
-                this.data = response.data[0];
+                this.data.filterOptions[0].competition_category_ids = await axios.get(
+                    'http://localhost:5000/competition_category/'
+                )
             } catch (error) {
-                console.error(error);
+                console.error(error)
             }
         },
         async postFormData(formData) {
@@ -503,7 +513,7 @@ export const useRennstrukturAnalyseState = defineStore({
                 this.loadingState = false
             }, 800);
             /*
-            await axios.post('https://jsonplaceholder.typicode.com/users', {formData})
+            await axios.post('http://localhost:5000//competition', {formData})
                 .then(response => {
                     // Bearbeite die Antwort des Backends hier
                 }).catch(error => {
@@ -516,6 +526,23 @@ export const useRennstrukturAnalyseState = defineStore({
         },
         setToLoadingState() {
             this.loadingState = true
+        },
+        exportTableData() {
+            let finalData = []
+            for (const data of Object.values(this.tableExport)) {
+                let rowData = []
+                for (const [, value] of data.entries()) {
+                    Array.isArray(value) ? rowData.push(value.join("/")) : rowData.push(value)
+                }
+                finalData.push(rowData)
+            }
+            const csvContent = "data:text/csv;charset=utf-8," + finalData.map(e => e.join(",")).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "rennstruktur.csv");
+            document.body.appendChild(link);
+            link.click();
         }
     }
 });
