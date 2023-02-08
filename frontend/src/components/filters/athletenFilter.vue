@@ -154,7 +154,7 @@ export default {
     searchAthletes(e) {
       const store = useAthletenState()
       const searchInput = e.target.value
-      if (searchInput.length > 2) {
+      if (searchInput.length > 0) {
         clearTimeout(this.timeoutId)
         this.timeoutId = setTimeout(() => {
           store.postSearchAthlete({

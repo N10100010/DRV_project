@@ -78,6 +78,8 @@
                     ></v-list-item>
                     </div>
                   </v-list>
+
+
                   <!-- races list -->
                   <v-list density="compact" v-show="displayRaces && !loading">
                     <div :style="{'display': 'grid', 'grid-template-columns': (mobile ? '1fr' : 'repeat(2, 1fr)'), 'grid-gap': '0.5rem'}">

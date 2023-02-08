@@ -7,7 +7,7 @@ from flask import Flask
 from flask import request
 from flask import abort
 
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import joinedload
 
 from model import model
@@ -301,10 +301,13 @@ def get_athlete_by_name(search_query: str):
         model.Athlete.first_name__,
         model.Athlete.last_name__,
         model.Athlete.id
-    ).where(model.Athlete.first_name__ == search_query))
+    ).where(or_(
+        model.Athlete.last_name__ == search_query.upper(),
+        model.Athlete.first_name__ == search_query
+    )))
 
     return json.dumps([{
-        "name": str(athlete.first_name__ + " " + athlete.last_name__),
+        "name": f"{athlete.last_name__}, {athlete.first_name__}",
         "id": athlete.id
     } for athlete in athletes])
 
