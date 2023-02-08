@@ -1,13 +1,13 @@
 import os
 import datetime
 import json
-import collections
+from statistics import stdev, median, mean
 
 from flask import Flask
 from flask import request
 from flask import abort
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, and_
 from sqlalchemy.orm import joinedload
 
 from model import model
@@ -197,6 +197,92 @@ def shutdown_session(exception=None):
 #     todo:
 #     """
 #     return {}
+
+@app.route('/get_report_boat_class', methods=['POST'])
+def get_report_boat_class():
+    """
+    Delivers the report results for a single boat class.
+    Filter conditions are sent via request body:
+    {
+        "years": {"start_year": 2019, "end_year": 2024},
+        "competition_categories": [1, 2, 4, 6, 10, 12, 3, 11, 8, 5, 9, 7, 13],
+        "boat_classes": "JW1x",
+        "runs": [0, 1, 2],
+        "runs_fine": ["fa", "fb", "fc", "fd", "f...", "sa/b, sa/b/c", "sc/d, sd/e/f", "s...", "q1-4"],
+        "ranks": ["1", "2", "3", "4-6"]
+    }
+    """
+    # extract data from filter | ignored for now: runs, runs_fine and ranks
+    filter_data = request.json["data"]
+    filter_keys = ["years", "competition_categories", "boat_classes"]
+    years, competition_categories, boat_classes = [filter_data.get(key) for key in filter_keys]
+    start_year = years.get("start_year")
+    end_year = years.get("end_year")
+    # read from db
+    session = Scoped_Session()
+    start_date = func.to_timestamp(func.concat(start_year, "-01-01 00:00:00"), 'YYYY-MM-DD HH24:MI:SS')
+    end_date = func.to_timestamp(func.concat(end_year, "-12-31 23:59:59"), 'YYYY-MM-DD HH24:MI:SS')
+    statement = (
+        select([model.Race, model.Event])
+        .where(and_(
+            model.Race.date >= start_date,
+            model.Race.date <= end_date,
+            model.Event.boat_class_id == int(boat_classes)
+        ))
+        .join(model.Event, model.Race.event)
+    )
+    races = session.execute(statement).fetchall()
+
+    boat_class_id = int(set([race[0].event.boat_class_id for race in races for _ in race[0].race_boats]).pop())
+    race_times, race_dates = [], []
+    for race in races:
+        for race_boat in race[0].race_boats:
+            if race_boat.result_time_ms and race[0].date:
+                race_times.append(race_boat.result_time_ms)
+                date = race[0].date
+                race_dates.append('{:02d}'.format(date.year)+'-{:02d}'.format(date.month)+'-{:02d}'.format(date.day))
+
+    return json.dumps({
+        "results": len(race_times),
+        "boat_class": boat_class_id,
+        "start_date": start_year,
+        "end_date": end_year,
+        "world_best_time_boat_class": None,  # int
+        "best_in_period": None,  # int
+        "mean": {
+            "mm:ss,00": int(mean(race_times)),
+            "m/s": None,  # float
+            "pace 500m": None,  # int
+            "pace 1000m": None  # int
+        },
+        "std_dev": int(stdev(race_times)),
+        "median": median(race_times),
+        "gradation_fastest": {
+            "results": None,
+            "time": None
+        },
+        "gradation_medium": {
+            "results": None,
+            "time": None
+        },
+        "gradation_slow": {
+            "results": None,
+            "time": None
+        },
+        "gradation_slowest": {
+            "results": None,
+            "time": None
+        },
+        "plot_data": {
+            "histogram": {
+                # TODO: add histogram labels and data
+            },
+            "scatter_plot": {
+                "labels": race_dates,
+                "data": race_times
+            }
+        }
+    })
 
 
 @app.route('/get_athlete_by_name/<search_query>', methods=['GET'])

@@ -1,9 +1,3 @@
-<script setup>
-import { Line } from 'vue-chartjs'
-import {Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend} from 'chart.js'
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
-</script>
-
 <template>
     <div class="chart-container" :style="{ minHeight: mobile ? '200px' : '380px' }">
       <Line
@@ -14,6 +8,10 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 </template>
 
 <script>
+import {Line} from "vue-chartjs";
+import {Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend} from 'chart.js'
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
+
 export default {
   name: 'App',
   components: {

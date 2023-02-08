@@ -208,7 +208,7 @@ export default {
           "start_year": this.startYear,
           "end_year": this.endYear
         },
-        "competition_category_ids": this.compTypes.filter(item => this.optionsCompTypes.includes(item.display_name))
+        "competition_categories": this.compTypes.filter(item => this.optionsCompTypes.includes(item.display_name))
             .map(item => item.id),
         "boat_classes": this.selectedBoatClasses,
         "runs": this.selectedRuns,

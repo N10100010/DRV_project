@@ -1,5 +1,6 @@
 import axios from "axios";
 import {defineStore} from "pinia";
+import {resolve} from "chart.js/helpers";
 
 const formatMilliseconds = ms => new Date(ms).toISOString().slice(14, -2);
 
@@ -923,14 +924,15 @@ export const useBerichteState = defineStore({
                     console.error(`Request failed: ${error}`)
                 })
         },
-        async postFormData(formData) {
-            this.selectedBoatClass = formData.boat_classes
-            await axios.post('https://jsonplaceholder.typicode.com/users', {formData})
-                .then(response => {
-                    // Bearbeite die Antwort des Backends hier
+        async postFormData(data) {
+            console.log(data)
+            this.selectedBoatClass = data.boat_classes
 
+            await axios.post('http://localhost:5000/get_report_boat_class', {data})
+                .then(response => {
+                    console.log(response)
                 }).catch(error => {
-                    // Bearbeite den Fehler hier
+                    console.error(`Request failed: ${error}`)
                 })
         },
         setFilterState(filterState) {

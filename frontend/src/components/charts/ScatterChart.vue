@@ -1,7 +1,3 @@
-<script setup>
-import { Scatter } from 'vue-chartjs'
-</script>
-
 <template>
   <div class="chart-container" :style="{ minHeight: mobile ? '200px' : '380px' }">
     <scatter
@@ -12,6 +8,8 @@ import { Scatter } from 'vue-chartjs'
 </template>
 
 <script>
+import {Scatter} from "vue-chartjs";
+
 export default {
   components: {
     Scatter
