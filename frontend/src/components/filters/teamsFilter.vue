@@ -74,6 +74,7 @@ import Checkbox from "@/components/filters/checkbox.vue";
 import {mapState} from "pinia";
 import {useTeamsState} from "@/stores/teamsStore";
 import {useAthletenState} from "@/stores/athletenStore";
+import {useBerichteState} from "@/stores/berichteStore";
 
 export default {
   components: {Checkbox},
@@ -87,6 +88,8 @@ export default {
   },
   data() {
     return {
+      // api filter data
+      filterData: [],
       // general
       mobile: false,
       hoverFilter: false,
@@ -96,7 +99,7 @@ export default {
       // competition type
       compTypes: [],
       optionsCompTypes: [],
-      selectedCompTypes: ["OG", "EM", "WCh", "WCI", "WCII", "WCIII", "LS"],
+      selectedCompTypes: ["Olympics"],
 
       // year
       birthYear: null,
@@ -124,46 +127,31 @@ export default {
     window.addEventListener('resize', this.checkScreen)
     this.checkScreen()
 
-    // handle form data
-    this.startYear = Object.values(this.filterOptions[0].year[0])[0]
-    this.endYear = Object.values(this.filterOptions[0].year[1])[0]
-    this.optionsStartYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
-    this.optionsEndYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
-
-    // competition category id
-    this.compTypes = this.filterOptions[0].competition_category_ids
-    this.optionsCompTypes = this.compTypes.map(item => item.displayName)
-
-    // nation_code
-    let countryCodes = Object.keys(this.filterOptions[0].nations)
-    let countryNames = Object.values(this.filterOptions[0].nations)
-    let finalCountryNames = []
-    for (const [idx, countryCode] of countryCodes.entries()) {
-      finalCountryNames.push(countryCode + " (" + countryNames[idx] + ")")
-    }
-    this.optionsNations = finalCountryNames
-
-    // boatclasses
-    this.genderTypeOptions = Object.keys(this.filterOptions[0].boat_class)
-    let ageGroupOptions = Object.keys(this.filterOptions[0].boat_class.men)
-    ageGroupOptions.push(...Object.keys(this.filterOptions[0].boat_class.women))
-    this.ageGroupOptions = ageGroupOptions.filter((v, i, a) => a.indexOf(v) === i); // exclude non-unique values
-
-    let boatClassOptions = []
-    let values = Object.values(this.filterOptions[0].boat_class)[0]
-    Object.entries(values).forEach(([key, value], index) => {
-      if (index === 0) {
-        Object.entries(value).forEach(([, val]) => {
-            boatClassOptions.push(Object.keys(val)[0])
-        })
-      }
-    });
-    this.ageGroupOptions = []
-    this.selectedBoatClasses = ["Alle"]
-    this.optionsBoatClasses = boatClassOptions
+    const store = useTeamsState()
+    store.fetchTeamsFilterOptions()
+    this.initializeFilter(this.filterOptions[0])
   },
   methods: {
+    initializeFilter(data) {
+      // handle form data
+      this.startYear = Object.values(data.years[0])[0]
+      this.endYear = Object.values(data.years[1])[0]
+      this.optionsStartYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
+      this.optionsEndYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
 
+      // competition category id
+      this.compTypes = data.competition_categories
+      this.optionsCompTypes = this.compTypes.map(item => item.display_name)
+
+      // nation_code
+      let countryCodes = Object.keys(data.nations)
+      let countryNames = Object.values(data.nations)
+      let finalCountryNames = []
+      for (const [idx, countryCode] of countryCodes.entries()) {
+        finalCountryNames.push(countryCode + " (" + countryNames[idx] + ")")
+      }
+      this.optionsNations = finalCountryNames
+    },
     async onSubmit() {
       const {valid} = await this.$refs.filterForm.validate()
       if (valid) {
@@ -182,7 +170,7 @@ export default {
       return store.postFormData({
         "birthYear": this.birthYear,
         "gender": this.selectedGenders,
-        "competition_category_ids": this.compTypes.filter(item => this.optionsCompTypes.includes(item.displayName)).map(item => item.id),
+        "competition_categories": this.compTypes.filter(item => this.optionsCompTypes.includes(item.display_name)).map(item => item.id),
         "nation_ioc": this.selectedNation
       }).then(() => {
         console.log("Form data sent...")
@@ -219,71 +207,11 @@ export default {
         store.setFilterState(oldVal)
       }
     },
-    selectedGenders: function (newVal,) {
-      if (newVal !== undefined) {
-        this.selectedBoatClasses = null
-        let optionsList = []
-        if (newVal === 0) { // men
-          optionsList.push(...Object.keys(this.filterOptions[0].boat_class.men))
-          this.optionsDisciplines = ["Skull", "Riemen"]
-        }
-        if (newVal === 1) { // women
-          optionsList.push(...Object.keys(this.filterOptions[0].boat_class.women))
-          this.optionsDisciplines = ["Skull", "Riemen"]
-        }
-        if (newVal === 2) { // mixed
-          optionsList = []
-          let test = []
-          for (const mixedOption of Object.values(this.filterOptions[0].boat_class.mixed)) {
-            test.push(Object.values(mixedOption))
-          }
-          this.optionsBoatClasses = test.map(item => item[0]).flat()
-          this.optionsDisciplines = ["Skull", "Riemen"]
-        }
-        if (newVal === 3) { // all
-          this.ageGroupOptions = []
-          this.optionsBoatClasses = ["Alle"]
-          this.selectedBoatClasses = this.optionsBoatClasses
-        }
-        this.ageGroupOptions = optionsList.filter((v, i, a) => a.indexOf(v) === i); // exclude non-unique values
-        let boatClassOptions = []
-        Object.entries(Object.values(this.filterOptions[0].boat_class)[newVal]).forEach(([key, value], index) => {
-          if (index === this.selectedAgeGroups) {
-            Object.entries(value).forEach(([, val]) => {
-              if (typeof val === "object") {
-                boatClassOptions.push(Object.values(val)[0])
-              }
-            })
-          }
-        });
-        if (newVal !== 2 && newVal !== 3) {
-          this.optionsBoatClasses = boatClassOptions
-          this.selectedBoatClasses = boatClassOptions[0]
-        } else if (newVal === 2) {
-          this.selectedBoatClasses = this.optionsBoatClasses[0]
-        }
-      }
+    async filterOptions(newVal,) {
+      this.filterData = newVal[0]
     },
-    selectedAgeGroups: function (newVal,) {
-      if (newVal !== undefined) {
-        this.selectedBoatClasses = null
-        let genderObj = Object.values(this.filterOptions[0].boat_class)[this.selectedGenders]
-        let boatClassOptions = []
-
-        Object.entries(genderObj).forEach(([key, value], index) => {
-          if (index === newVal) {
-            Object.entries(value).forEach(([, val]) => {
-              if (typeof val === "object") {
-                boatClassOptions.push(Object.values(val)[0])
-              }
-            })
-          }
-        });
-        this.selectedBoatClasses = boatClassOptions[0]
-        if (this.selectedGenders !== 2 && this.selectedGenders !== 3) {
-          this.optionsBoatClasses = boatClassOptions
-        }
-      }
+    filterData: function (newVal,) {
+      this.initializeFilter(newVal)
     }
   }
 }

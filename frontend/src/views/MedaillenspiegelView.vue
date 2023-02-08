@@ -39,16 +39,14 @@
         </v-col>
         <v-divider></v-divider>
         <v-container class="pa-0 mt-8">
-          <v-row>
-            <v-col :cols="mobile ? 12 : 6" class="pa-0">
-              <h2>Men's Single Sculls</h2>
+          <v-row class="ma-0">
+            <v-col :cols="mobile ? 12 : 10" class="pa-0">
+              <h2><b> {{ filterSelection.start_date }}</b> | <b>{{ filterSelection.events }}</b> | <b>{{ filterSelection.category }}</b></h2>
               <v-alert type="success" variant="tonal" class="my-2" v-if="filterSelection.results">
                 <v-row>
                   <v-col>
-                    <p>{{ filterSelection.results }} Datensätze |
-                      Von {{ filterSelection.start_date.slice(0, 4) }}
-                      Bis {{ filterSelection.end_date.slice(0, 4) }}<br>
-                      in {{ filterSelection.nation_ioc }}
+                    <p>{{ filterSelection.results }} Datensätze
+                      <!--bis {{ filterSelection.end_date }}<br>-->
                     </p>
                   </v-col>
                 </v-row>
@@ -62,26 +60,23 @@
               </v-alert>
               <v-table class="tableStyles mb-4" density="compact">
                 <tbody class="nth-grey">
-                <tr v-for="(el, idx) in tableData[0]">
-                  <th>{{ el }}</th>
-                  <td>
-                    <template v-if="typeof tableData[1][idx] === 'object'" v-for="(value, key) in tableData[1][idx]">
-                      {{ value }} ({{ key }}) <br/>
+                <template v-for="(el, idx) in tableData">
+                  <tr>
+                    <template v-for="item in el">
+                      <td v-if="idx === 0"><b>{{ item }}</b></td>
+                      <td v-else>{{ item }}</td>
                     </template>
-                    <template v-else>
-                      {{ tableData[1][idx] }}
-                    </template>
-                  </td>
-                </tr>
+                  </tr>
+                </template>
                 </tbody>
               </v-table>
             </v-col>
-            <v-col :cols="mobile ? 12 : 6">
-              <v-container class="chart-bg">
+          </v-row>
+          <v-col :cols="mobile ? 12 : 8" class="pa-0">
+              <v-container class="chart-bg pa-0">
                 <BarChart :data="medalChartData" :chartOptions="medalChartOptions"></BarChart>
               </v-container>
             </v-col>
-          </v-row>
         </v-container>
       </v-container>
     </v-layout>
@@ -95,7 +90,6 @@ import BarChart from "@/components/charts/BarChart.vue";
 
 <script>
 import {mapState} from "pinia";
-import {useBerichteState} from "@/stores/berichteStore";
 import {useMedaillenspiegelState} from "@/stores/medaillenspiegelStore";
 
 export default {
@@ -141,6 +135,8 @@ export default {
       mobile: false,
       filterOpen: false,
       medalChartOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             display: true
