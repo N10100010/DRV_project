@@ -81,6 +81,7 @@ export default {
       hoverFilter: false,
       drawer: null,
       formValid: true,
+      timeoutId: null,
 
       // athletes
       selectedAthlete: null,
@@ -154,9 +155,12 @@ export default {
       const store = useAthletenState()
       const searchInput = e.target.value
       if (searchInput.length > 2) {
-        store.postSearchAthlete({
-          "searchInput": searchInput
-        })
+        clearTimeout(this.timeoutId)
+        this.timeoutId = setTimeout(() => {
+          store.postSearchAthlete({
+            "searchInput": searchInput
+          })
+        }, 450)
       }
     },
     async onSubmit() {

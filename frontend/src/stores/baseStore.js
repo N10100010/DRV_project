@@ -453,8 +453,6 @@ export const useRennstrukturAnalyseState = defineStore({
             }
         },
         async postFormData(formData) {
-
-
             setTimeout(() => {
                 this.data.analysis = [
                     {
@@ -538,19 +536,13 @@ export const useRennstrukturAnalyseState = defineStore({
                 }
                 finalData.push(rowData)
             }
-            console.log(finalData)
             const csvContent = "data:text/csv;charset=utf-8," + finalData.map(e => e.join(",")).join("\n");
-
-
-
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
             link.setAttribute("download", "rennstruktur.csv");
             document.body.appendChild(link);
             link.click();
-
-
         }
     }
 });
