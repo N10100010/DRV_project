@@ -242,18 +242,21 @@ def get_report_boat_class():
                 date = race[0].date
                 race_dates.append('{:02d}'.format(date.year)+'-{:02d}'.format(date.month)+'-{:02d}'.format(date.day))
 
+    # TODO: correct calc of mean speed?
+    mean_speed = round(mean([2000/(time/1000) for time in race_times]), 4)
+
     return json.dumps({
         "results": len(race_times),
         "boat_class": boat_class_id,
         "start_date": start_year,
         "end_date": end_year,
-        "world_best_time_boat_class": None,  # int
-        "best_in_period": None,  # int
+        "world_best_time_boat_class": None,  # TODO: int
+        "best_in_period": None,  # TODO: int
         "mean": {
             "mm:ss,00": int(mean(race_times)),
-            "m/s": None,  # float
-            "pace 500m": None,  # int
-            "pace 1000m": None  # int
+            "m/s": mean_speed,
+            "pace 500m": None,  # TODO: int
+            "pace 1000m": None  # TODO: int
         },
         "std_dev": int(stdev(race_times)),
         "median": median(race_times),
@@ -275,7 +278,8 @@ def get_report_boat_class():
         },
         "plot_data": {
             "histogram": {
-                # TODO: add histogram labels and data
+                "labels": [],
+                "data": []
             },
             "scatter_plot": {
                 "labels": race_dates,
