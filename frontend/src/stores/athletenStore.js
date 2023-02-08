@@ -154,11 +154,7 @@ export const useAthletenState = defineStore({
             return state.filterOpen
         },
         getPreviewAthleteResults(state) {
-            const athleteNames = [];
-            for (const athlete of state.previewAthleteResults) {
-                athleteNames.push(athlete.firstName + " " + athlete.lastName)
-            }
-            return athleteNames
+            return state.previewAthleteResults
         },
         getAthletenFilterOptions(state) {
             return state.filterOptions
@@ -178,17 +174,14 @@ export const useAthletenState = defineStore({
                     console.error(`Request failed: ${error}`)
                 })
         },
-        postSearchAthlete(formData) {
-            this.previewAthleteResults = [{
-                "id": 1,
-                "firstName": "Markus",
-                "lastName": "Last"
-            },
-                {
-                    "id": 2,
-                    "firstName": "Kay",
-                    "lastName": "Winkert"
-                }]
+        async postSearchAthlete(formData) {
+            // TODO: convert to post request and also send the filter data
+            await axios.get(`http://localhost:5000/get_athlete_by_name/${formData.searchInput}`)
+                .then(response => {
+                    this.previewAthleteResults = response.data.map(athlete => athlete.name)
+                }).catch(error => {
+                    console.error(`Request failed: ${error}`)
+                })
         },
         setFilterState(filterState) {
             this.filterOpen = !filterState

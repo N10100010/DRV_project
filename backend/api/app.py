@@ -199,6 +199,29 @@ def shutdown_session(exception=None):
 #     return {}
 
 
+@app.route('/get_athlete_by_name/<search_query>', methods=['GET'])
+def get_athlete_by_name(search_query: str):
+    """
+    Delivers the filter options for the athletes page.
+    """
+    session = Scoped_Session()
+    athletes = session.execute(select(
+        model.Athlete.first_name__,
+        model.Athlete.last_name__,
+        model.Athlete.id
+    ).where(model.Athlete.first_name__ == search_query))
+
+    return json.dumps([{
+        "name": str(athlete.first_name__ + " " + athlete.last_name__),
+        "id": athlete.id
+    } for athlete in athletes])
+
+
+"""
+ENDPOINTS TO GET FILTER SELECTION OPTIONS
+"""
+
+
 @app.route('/get_athletes_filter_options', methods=['GET'])
 def get_athletes_filter_options():
     """
