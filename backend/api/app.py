@@ -6,6 +6,7 @@ from statistics import stdev, median, mean
 from flask import Flask
 from flask import request
 from flask import abort
+from flask_cors import CORS
 
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import joinedload
@@ -15,6 +16,11 @@ from . import mocks
 
 # app is the main controller for the Flask-Server and will start the app in the main function 
 app = Flask(__name__, template_folder=None)
+
+# NOTE that the following line opnes ALL endpoints for cross-origin requests!
+# This has to be tied to the actual public frontend domain as soon as a
+# serious authentication system is implemented. See docs of flask_cors
+CORS(app)
 
 # used similar to a context manager. using the constructor creates a scoped session, bound to its creating function scope 
 Scoped_Session = model.Scoped_Session
@@ -40,7 +46,7 @@ def healthcheck():
     return "healthy"
 
 
-@app.route('/competition_category/', methods=['GET'])
+@app.route('/competition_category/', methods=['GET', 'POST'])
 def get_competition_categories():
     """
     todo: comment
