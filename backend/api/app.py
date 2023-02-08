@@ -242,8 +242,9 @@ def get_report_boat_class():
                 date = race[0].date
                 race_dates.append('{:02d}'.format(date.year)+'-{:02d}'.format(date.month)+'-{:02d}'.format(date.day))
 
-    # TODO: correct calc of mean speed?
-    mean_speed = round(mean([2000/(time/1000) for time in race_times]), 4)
+    # TODO: Set race length dynamically
+    race_distance = 2000
+    mean_speed = round(mean([race_distance/(time/1000) for time in race_times]), 4)
 
     return json.dumps({
         "results": len(race_times),
@@ -328,9 +329,10 @@ def get_athletes_filter_options():
             {"end_year": max(birth_years)}],
         "nations": {entity.country_code: entity.name for entity in
                     session.execute(select(model.Country)).scalars()},
+        # TODO: insert global variable for boat class
         "boat_classes": {
             "men": {
-                "junior": {
+                "u19": {
                     "single": {"JM1x": "Junior Men's Single Sculls"},
                     "double": {"JM2x": "Junior Men's Double Sculls"},
                     "quad": {"JM4x": "Junior Men's Quadruple Sculls"},
@@ -339,7 +341,6 @@ def get_athletes_filter_options():
                     "four": {"JM4-": "Junior Men's Four"},
                     "eight": {"JM8-": "Junior Men's Eight"}
                 },
-                "u19": {},
                 "u23": {
                     "single": {"BM1x": "U23 Men's Single Sculls"},
                     "double": {"BM2x": "U23 Men's Double Sculls"},
@@ -372,7 +373,7 @@ def get_athletes_filter_options():
                 }
             },
             "women": {
-                "junior": {
+                "u19": {
                     "single": {"JW1x": "Junior Women's Single Sculls"},
                     "double": {"JW2x": "Junior Women's Double Sculls"},
                     "quad": {"JW4x": "Junior Women's Quadruple Sculls"},
@@ -381,7 +382,6 @@ def get_athletes_filter_options():
                     "four": {"JW4-": "Junior Women's Four"},
                     "eight": {"JW8-": "Junior Women's Eight"}
                 },
-                "u19": {},
                 "u23": {
                     "single": {"BW1x": "U23 Women's Single Sculls"},
                     "double": {"BW2x": "U23 Women's Double Sculls"},
@@ -461,9 +461,9 @@ def get_medals_filter_options():
         ],
         "nations": {entity.country_code: entity.name for entity in
                     session.execute(select(model.Country)).scalars()},
-        "boat_classes": {
+        "boat_classes": {  # TODO: insert global variable here
             "men": {
-                "junior": {
+                "u19": {
                     "single": {"JM1x": "Junior Men's Single Sculls"},
                     "double": {"JM2x": "Junior Men's Double Sculls"},
                     "quad": {"JM4x": "Junior Men's Quadruple Sculls"},
@@ -472,7 +472,6 @@ def get_medals_filter_options():
                     "four": {"JM4-": "Junior Men's Four"},
                     "eight": {"JM8-": "Junior Men's Eight"}
                 },
-                "u19": {},
                 "u23": {
                     "single": {"BM1x": "U23 Men's Single Sculls"},
                     "double": {"BM2x": "U23 Men's Double Sculls"},
@@ -505,7 +504,7 @@ def get_medals_filter_options():
                 }
             },
             "women": {
-                "junior": {
+                "u19": {
                     "single": {"JW1x": "Junior Women's Single Sculls"},
                     "double": {"JW2x": "Junior Women's Double Sculls"},
                     "quad": {"JW4x": "Junior Women's Quadruple Sculls"},
@@ -514,7 +513,6 @@ def get_medals_filter_options():
                     "four": {"JW4-": "Junior Women's Four"},
                     "eight": {"JW8-": "Junior Women's Eight"}
                 },
-                "u19": {},
                 "u23": {
                     "single": {"BW1x": "U23 Women's Single Sculls"},
                     "double": {"BW2x": "U23 Women's Double Sculls"},
@@ -573,7 +571,7 @@ def get_report_filter_options():
         "years": [{"start_year": min_year}, {"end_year": max_year}],
         "boat_classes": {
             "men": {
-                "junior": {
+                "u19": {
                     "single": {"JM1x": "Junior Men's Single Sculls"},
                     "double": {"JM2x": "Junior Men's Double Sculls"},
                     "quad": {"JM4x": "Junior Men's Quadruple Sculls"},
@@ -582,7 +580,6 @@ def get_report_filter_options():
                     "four": {"JM4-": "Junior Men's Four"},
                     "eight": {"JM8-": "Junior Men's Eight"}
                 },
-                "u19": {},
                 "u23": {
                     "single": {"BM1x": "U23 Men's Single Sculls"},
                     "double": {"BM2x": "U23 Men's Double Sculls"},
@@ -615,7 +612,7 @@ def get_report_filter_options():
                 }
             },
             "women": {
-                "junior": {
+                "u19": {
                     "single": {"JW1x": "Junior Women's Single Sculls"},
                     "double": {"JW2x": "Junior Women's Double Sculls"},
                     "quad": {"JW4x": "Junior Women's Quadruple Sculls"},
@@ -624,7 +621,6 @@ def get_report_filter_options():
                     "four": {"JW4-": "Junior Women's Four"},
                     "eight": {"JW8-": "Junior Women's Eight"}
                 },
-                "u19": {},
                 "u23": {
                     "single": {"BW1x": "U23 Women's Single Sculls"},
                     "double": {"BW2x": "U23 Women's Double Sculls"},
