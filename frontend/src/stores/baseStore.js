@@ -453,8 +453,6 @@ export const useRennstrukturAnalyseState = defineStore({
             }
         },
         async postFormData(formData) {
-
-
             setTimeout(() => {
                 this.data.analysis = [
                     {
@@ -530,7 +528,15 @@ export const useRennstrukturAnalyseState = defineStore({
             this.loadingState = true
         },
         exportTableData() {
-            const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(e => e.join(",")).join("\n");
+            let finalData = []
+            for (const data of Object.values(this.tableExport)) {
+                let rowData = []
+                for (const [, value] of data.entries()) {
+                    Array.isArray(value) ? rowData.push(value.join("/")) : rowData.push(value)
+                }
+                finalData.push(rowData)
+            }
+            const csvContent = "data:text/csv;charset=utf-8," + finalData.map(e => e.join(",")).join("\n");
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
