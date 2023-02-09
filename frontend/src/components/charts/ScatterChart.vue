@@ -1,9 +1,5 @@
-<script setup>
-import { Scatter } from 'vue-chartjs'
-</script>
-
 <template>
-  <div class="chart-container">
+  <div class="chart-container" :style="{ minHeight: mobile ? '200px' : '380px' }">
     <scatter
       :options="chartOptions"
       :data="data"
@@ -12,17 +8,36 @@ import { Scatter } from 'vue-chartjs'
 </template>
 
 <script>
+import {Scatter} from "vue-chartjs";
+
 export default {
   components: {
     Scatter
   },
-  props: ['data', 'chartOptions']
+  props: ['data', 'chartOptions'],
+  data() {
+    return {
+      mobile: false
+    }
+  },
+  created() {
+    window.addEventListener('resize', this.checkScreen);
+    this.checkScreen();
+  },
+  methods: {
+    checkScreen() {
+      this.windowWidth = window.innerWidth;
+      this.mobile = this.windowWidth <= 750
+    }
+  }
 }
 </script>
 
 <style>
-.chart-container > canvas {
-  width: 100% !important;
-  height: 100% !important;
+.chart-container {
+  position: relative;
+  margin: auto;
+  height: 100%;
+  width: 100%;
 }
 </style>

@@ -15,7 +15,11 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
          :height="mobile ? 100: 180"
          size="x-small"
   >
-    <v-icon>mdi-filter</v-icon>
+    <p style="writing-mode: vertical-rl; font-size: 16px; transform: rotate(180deg);">
+      <v-icon style="transform: rotate(180deg); font-size: 14px; padding-left: 6px; padding-top: 10px;">mdi-filter
+      </v-icon>
+      FILTER
+    </p>
   </v-btn>
   <v-card style="box-shadow: none; z-index: 1">
     <v-layout>
@@ -39,6 +43,8 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
               open-on-hover
           >In Berichte kannst du Analysen über längere Zeiträume und weitere Filterkriterien erstellen.
           </v-tooltip>
+          <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
+          <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
         </v-col>
         <v-divider></v-divider>
         <v-container class="pa-0 mt-2 pb-8">
@@ -72,15 +78,20 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                   <td>{{ formatMilliseconds(tableData.best_in_period) }}</td>
                 </tr>
                 <tr>
-                  <th>Mittelwerte</th>
-                  <td>
-                    <p>
-                      {{ tableData["mean"]["m/s"] }} [m/s]<br>
-                      {{ formatMilliseconds(tableData["mean"]["pace 500m"]) }} [500m]<br>
-                      {{ formatMilliseconds(tableData["mean"]["pace 1000m"]) }} [1000m]<br>
-                      {{ formatMilliseconds(tableData["mean"]["mm:ss,00"]) }} [2000m]
-                    </p>
-                  </td>
+                  <th>Ø Geschwindigkeit (m/s)</th>
+                  <td>{{ tableData["mean"]["m/s"] }}</td>
+                </tr>
+                <tr>
+                  <th>Ø t über 500m</th>
+                  <td>{{ formatMilliseconds(tableData["mean"]["pace 500m"]) }}</td>
+                </tr>
+                <tr>
+                  <th>Ø t über 1000m</th>
+                  <td>{{ formatMilliseconds(tableData["mean"]["pace 1000m"]) }}</td>
+                </tr>
+                <tr>
+                  <th>Ø t über 2000m</th>
+                  <td>{{ formatMilliseconds(tableData["mean"]["mm:ss,00"]) }}</td>
                 </tr>
                 <tr>
                   <th>Standardabweichung</th>
@@ -110,7 +121,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 <tr>
                   <th>Abstufung langsam</th>
                   <td>(n={{ tableData["gradation_slow"]["no_of_samples"] }}) {{
-                     formatMilliseconds(tableData["gradation_slow"]["time"])
+                      formatMilliseconds(tableData["gradation_slow"]["time"])
                     }}
                   </td>
                 </tr>
@@ -124,33 +135,33 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
               </v-table>
               <v-table class="tableStyles" density="compact" v-if="matrixVisible">
                 <thead>
-                  <tr>
-                    <th></th>
-                    <th>WB [t]</th>
-                    <th>Ø [t]</th>
-                    <th>Δ [s]</th>
-                    <th>n</th>
-                  </tr>
+                <tr>
+                  <th></th>
+                  <th>WB [t]</th>
+                  <th>Ø [t]</th>
+                  <th>Δ [s]</th>
+                  <th>n</th>
+                </tr>
                 </thead>
                 <tbody class="nth-grey">
-                  <template v-for="row in matrixTableData">
-                    <tr v-if="(typeof row === 'string')" class="subheader">
-                      <th><b>{{ row }}</b></th>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                    <tr v-else>
-                      <td v-for="item in row">
-                        {{ item }}
-                      </td>
-                    </tr>
-                  </template>
+                <template v-for="row in matrixTableData">
+                  <tr v-if="(typeof row === 'string')" class="subheader">
+                    <th><b>{{ row }}</b></th>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                  <tr v-else>
+                    <td v-for="item in row">
+                      {{ item }}
+                    </td>
+                  </tr>
+                </template>
                 </tbody>
               </v-table>
             </v-col>
-            <v-col :cols="mobile ? 12 : 7" class="pa-0">
+            <v-col :cols="mobile ? 12 : 7" class="pa-0" v-if="!matrixVisible">
               <v-container style="width: 100%" class="pa-2">
                 <BarChart :height="'100%'" :width="'100%'" :data="getBarChartData"
                           :chartOptions="barChartOptions" class="chart-bg"></BarChart>
@@ -170,6 +181,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
 <script>
 import {mapState} from "pinia";
 import {useBerichteState} from "@/stores/berichteStore";
+import {useMedaillenspiegelState} from "@/stores/medaillenspiegelStore";
 
 export default {
   computed: {
@@ -180,13 +192,19 @@ export default {
       matrixResults: "getMatrixTableResults"
     }),
     ...mapState(useBerichteState, {
-        matrixTableData: 'getMatrixTableData'
+      matrixTableData: 'getMatrixTableData'
     }),
     ...mapState(useBerichteState, {
       getBarChartData: "getBarChartData"
     }),
     ...mapState(useBerichteState, {
+      barChartOptions: "getBarChartOptions"
+    }),
+    ...mapState(useBerichteState, {
       getScatterChartData: "getScatterChartData"
+    }),
+    ...mapState(useBerichteState, {
+      scatterChartOptions: "getScatterChartOptions"
     }),
     ...mapState(useBerichteState, {
       filterState: "getFilterState"
@@ -196,6 +214,13 @@ export default {
     })
   },
   methods: {
+    openPrintDialog() {
+      window.print();
+    },
+    exportTableData() {
+      const store = useBerichteState()
+      store.exportTableData()
+    },
     setFilterState() {
       this.filterOpen = !this.filterOpen;
       const store = useBerichteState()
@@ -207,85 +232,18 @@ export default {
     },
     formatMilliseconds(ms) {
       return new Date(ms).toISOString().slice(14, -2)
-    }
+    },
   },
   created() {
     window.addEventListener('resize', this.checkScreen);
     this.checkScreen();
     let navbarHeight = window.innerWidth < 750 ? '71.25px' : '160px';
-      document.documentElement.style.setProperty('--navbar-height', navbarHeight);
+    document.documentElement.style.setProperty('--navbar-height', navbarHeight);
   },
   data() {
     return {
       mobile: false,
-      filterOpen: false,
-      barChartOptions: {
-        responsive: true,
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: 'Zeit [mm:ss]'
-            }
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'Anzahl Rennen'
-            }
-          }
-        },
-        plugins: {
-          legend: {
-            display: false
-          },
-          title: {
-            display: true,
-            text: "Histogram Men's Single Sculls"
-          }
-        }
-      },
-      scatterChartOptions: {
-        responsive: true,
-        scales: {
-          x: {
-            type: 'time',
-            time: {
-              unit: 'year',
-              parser: 'yyyy-mm-dd'
-            },
-            title: {
-              display: true,
-              text: 'Jahr'
-            }
-          },
-          y: {
-            type: 'time',
-            time: {
-              parser: 'HH:mm:ss',
-              unit: "seconds",
-              tooltipFormat: 'HH:mm:ss',
-              displayFormats: {
-                'seconds': "HH:mm:ss"
-              },
-              unitStepSize: 30
-            },
-            title: {
-              display: true,
-              text: 'Zeit [mm:ss.ms]'
-            }
-          }
-        },
-        plugins: {
-          legend: {
-            display: false,
-          },
-          title: {
-            display: true,
-            text: "Men's Single Sculls"
-          }
-        }
-      }
+      filterOpen: false
     }
   },
   watch: {
@@ -337,6 +295,7 @@ export default {
   border-radius: 0 5px 5px 0;
   color: #1369b0;
 }
+
 .filterToggleButtonMobile {
   position: fixed;
   z-index: 10;
@@ -345,11 +304,19 @@ export default {
   color: #1369b0;
   bottom: 10px;
 }
+
 .chart-bg {
   background-color: #fbfbfb;
   border-radius: 3px;
 }
+
 .main-container {
-  min-height: calc(100vh - (var(--navbar-height)) - 100px);
+  min-height: calc(100vh - (var(--navbar-height)) - 95px);
+}
+
+@media print {
+  i, .filterToggleButton, .filterToggleButtonMobile {
+    display: none;
+  }
 }
 </style>

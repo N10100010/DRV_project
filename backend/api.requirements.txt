@@ -3,3 +3,4 @@ Flask~=2.2.2
 waitress~=2.1.2
 SQLAlchemy~=1.4.45
 psycopg2-binary~=2.9.5
+Flask-Cors~=3.0.10

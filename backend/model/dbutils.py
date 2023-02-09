@@ -286,10 +286,10 @@ def __wr_map_competition(session, entity: model.Competition, data):
         session,
         model.Competition_Type,
         wr_map_competition_type,
-        get_(data, 'competitionType', None)
+        get_(data, 'competitionType')
     )
 
-    competition_category.competition_type = competition_type
+        competition_category.competition_type = competition_type
 
     # Venue
     venue = wr_insert(session, model.Venue, wr_map_venue, get_(data, 'venue'))

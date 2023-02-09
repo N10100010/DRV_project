@@ -106,14 +106,14 @@ export default {
               <!-- To activate the submenu add this (@mouseover="expandSubPageMenu(navEntry)") to the Link below -->
               <RouterLink :class="isActive(navEntry.link, navEntry.displayName) ?
                 'router-link-exact-active' : null"
-              :to="navEntry.link">{{ navEntry.displayName }}</RouterLink>
+              :to="navEntry.link"><b>{{ navEntry.displayName }}</b></RouterLink>
             </li>
           </ul>
         </div>
         <div id="sub-menu" v-show="showSubMenu" @mouseover="onMouseOverSubMenu">
           <ul>
             <li v-for="subMenuLink in currentSubMenu">
-              <RouterLink :to="subMenuLink.linkTo"> {{ subMenuLink.subPageName }}</RouterLink>
+              <RouterLink :to="subMenuLink.linkTo">{{ subMenuLink.subPageName }}</RouterLink>
             </li>
           </ul>
         </div>
@@ -126,7 +126,7 @@ export default {
             <h2 id="nav-header"><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></h2>
             <ul>
               <li v-for="navEntry in navigationLinks">
-                <RouterLink :to="navEntry.link" @click="toggleMobileNav">{{ navEntry.displayName }}</RouterLink>
+                <RouterLink :to="navEntry.link" @click="toggleMobileNav"><b>{{ navEntry.displayName }}</b></RouterLink>
               </li>
             </ul>
           </div>
