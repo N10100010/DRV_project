@@ -62,8 +62,9 @@ def get_competition_categories():
     return result
 
 
-@app.route('/competition/<int:year>/<int:competition_category_id>')
-def get_competitions_year_category(year: int, competition_category_id: int) -> dict:
+from flask import request as freq
+@app.route('/competition', methods=['GET'])
+def get_competitions_year_category() -> dict:
     """
     WHEN?
     This endpoint is used, when the user is on the page for the 'Rennstrukturanalyse' and selected filter for
@@ -76,24 +77,90 @@ def get_competitions_year_category(year: int, competition_category_id: int) -> d
 
     """
     from datetime import datetime
+    import logging
+
+    year = freq.args.get('year')
+    competition_category_id = freq.args.get('competition_category_id')
+    
+
+    logging.info(f"Year: {year}, comp cat: {competition_category_id}")
+
+    print(f"Year: {year}, comp cat: {competition_category_id}")
+
     session = Scoped_Session()
-    result = {}
+
     statement = (
         select(
-            model.Competition.id,
-            model.Competition.start_date,
-            model.Competition.name,
-            model.Competition.venue
-        ).where(
-            model.Competition_Category == int(competition_category_id)
-            and datetime(model.Competition.start_date).year == year
-        ).options(
-            joinedload(
-                model.Competition.events
-            ).joinedload(model.Event.races)
+            model.Race.id, 
+            model.Event.id, 
+            model.Competition.name
+        )
+        .join(model.Race.event)
+        .join(model.Event.competition)
+        .where(
+            and_(
+            model.Competition.id == 11, 
+            model.Competition.year == 2020, 
+            )
         )
     )
-    competitions = session.execute(statement)
+    
+
+    competitions = session.execute(statement).fetchall()
+
+    def _extract(data: dict, koi: list[str]): 
+        ret = {}
+
+        for key in koi: 
+            ret[key] = data.get(key, None)
+        
+        return ret
+
+
+    result = []
+    for comp in competitions: 
+        comp = comp['Competition']
+        comp_res = _extract(comp.__dict__, ["id", "name", "start_date"])
+
+        comp_events = []
+
+        for event in comp.events: 
+            event_res = _extract(event.__dict__, ["id", "name",])
+
+            event_races = []
+
+            for race in event.races: 
+                race_res = _extract(race.__dict__, ["id", "name"])
+
+                event_races.append(race_res)
+            
+            event_res['races'] = event_races
+            comp_events.append(event_res)
+
+        comp_res['events'] = event_res
+        result.append(comp_res)
+                
+
+    result = []
+    for comp in competitions: 
+        comp = comp['Competition']
+        comp_res = _extract(comp.__dict__, ["id", "name", "venue", "start_date"])
+        comp_events = []
+        for event in comp.events: 
+            event_res = _extract(event.__dict__, ["id", "name",])
+            event_races = []
+            for race in event.races: 
+                race_res = _extract(race.__dict__, ["id", "name"])
+                event_races.append(race_res)
+                print()
+
+            event_res['races'] = event_races
+
+        comp_res['events'] = comp_events
+
+        result.append(comp_res)
+
+    
     return result
 
 
