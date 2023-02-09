@@ -156,14 +156,7 @@ def _date_of_competition(comp: model.Competition) -> datetime.date:
 
 
 def _scrape_competition(session, competition: model.Competition, parse_pdf_race_data=True, parse_pdf_intermediates=True, logger=logger):
-    
-
     uuid = competition.additional_id_
-    if uuid in ['dc5e7e36-a25c-4044-b1b2-e18786c49db0']: 
-        
-        logger.info('Skipping competition with id: {uuid}, because of known error')
-        return None
-
     assert not uuid == None
 
     logger.debug(f'''Fetching competition="{uuid}" year="{competition.year}" name="{competition.name}"''')
