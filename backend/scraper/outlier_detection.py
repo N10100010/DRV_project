@@ -13,8 +13,6 @@ logging.basicConfig(level=logging.INFO)
 
 
 def outlier_detection(session:Session, boat_class: model.Boat_Class) -> None:
-    adjusted = 0
-
     logger = logging.getLogger("outlier_detector")
     logger.info(f"Boat Class: {boat_class.abbreviation}")
 
@@ -126,7 +124,6 @@ def outlier_detection(session:Session, boat_class: model.Boat_Class) -> None:
         # )
 
         to_adjust = session.execute(to_adjust_statement).fetchall()
-        adjusted += len(to_adjust)
         # todo: how to do a bulk-update? 
         for intermediate_id, distance_meter in to_adjust: 
 
