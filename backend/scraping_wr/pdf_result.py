@@ -23,6 +23,7 @@ from .utils_pdf import (clean, clean_df, get_string_loc, handle_table_partitions
 import logging
 
 logger = logging.getLogger(__name__)
+logging.getLogger('camelot').setLevel(logging.WARNING)
 
 # constants
 DISTS = ["250", "500", "750", "1000", "1500", "2000"]  # includes basic 500m interval and 250m para intervals
@@ -199,7 +200,7 @@ def extract_data_from_pdf_urls(urls: list) -> tuple[dict, list]:
                     final_data["url"] = url
                     final_data["data"] = data
 
-                    logger.info(f"Extract of {url.split('/').pop()} successful.")
+                    logger.debug(f"Extract of {url.split('/').pop()} successful.")
                 else:
                     empty_files += 1
                     logger.warning(f"Empty file found: {url.split('/').pop()}.")

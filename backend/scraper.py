@@ -3,6 +3,7 @@ import os
 from time import sleep
 import datetime
 from contextlib import suppress
+from tqdm import tqdm
 
 # TODO: decide final logging verbosity and use of tqdm
 # from tqdm import tqdm
@@ -77,7 +78,7 @@ def _scrape_competition_heads(session, year_min, year_max, logger=logger):
         logger.info(f"Begin year={year} ---------------")
         competitions_wr = api.get_competition_heads([year], single_fetch=False)
         for competition_data in competitions_wr:
-            logger.info(f'''Adding year={year} competition="{competition_data.get('id')}" name="{competition_data.get('DisplayName')}"''')
+            logger.debug(f'''Adding year={year} competition="{competition_data.get('id')}" name="{competition_data.get('DisplayName')}"''')
             dbutils.wr_insert(
                 session,
                 model.Competition,
@@ -161,15 +162,15 @@ def _scrape_competition(session, competition: model.Competition, parse_pdf_race_
     uuid = competition.additional_id_
     assert not uuid == None
 
-    logger.info(f'''Fetching competition="{uuid}" year="{competition.year}" name="{competition.name}"''')
+    logger.debug(f'''Fetching competition="{uuid}" year="{competition.year}" name="{competition.name}"''')
     competition_data = api.get_by_competition_id_(comp_ids=[uuid], parse_pdf=False)
 
-    logger.info(f"Write competition to database")
+    logger.debug(f"Write competition to database")
     # let's use the mapper func directly since we already have the ORM instance
     competition = dbutils.wr_map_competition_scrape(session, competition, competition_data)
     session.commit() # TODO: consider removing multiple commits
 
-    logger.info(f"Determine course lengths")
+    logger.debug(f"Determine course lengths")
     for event in competition.events:
         race: model.Race
         for race in event.races:
@@ -179,16 +180,16 @@ def _scrape_competition(session, competition: model.Competition, parse_pdf_race_
             )
     session.commit()
 
-    logger.info(f'Fetch & parse PDF race data')
+    logger.debug(f'Fetch & parse PDF race data')
     if parse_pdf_race_data:
         for event in competition.events:
             race: model.Race
             for race in event.races:
                 url = race.pdf_url_race_data
-                logger.info(f'Fetch & parse PDF race data race="{race.additional_id_}" url="{url}"')
+                logger.debug(f'Fetch & parse PDF race data race="{race.additional_id_}" url="{url}"')
                 pdf_race_data_, _ = pdf_race_data.extract_data_from_pdf_url([url])
                 if not pdf_race_data_:
-                    logger.info(f'Failed to parse (or fetch)')
+                    logger.debug(f'Failed to parse (or fetch)')
                 
                 # Ideas:
                 # - sanity check with parsed ranks
@@ -206,7 +207,7 @@ def _scrape_competition(session, competition: model.Competition, parse_pdf_race_
                         matched_rank = race_boat.rank == parsed_rank
 
                         if matched_name and matched_rank:
-                            logger.info(f'Race data matched for "{race_boat.name}"')
+                            logger.debug(f'Race data matched for "{race_boat.name}"')
                             data_ = get_(pdf_boat, 'data', {})
                             dists   = get_(data_, 'dist [m]', [])
                             speeds  = get_(data_, 'speed', [])
@@ -241,7 +242,7 @@ def scrape(parse_pdf=True):
         competitions_iter, num_competitions = _get_competitions_to_scrape(session=session)
         logger.info(f"Competitions that have to be scraped N={num_competitions}")
 
-        for competition in competitions_iter:
+        for competition in tqdm(competitions_iter):
             competition_uuid = competition.additional_id_
             if not competition_uuid:
                 logger.error(f"Competition with id={competition.id} has no UUID (w.r.t. World Rowing API); Skip")
@@ -301,6 +302,8 @@ def _refresh_world_best_times(session, logger=logger):
             logger.error(f'''!!!!! Integrity Problem: Result time does not match race_boat has "{race_boat.result_time_ms}" wbt says "{result_time_ms}" ({wbt.get('race_boat_id')})''')
 
         boat_class.world_best_race_boat = race_boat
+
+        logger.info(f"Updating wbt for boat_class: {boat_class_abbr}")
 
     session.commit()
 
