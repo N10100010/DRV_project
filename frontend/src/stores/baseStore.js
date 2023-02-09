@@ -355,9 +355,7 @@ export const useRennstrukturAnalyseState = defineStore({
             state.tableExport = tableData
             return tableData;
         },
-
         getDeficitInMeters(state) {
-            // TODO: How to integrate the time here?
             // determine winner
             const winnerIdx = state.data.raceData[0].data.findIndex(team => team.rank === 1);
             const winnerData = state.data.raceData[0].data.map(dataObj => dataObj.gpsData.distance)[winnerIdx]
@@ -369,14 +367,22 @@ export const useRennstrukturAnalyseState = defineStore({
             for (const i in state.data.raceData[0].data) {
                 const speedData = state.data.raceData[0].data.map(dataObj => dataObj.gpsData.distance)[i];
                 let diffSpeedValues = {}
+
+                const interval_list = Object.keys(speedData).map((element, index, arr) => (arr[index+1] || 0)  - element)
+                const hashmap = interval_list.reduce((acc, val) => {
+                    acc[val] = (acc[val] || 0 ) + 1
+                    return acc
+                },{})
+                const interval = Object.keys(hashmap).reduce((a, b) => hashmap[a] > hashmap[b] ? a : b)
+                let prevValue = 0
                 for (const [key, val] of Object.entries(speedData)) {
                     const speedWinner = winnerTeamSpeeds[key]
                     const speedCurrentTeam = val["speed [m/s]"]
-                    let time = 0
-                    if (speedWinner !== 0) {
-                        time = 50 / speedWinner;
+                    let time = speedWinner !== 0 ? interval / speedWinner : 0;
+                    if (Number(key) !== 0) {
+                        prevValue = diffSpeedValues[key-interval]
                     }
-                    diffSpeedValues[key] = (speedWinner * time) - (speedCurrentTeam * time);
+                    diffSpeedValues[key] = prevValue + ((speedWinner * time) - (speedCurrentTeam * time))
                 }
                 speedPerTeam[i] = diffSpeedValues
             }

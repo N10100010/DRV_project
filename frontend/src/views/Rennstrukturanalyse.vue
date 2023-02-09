@@ -41,49 +41,58 @@
             <v-col cols="12">
               <h2>Suchergebnisse</h2>
               <v-container class="pa-0 mt-3">
-                <v-col :cols="mobile ? 12 : 6" class="pa-0">
-                  <v-alert type="info" variant="tonal" v-if="!getAnalysis && !loading">
+                <v-col cols="12" class="pa-0">
+                  <v-alert type="info" variant="tonal" v-if="!getAnalysis && !loading" :width="mobile ? '100%':'50%'">
                     Bitte wähle ein Jahr und eine Wettkampfklasse in den Filterkriterien.
                   </v-alert>
-
                   <v-progress-circular v-if="loading" indeterminate color="blue" size="40"></v-progress-circular>
 
                   <!-- competition list -->
                   <v-list density="compact" v-show="displayCompetitions && !loading">
+                    <div :style="{'display': 'grid', 'grid-template-columns': (mobile ? '1fr' : 'repeat(2, 1fr)'), 'grid-gap': '0.5rem'}">
                     <v-list-item
                         min-height="80"
                         style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
-                        class="pa-2 my-2"
+                        class="pa-2 mx-1"
                         v-for="competition in getAnalysis"
                         :key="competition"
                         :title="competition.display_name"
                         :subtitle="competition.start_date+' | '+competition.venue"
                         @click="getEvents(competition.events, competition.display_name, competition.id)"
                     ></v-list-item>
+                    </div>
                   </v-list>
 
 
                   <!-- events list -->
                   <v-list density="compact" v-show="displayEvents && !loading">
+                    <div :style="{'display': 'grid', 'grid-template-columns': (mobile ? '1fr' : 'repeat(2, 1fr)'), 'grid-gap': '0.5rem'}">
                     <v-list-item
+                        min-height="50"
                         style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
-                        class="pa-2 my-2"
+                        class="pa-1 mx-1"
                         v-for="event in events"
                         :key="event"
                         :title="event.display_name"
                         @click="getRaces(event.races, event.display_name, event.id)"
                     ></v-list-item>
+                    </div>
                   </v-list>
+
+
                   <!-- races list -->
                   <v-list density="compact" v-show="displayRaces && !loading">
+                    <div :style="{'display': 'grid', 'grid-template-columns': (mobile ? '1fr' : 'repeat(2, 1fr)'), 'grid-gap': '0.5rem'}">
                     <v-list-item
+                        min-height="50"
                         style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
-                        class="pa-2 my-2"
+                        class="pa-2 mx-1"
                         v-for="race in races"
                         :key="race"
                         :title="race.display_name"
                         @click="loadRaceAnalysis(race.display_name, race.id)"
                     ></v-list-item>
+                    </div>
                   </v-list>
                 </v-col>
               </v-container>

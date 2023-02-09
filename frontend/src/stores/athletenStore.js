@@ -108,11 +108,10 @@ export const useAthletenState = defineStore({
         data: {
             athlete: [{
                 "id": 98245435,
-                "firstName": "Lukas",
-                "lastName": "Helesic",
-                "dateOfBirth": "1997-12-06",
+                "name": "Test",
+                "dob": "1997-12-06",
                 "gender": "male",
-                "nation_ioc": "CZE",
+                "nation": "CZE",
                 "weight": 80,
                 "height": 180,
                 "disciplines": [
