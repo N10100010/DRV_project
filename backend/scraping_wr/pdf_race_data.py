@@ -23,7 +23,6 @@ from .utils_pdf import (handle_table_partitions, get_data_loc, print_stats, find
 import logging
 
 logger = logging.getLogger(__name__)
-logging.getLogger('camelot').setLevel(logging.WARNING)
 
 # constants
 COMPETITION_LIMIT = 1000  # max limit of world rowing API is 1000 in total --> not relevant for per year extraction
@@ -160,15 +159,15 @@ def extract_data_from_pdf_url(urls: list) -> tuple[dict, list]:
             if race_data_list:
                 final_data["url"] = url
                 final_data["data"] = race_data_list
-                logging.debug(f"Extract of {url.split('/').pop()} successful.")
+                logger.debug(f"Extract of {url.split('/').pop()} successful.")
             else:
                 empty_files += 1
-                logging.warning(f"Empty file found: {url.split('/').pop()}.")
+                logger.warning(f"Empty file found: {url.split('/').pop()}.")
 
         except Exception as e:
             errors += 1
             failed_reqs.append(url)
-            logging.error(f"\nError at {url}:\n\t{e}.\n\tErrors so far: {errors}.")
+            logger.error(f"\nError at {url}:\t{e}.\tErrors so far: {errors}.")
 
     # create extraction statistics
     # total = len(pdf_urls) - empty_files

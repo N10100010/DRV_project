@@ -5,6 +5,11 @@ import datetime
 from contextlib import suppress
 from tqdm import tqdm
 
+# TODO: decide final logging verbosity and use of tqdm
+# from tqdm import tqdm
+def tqdm(x):
+    return x
+
 from sqlalchemy import select
 from sqlalchemy.sql.expression import func
 # https://docs.sqlalchemy.org/en/20/core/sqlelement.html#sqlalchemy.sql.expression.Operators.__and__
