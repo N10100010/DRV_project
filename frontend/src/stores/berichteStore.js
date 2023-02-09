@@ -788,7 +788,7 @@ export const useBerichteState = defineStore({
                     },
                     y: {
                         min: 0,
-                        max: Math.ceil(Math.max(...Object.values(state.data.plot_data.histogram.data)) / 100) * 100,
+                        // max: Math.ceil(Math.max(...Object.values(state.data.plot_data.histogram.data)) / 100) * 100,
                         title: {
                             display: true,
                             text: 'Anzahl Rennen'

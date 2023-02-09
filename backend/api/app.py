@@ -2,6 +2,7 @@ import os
 import datetime
 import json
 from statistics import stdev, median, mean
+import numpy as np
 
 from flask import Flask
 from flask import request
@@ -336,6 +337,8 @@ def get_report_boat_class():
     avg_1000_time = int(mean(int_times_1000))
 
     results, mean_speed, mean_time, stdev_race_time, median_race_time = 0, 0, 0, 0, 0
+    hist_data, hist_labels = [], []
+
     if race_times:
         results = len(race_times)
         lowest_time_period = min(race_times)
@@ -346,7 +349,8 @@ def get_report_boat_class():
         stdev_race_time = int(stdev(race_times))
         median_race_time = int(median(race_times))
 
-    # edges, hist = np.histogram(race_times, bins=100)
+        hist_data, bin_edges = np.histogram(race_times, bins="fd")
+        hist_labels = [int(bin_edge) for bin_edge in bin_edges]
 
     return json.dumps({
         "results": results,
@@ -381,8 +385,8 @@ def get_report_boat_class():
         },
         "plot_data": {
             "histogram": {
-                "labels": [],
-                "data": [],
+                "labels": hist_labels,
+                "data": hist_data.tolist(),
             },
             "scatter_plot": {
                 "labels": race_dates,
