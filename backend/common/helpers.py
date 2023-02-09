@@ -79,3 +79,6 @@ def parse_wr_intermediate_distance_key(distancy_key: str) -> int:
 
 def make_keys_lowercase(dict_: dict) -> dict:
     return {k.lower():v for k,v in dict_.items()}
+
+def is_number(obj):
+    return isinstance(obj, int) or isinstance(obj, float)

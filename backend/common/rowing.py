@@ -3,7 +3,7 @@ from datetime import date
 import logging
 logger = logging.getLogger(__name__)
 
-from .helpers import make_keys_lowercase
+from .helpers import make_keys_lowercase, is_number
 
 __course_length_2000m_lookup_table = make_keys_lowercase({
     "LW1x": date(1998,1,1),
@@ -31,3 +31,23 @@ def get_course_length(boat_class: str, race_date: date, **kwargs) -> int:
 
     if race_date > threshold_date:
         return 2000
+
+def propulsion_in_meters_per_stroke(strokes_per_min, speed_in_meter_per_sec):
+    valid_params = (
+        is_number(strokes_per_min)
+        and is_number(speed_in_meter_per_sec)
+        and not strokes_per_min == 0
+    ) 
+    if not valid_params:
+        logger.error(f'propulsion_in_meters_per_stroke:invalid input received')
+        return None
+        
+    distance_in_one_minute = 60 * speed_in_meter_per_sec
+    propulsion = distance_in_one_minute / strokes_per_min
+    return propulsion
+
+def _transpose_boatclass_intermediates(race_boats):
+    pass
+
+def process_intermediates():
+    pass

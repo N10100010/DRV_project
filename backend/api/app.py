@@ -15,6 +15,7 @@ from sqlalchemy.orm import joinedload
 
 from model import model
 from . import mocks
+from common.rowing import propulsion_in_meters_per_stroke
 
 # app is the main controller for the Flask-Server and will start the app in the main function 
 app = Flask(__name__, template_folder=None)
@@ -246,15 +247,17 @@ def get_race(race_id: int) -> dict:
                 "first_name": athlete.first_name__,
                 "last_name": athlete.last_name__,
                 "full_name": athlete.name,
-                "discipline": athlete_assoc.boat_position
+                "boat_position": athlete_assoc.boat_position
             })
 
         # race_data aka gps data
         race_data: model.Race_Data
         for race_data in race_boat.race_data:
+            propulsion = propulsion_in_meters_per_stroke(race_data.stroke, race_data.speed_meter_per_sec)
             rb_result['race_data'][str(race_data.distance_meter)] = {
                 "speed [m/s]": race_data.speed_meter_per_sec,
-                "stroke [1/min]": race_data.stroke
+                "stroke [1/min]": race_data.stroke,
+                "propulsion [m/stroke]": propulsion
             }
 
         # intermediates
