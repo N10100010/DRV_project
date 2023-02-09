@@ -138,16 +138,4 @@ def outlier_detection(session:Session, boat_class: model.Boat_Class) -> None:
             session.execute(updt)
             session.commit()
 
-    statement = (
-        select(
-            func.count(model.Intermediate_Time.race_boat_id)
-        )
-        .join(model.Intermediate_Time.race_boat)
-        .join(model.Race_Boat.race)
-        .join(model.Race.event)
-        .where(model.Event.boat_class_id == boat_class.id)
-    )
-    total_row_count_boat_class = session.execute(statement).scalar()
-    
-    print(f"adjusted total : {adjusted} of {total_row_count_boat_class}")
     return None
