@@ -51,7 +51,7 @@ docker compose down --rmi all --volumes
 *Note: `pwd` is `backend/`*
 
 ```sh
-python -m flask --app app.app:app run
+python -m flask --app api.app:app run
 ```
 
 Alternatively with `python -m app.app`
@@ -59,7 +59,7 @@ Alternatively with `python -m app.app`
 Debug with hot reload:
 
 ```sh
-python -m flask --app app.app:app --debug run
+python -m flask --app api.app:app --debug run
 ```
 
 **Note** Do not use this command for deployment. Use something like `gunicorn`.
