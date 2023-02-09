@@ -38,7 +38,7 @@ services:
       DB_VERBOSITY: "0"
       DRV_SCRAPER_DEV_MODE: "1"
       SCRAPER_SINGLEPASS: "0"
-      SCRAPER_YEAR_MIN: "1900"
+      SCRAPER_YEAR_MIN: "2019"
 
   db:
     image: postgres:14.1-alpine
