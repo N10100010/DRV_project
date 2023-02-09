@@ -4,6 +4,11 @@ from time import sleep
 import datetime
 from contextlib import suppress
 
+# TODO: decide final logging verbosity and use of tqdm
+# from tqdm import tqdm
+def tqdm(x):
+    return x
+
 from sqlalchemy import select
 from sqlalchemy.sql.expression import func
 # https://docs.sqlalchemy.org/en/20/core/sqlelement.html#sqlalchemy.sql.expression.Operators.__and__
