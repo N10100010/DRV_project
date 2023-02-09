@@ -11,6 +11,8 @@ from common import rowing
 from scraping_wr import api
 
 from . import model
+from .model import engine, Scoped_Session
+
 
 # logging stuff
 import logging

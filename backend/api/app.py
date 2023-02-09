@@ -31,6 +31,7 @@ Scoped_Session = model.Scoped_Session
 # Route syntax doc: https://flask.palletsprojects.com/en/2.2.x/api/#url-route-registrations
 # Multiple Joins: https://docs.sqlalchemy.org/en/14/orm/queryguide.html#chaining-multiple-joins
 
+
 @app.route('/report', methods=['POST'])
 def get_report():
     """

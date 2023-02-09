@@ -284,8 +284,12 @@ def _extract(nested: iter, successor_filter: str = None) -> list:
 
 def select_pdf_(pdfUrls: list, title: str) -> Union[dict, None]:
     for pdf_info in pdfUrls:
-        if pdf_info['title'].lower() == title.lower():
-            return pdf_info
+        try:
+            if pdf_info['title'].lower() == title.lower():
+                return pdf_info
+        except Exception as e: 
+            logger.error(e)
+            return None 
 
     return None # or raise error?
 
