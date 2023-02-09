@@ -141,13 +141,13 @@ export const useBerichteState = defineStore({
             "boat_classes": null,
             "start_date": "2020-06-16 14:12:00",
             "end_date": "2022-06-16 14:12:00",
-            "world_best_time_boat_class": 358360,
-            "best_in_period": 358360,
+            "world_best_time_boat_class": 0,
+            "best_in_period": 0,
             "mean": {
-                "mm:ss,00": 467360,
-                "m/s": 4.54,
-                "pace 500m": 158360,
-                "pace 1000m": 282360
+                "mm:ss,00": 0,
+                "m/s": 0,
+                "pace 500m": 0,
+                "pace 1000m": 0
             },
             "std_dev": 43360,
             "median": 432360,

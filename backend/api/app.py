@@ -223,31 +223,54 @@ def get_report_boat_class():
     end_date = func.to_timestamp(func.concat(end_year, "-12-31 23:59:59"), 'YYYY-MM-DD HH24:MI:SS')
 
     statement = (
-        select([model.Race, model.Boat_Class])
+        select(
+            model.Race.id.label("race_id"),
+            model.Competition.id.label("competition_id")
+        )
+        .join(model.Race.event)
+        .join(model.Event.competition)
         .where(and_(
             model.Race.date >= start_date,
             model.Race.date <= end_date,
             model.Event.boat_class_id == model.Boat_Class.id,
             model.Boat_Class.additional_id_ == boat_class,
         ))
-        .join(model.Event, model.Race.event_id == model.Event.id)
     )
 
-    races = session.execute(statement).fetchall()
-    boat_class_name = races[0][1].abbreviation if races else None
+    result = session.execute(statement).fetchall()
+    boat_class_name, wb_time, lowest_time_period = "", 0, 0
+    race_times, race_dates, int_times_500, int_times_1000 = [], [], [], []
 
-    race_times, race_dates = [], []
-    for race in races:
-        for race_boat in race[0].race_boats:
-            if race_boat.result_time_ms and race[0].date:
+    for row in result:
+        race_id, competition_id = row
+        race = session.query(model.Race).get(race_id)
+        boat_class_name = race.event.boat_class.abbreviation
+
+        world_best_race_boat = race.event.boat_class.world_best_race_boat
+        if world_best_race_boat:
+            wb_time = world_best_race_boat.result_time_ms
+
+        for race_boat in race.race_boats:
+            if race_boat.result_time_ms and race.date:
                 race_times.append(race_boat.result_time_ms)
-                date = race[0].date
+                date = race.date
                 race_dates.append(
                     '{:02d}'.format(date.year) + '-{:02d}'.format(date.month) + '-{:02d}'.format(date.day))
+                intermediate_times_for_race_boat = session.query(model.Intermediate_Time).filter(
+                    model.Intermediate_Time.race_boat_id == race_boat.id).all()
+                for intermediate_time in intermediate_times_for_race_boat:
+                    if intermediate_time.distance_meter == 500:
+                        int_times_500.append(intermediate_time.result_time_ms)
+                    elif intermediate_time.distance_meter == 1000:
+                        int_times_1000.append(intermediate_time.result_time_ms)
+
+    avg_500_time = int(mean(int_times_500))
+    avg_1000_time = int(mean(int_times_1000))
 
     results, mean_speed, mean_time, stdev_race_time, median_race_time = 0, 0, 0, 0, 0
     if race_times:
         results = len(race_times)
+        lowest_time_period = min(race_times)
         # TODO: Set race length dynamically
         race_distance = 2000
         mean_speed = round(mean([race_distance / (time / 1000) for time in race_times]), 2)
@@ -262,13 +285,13 @@ def get_report_boat_class():
         "boat_classes": boat_class_name,
         "start_date": start_year,
         "end_date": end_year,
-        "world_best_time_boat_class": None,  # TODO: int
-        "best_in_period": None,  # TODO: int
+        "world_best_time_boat_class": wb_time,
+        "best_in_period": lowest_time_period,
         "mean": {
             "mm:ss,00": mean_time,
             "m/s": mean_speed,
-            "pace 500m": None,  # TODO: int
-            "pace 1000m": None  # TODO: int
+            "pace 500m": avg_500_time,
+            "pace 1000m": avg_1000_time
         },
         "std_dev": stdev_race_time,
         "median": median_race_time,

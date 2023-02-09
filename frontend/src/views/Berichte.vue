@@ -71,7 +71,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 <tbody class="nth-grey">
                 <tr>
                   <th>Weltbestzeit</th>
-                  <td>{{ formatMilliseconds(data.world_best_time_boat_classes) }}</td>
+                  <td>{{ formatMilliseconds(data.world_best_time_boat_class) }}</td>
                 </tr>
                 <tr>
                   <th>Beste im Zeitraum</th>
