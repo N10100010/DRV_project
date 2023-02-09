@@ -69,9 +69,7 @@ def _scrape_competition_heads(session, year_min, year_max, logger=logger):
         raise Exception(f"Year range is invalid: {year_min}-{year_max}")
     
     logger.info("Fetch all competition heads and write to db")
-    # TODO: uncomment me 
     for year in range(year_min, year_max+1):
-    #for year in range(1990, 2020):
         logger.info(f"Begin year={year} ---------------")
         competitions_wr = api.get_competition_heads([year], single_fetch=False)
         for competition_data in competitions_wr:
