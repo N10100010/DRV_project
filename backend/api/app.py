@@ -298,22 +298,26 @@ def get_report_boat_class():
         )
         .join(model.Race.event)
         .join(model.Event.competition)
+        .join(model.Competition.competition_category)
         .where(and_(
             model.Race.date >= start_date,
             model.Race.date <= end_date,
             model.Event.boat_class_id == model.Boat_Class.id,
             model.Boat_Class.additional_id_ == boat_class,
+            model.Competition_Category.competition_type_id.in_(competition_categories)
         ))
     )
 
     result = session.execute(statement).fetchall()
     boat_class_name, wb_time, lowest_time_period = "", 0, 0
     race_times, race_dates, int_times_500, int_times_1000 = [], [], [], []
+    comp_categories = set()
 
     for row in result:
         race_id, competition_id = row
         race = session.query(model.Race).get(race_id)
         boat_class_name = race.event.boat_class.abbreviation
+        comp_categories.add(race.event.competition.competition_category.name)
 
         world_best_race_boat = race.event.boat_class.world_best_race_boat
         if world_best_race_boat:
@@ -333,11 +337,15 @@ def get_report_boat_class():
                     elif intermediate_time.distance_meter == 1000:
                         int_times_1000.append(intermediate_time.result_time_ms)
 
-    avg_500_time = int(mean(int_times_500))
-    avg_1000_time = int(mean(int_times_1000))
+    avg_500_time = int(mean(int_times_500)) if int_times_500 else 0
+    avg_1000_time = int(mean(int_times_1000)) if int_times_1000 else 0
 
     results, mean_speed, mean_time, stdev_race_time, median_race_time = 0, 0, 0, 0, 0
     hist_data, hist_labels = [], []
+    fastest_times_mean, fastest_times_n = 0, 0
+    medium_times_mean, medium_times_n = 0, 0
+    slow_times_mean, slow_times_n = 0, 0
+    slowest_times_mean, slowest_times_n = 0, 0
 
     if race_times:
         results = len(race_times)
@@ -350,9 +358,28 @@ def get_report_boat_class():
         median_race_time = int(median(race_times))
 
         hist_data, bin_edges = np.histogram(race_times, bins="fd")
+        hist_data = hist_data.tolist() if len(hist_data) > 0 else []
         hist_labels = [int(bin_edge) for bin_edge in bin_edges]
 
+        fastest_times = [x for x in race_times if x < (mean_time - stdev_race_time)]
+        medium_times = [x for x in race_times if
+                        (mean_time - stdev_race_time) < x < (mean_time - (1 / 3 * stdev_race_time))]
+        slow_times = [x for x in race_times if
+                      (mean_time - (1 / 3 * stdev_race_time)) < x < (mean_time + (1 / 3 * stdev_race_time))]
+        slowest_times = [x for x in race_times if x > (mean_time + (1 / 3 * stdev_race_time))]
+
+        fastest_times_n = len(fastest_times)
+        medium_times_n = len(medium_times)
+        slow_times_n = len(slow_times)
+        slowest_times_n = len(slowest_times)
+
+        fastest_times_mean = int(mean(fastest_times))
+        medium_times_mean = int(mean(medium_times))
+        slow_times_mean = int(mean(slow_times))
+        slowest_times_mean = int(mean(slowest_times))
+
     return json.dumps({
+        "competition_categories": list(comp_categories),
         "results": results,
         "boat_classes": boat_class_name,
         "start_date": start_year,
@@ -368,25 +395,25 @@ def get_report_boat_class():
         "std_dev": stdev_race_time,
         "median": median_race_time,
         "gradation_fastest": {
-            "results": None,
-            "time": None
+            "results": fastest_times_n,
+            "time": fastest_times_mean
         },
         "gradation_medium": {
-            "results": None,
-            "time": None
+            "results": medium_times_n,
+            "time": medium_times_mean
         },
         "gradation_slow": {
-            "results": None,
-            "time": None
+            "results": slow_times_n,
+            "time": slow_times_mean
         },
         "gradation_slowest": {
-            "results": None,
-            "time": None
+            "results": slowest_times_n,
+            "time": slowest_times_mean
         },
         "plot_data": {
             "histogram": {
                 "labels": hist_labels,
-                "data": hist_data.tolist(),
+                "data": hist_data,
             },
             "scatter_plot": {
                 "labels": race_dates,

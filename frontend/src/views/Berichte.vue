@@ -107,27 +107,27 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 </tr>
                 <tr>
                   <th>Abstufung schnellste</th>
-                  <td>(n={{ data["gradation_fastest"]["no_of_samples"] }})
+                  <td>(n={{ data["gradation_fastest"]["results"] }})
                     {{ formatMilliseconds(data["gradation_fastest"]["time"]) }}
                   </td>
                 </tr>
                 <tr>
                   <th>Abstufung mittel</th>
-                  <td>(n={{ data["gradation_medium"]["no_of_samples"] }}) {{
+                  <td>(n={{ data["gradation_medium"]["results"] }}) {{
                       formatMilliseconds(data["gradation_medium"]["time"])
                     }}
                   </td>
                 </tr>
                 <tr>
                   <th>Abstufung langsam</th>
-                  <td>(n={{ data["gradation_slow"]["no_of_samples"] }}) {{
+                  <td>(n={{ data["gradation_slow"]["results"] }}) {{
                       formatMilliseconds(data["gradation_slow"]["time"])
                     }}
                   </td>
                 </tr>
                 <tr>
                   <th>Abstufung langsamste</th>
-                  <td>(n={{ data["gradation_slowest"]["no_of_samples"] }})
+                  <td>(n={{ data["gradation_slowest"]["results"] }})
                     {{ formatMilliseconds(data["gradation_slowest"]["time"]) }}
                   </td>
                 </tr>
