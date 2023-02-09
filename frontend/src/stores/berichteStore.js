@@ -136,9 +136,9 @@ export const useBerichteState = defineStore({
             },
             "ranks": ["1", "2", "3", "4-6"],
         }],
-        data: [{
-            "results": 825,
-            "boat_class": "Men's Eight",
+        data: {
+            "results": null,
+            "boat_classes": null,
             "start_date": "2020-06-16 14:12:00",
             "end_date": "2022-06-16 14:12:00",
             "world_best_time_boat_class": 358360,
@@ -169,27 +169,12 @@ export const useBerichteState = defineStore({
             },
             "plot_data": {
                 "histogram": {
-                    "labels":
-                        [
-                            358360, 360360, 362360,
-                            364360, 366360, 368360,
-                            370360, 372360, 374360,
-                            376360, 378360, 380360,
-                            382360, 384360, 386360,
-                            388360, 390360, 392360,
-                            394360, 396360, 398360,
-                        ],
-                    "data": [2, 18, 20, 26, 45, 72, 120, 503, 160, 98, 55, 23, 16, 4, 5, 2, 1, 3, 1, 3, 1, 4, 3, 2]
+                    "labels": [],
+                    "data": []
                 },
-                "scatterPlot": {
-                    "labels": [
-                        '1930-01-01', '1940-01-01', '1950-01-01', '1960-01-01', '1970-01-01',
-                        '1980-01-01', '1990-01-01', '2000-01-01', '2010-01-01', '2020-01-01',
-                    ],
-                    "data": [
-                        390360, 392360, 396360, 382360, 384360,
-                        394360, 386360, 380360, 388360, 378360,
-                    ]
+                "scatter_plot": {
+                    "labels": [],
+                    "data": []
                 },
                 "scatter_percentile_75": {
                     "labels": [
@@ -208,8 +193,7 @@ export const useBerichteState = defineStore({
                     ]
                 }
             }
-
-        }],
+            },
         matrixdata: [
             {
                 "results": 127973,
@@ -703,7 +687,7 @@ export const useBerichteState = defineStore({
             return state.filterOptions
         },
         getTableData(state) {
-            return state.data[0]
+            return state.data
         },
         getMatrixTableResults(state) {
             return state.matrixdata[0].results
@@ -737,15 +721,17 @@ export const useBerichteState = defineStore({
         },
         getBarChartData(state) {
             return {
-                labels: state.data[0].plot_data.histogram.labels.map(x => formatMilliseconds(x)),
+                labels: state.data.plot_data.histogram.labels.map(x => formatMilliseconds(x)),
                 datasets: [
+
+                    /*
                     {
                         type: 'line',
                         data: [
                             {x: formatMilliseconds(366360), y: 0},
                             {
                                 x: formatMilliseconds(366360),
-                                y: Math.ceil(Math.max(...Object.values(state.data[0].plot_data.histogram.data)) / 100) * 100
+                                y: Math.ceil(Math.max(...Object.values(state.data.plot_data.histogram.data)) / 100) * 100
                             }],
                         label: "25. Perzentil",
                         borderColor: "darkgrey",
@@ -760,7 +746,7 @@ export const useBerichteState = defineStore({
                             {x: formatMilliseconds(376360), y: 0},
                             {
                                 x: formatMilliseconds(376360),
-                                y: Math.ceil(Math.max(...Object.values(state.data[0].plot_data.histogram.data)) / 100) * 100
+                                y: Math.ceil(Math.max(...Object.values(state.data.plot_data.histogram.data)) / 100) * 100
                             }],
                         label: "75. Perzentil",
                         borderColor: "darkgrey",
@@ -769,6 +755,7 @@ export const useBerichteState = defineStore({
                         pointRadius: 0,
                         pointHoverRadius: 0,
                     },
+                    */
                     {
                         type: 'line',
                         backgroundColor: "red",
@@ -777,12 +764,12 @@ export const useBerichteState = defineStore({
                         pointRadius: 1.5,
                         tension: 0.2,
                         label: "Anzahl Boote",
-                        data: state.data[0].plot_data.histogram.data,
+                        data: state.data.plot_data.histogram.data,
                     },
                     {
                         type: 'bar',
                         backgroundColor: '#5cc5ed',
-                        data: state.data[0].plot_data.histogram.data,
+                        data: state.data.plot_data.histogram.data,
                         label: "Anzahl Boote"
                     }
                 ]
@@ -801,7 +788,7 @@ export const useBerichteState = defineStore({
                     },
                     y: {
                         min: 0,
-                        max: Math.ceil(Math.max(...Object.values(state.data[0].plot_data.histogram.data)) / 100) * 100,
+                        max: Math.ceil(Math.max(...Object.values(state.data.plot_data.histogram.data)) / 100) * 100,
                         title: {
                             display: true,
                             text: 'Anzahl Rennen'
@@ -814,21 +801,23 @@ export const useBerichteState = defineStore({
                     },
                     title: {
                         display: true,
-                        text: `Histogramm ${state.data[0].boat_class} (n = ${state.data[0].results})`
+                        text: `${state.data.boat_classes} (n = ${state.data.results})`
                     }
                 }
             }
         },
         getScatterChartData(state) {
-            const scatterData = state.data[0].plot_data.scatterPlot;
-            const firstPercentileData = state.data[0].plot_data.scatter_percentile_75;
-            const secondPercentileData = state.data[0].plot_data.scatter_percentile_25;
+
+            const scatterData = state.data.plot_data.scatter_plot;
+            const firstPercentileData = state.data.plot_data.scatter_percentile_75;
+            const secondPercentileData = state.data.plot_data.scatter_percentile_25;
 
             const plotData = scatterData.labels.map((label, i) => (
                 {
-                    x: label,
+                    x: new Date(label),
                     y: formatMilliseconds(scatterData.data[i])
-                }));
+                })
+            );
             const percentile25Data = secondPercentileData.labels.map((label, i) => ({
                 x: label,
                 y: formatMilliseconds(secondPercentileData.data[i])
@@ -846,7 +835,8 @@ export const useBerichteState = defineStore({
                         label: "Einzelergebnisse",
                         backgroundColor: '#5cc5ed',
                         borderColor: '#5cc5ed'
-                    },
+                    }
+                     /*
                     {
                         type: 'line',
                         data: percentile25Data,
@@ -867,6 +857,8 @@ export const useBerichteState = defineStore({
                         pointRadius: 0,
                         pointHoverRadius: 0,
                     }
+
+                      */
                 ]
             }
         },
@@ -878,8 +870,8 @@ export const useBerichteState = defineStore({
                     x: {
                         type: 'time',
                         time: {
-                            unit: 'year',
-                            parser: 'yyyy-mm-dd'
+                            unit: 'month',
+                            parser: 'yyyy–mm–dd'
                         },
                         title: {
                             display: true,
@@ -909,7 +901,7 @@ export const useBerichteState = defineStore({
                     },
                     title: {
                         display: true,
-                        text: `Scatter Plot ${state.data[0].boat_class} (n = ${state.data[0].results})`
+                        text: `${String(state.data.boat_classes)} (n = ${state.data.results})`
                     }
                 }
             }
@@ -925,12 +917,10 @@ export const useBerichteState = defineStore({
                 })
         },
         async postFormData(data) {
-            console.log(data)
             this.selectedBoatClass = data.boat_classes
-
             await axios.post('http://localhost:5000/get_report_boat_class', {data})
                 .then(response => {
-                    console.log(response)
+                    this.data = response.data
                 }).catch(error => {
                     console.error(`Request failed: ${error}`)
                 })

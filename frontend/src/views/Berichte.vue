@@ -50,12 +50,12 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
         <v-container class="pa-0 mt-2 pb-8">
           <v-row>
             <v-col :cols="mobile ? 12 : 5">
-              <h2>{{ tableData.boat_class }}</h2>
-              <v-alert type="success" variant="tonal" class="my-2" v-if="tableData.results || matrixResults">
+              <h2>{{ data.boat_classes }}</h2>
+              <v-alert type="success" variant="tonal" class="my-2" v-if="data || matrixResults">
                 <v-row>
                   <v-col cols="12">
-                    <p>{{ matrixVisible ? matrixResults : tableData.results }} Datensätze |
-                      Von {{ tableData.start_date.slice(0, 4) }} Bis {{ tableData.end_date.slice(0, 4) }}</p>
+                    <p>{{ matrixVisible ? matrixResults : data.results }} Datensätze |
+                      Von {{ data.start_date }} bis {{ data.end_date }}</p>
                   </v-col>
                 </v-row>
               </v-alert>
@@ -71,35 +71,35 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 <tbody class="nth-grey">
                 <tr>
                   <th>Weltbestzeit</th>
-                  <td>{{ formatMilliseconds(tableData.world_best_time_boat_class) }}</td>
+                  <td>{{ formatMilliseconds(data.world_best_time_boat_classes) }}</td>
                 </tr>
                 <tr>
                   <th>Beste im Zeitraum</th>
-                  <td>{{ formatMilliseconds(tableData.best_in_period) }}</td>
+                  <td>{{ formatMilliseconds(data.best_in_period) }}</td>
                 </tr>
                 <tr>
                   <th>Ø Geschwindigkeit (m/s)</th>
-                  <td>{{ tableData["mean"]["m/s"] }}</td>
+                  <td>{{ data["mean"]["m/s"] }}</td>
                 </tr>
                 <tr>
                   <th>Ø t über 500m</th>
-                  <td>{{ formatMilliseconds(tableData["mean"]["pace 500m"]) }}</td>
+                  <td>{{ formatMilliseconds(data["mean"]["pace 500m"]) }}</td>
                 </tr>
                 <tr>
                   <th>Ø t über 1000m</th>
-                  <td>{{ formatMilliseconds(tableData["mean"]["pace 1000m"]) }}</td>
+                  <td>{{ formatMilliseconds(data["mean"]["pace 1000m"]) }}</td>
                 </tr>
                 <tr>
                   <th>Ø t über 2000m</th>
-                  <td>{{ formatMilliseconds(tableData["mean"]["mm:ss,00"]) }}</td>
+                  <td>{{ formatMilliseconds(data["mean"]["mm:ss,00"]) }}</td>
                 </tr>
                 <tr>
                   <th>Standardabweichung</th>
-                  <td>{{ formatMilliseconds(tableData.std_dev) }}</td>
+                  <td>{{ formatMilliseconds(data.std_dev) }}</td>
                 </tr>
                 <tr>
                   <th>Median</th>
-                  <td>{{ formatMilliseconds(tableData.median) }}</td>
+                  <td>{{ formatMilliseconds(data.median) }}</td>
                 </tr>
                 <tr>
                   <th></th>
@@ -107,28 +107,28 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 </tr>
                 <tr>
                   <th>Abstufung schnellste</th>
-                  <td>(n={{ tableData["gradation_fastest"]["no_of_samples"] }})
-                    {{ formatMilliseconds(tableData["gradation_fastest"]["time"]) }}
+                  <td>(n={{ data["gradation_fastest"]["no_of_samples"] }})
+                    {{ formatMilliseconds(data["gradation_fastest"]["time"]) }}
                   </td>
                 </tr>
                 <tr>
                   <th>Abstufung mittel</th>
-                  <td>(n={{ tableData["gradation_medium"]["no_of_samples"] }}) {{
-                      formatMilliseconds(tableData["gradation_medium"]["time"])
+                  <td>(n={{ data["gradation_medium"]["no_of_samples"] }}) {{
+                      formatMilliseconds(data["gradation_medium"]["time"])
                     }}
                   </td>
                 </tr>
                 <tr>
                   <th>Abstufung langsam</th>
-                  <td>(n={{ tableData["gradation_slow"]["no_of_samples"] }}) {{
-                      formatMilliseconds(tableData["gradation_slow"]["time"])
+                  <td>(n={{ data["gradation_slow"]["no_of_samples"] }}) {{
+                      formatMilliseconds(data["gradation_slow"]["time"])
                     }}
                   </td>
                 </tr>
                 <tr>
                   <th>Abstufung langsamste</th>
-                  <td>(n={{ tableData["gradation_slowest"]["no_of_samples"] }})
-                    {{ formatMilliseconds(tableData["gradation_slowest"]["time"]) }}
+                  <td>(n={{ data["gradation_slowest"]["no_of_samples"] }})
+                    {{ formatMilliseconds(data["gradation_slowest"]["time"]) }}
                   </td>
                 </tr>
                 </tbody>
@@ -231,7 +231,11 @@ export default {
       this.mobile = this.windowWidth <= 750
     },
     formatMilliseconds(ms) {
-      return new Date(ms).toISOString().slice(14, -2)
+      if (ms) {
+        return new Date(ms).toISOString().slice(14, -2)
+      } else {
+        return 0
+      }
     },
   },
   created() {
@@ -243,7 +247,73 @@ export default {
   data() {
     return {
       mobile: false,
-      filterOpen: false
+      filterOpen: false,
+      data: {
+            "results": null,
+            "boat_class": "Men's Eight",
+            "start_date": 0,
+            "end_date": 0,
+            "world_best_time_boat_class": 358360,
+            "best_in_period": 358360,
+            "mean": {
+                "mm:ss,00": 467360,
+                "m/s": 4.54,
+                "pace 500m": 158360,
+                "pace 1000m": 282360
+            },
+            "std_dev": 43360,
+            "median": 432360,
+            "gradation_fastest": {
+                "no_of_samples": 345,
+                "time": 358360
+            },
+            "gradation_medium": {
+                "no_of_samples": 239,
+                "time": 358360
+            },
+            "gradation_slow": {
+                "no_of_samples": 167,
+                "time": 358360
+            },
+            "gradation_slowest": {
+                "no_of_samples": 463,
+                "time": 358360
+            },
+            "plot_data": {
+                "histogram": {
+                    "labels":
+                        [
+
+                        ],
+                    "data": []
+                },
+                "scatterPlot": {
+                    "labels": [
+
+                    ],
+                    "data": [
+
+                    ]
+                },
+                "scatter_percentile_75": {
+                    "labels": [
+                        '1930-01-01', '2020-01-01'
+                    ],
+                    "data": [
+                        388360, 388360
+                    ]
+                },
+                "scatter_percentile_25": {
+                    "labels": [
+                        '1930-01-01', '2020-01-01'
+                    ],
+                    "data": [
+                        380360, 380360
+                    ]
+                }
+            }
+
+        }
     }
   },
   watch: {
@@ -255,6 +325,9 @@ export default {
         const store = useBerichteState()
         store.setFilterState(oldVal)
       }
+    },
+    tableData: function (newVal, ){
+      this.data = newVal
     }
   }
 }

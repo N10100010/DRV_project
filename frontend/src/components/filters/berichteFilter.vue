@@ -117,6 +117,7 @@ export default {
       yearShortCutOptions: ["Aktuelles Jahr", "Aktueller OZ", "letzter OZ"],
       selectedYearShortCutOptions: [0],
       // boat classes
+      boatClasses: {},
       genderTypeOptions: [],
       selectedGenders: [3],
       ageGroupOptions: [],
@@ -162,6 +163,7 @@ export default {
       this.optionsCompTypes = this.compTypes.map(item => item.display_name)
 
       // boatclasses
+      this.boatClasses = {}
       this.genderTypeOptions = Object.keys(data.boat_classes)
       let ageGroupOptions = Object.keys(data.boat_classes.men)
       ageGroupOptions.push(...Object.keys(data.boat_classes.women))
@@ -172,7 +174,8 @@ export default {
       Object.entries(values).forEach(([key, value], index) => {
         if (index === 0) {
           Object.entries(value).forEach(([, val]) => {
-            boatClassOptions.push(Object.keys(val)[0])
+            boatClassOptions.push(val[0])
+            this.boatClasses[val[0]] = val[2]
           })
         }
       });
@@ -204,13 +207,10 @@ export default {
     },
     submitFormData() {
       const formData = {
-        "years": {
-          "start_year": this.startYear,
-          "end_year": this.endYear
-        },
-        "competition_categories": this.compTypes.filter(item => this.optionsCompTypes.includes(item.display_name))
-            .map(item => item.id),
-        "boat_classes": this.selectedBoatClasses,
+        "years": {"start_year": this.startYear, "end_year": this.endYear},
+        "competition_categories": this.compTypes.filter(item =>
+            this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
+        "boat_classes": this.boatClasses[this.selectedBoatClasses],
         "runs": this.selectedRuns,
         "runs_fine": this.selectedRunsFineSelection,
         "ranks": this.ranks.map(key => this.ranksDict[key])
@@ -284,11 +284,13 @@ export default {
         Object.entries(Object.values(this.filterData.boat_classes)[newVal]).forEach(([key, value], index) => {
           if (index === this.selectedAgeGroups && this.selectedGenders !== 2) {
             Object.entries(value).forEach(([, val]) => {
-              boatClassOptions.push(Object.keys(val)[0])
+              boatClassOptions.push(val[0])
+              this.boatClasses[val[0]] = val[2]
             })
           } else if (this.selectedGenders === 2) {
-            Object.entries(value).forEach(([key, val]) => {
-              boatClassOptions.push(key)
+            Object.entries(value).forEach(([, val]) => {
+              boatClassOptions.push(val)
+              this.boatClasses[val] = val[2]
             })
           }
         });
@@ -308,7 +310,8 @@ export default {
         Object.entries(genderObj).forEach(([key, value], index) => {
           if (index === newVal) {
             Object.entries(value).forEach(([, val]) => {
-              boatClassOptions.push(Object.keys(val)[0])
+              boatClassOptions.push(val[0])
+              this.boatClasses[val[0]] = val[2]
             })
           }
         });
@@ -328,11 +331,13 @@ export default {
         Object.entries(genderObj).forEach(([key, value], index) => {
           if (index === this.selectedAgeGroups && this.selectedGenders !== 2) {
             Object.entries(value).forEach(([, val]) => {
-              boatClassOptions.push(Object.keys(val)[0])
+              boatClassOptions.push(val[0])
+              this.boatClasses[val[0]] = val[2]
             })
           } else if (this.selectedGenders === 2) {
-            Object.entries(value).forEach(([key, val]) => {
-              boatClassOptions.push(key)
+            Object.entries(value).forEach(([, val]) => {
+              boatClassOptions.push(val)
+              this.boatClasses[val] = val[2]
             })
           }
         });
