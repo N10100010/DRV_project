@@ -474,8 +474,7 @@ def get_competition_heads(years: Optional[Union[list, int]] = None, single_fetch
 
 def get_competition_ids(*args, **kwargs) -> list[str]:
     competition_heads_iterator = get_competition_heads(*args, **kwargs)
-    # todo: delete the if 
-    return [ c['id'] for c in competition_heads_iterator if c['id'] not in ['dc5e7e36-a25c-4044-b1b2-e18786c49db0'] ]
+    return [ c['id'] for c in competition_heads_iterator ]
 
 
 def extract_pdf_urls(race_urls: list[dict]) -> dict:
