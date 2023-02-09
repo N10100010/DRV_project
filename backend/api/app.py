@@ -8,7 +8,7 @@ from flask import request
 from flask import abort
 from flask_cors import CORS
 
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import joinedload
 
 from model import model
@@ -204,6 +204,7 @@ def shutdown_session(exception=None):
 #     """
 #     return {}
 
+
 @app.route('/get_report_boat_class', methods=['POST'])
 def get_report_boat_class():
     """
@@ -248,8 +249,9 @@ def get_report_boat_class():
                 date = race[0].date
                 race_dates.append('{:02d}'.format(date.year)+'-{:02d}'.format(date.month)+'-{:02d}'.format(date.day))
 
-    # TODO: correct calc of mean speed?
-    mean_speed = round(mean([2000/(time/1000) for time in race_times]), 4)
+    # TODO: Set race length dynamically
+    race_distance = 2000
+    mean_speed = round(mean([race_distance/(time/1000) for time in race_times]), 4)
 
     return json.dumps({
         "results": len(race_times),
@@ -295,27 +297,52 @@ def get_report_boat_class():
     })
 
 
+@app.route('/get_athlete/<int:athlete_id>', methods=['GET'])
+def get_athlete(athlete_id: int):
+    """
+    Give athlete data for specific athlete
+    """
+    session = Scoped_Session()
+    athlete = session.query(model.Athlete).filter(model.Athlete.id == athlete_id).one()
+
+    return json.dumps({
+        "id": athlete.id,
+        "name": f"{athlete.last_name__}, {athlete.first_name__}",
+        "nation": None,
+        "dob": str(athlete.birthdate),
+        "gender": None,
+        "weight": athlete.weight_kg__,
+        "height": athlete.height_cm__
+    })
+
+
 @app.route('/get_athlete_by_name/<search_query>', methods=['GET'])
 def get_athlete_by_name(search_query: str):
     """
     Delivers the athlete search result depending on the search query.
     @Params: search_query string (currently only first name)
+    # TODO: Convert to post request and include filter params from frontend
     """
     session = Scoped_Session()
     athletes = session.execute(select(
         model.Athlete.first_name__,
         model.Athlete.last_name__,
-        model.Athlete.id
-    ).where(model.Athlete.first_name__ == search_query))
+        model.Athlete.id,
+        model.Athlete.birthdate
+    ).where(or_(
+        model.Athlete.last_name__ == search_query.upper(),
+        model.Athlete.first_name__ == search_query
+    )))
 
     return json.dumps([{
-        "name": str(athlete.first_name__ + " " + athlete.last_name__),
+        "name": f"{athlete.last_name__}, {athlete.first_name__} ({athlete.birthdate})",
         "id": athlete.id
     } for athlete in athletes])
 
 
 """
 ENDPOINTS TO GET FILTER SELECTION OPTIONS
+
 """
 
 
@@ -334,9 +361,10 @@ def get_athletes_filter_options():
             {"end_year": max(birth_years)}],
         "nations": {entity.country_code: entity.name for entity in
                     session.execute(select(model.Country)).scalars()},
+        # TODO: insert global variable for boat class
         "boat_classes": {
             "men": {
-                "junior": {
+                "u19": {
                     "single": {"JM1x": "Junior Men's Single Sculls"},
                     "double": {"JM2x": "Junior Men's Double Sculls"},
                     "quad": {"JM4x": "Junior Men's Quadruple Sculls"},
@@ -345,7 +373,6 @@ def get_athletes_filter_options():
                     "four": {"JM4-": "Junior Men's Four"},
                     "eight": {"JM8-": "Junior Men's Eight"}
                 },
-                "u19": {},
                 "u23": {
                     "single": {"BM1x": "U23 Men's Single Sculls"},
                     "double": {"BM2x": "U23 Men's Double Sculls"},
@@ -378,7 +405,7 @@ def get_athletes_filter_options():
                 }
             },
             "women": {
-                "junior": {
+                "u19": {
                     "single": {"JW1x": "Junior Women's Single Sculls"},
                     "double": {"JW2x": "Junior Women's Double Sculls"},
                     "quad": {"JW4x": "Junior Women's Quadruple Sculls"},
@@ -387,7 +414,6 @@ def get_athletes_filter_options():
                     "four": {"JW4-": "Junior Women's Four"},
                     "eight": {"JW8-": "Junior Women's Eight"}
                 },
-                "u19": {},
                 "u23": {
                     "single": {"BW1x": "U23 Women's Single Sculls"},
                     "double": {"BW2x": "U23 Women's Double Sculls"},
@@ -467,9 +493,9 @@ def get_medals_filter_options():
         ],
         "nations": {entity.country_code: entity.name for entity in
                     session.execute(select(model.Country)).scalars()},
-        "boat_classes": {
+        "boat_classes": {  # TODO: insert global variable here
             "men": {
-                "junior": {
+                "u19": {
                     "single": {"JM1x": "Junior Men's Single Sculls"},
                     "double": {"JM2x": "Junior Men's Double Sculls"},
                     "quad": {"JM4x": "Junior Men's Quadruple Sculls"},
@@ -478,7 +504,6 @@ def get_medals_filter_options():
                     "four": {"JM4-": "Junior Men's Four"},
                     "eight": {"JM8-": "Junior Men's Eight"}
                 },
-                "u19": {},
                 "u23": {
                     "single": {"BM1x": "U23 Men's Single Sculls"},
                     "double": {"BM2x": "U23 Men's Double Sculls"},
@@ -511,7 +536,7 @@ def get_medals_filter_options():
                 }
             },
             "women": {
-                "junior": {
+                "u19": {
                     "single": {"JW1x": "Junior Women's Single Sculls"},
                     "double": {"JW2x": "Junior Women's Double Sculls"},
                     "quad": {"JW4x": "Junior Women's Quadruple Sculls"},
@@ -520,7 +545,6 @@ def get_medals_filter_options():
                     "four": {"JW4-": "Junior Women's Four"},
                     "eight": {"JW8-": "Junior Women's Eight"}
                 },
-                "u19": {},
                 "u23": {
                     "single": {"BW1x": "U23 Women's Single Sculls"},
                     "double": {"BW2x": "U23 Women's Double Sculls"},
@@ -579,7 +603,7 @@ def get_report_filter_options():
         "years": [{"start_year": min_year}, {"end_year": max_year}],
         "boat_classes": {
             "men": {
-                "junior": {
+                "u19": {
                     "single": {"JM1x": "Junior Men's Single Sculls"},
                     "double": {"JM2x": "Junior Men's Double Sculls"},
                     "quad": {"JM4x": "Junior Men's Quadruple Sculls"},
@@ -588,7 +612,6 @@ def get_report_filter_options():
                     "four": {"JM4-": "Junior Men's Four"},
                     "eight": {"JM8-": "Junior Men's Eight"}
                 },
-                "u19": {},
                 "u23": {
                     "single": {"BM1x": "U23 Men's Single Sculls"},
                     "double": {"BM2x": "U23 Men's Double Sculls"},
@@ -621,7 +644,7 @@ def get_report_filter_options():
                 }
             },
             "women": {
-                "junior": {
+                "u19": {
                     "single": {"JW1x": "Junior Women's Single Sculls"},
                     "double": {"JW2x": "Junior Women's Double Sculls"},
                     "quad": {"JW4x": "Junior Women's Quadruple Sculls"},
@@ -630,7 +653,6 @@ def get_report_filter_options():
                     "four": {"JW4-": "Junior Women's Four"},
                     "eight": {"JW8-": "Junior Women's Eight"}
                 },
-                "u19": {},
                 "u23": {
                     "single": {"BW1x": "U23 Women's Single Sculls"},
                     "double": {"BW2x": "U23 Women's Double Sculls"},
