@@ -335,9 +335,10 @@ export default {
               this.boatClasses[val[0]] = val[2]
             })
           } else if (this.selectedGenders === 2) {
-            Object.entries(value).forEach(([, val]) => {
-              boatClassOptions.push(val)
-              this.boatClasses[val] = val[2]
+            boatClassOptions.push(value[0])
+            Object.values(value).forEach((val) => {
+              // TODO: Check if this is working
+              this.boatClasses[val[0]] = val[2]
             })
           }
         });

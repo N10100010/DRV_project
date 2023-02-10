@@ -143,7 +143,7 @@ export default {
           },
           title: {
             display: true,
-            text: "Mediallenspiegel Übersicht"
+            text: "Medaillenspiegel Übersicht"
           }
         }
       }

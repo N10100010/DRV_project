@@ -39,23 +39,23 @@
                 <tbody class="nth-grey">
                 <tr>
                   <th>Nation</th>
-                  <td>{{ data.nation }}</td>
+                  <td>{{data.nation ? `${data.nation}` : '–'}}</td>
                 </tr>
                 <tr>
                   <th>Geburtsdatum</th>
-                  <td>{{ data.dob }}</td>
+                  <td>{{data.dob ? `${data.dob}` : '–'}}</td>
                 </tr>
                 <tr>
                   <th>Geschlecht</th>
-                  <td>{{ data.gender == 'male' ? 'Männlich' : 'Weiblich' }}</td>
+                  <td>{{data.gender ? `${data.gender}` : '–'}}</td>
                 </tr>
                 <tr>
                   <th>Gewicht</th>
-                  <td>{{ data.weight }} kg</td>
+                  <td>{{data.weight ? `${data.weight}kg` : "–"}}</td>
                 </tr>
                 <tr>
                   <th>Größe</th>
-                  <td>{{ data.height }} cm</td>
+                  <td>{{data.height ? `${data.height}cm` : "–"}}</td>
                 </tr>
                 <tr>
                   <th>Bootsklasse</th>

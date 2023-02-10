@@ -446,7 +446,7 @@ def get_athlete(athlete_id: int):
     Give athlete data for specific athlete
     """
     session = Scoped_Session()
-    athlete = session.query(model.Athlete).filter(model.Athlete.id == athlete_id).one()
+    athlete = session.query(model.Athlete).where(model.Athlete.id == athlete_id).one()
 
     return json.dumps({
         "id": athlete.id,
@@ -454,8 +454,12 @@ def get_athlete(athlete_id: int):
         "nation": None,
         "dob": str(athlete.birthdate),
         "gender": None,
-        "weight": athlete.weight_kg__,
-        "height": athlete.height_cm__
+        "weight": athlete.weight_kg__ or None,
+        "height": athlete.height_cm__ or None,
+        "boat_class": None,
+        "discipline": None,
+        "num_of_races": None,
+
     })
 
 

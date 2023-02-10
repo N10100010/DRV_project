@@ -51,7 +51,15 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
           <v-row>
             <v-col :cols="mobile ? 12 : 5">
               <h2>{{ data.boat_classes }}</h2>
-              <v-alert type="success" variant="tonal" class="my-2" v-if="data || matrixResults">
+
+              <v-alert type="error" variant="tonal" class="my-2" v-if="data.results === 0">
+                <v-row>
+                  <v-col cols="12">
+                    <p>Leider keine Ergebnisse gefunden.</p>
+                  </v-col>
+                </v-row>
+              </v-alert>
+              <v-alert type="success" variant="tonal" class="my-2" v-else>
                 <v-row>
                   <v-col cols="12">
                     <p>{{ matrixVisible ? matrixResults : data.results }} Datensätze |
@@ -59,15 +67,9 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                   </v-col>
                 </v-row>
               </v-alert>
-              <v-alert type="error" variant="tonal" class="my-2" v-else>
-                <v-row>
-                  <v-col cols="12">
-                    <p>Leider keine Ergebnisse gefunden.</p>
-                  </v-col>
-                </v-row>
-              </v-alert>
 
-              <v-table class="tableStyles" density="compact" v-if="!matrixVisible">
+
+              <v-table class="tableStyles" density="compact" v-if="!matrixVisible && data.results > 0">
                 <tbody class="nth-grey">
                 <tr>
                   <th>Weltbestzeit</th>
@@ -164,7 +166,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
               </v-table>
             </v-col>
 
-            <v-col :cols="mobile ? 12 : 7" class="pa-0" v-if="!matrixVisible">
+            <v-col :cols="mobile ? 12 : 7" class="pa-0" v-if="!matrixVisible && data.results > 0">
               <v-container style="width: 100%" class="pa-2">
                 <BarChart :height="'100%'" :width="'100%'" :data="getBarChartData"
                           :chartOptions="barChartOptions" class="chart-bg"></BarChart>
