@@ -133,7 +133,9 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 </tr>
                 </tbody>
               </v-table>
-              <v-table class="tableStyles" density="compact" v-if="matrixVisible">
+            </v-col>
+              <v-col :cols="mobile ? 12 : 8" v-if="matrixVisible">
+              <v-table class="tableStyles" density="compact">
                 <thead>
                 <tr>
                   <th></th>
@@ -161,6 +163,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 </tbody>
               </v-table>
             </v-col>
+
             <v-col :cols="mobile ? 12 : 7" class="pa-0" v-if="!matrixVisible">
               <v-container style="width: 100%" class="pa-2">
                 <BarChart :height="'100%'" :width="'100%'" :data="getBarChartData"
@@ -171,6 +174,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                               :chartOptions="scatterChartOptions" class="chart-bg"></ScatterChart>
               </v-container>
             </v-col>
+
           </v-row>
         </v-container>
       </v-container>
@@ -295,21 +299,13 @@ export default {
 
                     ]
                 },
-                "scatter_percentile_75": {
-                    "labels": [
-                        '1930-01-01', '2020-01-01'
-                    ],
-                    "data": [
-                        388360, 388360
-                    ]
+                "scatter_1_sd_high": {
+                    "labels": [],
+                    "data": []
                 },
-                "scatter_percentile_25": {
-                    "labels": [
-                        '1930-01-01', '2020-01-01'
-                    ],
-                    "data": [
-                        380360, 380360
-                    ]
+                "scatter_1_sd_low": {
+                    "labels": [],
+                    "data": []
                 }
             }
 

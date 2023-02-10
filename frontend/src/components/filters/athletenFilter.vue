@@ -11,7 +11,7 @@
     <v-form class="mt-2" id="athletenFilterFormular"
             v-model="formValid" lazy-validation
             @submit.prevent="onSubmit" ref="filterForm">
-      <v-autocomplete :items="previewAthleteResults" v-model="selectedAthlete" clearable
+      <v-autocomplete :items="previewAthleteResults.map(athlete => athlete.name)" v-model="selectedAthlete" clearable
                       variant="outlined" color="blue" label="Athlet" @input="searchAthletes"
                       class="pt-2" :rules="[v => !!v || 'Athletenname darf nicht leer sein']"
                       autofocus
@@ -158,7 +158,10 @@ export default {
         clearTimeout(this.timeoutId)
         this.timeoutId = setTimeout(() => {
           store.postSearchAthlete({
-            "searchInput": searchInput
+            "search_query": searchInput,
+            "nation": this.selectedNation,
+            "birth_year": this.selectedBirthYear,
+            "boat_class": this.selectedBoatClasses
           })
         }, 450)
       }
@@ -178,12 +181,8 @@ export default {
     },
     submitFormData() {
       const store = useAthletenState()
-      return store.postFormData({
-        "athlete_name": this.selectedAthlete,
-        "birth_year": this.birthYear,
-        "gender": this.selectedGenders,
-        "competition_categories": this.compTypes.filter(item => this.optionsCompTypes.includes(item.display_name)).map(item => item.id),
-        "nation_ioc": this.selectedNation
+      return store.getAthlete({
+        "id": this.previewAthleteResults.find(item => item.name === this.selectedAthlete).id
       }).then(() => {
         console.log("Form data sent...")
       }).catch(error => {

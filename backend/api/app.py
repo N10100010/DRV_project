@@ -291,6 +291,7 @@ def get_report_boat_class():
     start_date = func.to_timestamp(func.concat(start_year, "-01-01 00:00:00"), 'YYYY-MM-DD HH24:MI:SS')
     end_date = func.to_timestamp(func.concat(end_year, "-12-31 23:59:59"), 'YYYY-MM-DD HH24:MI:SS')
 
+    # TODO: Add runs to filter criteria
     statement = (
         select(
             model.Race.id.label("race_id"),
@@ -346,6 +347,7 @@ def get_report_boat_class():
     medium_times_mean, medium_times_n = 0, 0
     slow_times_mean, slow_times_n = 0, 0
     slowest_times_mean, slowest_times_n = 0, 0
+    sd_1_low, sd_1_high = 0, 0
 
     if race_times:
         results = len(race_times)
@@ -377,6 +379,9 @@ def get_report_boat_class():
         medium_times_mean = int(mean(medium_times))
         slow_times_mean = int(mean(slow_times))
         slowest_times_mean = int(mean(slowest_times))
+
+        sd_1_low = mean_time - stdev_race_time
+        sd_1_high = mean_time + stdev_race_time
 
     return json.dumps({
         "competition_categories": list(comp_categories),
@@ -419,21 +424,17 @@ def get_report_boat_class():
                 "labels": race_dates,
                 "data": race_times
             },
-            "scatter_percentile_75": {
+            "scatter_1_sd_low": {
                 "labels": [
-                    f'{start_year}-01-01', f'{end_year}-12-31'
+                    f'{start_year}-01-01', f'{end_year}-12-30'
                 ],
-                "data": [
-                    388360, 388360
-                ]
+                "data": [sd_1_low, sd_1_low]
             },
-            "scatter_percentile_25": {
+            "scatter_1_sd_high": {
                 "labels": [
-                    f'{start_year}-01-01', f'{end_year}-12-31'
+                    f'{start_year}-01-01', f'{end_year}-12-30'
                 ],
-                "data": [
-                    380360, 380360
-                ]
+                "data": [sd_1_high, sd_1_high]
             }
         }
     })
@@ -458,23 +459,38 @@ def get_athlete(athlete_id: int):
     })
 
 
-@app.route('/get_athlete_by_name/<search_query>', methods=['GET'])
-def get_athlete_by_name(search_query: str):
+@app.route('/get_athlete_by_name/', methods=['POST'])
+def get_athlete_by_name():
     """
     Delivers the athlete search result depending on the search query.
-    @Params: search_query string (currently only first name)
-    # TODO: Convert to post request and include filter params from frontend
+    @Params: search_query string and filter data
     """
+    data = request.json["data"]
+    search_query = data["search_query"]
+    birth_year = data["birth_year"]
+    # TODO: implement nation selection via ID
+    # TODO: implement boat class selection
+
     session = Scoped_Session()
-    athletes = session.execute(select(
+    query = select(
         model.Athlete.first_name__,
         model.Athlete.last_name__,
         model.Athlete.id,
         model.Athlete.birthdate
-    ).where(or_(
-        model.Athlete.last_name__ == search_query.upper(),
-        model.Athlete.first_name__ == search_query
-    )))
+    ).where(
+        or_(
+            model.Athlete.last_name__ == search_query.upper(),
+            model.Athlete.first_name__ == search_query
+        )
+    )
+    if birth_year is not None:
+        query = query.where(
+            and_(
+                model.Athlete.birthdate >= f'{int(birth_year) - 1}-12-31',
+                model.Athlete.birthdate <= f'{int(birth_year) + 1}-01-01'
+            )
+        )
+    athletes = session.execute(query)
 
     return json.dumps([{
         "name": f"{athlete.last_name__}, {athlete.first_name__} ({athlete.birthdate})",
