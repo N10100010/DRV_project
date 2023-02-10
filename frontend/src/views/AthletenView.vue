@@ -34,72 +34,72 @@
         <v-container class="pa-0 mt-8" style="min-height: 400px">
           <v-row>
             <v-col :cols="mobile ? 12 : 4">
-              <h2>{{ tableData.firstName }} {{ tableData.lastName }}</h2>
+              <h2>{{ data.name }}</h2>
               <v-table class="tableStyles" density="compact">
                 <tbody class="nth-grey">
                 <tr>
                   <th>Nation</th>
-                  <td>{{ tableData.nation_ioc }}</td>
+                  <td>{{ data.nation }}</td>
                 </tr>
                 <tr>
                   <th>Geburtsdatum</th>
-                  <td>{{ tableData.dateOfBirth }}</td>
+                  <td>{{ data.dob }}</td>
                 </tr>
                 <tr>
                   <th>Geschlecht</th>
-                  <td>{{ tableData.gender == 'male' ? 'Männlich' : 'Weiblich' }}</td>
+                  <td>{{ data.gender == 'male' ? 'Männlich' : 'Weiblich' }}</td>
                 </tr>
                 <tr>
                   <th>Gewicht</th>
-                  <td>{{ tableData.weight }} kg</td>
+                  <td>{{ data.weight }} kg</td>
                 </tr>
                 <tr>
                   <th>Größe</th>
-                  <td>{{ tableData.height }} cm</td>
+                  <td>{{ data.height }} cm</td>
                 </tr>
                 <tr>
                   <th>Bootsklasse</th>
-                  <td>{{ tableData.currentBoatClass }}</td>
+                  <td>{{ data.currentBoatClass }}</td>
                 </tr>
                 <tr>
                   <th>Disziplin(en)</th>
-                  <td><p v-for="item in tableData.disciplines">{{ item }}</p></td>
+                  <td><p v-for="item in data.disciplines">{{ item }}</p></td>
                 </tr>
                 <tr>
                   <th>Rennanzahl</th>
-                  <td>{{ tableData.numberOfRaces }}</td>
+                  <td>{{ data.numberOfRaces }}</td>
                 </tr>
                 <tr>
                   <th>Medaillen Gesamt</th>
-                  <td>{{ tableData.medals_total }}</td>
+                  <td>{{ data.medals_total }}</td>
                 </tr>
                 <tr>
                   <th>Medaillen Gold</th>
-                  <td>{{ tableData.medals_gold }}</td>
+                  <td>{{ data.medals_gold }}</td>
                 </tr>
                 <tr>
                   <th>Medaillen Silber</th>
-                  <td>{{ tableData.medals_silver }}</td>
+                  <td>{{ data.medals_silver }}</td>
                 </tr>
                 <tr>
                   <th>Medaillen Bronze</th>
-                  <td>{{ tableData.medals_bronze }}</td>
+                  <td>{{ data.medals_bronze }}</td>
                 </tr>
                 <tr>
                   <th>Platzierungen Finale A</th>
-                  <td>{{ tableData.placements_final_A }}</td>
+                  <td>{{ data.placements_final_A }}</td>
                 </tr>
                 <tr>
                   <th>Platzierungen Finale B</th>
-                  <td>{{ tableData.placements_final_B }}</td>
+                  <td>{{ data.placements_final_B }}</td>
                 </tr>
                 <tr>
                   <th>Bestzeit Bootsklasse</th>
-                  <td>{{ formatMilliseconds(tableData.bestTimeBoatClass) }}</td>
+                  <td>{{ formatMilliseconds(data.bestTimeBoatClass) }}</td>
                 </tr>
                 <tr>
                   <th>Bestzeit Bootsklasse OZ/Jahr</th>
-                  <td>{{ formatMilliseconds(tableData.bestTimeBoatClassCurrentOZ) }}</td>
+                  <td>{{ formatMilliseconds(data.bestTimeBoatClassCurrentOZ) }}</td>
                 </tr>
                 </tbody>
               </v-table>
@@ -117,7 +117,7 @@
                 </tr>
                 </thead>
                 <tbody class="nth-grey">
-                <tr v-for="(race, idx) in tableData.raceList">
+                <tr v-for="(race, idx) in data.raceList">
                   <td>{{ race.raceName }}</td>
                   <td>{{ race.startDate }}</td>
                   <td>{{ race.rank }}</td>
@@ -140,7 +140,7 @@
                 </tr>
                 </thead>
                 <tbody class="nth-grey">
-                <tr v-for="(race, idx) in tableData.raceList">
+                <tr v-for="(race, idx) in data.raceList">
                   <td>{{ race.raceName }}</td>
                   <td>{{ race.startDate }}</td>
                   <td>{{ race.rank }}</td>
@@ -196,7 +196,11 @@ export default {
       document.documentElement.style.setProperty('--navbar-height', navbarHeight);
     },
     formatMilliseconds(ms) {
-      return new Date(ms).toISOString().slice(14, -2)
+      if (ms) {
+        return new Date(ms).toISOString().slice(14, -2)
+      } else {
+        return 0
+      }
     }
   },
   created() {
@@ -219,6 +223,7 @@ export default {
     return {
       mobile: false,
       filterOpen: this.filterState,
+      data: []
     }
   },
   watch: {
@@ -231,13 +236,16 @@ export default {
         store.setFilterState(oldVal)
       }
     },
+    tableData: function (newVal, ){
+      this.data = newVal
+    }
+    /*
     tableData: function (newVal,) {
-      /*
       if (newVal !== undefined) {
         router.push(this.$route.path + `?athlete_id=${newVal.id}`)
       }
-      */
     }
+    */
   }
 }
 </script>

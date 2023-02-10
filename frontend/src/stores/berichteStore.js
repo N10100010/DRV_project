@@ -176,21 +176,13 @@ export const useBerichteState = defineStore({
                     "labels": [],
                     "data": []
                 },
-                "scatter_percentile_75": {
-                    "labels": [
-                        '1930-01-01', '2020-01-01'
-                    ],
-                    "data": [
-                        388360, 388360
-                    ]
+                "scatter_1_sd_high": {
+                    "labels": [],
+                    "data": []
                 },
-                "scatter_percentile_25": {
-                    "labels": [
-                        '1930-01-01', '2020-01-01'
-                    ],
-                    "data": [
-                        380360, 380360
-                    ]
+                "scatter_1_sd_low": {
+                    "labels": [],
+                    "data": []
                 }
             }
             },
@@ -788,7 +780,7 @@ export const useBerichteState = defineStore({
                     },
                     y: {
                         min: 0,
-                        max: Math.ceil(Math.max(...Object.values(state.data.plot_data.histogram.data)) / 100) * 100,
+                        // max: Math.ceil(Math.max(...Object.values(state.data.plot_data.histogram.data)) / 100) * 100,
                         title: {
                             display: true,
                             text: 'Anzahl Rennen'
@@ -809,23 +801,24 @@ export const useBerichteState = defineStore({
         getScatterChartData(state) {
 
             const scatterData = state.data.plot_data.scatter_plot;
-            const firstPercentileData = state.data.plot_data.scatter_percentile_75;
-            const secondPercentileData = state.data.plot_data.scatter_percentile_25;
+            const scatter1SDHigh = state.data.plot_data.scatter_1_sd_high;
+            const scatter1SDLow = state.data.plot_data.scatter_1_sd_low;
 
-            const plotData = scatterData.labels.map((label, i) => (
-                {
-                    x: new Date(label),
-                    y: formatMilliseconds(scatterData.data[i])
-                })
-            );
-            const percentile25Data = secondPercentileData.labels.map((label, i) => ({
-                x: label,
-                y: formatMilliseconds(secondPercentileData.data[i])
+            const plotData = scatterData.labels.map((label, i) => ({
+                x: new Date(label),
+                y: formatMilliseconds(scatterData.data[i])
             }));
-            const percentile75Data = firstPercentileData.labels.map((label, i) => ({
-                x: label,
-                y: formatMilliseconds(firstPercentileData.data[i])
+            const sd1Low = scatter1SDLow.labels.map((label, i) => ({
+                x: new Date(label),
+                y: formatMilliseconds(scatter1SDLow.data[i])
             }));
+            const sd1High = scatter1SDHigh.labels.map((label, i) => ({
+                x: new Date(label),
+                y: formatMilliseconds(scatter1SDHigh.data[i])
+            }));
+
+            console.log(sd1High)
+            console.log(sd1Low)
 
             return {
                 datasets: [
@@ -835,12 +828,11 @@ export const useBerichteState = defineStore({
                         label: "Einzelergebnisse",
                         backgroundColor: '#5cc5ed',
                         borderColor: '#5cc5ed'
-                    }
-                     /*
+                    },
                     {
                         type: 'line',
-                        data: percentile25Data,
-                        label: "25. Perzentil",
+                        data: sd1Low,
+                        label: "1 SD Low",
                         borderColor: "darkgrey",
                         backgroundColor: "darkgrey",
                         borderWidth: 2,
@@ -849,16 +841,14 @@ export const useBerichteState = defineStore({
                     },
                     {
                         type: 'line',
-                        data: percentile75Data,
-                        label: "75. Perzentil",
+                        data: sd1High,
+                        label: "1 SD High",
                         borderColor: "darkgrey",
                         backgroundColor: "darkgrey",
                         borderWidth: 2,
                         pointRadius: 0,
                         pointHoverRadius: 0,
                     }
-
-                      */
                 ]
             }
         },

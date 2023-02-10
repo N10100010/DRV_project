@@ -106,47 +106,44 @@ export const useAthletenState = defineStore({
             "nations": {}
         }],
         data: {
-            athlete: [{
-                "id": 98245435,
-                "name": "Test",
-                "dob": "1997-12-06",
-                "gender": "male",
-                "nation": "CZE",
-                "weight": 80,
-                "height": 180,
-                "disciplines": [
-                    "Scull",
-                    "Riemen"
-                ],
-                "currentBoatClass": "Men's Eight",
-                "numberOfRaces": 13,
-                "medals_total": 5,
-                "medals_gold": 1,
-                "medals_silver": 2,
-                "medals_bronze": 2,
-                "placements_final_A": 2,
-                "placements_final_B": 4,
-                "bestTimeBoatClass": 358360,
-                "bestTimeBoatClassCurrentOZ": 358360,
-                "raceList": [{
-                    "race_id": 195638,
-                    "raceName": "Junior's Eight Heat 1",
-                    "boatClass": "Junior's Eight",
-                    "rank": 2,
-                    "startDate": "2022-06-16 14:12:00",
-                    "venue": "Malta/Poznan, Poland",
-                }, {
-                    "race_id": 222222,
-                    "raceName": "Men's Eight Heat 2",
-                    "boatClass": "Men's Eight",
-                    "rank": 1,
-                    "startDate": "2023-05-10 12:12:00",
-                    "venue": "Berlin, Germany",
-                }] //chronologisch geordnet, neueste zuerst --> backend ORDER_BY
+            "id": 98245435,
+            "name": "Test",
+            "dob": "1997-12-06",
+            "gender": "male",
+            "nation": "CZE",
+            "weight": 80,
+            "height": 180,
+            "disciplines": [
+                "Scull",
+                "Riemen"
+            ],
+            "currentBoatClass": "Men's Eight",
+            "numberOfRaces": 13,
+            "medals_total": 5,
+            "medals_gold": 1,
+            "medals_silver": 2,
+            "medals_bronze": 2,
+            "placements_final_A": 2,
+            "placements_final_B": 4,
+            "bestTimeBoatClass": 358360,
+            "bestTimeBoatClassCurrentOZ": 358360,
+            "raceList": [{
+                "race_id": 195638,
+                "raceName": "Junior's Eight Heat 1",
+                "boatClass": "Junior's Eight",
+                "rank": 2,
+                "startDate": "2022-06-16 14:12:00",
+                "venue": "Malta/Poznan, Poland",
+            }, {
+                "race_id": 222222,
+                "raceName": "Men's Eight Heat 2",
+                "boatClass": "Men's Eight",
+                "rank": 1,
+                "startDate": "2023-05-10 12:12:00",
+                "venue": "Berlin, Germany",
             }]
         },
         previewAthleteResults: []
-
     }),
     getters: {
         getFilterState(state) {
@@ -161,7 +158,7 @@ export const useAthletenState = defineStore({
         getTableData(state) {
             // TODO: Convert table data to array that could be rendered in the template.
             // Also relevant for CSV Export as the export data should be the same.
-            return state.data.athlete[0]
+            return state.data.athlete
         }
     },
     actions: {
@@ -173,11 +170,18 @@ export const useAthletenState = defineStore({
                     console.error(`Request failed: ${error}`)
                 })
         },
-        async postSearchAthlete(formData) {
-            // TODO: convert to post request and also send the filter data
-            await axios.get(`http://localhost:5000/get_athlete_by_name/${formData.searchInput}`)
+        async postSearchAthlete(data) {
+            await axios.post("http://localhost:5000/get_athlete_by_name/", {data})
                 .then(response => {
-                    this.previewAthleteResults = response.data.map(athlete => athlete.name)
+                    this.previewAthleteResults = response.data
+                }).catch(error => {
+                    console.error(`Request failed: ${error}`)
+                })
+        },
+        async getAthlete(data) {
+            await axios.get(`http://localhost:5000/get_athlete/${data.id}`)
+                .then(response => {
+                    this.data.athlete = response.data
                 }).catch(error => {
                     console.error(`Request failed: ${error}`)
                 })

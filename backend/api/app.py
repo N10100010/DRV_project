@@ -2,6 +2,7 @@ import os
 import datetime
 import json
 from statistics import stdev, median, mean
+import numpy as np
 
 from flask import Flask
 from flask import request
@@ -290,6 +291,7 @@ def get_report_boat_class():
     start_date = func.to_timestamp(func.concat(start_year, "-01-01 00:00:00"), 'YYYY-MM-DD HH24:MI:SS')
     end_date = func.to_timestamp(func.concat(end_year, "-12-31 23:59:59"), 'YYYY-MM-DD HH24:MI:SS')
 
+    # TODO: Add runs to filter criteria
     statement = (
         select(
             model.Race.id.label("race_id"),
@@ -297,22 +299,26 @@ def get_report_boat_class():
         )
         .join(model.Race.event)
         .join(model.Event.competition)
+        .join(model.Competition.competition_category)
         .where(and_(
             model.Race.date >= start_date,
             model.Race.date <= end_date,
             model.Event.boat_class_id == model.Boat_Class.id,
             model.Boat_Class.additional_id_ == boat_class,
+            model.Competition_Category.competition_type_id.in_(competition_categories)
         ))
     )
 
     result = session.execute(statement).fetchall()
     boat_class_name, wb_time, lowest_time_period = "", 0, 0
     race_times, race_dates, int_times_500, int_times_1000 = [], [], [], []
+    comp_categories = set()
 
     for row in result:
         race_id, competition_id = row
         race = session.query(model.Race).get(race_id)
         boat_class_name = race.event.boat_class.abbreviation
+        comp_categories.add(race.event.competition.competition_category.name)
 
         world_best_race_boat = race.event.boat_class.world_best_race_boat
         if world_best_race_boat:
@@ -332,10 +338,17 @@ def get_report_boat_class():
                     elif intermediate_time.distance_meter == 1000:
                         int_times_1000.append(intermediate_time.result_time_ms)
 
-    avg_500_time = int(mean(int_times_500))
-    avg_1000_time = int(mean(int_times_1000))
+    avg_500_time = int(mean(int_times_500)) if int_times_500 else 0
+    avg_1000_time = int(mean(int_times_1000)) if int_times_1000 else 0
 
     results, mean_speed, mean_time, stdev_race_time, median_race_time = 0, 0, 0, 0, 0
+    hist_data, hist_labels = [], []
+    fastest_times_mean, fastest_times_n = 0, 0
+    medium_times_mean, medium_times_n = 0, 0
+    slow_times_mean, slow_times_n = 0, 0
+    slowest_times_mean, slowest_times_n = 0, 0
+    sd_1_low, sd_1_high = 0, 0
+
     if race_times:
         results = len(race_times)
         lowest_time_period = min(race_times)
@@ -346,9 +359,32 @@ def get_report_boat_class():
         stdev_race_time = int(stdev(race_times))
         median_race_time = int(median(race_times))
 
-    # edges, hist = np.histogram(race_times, bins=100)
+        hist_data, bin_edges = np.histogram(race_times, bins="fd")
+        hist_data = hist_data.tolist() if len(hist_data) > 0 else []
+        hist_labels = [int(bin_edge) for bin_edge in bin_edges]
+
+        fastest_times = [x for x in race_times if x < (mean_time - stdev_race_time)]
+        medium_times = [x for x in race_times if
+                        (mean_time - stdev_race_time) < x < (mean_time - (1 / 3 * stdev_race_time))]
+        slow_times = [x for x in race_times if
+                      (mean_time - (1 / 3 * stdev_race_time)) < x < (mean_time + (1 / 3 * stdev_race_time))]
+        slowest_times = [x for x in race_times if x > (mean_time + (1 / 3 * stdev_race_time))]
+
+        fastest_times_n = len(fastest_times)
+        medium_times_n = len(medium_times)
+        slow_times_n = len(slow_times)
+        slowest_times_n = len(slowest_times)
+
+        fastest_times_mean = int(mean(fastest_times))
+        medium_times_mean = int(mean(medium_times))
+        slow_times_mean = int(mean(slow_times))
+        slowest_times_mean = int(mean(slowest_times))
+
+        sd_1_low = mean_time - stdev_race_time
+        sd_1_high = mean_time + stdev_race_time
 
     return json.dumps({
+        "competition_categories": list(comp_categories),
         "results": results,
         "boat_classes": boat_class_name,
         "start_date": start_year,
@@ -364,45 +400,41 @@ def get_report_boat_class():
         "std_dev": stdev_race_time,
         "median": median_race_time,
         "gradation_fastest": {
-            "results": None,
-            "time": None
+            "results": fastest_times_n,
+            "time": fastest_times_mean
         },
         "gradation_medium": {
-            "results": None,
-            "time": None
+            "results": medium_times_n,
+            "time": medium_times_mean
         },
         "gradation_slow": {
-            "results": None,
-            "time": None
+            "results": slow_times_n,
+            "time": slow_times_mean
         },
         "gradation_slowest": {
-            "results": None,
-            "time": None
+            "results": slowest_times_n,
+            "time": slowest_times_mean
         },
         "plot_data": {
             "histogram": {
-                "labels": [],
-                "data": [],
+                "labels": hist_labels,
+                "data": hist_data,
             },
             "scatter_plot": {
                 "labels": race_dates,
                 "data": race_times
             },
-            "scatter_percentile_75": {
+            "scatter_1_sd_low": {
                 "labels": [
-                    f'{start_year}-01-01', f'{end_year}-12-31'
+                    f'{start_year}-01-01', f'{end_year}-12-30'
                 ],
-                "data": [
-                    388360, 388360
-                ]
+                "data": [sd_1_low, sd_1_low]
             },
-            "scatter_percentile_25": {
+            "scatter_1_sd_high": {
                 "labels": [
-                    f'{start_year}-01-01', f'{end_year}-12-31'
+                    f'{start_year}-01-01', f'{end_year}-12-30'
                 ],
-                "data": [
-                    380360, 380360
-                ]
+                "data": [sd_1_high, sd_1_high]
             }
         }
     })
@@ -427,23 +459,38 @@ def get_athlete(athlete_id: int):
     })
 
 
-@app.route('/get_athlete_by_name/<search_query>', methods=['GET'])
-def get_athlete_by_name(search_query: str):
+@app.route('/get_athlete_by_name/', methods=['POST'])
+def get_athlete_by_name():
     """
     Delivers the athlete search result depending on the search query.
-    @Params: search_query string (currently only first name)
-    # TODO: Convert to post request and include filter params from frontend
+    @Params: search_query string and filter data
     """
+    data = request.json["data"]
+    search_query = data["search_query"]
+    birth_year = data["birth_year"]
+    # TODO: implement nation selection via ID
+    # TODO: implement boat class selection
+
     session = Scoped_Session()
-    athletes = session.execute(select(
+    query = select(
         model.Athlete.first_name__,
         model.Athlete.last_name__,
         model.Athlete.id,
         model.Athlete.birthdate
-    ).where(or_(
-        model.Athlete.last_name__ == search_query.upper(),
-        model.Athlete.first_name__ == search_query
-    )))
+    ).where(
+        or_(
+            model.Athlete.last_name__ == search_query.upper(),
+            model.Athlete.first_name__ == search_query
+        )
+    )
+    if birth_year is not None:
+        query = query.where(
+            and_(
+                model.Athlete.birthdate >= f'{int(birth_year) - 1}-12-31',
+                model.Athlete.birthdate <= f'{int(birth_year) + 1}-01-01'
+            )
+        )
+    athletes = session.execute(query)
 
     return json.dumps([{
         "name": f"{athlete.last_name__}, {athlete.first_name__} ({athlete.birthdate})",
