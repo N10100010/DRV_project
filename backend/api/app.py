@@ -280,10 +280,10 @@ def get_report_boat_class():
     """
     Delivers the report results for a single boat class.
     """
-    # extract data from filter | ignored for now: runs, runs_fine and ranks
+    # TODO: extract data from filter | ignored for now: runs_fine
     filter_data = request.json["data"]
-    filter_keys = ["years", "competition_categories", "boat_classes"]
-    years, competition_categories, boat_class = [filter_data.get(key) for key in filter_keys]
+    filter_keys = ["years", "competition_categories", "boat_classes", "runs", "ranks"]
+    years, competition_categories, boat_class, runs, ranks = [filter_data.get(key) for key in filter_keys]
     start_year = years.get("start_year")
     end_year = years.get("end_year")
 
@@ -292,7 +292,6 @@ def get_report_boat_class():
     start_date = func.to_timestamp(func.concat(start_year, "-01-01 00:00:00"), 'YYYY-MM-DD HH24:MI:SS')
     end_date = func.to_timestamp(func.concat(end_year, "-12-31 23:59:59"), 'YYYY-MM-DD HH24:MI:SS')
 
-    # TODO: Add runs to filter criteria
     statement = (
         select(
             model.Race.id.label("race_id"),
@@ -326,7 +325,8 @@ def get_report_boat_class():
             wb_time = world_best_race_boat.result_time_ms
 
         for race_boat in race.race_boats:
-            if race_boat.result_time_ms and race.date:
+            if race_boat.result_time_ms and race.date and race.phase_type in runs \
+                    and (race_boat.rank in ranks if ranks else True):
                 race_times.append(race_boat.result_time_ms)
                 date = race.date
                 race_dates.append(
@@ -385,6 +385,7 @@ def get_report_boat_class():
         sd_1_high = mean_time + stdev_race_time
 
     return json.dumps({
+        "test_2": ranks,
         "competition_categories": list(comp_categories),
         "results": results,
         "boat_classes": boat_class_name,
@@ -936,10 +937,10 @@ def get_report_filter_options():
             "quarterfinal": [
                 {"display_name": "q1-4"},
             ],
-            "hoffnungslauf": None,  # what is the correct english wording for hoffnungslauf?
+            "repechage": None,
             "preliminary": None,
         },
-        "ranks": ["1", "2", "3", "4-6"]
+        "ranks": [1, 2, 3, 4, 5, 6]
     }], sort_keys=False)
 
 

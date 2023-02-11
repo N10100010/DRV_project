@@ -1,5 +1,5 @@
 <template>
-  <v-container :style="{'height': mobile ? '135%' : '100%'}">
+  <v-container :style="{'height': mobile ? '135%' : '140%', 'overflow-y': 'auto'}">
     <v-row>
       <v-col>
         <h2>Filter</h2>
@@ -66,7 +66,7 @@
 
       <v-label class="pt-1">Platzierung (optional)</v-label>
       <v-chip-group filter color="blue" multiple v-model="selectedRanks">
-        <v-chip v-for="rankName in ranksDisplayNames">{{ rankName }}</v-chip>
+        <v-chip v-for="rank in optionsRanks">{{ rank }}</v-chip>
       </v-chip-group>
 
       <v-container class="pa-0 pt-4 text-right">
@@ -135,9 +135,8 @@ export default {
       optionsRunsFineSelection: null,
       selectedRunsFineSelection: ["fa", "fb", "fc", "fd", "f...", "sa/b, sa/b/c", "sc/d, sd/e/f", "s...", "q1-4"],
       // ranks
-      ranksDisplayNames: [],
-      ranksDict: {},
-      selectedRanks: [0, 1, 2, 3]
+      optionsRanks: [],
+      selectedRanks: []
     }
   },
   created() {
@@ -170,10 +169,8 @@ export default {
       this.optionsStartYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
       this.optionsEndYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.endYear - i)
 
-      // create dict from keys to get mapping from ui-element index to corresponding rank display name
-      this.ranksDict = Object.fromEntries(data.ranks.map((x, idx) => [idx, x]))
-      this.ranks = Object.keys(this.ranksDict)
-      this.ranksDisplayNames = Object.values(this.ranksDict)
+      // ranks
+      this.optionsRanks = data.ranks
 
       // competition category id
       this.compTypes = data.competition_categories
@@ -228,9 +225,9 @@ export default {
         "competition_categories": this.compTypes.filter(item =>
             this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
         "boat_classes": this.boatClasses[this.selectedBoatClasses],
-        "runs": this.selectedRuns,
+        "runs": this.selectedRuns.map(item => this.optionsRuns[item]),
         "runs_fine": this.selectedRunsFineSelection,
-        "ranks": this.ranks.map(key => this.ranksDict[key])
+        "ranks": this.selectedRanks.map(item => this.optionsRanks[item])
       }
       const store = useBerichteState()
       store.setLastFilterConfig(formData)
@@ -249,12 +246,12 @@ export default {
       this.startYear = 1950
       this.endYear = new Date().getFullYear()
       this.selectedCompTypes = []
-      this.selectedRanks = [0, 1, 2, 3]
+      this.selectedRanks = []
       this.selectedRuns = [0, 1, 2]
     },
     checkScreen() {
       this.windowWidth = window.innerWidth
-      this.mobile = this.windowWidth <= 769
+      this.mobile = this.windowWidth <= 750
     }
   },
   watch: {

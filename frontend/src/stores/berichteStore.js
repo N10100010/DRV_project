@@ -821,9 +821,6 @@ export const useBerichteState = defineStore({
                 y: formatMilliseconds(scatter1SDHigh.data[i])
             }));
 
-            console.log(sd1High)
-            console.log(sd1Low)
-
             return {
                 datasets: [
                     {
