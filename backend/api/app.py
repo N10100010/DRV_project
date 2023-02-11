@@ -452,10 +452,26 @@ def get_athlete(athlete_id: int):
 
     # get race_boat related data
     race_boats = session.query(model.Race_Boat).filter(model.Race_Boat.id.in_(athlete_race_boats)).all()
+
     race_results, race_ids, athlete_boat_classes, best_time_boat_class, nation = {}, [], set(), "", ""
+    total, gold, silver, bronze, final_a, final_b = 0, 0, 0, 0, 0, 0
 
     for i, race_boat in enumerate(race_boats):
         race_ids.append(race_boat.race_id)
+        if race_boat.race.phase_type == 'final' and race_boat.race.phase_number == 1:
+            final_a += 1
+            if race_boat.rank == 1:
+                gold += 1
+                total += 1
+            elif race_boat.rank == 2:
+                silver += 1
+                total += 1
+            elif race_boat.rank == 3:
+                bronze += 1
+                total += 1
+        elif race_boat.race.phase_type == 'final' and race_boat.race.phase_number == 2:
+            final_b += 1
+
         race_results[i] = {
             "race_id": race_boat.race_id,
             "time": race_boat.result_time_ms,
@@ -464,6 +480,7 @@ def get_athlete(athlete_id: int):
             "start_time": None
         }
         nation = race_boat.country.country_code
+
     races = session.query(model.Race).filter(model.Race.id.in_(race_ids)).all()
 
     gender = set()
@@ -486,8 +503,15 @@ def get_athlete(athlete_id: int):
         "dob": str(athlete.birthdate),
         "weight": athlete.weight_kg__,
         "height": athlete.height_cm__,
-        "boat_class": athlete_boat_classes.pop(),
+        "boat_class": ", ".join(athlete_boat_classes),
+        "medals_total": total,
+        "medals_gold": gold,
+        "medals_silver": silver,
+        "medals_bronze": bronze,
+        "final_a": final_a,
+        "final_b": final_b,
         "world_best_boat_class": best_time_boat_class,
+        "best_time_current_oz": None,  # TODO: Where to find this?
         "num_of_races": len(athlete_race_boats),
         "race_list": race_results,
     })

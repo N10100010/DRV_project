@@ -145,6 +145,10 @@ export default {
     this.checkScreen()
 
     const store = useBerichteState()
+    store.fetchReportFilterOptions()
+    this.initializeFilter(this.reportFilterOptions[0])
+
+    /*
     if (this.reportFilterOptions[0].years[0].start_year === 0) {
       store.fetchReportFilterOptions()
       this.initializeFilter(this.reportFilterOptions[0])
@@ -156,6 +160,7 @@ export default {
       this.startYear = lastFilterConf.years.start_year
       this.endYear = lastFilterConf.years.end_year
     }
+     */
   },
   methods: {
     initializeFilter(data) {

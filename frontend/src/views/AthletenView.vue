@@ -31,7 +31,18 @@
           <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
         </v-col>
         <v-divider></v-divider>
-        <v-container class="pa-0 mt-8" style="min-height: 400px">
+
+        <v-col class="pa-0" :cols="mobile ? 12 : 6" v-if="!data.name">
+        <v-alert type="info" variant="tonal" class="my-2">
+                <v-row>
+                  <v-col>
+                    <p>Bitte suchen Sie nach Athletinnen/Athleten im Filter auf der linken Seite.</p>
+                  </v-col>
+                </v-row>
+        </v-alert>
+          </v-col>
+
+        <v-container class="pa-0 mt-8" v-else>
           <v-row>
             <v-col :cols="mobile ? 12 : 4">
               <h2>{{ data.name }}</h2>
@@ -58,7 +69,7 @@
                   <td>{{data.height ? `${data.height}cm` : "–"}}</td>
                 </tr>
                 <tr>
-                  <th>Bootsklasse</th>
+                  <th>Bootsklasse(n)</th>
                   <td>{{ data.boat_class }}</td>
                 </tr>
                 <tr>
@@ -86,20 +97,20 @@
                   <td>{{ data.medals_bronze }}</td>
                 </tr>
                 <tr>
-                  <th>Platzierungen Finale A</th>
-                  <td>{{ data.placements_final_A }}</td>
+                  <th>Finale A</th>
+                  <td>{{ data.final_a }}</td>
                 </tr>
                 <tr>
-                  <th>Platzierungen Finale B</th>
-                  <td>{{ data.placements_final_B }}</td>
+                  <th>Finale B</th>
+                  <td>{{ data.final_a }}</td>
                 </tr>
                 <tr>
                   <th>Bestzeit Bootsklasse</th>
-                  <td>{{ formatMilliseconds(data.bestTimeBoatClass) }}</td>
+                  <td>{{ data.best_time_boat_class ? `${formatMilliseconds(data.best_time_boat_class)}` : "–"}}</td>
                 </tr>
                 <tr>
                   <th>Bestzeit Bootsklasse OZ/Jahr</th>
-                  <td>{{ formatMilliseconds(data.bestTimeBoatClassCurrentOZ) }}</td>
+                  <td>{{data.best_time_current_oz ? `${formatMilliseconds(data.best_time_current_oz)}` : "–"}}</td>
                 </tr>
                 </tbody>
               </v-table>
