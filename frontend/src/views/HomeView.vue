@@ -3,18 +3,30 @@
     <v-col cols="12" class="pa-0 pt-0">
       <h1 class="py-3">Kalender</h1>
       <v-divider></v-divider>
-      <div class="text-center section pt-5">
-        <v-chip-group filter color="blue" v-model="selectedView">
-        <v-chip>Monat</v-chip>
-        <v-chip>Jahr</v-chip>
-      </v-chip-group>
+      <v-row class="ma-0" style="display: flex; justify-content: space-between;">
+  <v-chip-group filter color="blue" v-model="selectedView">
+    <v-chip>Monat</v-chip>
+    <v-chip>Jahr</v-chip>
+  </v-chip-group>
+  <v-list class="d-flex pa-0" style="background-color: transparent">
+    <v-list-item v-for="(value, key) of legend" :key="key" class="d-flex pa-1">
+      <div class="d-flex align-center">
+        <div :style="{ backgroundColor: value, width: '25px', height: '25px', borderRadius: '2px', display: 'inline-block' }"></div>
+        <p style="display: inline-block; padding-left: 5px;">{{ key }}</p>
+      </div>
+    </v-list-item>
+  </v-list>
+</v-row>
+
+      <div class="text-center section">
         <v-calendar
             class="custom-calendar"
             :masks="masks"
             :attributes="attributes"
             disable-page-swipe
             is-expanded
-            style="border-radius: 0"
+            :style="{
+              'border-radius': '0'}"
             :rows="selectedView ? 3 : 1"
             :columns="selectedView ? 4 : 1"
         >
@@ -55,10 +67,14 @@ export default {
     ...mapState(useHomeStore, {
       calenderData: "getCalenderData"
     }),
+    ...mapState(useHomeStore, {
+      legend: "getCalenderLegend"
+    }),
   },
   data() {
     return {
       mobile: false,
+      opacity: 0.65,
       masks: {
         weekdays: 'WWW',
       },
@@ -85,6 +101,9 @@ export default {
   watch: {
     calenderData(newVal) {
       this.attributes = newVal
+    },
+     selectedView(newVal) {
+
     }
   }
 };

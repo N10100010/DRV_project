@@ -117,7 +117,7 @@ export default {
       endYear: 0,
       optionsStartYear: [],
       optionsEndYear: [],
-      yearShortCutOptions: ["Aktuelles Jahr", "Aktueller OZ", "letzter OZ"],
+      yearShortCutOptions: ["Ganzer Zeitraum", "Aktuelles Jahr", "Aktueller OZ", "letzter OZ"],
       selectedYearShortCutOptions: [0],
       // boat classes
       boatClasses: {},
@@ -258,12 +258,22 @@ export default {
     selectedYearShortCutOptions: function (newVal,) {
       if (newVal !== 'undefined') {
         if (newVal === 0) {
-          this.startYear = new Date().getFullYear();
-          this.endYear = new Date().getFullYear();
-        } else if (newVal === 1) {
-          // TODO: implement OZ
+          this.startYear = this.filterData.years[0].start_year
+          this.endYear = this.filterData.years[1].end_year
+        }
+        if (newVal === 1) {
+          this.startYear = new Date().getFullYear()
+          this.endYear = new Date().getFullYear()
         } else if (newVal === 2) {
-          // TODO: implement last OZ
+          const currentYear = new Date().getFullYear()
+          const olympicYear = currentYear - (currentYear % 4) + 4
+          this.startYear = olympicYear - 4
+          this.endYear = olympicYear
+        } else if (newVal === 3) {
+          const currentYear = new Date().getFullYear()
+          const olympicYear = currentYear - (currentYear % 4) + 4
+          this.startYear = olympicYear - 8
+          this.endYear = olympicYear - 4
         }
       }
     },
