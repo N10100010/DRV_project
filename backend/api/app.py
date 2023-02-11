@@ -437,6 +437,12 @@ def get_report_boat_class():
                     f'{start_year}-01-01', f'{end_year}-12-30'
                 ],
                 "data": [sd_1_high, sd_1_high]
+            },
+            "scatter_mean": {
+                "labels": [
+                    f'{start_year}-01-01', f'{end_year}-12-30'
+                ],
+                "data": [mean_time, mean_time]
             }
         }
     })

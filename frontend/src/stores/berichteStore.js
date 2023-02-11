@@ -184,6 +184,10 @@ export const useBerichteState = defineStore({
                 "scatter_1_sd_low": {
                     "labels": [],
                     "data": []
+                },
+                "scatter_mean": {
+                    "labels": [],
+                    "data": []
                 }
             }
             },
@@ -807,6 +811,7 @@ export const useBerichteState = defineStore({
             const scatterData = state.data.plot_data.scatter_plot;
             const scatter1SDHigh = state.data.plot_data.scatter_1_sd_high;
             const scatter1SDLow = state.data.plot_data.scatter_1_sd_low;
+            const scatterMeanValues = state.data.plot_data.scatter_mean;
 
             const plotData = scatterData.labels.map((label, i) => ({
                 x: new Date(label),
@@ -819,6 +824,10 @@ export const useBerichteState = defineStore({
             const sd1High = scatter1SDHigh.labels.map((label, i) => ({
                 x: new Date(label),
                 y: formatMilliseconds(scatter1SDHigh.data[i])
+            }));
+            const meanValues = scatterMeanValues.labels.map((label, i) => ({
+                x: new Date(label),
+                y: formatMilliseconds(scatterMeanValues.data[i])
             }));
 
             return {
@@ -833,20 +842,30 @@ export const useBerichteState = defineStore({
                     {
                         type: 'line',
                         data: sd1Low,
-                        label: "1 SD Low",
+                        label: "-1SD",
                         borderColor: "darkgrey",
                         backgroundColor: "darkgrey",
-                        borderWidth: 2,
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                    },
+                    {
+                        type: 'line',
+                        data: meanValues,
+                        label: "Mittelwert",
+                        borderColor: "grey",
+                        backgroundColor: "grey",
+                        borderWidth: 1.5,
                         pointRadius: 0,
                         pointHoverRadius: 0,
                     },
                     {
                         type: 'line',
                         data: sd1High,
-                        label: "1 SD High",
+                        label: "+1SD",
                         borderColor: "darkgrey",
                         backgroundColor: "darkgrey",
-                        borderWidth: 2,
+                        borderWidth: 1,
                         pointRadius: 0,
                         pointHoverRadius: 0,
                     }

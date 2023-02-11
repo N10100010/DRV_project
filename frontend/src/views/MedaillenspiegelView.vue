@@ -40,8 +40,9 @@
         <v-divider></v-divider>
         <v-container class="pa-0">
           <v-row class="ma-0">
-            <v-col :cols="mobile ? 12 : 10" class="pa-0">
+            <v-col cols="12" class="pa-0">
               <h2><b> {{ filterSelection.start_date }}</b> | <b>{{ filterSelection.events }}</b> | <b>{{ filterSelection.category }}</b></h2>
+              <v-col :cols="mobile ? 12 : 6" class="pa-0">
               <v-alert type="success" variant="tonal" class="my-2" v-if="filterSelection.results">
                 <v-row>
                   <v-col>
@@ -58,6 +59,7 @@
                   </v-col>
                 </v-row>
               </v-alert>
+              </v-col>
               <v-table class="tableStyles mb-4" density="compact">
                 <tbody class="nth-grey">
                 <template v-for="(el, idx) in tableData">
