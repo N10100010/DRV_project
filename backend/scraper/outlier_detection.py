@@ -6,14 +6,17 @@ from model import model
 from tqdm import tqdm 
 
 import logging
+import os 
 
-logger = logging.getLogger(__name__)
+
+OUTLIER_DETECTION_PERCENTILE_MIN = float(os.environ.get('OUTLIER_DETECTION_PERCENTILE_MIN','.001').strip())
+OUTLIER_DETECTION_PERCENTILE_MAX = float(os.environ.get('OUTLIER_DETECTION_PERCENTILE_MAX','.97').strip())
+
 logging.basicConfig(level=logging.INFO)
-
+logger = logging.getLogger("outlier_detector")
 
 
 def outlier_detection(session:Session, boat_class: model.Boat_Class) -> None:
-    logger = logging.getLogger("outlier_detector")
     logger.info(f"Boat Class: {boat_class.abbreviation}")
 
     # https://docs.sqlalchemy.org/en/14/core/selectable.html#sqlalchemy.sql.expression.GenerativeSelect.group_by
@@ -42,7 +45,6 @@ def outlier_detection(session:Session, boat_class: model.Boat_Class) -> None:
             model.Race_Boat.result_time_ms
         )
         .join(model.Race_Boat)
-        #.where(model.Boat_Class.id == boat_class.id ) # todo: results in empty list?
     )
 
     intermediates = session.execute(intermediate_statement).all()
@@ -56,8 +58,6 @@ def outlier_detection(session:Session, boat_class: model.Boat_Class) -> None:
     wbt = wbt[0] if len(wbt) > 0 else 0
     longest_distance = intermediates[-1].distance_meter
 
-
-
     for row in tqdm(intermediates):
 
         logger.debug(f"  Competition Category: {row.competition_category_id}")
@@ -65,8 +65,8 @@ def outlier_detection(session:Session, boat_class: model.Boat_Class) -> None:
         percentiles_statement = (
             select(
                 [
-                    func.percentile_cont(.001).within_group(model.Intermediate_Time.result_time_ms.desc()),
-                    func.percentile_cont(.999).within_group(model.Intermediate_Time.result_time_ms.desc()),
+                    func.percentile_cont(OUTLIER_DETECTION_PERCENTILE_MIN).within_group(model.Intermediate_Time.result_time_ms.desc()),
+                    func.percentile_cont(OUTLIER_DETECTION_PERCENTILE_MAX).within_group(model.Intermediate_Time.result_time_ms.desc()),
                 ],
             )
             .join(model.Intermediate_Time.race_boat)
@@ -86,15 +86,16 @@ def outlier_detection(session:Session, boat_class: model.Boat_Class) -> None:
 
         percentiles = sorted(session.execute(percentiles_statement).fetchall()[0])
         if (row.distance_meter < longest_distance and wbt != 0): 
+            """
+                todo: this could be done better, 
+                    by checking for which distance_meter the wbt was originally achieved
+            """
             _min = wbt
             logging.debug("Use WBT for min")
         else: 
             _min = percentiles[0]
         _min = percentiles[0]
         _max = percentiles[1]
-
-        if _min > _max or _min == 0: 
-            print()
 
         to_adjust_statement = (
             select(
@@ -113,20 +114,10 @@ def outlier_detection(session:Session, boat_class: model.Boat_Class) -> None:
                 )
             )
         )
-        
-        # print(
-        #     f"",
-        #     f"boatclass: {boat_class.id}",
-        #     f"min: {_min}",
-        #     f"max: {_max}",
-        #     f"meter: {row.distance_meter}",
-        #     f"comp cat: #{row.competition_category_id}"
-        # )
 
         to_adjust = session.execute(to_adjust_statement).fetchall()
         # todo: how to do a bulk-update? 
         for intermediate_id, distance_meter in to_adjust: 
-
             updt = update(model.Intermediate_Time)
             updt = updt.values({'is_outlier': True})
             updt = updt.where(model.Intermediate_Time.race_boat_id == intermediate_id)
