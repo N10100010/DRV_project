@@ -164,7 +164,7 @@ export default {
             "search_query": searchInput,
             "nation": this.selectedNation,
             "birth_year": this.selectedBirthYear,
-            "boat_class": this.selectedBoatClasses
+            "boat_class": this.boatClasses[this.selectedBoatClasses] || null
           })
         }, 450)
       }

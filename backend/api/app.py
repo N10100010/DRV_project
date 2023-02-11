@@ -533,34 +533,38 @@ def get_athlete_by_name():
     data = request.json["data"]
     search_query = data["search_query"]
     birth_year = data["birth_year"]
-    # TODO: implement nation selection via ID
-    # TODO: implement boat class selection
+    nation = data["nation"][:3] if data["nation"] else None  # TODO: implement via ID?
+    boat_class = data["boat_class"]
 
     session = Scoped_Session()
-    query = select(
-        model.Athlete.first_name__,
-        model.Athlete.last_name__,
-        model.Athlete.id,
-        model.Athlete.birthdate
-    ).where(
+    athletes = session.query(model.Athlete).filter(
         or_(
-            model.Athlete.last_name__ == search_query.upper(),
-            model.Athlete.first_name__ == search_query
+            model.Athlete.first_name__.ilike(search_query),
+            model.Athlete.last_name__.ilike(search_query)
         )
-    )
-    if birth_year is not None:
-        query = query.where(
-            and_(
-                model.Athlete.birthdate >= f'{int(birth_year) - 1}-12-31',
-                model.Athlete.birthdate <= f'{int(birth_year) + 1}-01-01'
-            )
-        )
-    athletes = session.execute(query)
+    ).all()
+    output_athletes = set(athletes)
+    if nation or boat_class:
+        output_athletes = set()
+        for athlete in athletes:
+            athlete_race_boat_ids = [race_boat.race_boat_id for race_boat in athlete.race_boats]
+            race_boats = session.query(model.Race_Boat).filter(model.Race_Boat.id.in_(athlete_race_boat_ids)).all()
+            athlete_nations = set(race_boat.country.country_code for race_boat in race_boats)
+            race_ids = [race_boat.race_id for race_boat in race_boats]
+            races = session.query(model.Race).filter(model.Race.id.in_(race_ids)).all()
+            race_boat_classes = set(race.event.boat_class.additional_id_ for race in races)
+            if nation and nation in athlete_nations:
+                output_athletes.add(athlete)
+            if boat_class and boat_class in race_boat_classes:
+                output_athletes.add(athlete)
+
+    if birth_year:
+        output_athletes = [athlete for athlete in output_athletes if athlete.birthdate.year == birth_year]
 
     return json.dumps([{
         "name": f"{athlete.last_name__}, {athlete.first_name__} ({athlete.birthdate})",
-        "id": athlete.id
-    } for athlete in athletes])
+        "id": athlete.id,
+    } for athlete in output_athletes])
 
 
 """

@@ -42,7 +42,7 @@
         </v-alert>
           </v-col>
 
-        <v-container class="pa-0 mt-8" v-else>
+        <v-container class="pa-0 mt-5" v-else>
           <v-row>
             <v-col :cols="mobile ? 12 : 4">
               <h2>{{ data.name }}</h2>
