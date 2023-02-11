@@ -153,6 +153,12 @@ def get_matrix() -> dict:
 
     """
         todo: How to realize the filtering? 
+        minimum filters
+        optional filters... 
+        different statements for the different options?
+        --> all permutations would be overkill.
+        for all, we could establish globals that are lists of every option
+        --> e.g. gender: [man, woman, mixed, all]
     """
 
     session = Scoped_Session()
