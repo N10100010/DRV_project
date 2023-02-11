@@ -12,11 +12,12 @@
 <style lang="scss" scoped>
 .footer {
   text-align: center;
+  font-style: italic;
   margin: auto;
   left: 0;
   right: 0;
   width: 100%;
-  background-color: #5cc5ed;
+  background-color: #1369b0;
   justify-self: center;
   min-height: 100px;
   bottom: 0;
