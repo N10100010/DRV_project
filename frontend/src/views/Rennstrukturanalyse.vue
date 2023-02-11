@@ -43,7 +43,7 @@
               <v-container class="pa-0 mt-3">
                 <v-col cols="12" class="pa-0">
                   <v-alert type="info" variant="tonal" v-if="!getAnalysis && !loading" :width="mobile ? '100%':'50%'">
-                    Bitte wähle ein Jahr und eine Wettkampfklasse in den Filterkriterien.
+                    Bitte wählen Sie ein Jahr und eine Wettkampfklasse in dem Filter auf der linken Seite.
                   </v-alert>
                   <v-progress-circular v-if="loading" indeterminate color="blue" size="40"></v-progress-circular>
 

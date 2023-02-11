@@ -9,9 +9,10 @@ export const useBerichteState = defineStore({
     state: () => ({
         filterOpen: false,
         tableExport: [],
+        lastFilterConfig: null,
         selectedBoatClass: {0: "Alle"},
         filterOptions: [{
-            "years": [{"start_year": 1950}, {"end_year": 2025}],
+            "years": [{"start_year": 0}, {"end_year": 0}],
             "boat_classes": {
                 'men': {
                     'junior': {
@@ -181,6 +182,10 @@ export const useBerichteState = defineStore({
                     "data": []
                 },
                 "scatter_1_sd_low": {
+                    "labels": [],
+                    "data": []
+                },
+                "scatter_mean": {
                     "labels": [],
                     "data": []
                 }
@@ -684,6 +689,9 @@ export const useBerichteState = defineStore({
         getMatrixTableResults(state) {
             return state.matrixdata[0].results
         },
+        getLastFilterConfig(state) {
+            return state.lastFilterConfig
+        },
         getMatrixTableData(state) {
 
             const subHeaders = {
@@ -803,6 +811,7 @@ export const useBerichteState = defineStore({
             const scatterData = state.data.plot_data.scatter_plot;
             const scatter1SDHigh = state.data.plot_data.scatter_1_sd_high;
             const scatter1SDLow = state.data.plot_data.scatter_1_sd_low;
+            const scatterMeanValues = state.data.plot_data.scatter_mean;
 
             const plotData = scatterData.labels.map((label, i) => ({
                 x: new Date(label),
@@ -816,9 +825,10 @@ export const useBerichteState = defineStore({
                 x: new Date(label),
                 y: formatMilliseconds(scatter1SDHigh.data[i])
             }));
-
-            console.log(sd1High)
-            console.log(sd1Low)
+            const meanValues = scatterMeanValues.labels.map((label, i) => ({
+                x: new Date(label),
+                y: formatMilliseconds(scatterMeanValues.data[i])
+            }));
 
             return {
                 datasets: [
@@ -832,20 +842,30 @@ export const useBerichteState = defineStore({
                     {
                         type: 'line',
                         data: sd1Low,
-                        label: "1 SD Low",
+                        label: "-1SD",
                         borderColor: "darkgrey",
                         backgroundColor: "darkgrey",
-                        borderWidth: 2,
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                    },
+                    {
+                        type: 'line',
+                        data: meanValues,
+                        label: "Mittelwert",
+                        borderColor: "grey",
+                        backgroundColor: "grey",
+                        borderWidth: 1.5,
                         pointRadius: 0,
                         pointHoverRadius: 0,
                     },
                     {
                         type: 'line',
                         data: sd1High,
-                        label: "1 SD High",
+                        label: "+1SD",
                         borderColor: "darkgrey",
                         backgroundColor: "darkgrey",
-                        borderWidth: 2,
+                        borderWidth: 1,
                         pointRadius: 0,
                         pointHoverRadius: 0,
                     }
@@ -917,6 +937,9 @@ export const useBerichteState = defineStore({
         },
         setFilterState(filterState) {
             this.filterOpen = !filterState
+        },
+        setLastFilterConfig(filterConfig) {
+            this.lastFilterConfig = filterConfig
         },
         exportTableData() {
             const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(row => {

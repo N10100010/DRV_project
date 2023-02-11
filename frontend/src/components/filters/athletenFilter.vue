@@ -93,9 +93,10 @@ export default {
 
       // nations
       optionsNations: [],
-      selectedNation: "GER (Deutschland)",
+      selectedNation: null,
 
       // boat classes
+      boatClasses: {},
       genderTypeOptions: [],
       selectedGenders: [3],
       ageGroupOptions: [],
@@ -131,6 +132,7 @@ export default {
       this.optionsNations = finalCountryNames
 
       // boatclasses
+      this.boatClasses = {}
       this.genderTypeOptions = Object.keys(data.boat_classes)
       let ageGroupOptions = Object.keys(data.boat_classes.men)
       ageGroupOptions.push(...Object.keys(data.boat_classes.women))
@@ -142,7 +144,8 @@ export default {
         if (index === 0) {
           Object.entries(value).forEach(([, val]) => {
             if (typeof val === "object") {
-              boatClassOptions.push(Object.values(val)[0])
+              boatClassOptions.push(val[0])
+              this.boatClasses[val[0]] = val[2]
             }
           })
         }
@@ -161,7 +164,7 @@ export default {
             "search_query": searchInput,
             "nation": this.selectedNation,
             "birth_year": this.selectedBirthYear,
-            "boat_class": this.selectedBoatClasses
+            "boat_class": this.boatClasses[this.selectedBoatClasses] || null
           })
         }, 450)
       }
@@ -191,7 +194,7 @@ export default {
     },
     clearFormInputs() {
       this.selectedAthlete = null
-      this.selectedNation = "GER (Deutschland)"
+      this.selectedNation = null
       this.selectedBirthYear = null
       this.selectedGenders = 0
       this.selectedAgeGroups = 0
@@ -209,7 +212,7 @@ export default {
   },
   watch: {
     selectedGenders: function (newVal,) {
-      if (newVal !== undefined) {
+      if (newVal !== undefined && this.filterData !== undefined) {
         this.selectedBoatClasses = null
         let optionsList = []
         if (newVal === 0) { // men
@@ -240,11 +243,13 @@ export default {
         Object.entries(Object.values(this.filterData.boat_classes)[newVal]).forEach(([key, value], index) => {
           if (index === this.selectedAgeGroups && this.selectedGenders !== 2) {
             Object.entries(value).forEach(([, val]) => {
-              boatClassOptions.push(Object.keys(val)[0])
+              boatClassOptions.push(val[0])
+              this.boatClasses[val[0]] = val[2]
             })
           } else if (this.selectedGenders === 2) {
-            Object.entries(value).forEach(([key, val]) => {
-              boatClassOptions.push(key)
+            boatClassOptions.push(value[0])
+            Object.entries(value).forEach(([, val]) => {
+              this.boatClasses[val] = val[2]
             })
           }
         });
@@ -257,14 +262,15 @@ export default {
       }
     },
     selectedAgeGroups: function (newVal,) {
-      if (newVal !== undefined) {
+      if (newVal !== undefined && this.filterData !== undefined) {
         this.selectedBoatClasses = null
         let genderObj = Object.values(this.filterData.boat_classes)[this.selectedGenders]
         let boatClassOptions = []
         Object.entries(genderObj).forEach(([key, value], index) => {
           if (index === newVal) {
             Object.entries(value).forEach(([, val]) => {
-              boatClassOptions.push(Object.keys(val)[0])
+              boatClassOptions.push(val[0])
+              this.boatClasses[val[0]] = val[2]
             })
           }
         });
@@ -277,18 +283,20 @@ export default {
       }
     },
     selectedDiscipline: function (newVal,) {
-      if (newVal !== undefined) {
+      if (newVal !== undefined && this.filterData !== undefined) {
         this.selectedBoatClasses = null
         let genderObj = Object.values(this.filterData.boat_classes)[this.selectedGenders]
         let boatClassOptions = []
         Object.entries(genderObj).forEach(([key, value], index) => {
           if (index === this.selectedAgeGroups && this.selectedGenders !== 2) {
             Object.entries(value).forEach(([, val]) => {
-              boatClassOptions.push(Object.keys(val)[0])
+              boatClassOptions.push(val[0])
+              this.boatClasses[val[0]] = val[2]
             })
           } else if (this.selectedGenders === 2) {
-            Object.entries(value).forEach(([key, val]) => {
-              boatClassOptions.push(key)
+            boatClassOptions.push(value[0])
+            Object.values(value).forEach((val) => {
+              this.boatClasses[val[0]] = val[2]
             })
           }
         });

@@ -51,7 +51,15 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
           <v-row>
             <v-col :cols="mobile ? 12 : 5">
               <h2>{{ data.boat_classes }}</h2>
-              <v-alert type="success" variant="tonal" class="my-2" v-if="data || matrixResults">
+
+              <v-alert type="error" variant="tonal" class="my-2" v-if="data.results === 0">
+                <v-row>
+                  <v-col cols="12">
+                    <p>Leider keine Ergebnisse gefunden.</p>
+                  </v-col>
+                </v-row>
+              </v-alert>
+              <v-alert type="success" variant="tonal" class="my-2" v-else>
                 <v-row>
                   <v-col cols="12">
                     <p>{{ matrixVisible ? matrixResults : data.results }} Datensätze |
@@ -59,19 +67,15 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                   </v-col>
                 </v-row>
               </v-alert>
-              <v-alert type="error" variant="tonal" class="my-2" v-else>
-                <v-row>
-                  <v-col cols="12">
-                    <p>Leider keine Ergebnisse gefunden.</p>
-                  </v-col>
-                </v-row>
-              </v-alert>
-
-              <v-table class="tableStyles" density="compact" v-if="!matrixVisible">
+              <v-table class="tableStyles" density="compact" v-if="!matrixVisible && data.results > 0">
                 <tbody class="nth-grey">
                 <tr>
                   <th>Weltbestzeit</th>
-                  <td>{{ formatMilliseconds(data.world_best_time_boat_class) }}</td>
+                  <td>{{
+                      data.world_best_time_boat_class ?
+                          `${formatMilliseconds(data.world_best_time_boat_class)}` : "–"
+                    }}
+                  </td>
                 </tr>
                 <tr>
                   <th>Beste im Zeitraum</th>
@@ -134,7 +138,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 </tbody>
               </v-table>
             </v-col>
-              <v-col :cols="mobile ? 12 : 8" v-if="matrixVisible">
+            <v-col :cols="mobile ? 12 : 8" v-if="matrixVisible">
               <v-table class="tableStyles" density="compact">
                 <thead>
                 <tr>
@@ -164,7 +168,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
               </v-table>
             </v-col>
 
-            <v-col :cols="mobile ? 12 : 7" class="pa-0" v-if="!matrixVisible">
+            <v-col :cols="mobile ? 12 : 7" class="pa-0" v-if="!matrixVisible && data.results > 0">
               <v-container style="width: 100%" class="pa-2">
                 <BarChart :height="'100%'" :width="'100%'" :data="getBarChartData"
                           :chartOptions="barChartOptions" class="chart-bg"></BarChart>
@@ -253,63 +257,57 @@ export default {
       mobile: false,
       filterOpen: false,
       data: {
-            "results": null,
-            "boat_class": "Men's Eight",
-            "start_date": 0,
-            "end_date": 0,
-            "world_best_time_boat_class": 358360,
-            "best_in_period": 358360,
-            "mean": {
-                "mm:ss,00": 467360,
-                "m/s": 4.54,
-                "pace 500m": 158360,
-                "pace 1000m": 282360
-            },
-            "std_dev": 43360,
-            "median": 432360,
-            "gradation_fastest": {
-                "no_of_samples": 345,
-                "time": 358360
-            },
-            "gradation_medium": {
-                "no_of_samples": 239,
-                "time": 358360
-            },
-            "gradation_slow": {
-                "no_of_samples": 167,
-                "time": 358360
-            },
-            "gradation_slowest": {
-                "no_of_samples": 463,
-                "time": 358360
-            },
-            "plot_data": {
-                "histogram": {
-                    "labels":
-                        [
-
-                        ],
-                    "data": []
-                },
-                "scatterPlot": {
-                    "labels": [
-
-                    ],
-                    "data": [
-
-                    ]
-                },
-                "scatter_1_sd_high": {
-                    "labels": [],
-                    "data": []
-                },
-                "scatter_1_sd_low": {
-                    "labels": [],
-                    "data": []
-                }
-            }
-
+        "results": null,
+        "boat_class": "Men's Eight",
+        "start_date": 0,
+        "end_date": 0,
+        "world_best_time_boat_class": 358360,
+        "best_in_period": 358360,
+        "mean": {
+          "mm:ss,00": 467360,
+          "m/s": 4.54,
+          "pace 500m": 158360,
+          "pace 1000m": 282360
+        },
+        "std_dev": 43360,
+        "median": 432360,
+        "gradation_fastest": {
+          "no_of_samples": 345,
+          "time": 358360
+        },
+        "gradation_medium": {
+          "no_of_samples": 239,
+          "time": 358360
+        },
+        "gradation_slow": {
+          "no_of_samples": 167,
+          "time": 358360
+        },
+        "gradation_slowest": {
+          "no_of_samples": 463,
+          "time": 358360
+        },
+        "plot_data": {
+          "histogram": {
+            "labels":
+                [],
+            "data": []
+          },
+          "scatterPlot": {
+            "labels": [],
+            "data": []
+          },
+          "scatter_1_sd_high": {
+            "labels": [],
+            "data": []
+          },
+          "scatter_1_sd_low": {
+            "labels": [],
+            "data": []
+          }
         }
+
+      }
     }
   },
   watch: {
@@ -322,7 +320,7 @@ export default {
         store.setFilterState(oldVal)
       }
     },
-    tableData: function (newVal, ){
+    tableData: function (newVal,) {
       this.data = newVal
     }
   }

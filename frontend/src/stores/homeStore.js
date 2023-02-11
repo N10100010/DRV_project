@@ -8,6 +8,9 @@ export const useHomeStore = defineStore({
     state: () => ({
         data: {
             calender_data: []
+        },
+        legend: {
+
         }
     }),
     getters: {
@@ -17,18 +20,24 @@ export const useHomeStore = defineStore({
                 let colorIdx = null
                 if (entry.customData.title.includes("World Rowing Cup")) {
                     colorIdx = 0
+                    state.legend["WC"] = calenderColors[colorIdx]
                 } else if (entry.customData.title.includes("European") && entry.customData.title.includes("Under 19")) {
                     colorIdx = 1
+                    state.legend["European U19"] = calenderColors[colorIdx]
                 } else if (entry.customData.title.includes("European")) {
                     colorIdx = 2
                 } else if (entry.customData.title.includes("Indoor")) {
                     colorIdx = 4
+                    state.legend["Indoor"] = calenderColors[colorIdx]
                 } else {
                     colorIdx = 3
                 }
                 entry.customData["style"] = 'background-color:' + calenderColors[colorIdx];
                 return entry;
             });
+        },
+        getCalenderLegend(state) {
+            return state.legend
         }
     },
     actions: {
