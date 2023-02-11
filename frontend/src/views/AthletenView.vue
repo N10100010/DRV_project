@@ -120,11 +120,11 @@
               <v-table class="tableStyles" density="compact">
                 <thead>
                 <tr>
-                  <th>Wettkampf</th>
-                  <th>Startzeit</th>
-                  <th>Platzierung</th>
-                  <th>Austragungsort</th>
-                  <th>Bootsklasse</th>
+                  <th class="px-1">Wettkampf</th>
+                  <th class="px-1">Startzeit</th>
+                  <th class="px-1">Platz</th>
+                  <th class="px-1">Ort</th>
+                  <th class="px-1">Bootsklasse</th>
                 </tr>
                 </thead>
                 <tbody class="nth-grey">
@@ -143,11 +143,11 @@
               <v-table class="tableStyles">
                 <thead>
                 <tr>
-                  <th>Wettkampf</th>
-                  <th>Startzeit</th>
-                  <th>Platzierung</th>
-                  <th>Austragungsort</th>
-                  <th>Bootsklasse</th>
+                  <th class="px-1">Wettkampf</th>
+                  <th class="px-1">Startzeit</th>
+                  <th class="px-1">Platz</th>
+                  <th class="px-1">Ort</th>
+                  <th class="px-1">Bootsklasse</th>
                 </tr>
                 </thead>
                 <tbody class="nth-grey">
@@ -277,17 +277,28 @@ export default {
     border: 0.5px solid #e0e0e0;
     font-size: 14px !important;
     text-align: left;
+    padding: 0 5px;
   }
 
   td {
     text-align: left;
     border: 0.5px solid #e0e0e0;
+    padding: 0 5px;
   }
 }
 
 .nth-grey tr:nth-child(odd) {
   background-color: rgba(0, 0, 0, .05);
 }
+
+.v-table > .v-table__wrapper > table > tbody > tr > td {
+  padding: 0 6px;
+}
+
+.v-table > .v-table__wrapper > table > tbody > tr > th {
+  padding: 0 6px;
+}
+
 .filterToggleButton {
   position: fixed;
   z-index: 10;

@@ -38,7 +38,7 @@
           <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
         </v-col>
         <v-divider></v-divider>
-        <v-container class="pa-0 mt-8">
+        <v-container class="pa-0">
           <v-row class="ma-0">
             <v-col :cols="mobile ? 12 : 10" class="pa-0">
               <h2><b> {{ filterSelection.start_date }}</b> | <b>{{ filterSelection.events }}</b> | <b>{{ filterSelection.category }}</b></h2>
