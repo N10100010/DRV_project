@@ -153,7 +153,7 @@
       <p>Sie haben das Recht, die Einschr&auml;nkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen. Hierzu
         k&ouml;nnen Sie sich jederzeit an uns wenden. Das Recht auf Einschr&auml;nkung der Verarbeitung besteht in
         folgenden F&auml;llen:</p>
-      <ul>
+      <p><ul>
         <li>Wenn Sie die Richtigkeit Ihrer bei uns gespeicherten personenbezogenen Daten bestreiten, ben&ouml;tigen wir
           in der Regel Zeit, um dies zu &uuml;berpr&uuml;fen. F&uuml;r die Dauer der Pr&uuml;fung haben Sie das Recht,
           die Einschr&auml;nkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen.</li>
@@ -165,7 +165,7 @@
         <li>Wenn Sie einen Widerspruch nach Art. 21 Abs. 1 DSGVO eingelegt haben, muss eine Abw&auml;gung zwischen Ihren
           und unseren Interessen vorgenommen werden. Solange noch nicht feststeht, wessen Interessen &uuml;berwiegen,
           haben Sie das Recht, die Einschr&auml;nkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen.</li>
-      </ul>
+      </ul></p>
       <p>Wenn Sie die Verarbeitung Ihrer personenbezogenen Daten eingeschr&auml;nkt haben, d&uuml;rfen diese Daten
         &ndash; von ihrer Speicherung abgesehen &ndash; nur mit Ihrer Einwilligung oder zur Geltendmachung,
         Aus&uuml;bung oder Verteidigung von Rechtsanspr&uuml;chen oder zum Schutz der Rechte einer anderen
@@ -217,14 +217,19 @@
 </template>
 
 <style lang="scss" scoped>
+ul {
+  padding-left: 1.5rem;
+}
+
 h2 {
   margin-bottom: 0.4rem;
 }
 h3 {
+  margin-top: 1rem;
   margin-bottom: 0.25rem;
 }
 p {
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 </style>
 

@@ -538,7 +538,7 @@ export const useRennstrukturAnalyseState = defineStore({
             for (const data of Object.values(this.tableExport)) {
                 let rowData = []
                 for (const [, value] of data.entries()) {
-                    Array.isArray(value) ? rowData.push(value.join("/")) : rowData.push(value)
+                    Array.isArray(value) ? rowData.push(value.join(" | ")) : rowData.push(value)
                 }
                 finalData.push(rowData)
             }
