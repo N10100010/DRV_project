@@ -59,7 +59,7 @@
                 </tr>
                 <tr>
                   <th>Bootsklasse</th>
-                  <td>{{ data.currentBoatClass }}</td>
+                  <td>{{ data.boat_class }}</td>
                 </tr>
                 <tr>
                   <th>Disziplin(en)</th>
@@ -67,7 +67,7 @@
                 </tr>
                 <tr>
                   <th>Rennanzahl</th>
-                  <td>{{ data.numberOfRaces }}</td>
+                  <td>{{ data.num_of_races }}</td>
                 </tr>
                 <tr>
                   <th>Medaillen Gesamt</th>
@@ -117,12 +117,12 @@
                 </tr>
                 </thead>
                 <tbody class="nth-grey">
-                <tr v-for="(race, idx) in data.raceList">
-                  <td>{{ race.raceName }}</td>
-                  <td>{{ race.startDate }}</td>
+                <tr v-for="(race, idx) in data.race_list">
+                  <td>{{ race.name }}</td>
+                  <td>{{ race.start_time }}</td>
                   <td>{{ race.rank }}</td>
                   <td>{{ race.venue }}</td>
-                  <td>{{ race.boatClass }}</td>
+                  <td>{{ race.boat_class }}</td>
                 </tr>
                 </tbody>
               </v-table>
@@ -140,12 +140,12 @@
                 </tr>
                 </thead>
                 <tbody class="nth-grey">
-                <tr v-for="(race, idx) in data.raceList">
-                  <td>{{ race.raceName }}</td>
-                  <td>{{ race.startDate }}</td>
+                <tr v-for="(race, idx) in data.race_list">
+                  <td>{{ race.name }}</td>
+                  <td>{{ race.start_time }}</td>
                   <td>{{ race.rank }}</td>
                   <td>{{ race.venue }}</td>
-                  <td>{{ race.boatClass }}</td>
+                  <td>{{ race.boat_class }}</td>
                 </tr>
                 </tbody>
               </v-table>

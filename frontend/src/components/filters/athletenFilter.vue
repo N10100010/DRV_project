@@ -93,7 +93,7 @@ export default {
 
       // nations
       optionsNations: [],
-      selectedNation: "GER (Deutschland)",
+      selectedNation: null,
 
       // boat classes
       genderTypeOptions: [],
@@ -191,7 +191,7 @@ export default {
     },
     clearFormInputs() {
       this.selectedAthlete = null
-      this.selectedNation = "GER (Deutschland)"
+      this.selectedNation = null
       this.selectedBirthYear = null
       this.selectedGenders = 0
       this.selectedAgeGroups = 0

@@ -9,9 +9,10 @@ export const useBerichteState = defineStore({
     state: () => ({
         filterOpen: false,
         tableExport: [],
+        lastFilterConfig: null,
         selectedBoatClass: {0: "Alle"},
         filterOptions: [{
-            "years": [{"start_year": 1950}, {"end_year": 2025}],
+            "years": [{"start_year": 0}, {"end_year": 0}],
             "boat_classes": {
                 'men': {
                     'junior': {
@@ -684,6 +685,9 @@ export const useBerichteState = defineStore({
         getMatrixTableResults(state) {
             return state.matrixdata[0].results
         },
+        getLastFilterConfig(state) {
+            return state.lastFilterConfig
+        },
         getMatrixTableData(state) {
 
             const subHeaders = {
@@ -917,6 +921,9 @@ export const useBerichteState = defineStore({
         },
         setFilterState(filterState) {
             this.filterOpen = !filterState
+        },
+        setLastFilterConfig(filterConfig) {
+            this.lastFilterConfig = filterConfig
         },
         exportTableData() {
             const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(row => {

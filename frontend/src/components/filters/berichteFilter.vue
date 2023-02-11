@@ -94,11 +94,14 @@ export default {
     }),
     ...mapState(useBerichteState, {
       showFilter: "getFilterState"
-    })
+    }),
+    ...mapState(useBerichteState, {
+      filterConfig: "getLastFilterConfig"
+    }),
   },
   data() {
     return {
-      // api filter data
+      lastFilterConfig: {},
       filterData: [],
       // general
       mobile: false,
@@ -142,8 +145,17 @@ export default {
     this.checkScreen()
 
     const store = useBerichteState()
-    store.fetchReportFilterOptions()
-    this.initializeFilter(this.reportFilterOptions[0])
+    if (this.reportFilterOptions[0].years[0].start_year === 0) {
+      store.fetchReportFilterOptions()
+      this.initializeFilter(this.reportFilterOptions[0])
+    } else {
+      this.initializeFilter(this.reportFilterOptions[0])
+      this.filterData = this.reportFilterOptions[0]
+      const lastFilterConf = store.getLastFilterConfig
+      // TODO: Add last filter config
+      this.startYear = lastFilterConf.years.start_year
+      this.endYear = lastFilterConf.years.end_year
+    }
   },
   methods: {
     initializeFilter(data) {
@@ -216,9 +228,10 @@ export default {
         "ranks": this.ranks.map(key => this.ranksDict[key])
       }
       const store = useBerichteState()
+      store.setLastFilterConfig(formData)
       store.postFormData(formData)
           .then(() => {
-            console.log("Form data sent...")
+            console.log("data sent...")
           })
           .catch(error => {
             console.error(error)

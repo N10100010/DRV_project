@@ -3,6 +3,7 @@ import datetime
 import json
 from statistics import stdev, median, mean
 import numpy as np
+from collections import OrderedDict
 
 from flask import Flask
 from flask import request
@@ -446,20 +447,49 @@ def get_athlete(athlete_id: int):
     Give athlete data for specific athlete
     """
     session = Scoped_Session()
-    athlete = session.query(model.Athlete).where(model.Athlete.id == athlete_id).one()
+    athlete = session.query(model.Athlete).filter_by(id=int(athlete_id)).first()
+    athlete_race_boats = [race_boat.race_boat_id for race_boat in athlete.race_boats]
+
+    # get race_boat related data
+    race_boats = session.query(model.Race_Boat).filter(model.Race_Boat.id.in_(athlete_race_boats)).all()
+    race_results, race_ids, athlete_boat_classes, best_time_boat_class, nation = {}, [], set(), "", ""
+
+    for i, race_boat in enumerate(race_boats):
+        race_ids.append(race_boat.race_id)
+        race_results[i] = {
+            "race_id": race_boat.race_id,
+            "time": race_boat.result_time_ms,
+            "rank": race_boat.rank,
+            "boat_class": None,
+            "start_time": None
+        }
+        nation = race_boat.country.country_code
+    races = session.query(model.Race).filter(model.Race.id.in_(race_ids)).all()
+
+    gender = set()
+    for i, race in enumerate(races):
+        gender.add(race.event.gender.name)
+        comp = session.query(model.Competition).filter(model.Competition.id == race.event.competition_id).one()
+        boat_class_name = race.event.boat_class.abbreviation
+        best_time_boat_class = str(race.event.boat_class.world_best_race_boat)
+        athlete_boat_classes.add(boat_class_name)
+        race_results[i]["name"] = comp.name
+        race_results[i]["venue"] = f'{comp.venue.city}, {comp.venue.country.name}'
+        race_results[i]["boat_class"] = boat_class_name
+        race_results[i]["start_time"] = str(race.date)
 
     return json.dumps({
-        "id": athlete.id,
-        "name": f"{athlete.last_name__}, {athlete.first_name__}",
-        "nation": None,
+        "name": athlete.name,
+        "athlete_id": athlete.id,
+        "nation": nation,
+        "gender": gender.pop(),
         "dob": str(athlete.birthdate),
-        "gender": None,
-        "weight": athlete.weight_kg__ or None,
-        "height": athlete.height_cm__ or None,
-        "boat_class": None,
-        "discipline": None,
-        "num_of_races": None,
-
+        "weight": athlete.weight_kg__,
+        "height": athlete.height_cm__,
+        "boat_class": athlete_boat_classes.pop(),
+        "world_best_boat_class": best_time_boat_class,
+        "num_of_races": len(athlete_race_boats),
+        "race_list": race_results,
     })
 
 
