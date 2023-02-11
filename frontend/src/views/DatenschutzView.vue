@@ -227,3 +227,11 @@ p {
     margin-bottom: 0.75rem;
 }
 </style>
+
+<script>
+export default {
+  created(){
+    window.scrollTo(0, 0)
+  }
+}
+</script>

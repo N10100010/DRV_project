@@ -32,3 +32,32 @@
     </v-container>
   </v-container>
 </template>
+
+<script>
+export default {
+  created(){
+    window.addEventListener('resize', this.checkScreen);
+    this.checkScreen();
+    window.scrollTo(0, 0)
+  },
+  methods: {
+    checkScreen() {
+      this.windowWidth = window.innerWidth;
+      this.mobile = this.windowWidth <= 750
+      let navbarHeight = window.innerWidth < 750 ? '71.25px' : '160px';
+      document.documentElement.style.setProperty('--navbar-height', navbarHeight);
+    }
+  },
+  data() {
+    return {
+      mobile: false,
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.main-container {
+  min-height: calc(100vh - (var(--navbar-height)) - 95px);
+}
+</style>
