@@ -148,6 +148,67 @@ def get_competitions_year_category() -> dict:
     return competitions
 
 
+@app.route('/matrix', methods=['GET'])
+def get_matrix() -> dict: 
+
+    """
+        todo: How to realize the filtering? 
+    """
+
+    session = Scoped_Session()
+    avg_times_statement = (
+        select(
+            func.avg(model.Intermediate_Time.result_time_ms).label("mean"),
+            func.min(model.Intermediate_Time.result_time_ms).label("min"),
+            func.count(model.Intermediate_Time.race_boat_id).label("cnt"),
+            model.Event.boat_class_id.label("id")
+        )
+        .join(model.Intermediate_Time.race_boat)
+        .join(model.Race_Boat.race)
+        .join(model.Race.event)
+        .where(
+            model.Intermediate_Time.distance_meter == 2000,
+            #model.Intermediate_Time.is_outlier  True
+            model.Intermediate_Time.result_time_ms != 0
+        )
+        .group_by(
+            model.Event.boat_class_id,
+        )
+    )
+
+    wbt_statement = (
+        select(
+            model.Boat_Class.id, 
+            model.Race_Boat.result_time_ms
+        )
+        .join(model.Race_Boat)
+    )
+
+    avg_times = session.execute(avg_times_statement).fetchall()
+    wbts = session.execute(wbt_statement).fetchall()
+    
+    result = {}
+
+    for time in avg_times: 
+        wbt = [wbt for wbt in wbts if wbt.id == time.id]
+        if len(wbt) < 1: 
+            wbt = time.min
+            used_wbt = True
+        else: 
+            wbt = wbt[0][1]
+            used_wbt = False
+        
+        result[time.id] = {
+            'wbt': wbt,
+            'mean': time.mean,
+            'delta': float(time.mean) - float(wbt),
+            'count': time.cnt,
+            'used_wbt': used_wbt
+        }
+
+    return result
+
+
 @app.route('/race/<int:race_id>/', methods=['GET'])
 def get_race(race_id: int) -> dict:
     """
