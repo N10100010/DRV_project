@@ -43,7 +43,10 @@ class Timedelta_Parser:
             raise error
 
         parsed = dict(hours=None, minutes=None, seconds=None, milliseconds=None)
-        left_part, parsed['milliseconds'] = result.group(1,8)
+        left_part, milliseconds_raw = result.group(1,8)
+        
+        # strip trailing zeros
+        parsed['milliseconds'] = milliseconds_raw.rstrip('0')
 
         # Now split colon separated left part
 
