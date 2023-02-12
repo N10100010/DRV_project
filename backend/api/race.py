@@ -71,8 +71,9 @@ def _find_min_difference(values):
 def process_intermediates(race_boats):
     lookup = _transpose_boatclass_intermediates(race_boats)
     time_resolution = _find_min_difference(lookup.keys())
+    # HIGH-PRIO TODO: case time_resolution==None
 
-    for distance, intermediate in lookup.items():
+    for distance, intermediates in lookup.items():
         pass
 
 
