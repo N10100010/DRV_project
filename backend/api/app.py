@@ -497,10 +497,12 @@ def get_athlete(athlete_id: int):
         boat_class_name = race.event.boat_class.abbreviation
         best_time_boat_class = str(race.event.boat_class.world_best_race_boat)
         athlete_boat_classes.add(boat_class_name)
+        comp_type = race.event.competition.competition_category.name
         race_results[i]["name"] = comp.name
         race_results[i]["venue"] = f'{comp.venue.city}, {comp.venue.country.name}'
         race_results[i]["boat_class"] = boat_class_name
         race_results[i]["start_time"] = str(race.date)
+        race_results[i]["competition_category"] = comp_type
 
     return json.dumps({
         "name": athlete.name,
@@ -964,18 +966,26 @@ def get_calendar():
     result = []
     session = Scoped_Session()
     iterator = session.execute(select(model.Competition)).scalars()
-    for entity in iterator:
+    for competition in iterator:
         # only include competitions that have a start and end date
-        if entity.start_date and entity.end_date:
+        if competition.start_date and competition.end_date:
+
+            comp_cat_id = session.query(model.Competition).filter(model.Competition.id == competition.id).one()
+            comp_type = set(session.query(model.Competition_Category).filter(
+                model.Competition_Category.id == comp_cat_id.id
+            ).all())
+
             result.append({
-                "key": entity.id,
+                "key": competition.id,
+                # "competition_type": comp_type.pop().name if comp_type else None,
+                "comp_type": competition.competition_category.name,
                 "customData": {
-                    "title": entity.name
+                    "title": competition.name
                 },
                 "dates": {
-                    "start": datetime.datetime.strptime(str(entity.start_date),
+                    "start": datetime.datetime.strptime(str(competition.start_date),
                                                         '%Y-%m-%d %H:%M:%S').strftime('%a, %d %b %Y %H:%M:%S GMT'),
-                    "end": datetime.datetime.strptime(str(entity.end_date),
+                    "end": datetime.datetime.strptime(str(competition.end_date),
                                                       '%Y-%m-%d %H:%M:%S').strftime('%a, %d %b %Y %H:%M:%S GMT')
                 }
             })
