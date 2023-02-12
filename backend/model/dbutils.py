@@ -175,6 +175,8 @@ def wr_map_race_boat(session, entity, data):
             intermediate.difference__ = repr( get_(interm_data, 'Difference') )
             intermediate.start_position__ = repr( get_(interm_data, 'StartPosition') )
 
+            if intermediate.result_time_ms == 0:
+                continue # 0 durations appeared in the API Data and showed up in the db queries for best times
             session.add(intermediate)
             entity.intermediates.append(intermediate)
 
