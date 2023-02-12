@@ -15,6 +15,7 @@ from sqlalchemy.orm import joinedload
 
 from model import model
 from . import mocks
+from .race import result_time_best_of_year_interval
 from common.rowing import propulsion_in_meters_per_stroke
 
 # app is the main controller for the Flask-Server and will start the app in the main function 
@@ -210,6 +211,12 @@ def get_race(race_id: int) -> dict:
     if world_best_race_boat:
         world_best_time_ms = world_best_race_boat.result_time_ms
 
+    best_of_last_4_years_ms = result_time_best_of_year_interval(
+        session=session,
+        boat_class_id=race.event.boat_class.id,
+        year_start=datetime.date.today().year - 4
+    )
+
     result = {
         "race_id": race.id,
         "display_name": race.name,
@@ -217,7 +224,7 @@ def get_race(race_id: int) -> dict:
         "venue": f"{venue.site}/{venue.city}, {venue.country.name}",
         "boat_class": race.event.boat_class.abbreviation,  # long name?
         "result_time_world_best": world_best_time_ms,
-        "result_time_best_of_current_olympia_cycle": "############## TODO ##############",  # int in ms
+        "result_time_best_of_current_olympia_cycle": best_of_last_4_years_ms,  # int in ms
         "progression_code": race.progression,
         "pdf_urls": {
             "result": race.pdf_url_results,
