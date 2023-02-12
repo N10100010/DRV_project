@@ -153,14 +153,24 @@ def get_matrix() -> dict:
 
     """
         todo: How to realize the filtering? 
-        minimum filters
-        optional filters... 
-        different statements for the different options?
-        --> all permutations would be overkill.
-        for all, we could establish globals that are lists of every option
-        --> e.g. gender: [man, woman, mixed, all]
+        @Harri: if a filter is filtering for all, do not put the filter in there 
     """
+    filter_key_mapping = {
+        'gender': model.Event.gender_id, # list
+        'boat_class': model.Boat_Class.id, # list
+        'interval': model.Competition.year, # tuple
+        'competition_category': model.Competition_Category.id, # list
+        'race_phase_type': model.Race.phase_type, # list
+        'race_phase_subtype': model.Race.phase_number, # list
+        'placement': model.Race_Boat.rank # list
+    }
+    
+    # remove None's from the filters
+    filters = {k: v for k, v in freq.args.to_dict().items() if v}
 
+    # example filter args 
+    # filters = {'gender': [1]}
+    
     session = Scoped_Session()
     avg_times_statement = (
         select(
@@ -174,13 +184,20 @@ def get_matrix() -> dict:
         .join(model.Race.event)
         .where(
             model.Intermediate_Time.distance_meter == 2000,
-            #model.Intermediate_Time.is_outlier  True
+            # todo: 
+            # model.Intermediate_Time.is_outlier  True
             model.Intermediate_Time.result_time_ms != 0
         )
         .group_by(
             model.Event.boat_class_id,
         )
     )
+
+    for k, v in filters.items(): 
+        if k == 'interval': 
+            avg_times_statement = avg_times_statement.where(filter_key_mapping[k].between(v[0], v[1]))
+        else: 
+            avg_times_statement = avg_times_statement.where(filter_key_mapping[k].in_(v))
 
     wbt_statement = (
         select(
