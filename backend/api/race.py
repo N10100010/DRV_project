@@ -1,4 +1,5 @@
 import datetime
+from collections import OrderedDict
 
 from sqlalchemy import select, or_, and_, func
 
@@ -40,25 +41,53 @@ def result_time_best_of_year_interval(session, boat_class_id, year_start,
     return result_time
 
 
-def __debuggin_find_zero_result_times():
-    with model.Scoped_Session() as session:
-        stmt = (
-            select(model.Intermediate_Time)
-            .where(COND_VALID_2000M_RESULTS)
-            .where(model.Intermediate_Time.result_time_ms == 0)
-        )
-        r = session.execute(stmt).scalars().all()
-        for int_time in r:
-            print(int_time.data_source)
+def _transpose_boatclass_intermediates(race_boats) -> OrderedDict:
+    transposed = OrderedDict()
+
+    race_boat: model.Race_Boat
+    for race_boat in race_boats:
+        intermediate: model.Intermediate_Time
+        for intermediate in race_boat.intermediates:
+            dist = intermediate.distance_meter
+            if not dist in transposed:
+                transposed[dist] = []
+            transposed[dist].append(intermediate)
+    return transposed
+
+def _find_min_difference(values):
+    min_diff = None
+    last_val = None
+    for idx, val in enumerate(values):
+        first_loop = idx == 0
+        if first_loop:
+            last_val = val
+            continue
+
+        diff = val - last_val
+        min_diff = diff if min_diff == None else min(diff, min_diff)
+        last_val = val
+    return min_diff
+
+def process_intermediates(race_boats):
+    lookup = _transpose_boatclass_intermediates(race_boats)
+    time_resolution = _find_min_difference(lookup.keys())
+
+    for distance, intermediate in lookup.items():
+        pass
+
+
 
 if __name__ == '__main__':
     from sys import exit as sysexit
 
-    from common.helpers import Timedelta_Parser
-    print(Timedelta_Parser.to_millis("00:07:26.020"))
-    print(Timedelta_Parser.to_millis("00:07:26.02"))
+    with model.Scoped_Session() as session:
+        stmt = (select(model.Race))
+        iterator = session.execute(stmt).scalars()
+        for race in iterator:
+            process_intermediates(race.race_boats)
+            break
 
-    __debuggin_find_zero_result_times() ; sysexit()
+    sysexit()
 
     with model.Scoped_Session() as session:
         for boat_class in session.scalars(select(model.Boat_Class)):

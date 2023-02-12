@@ -45,9 +45,3 @@ def propulsion_in_meters_per_stroke(strokes_per_min, speed_in_meter_per_sec):
     distance_in_one_minute = 60 * speed_in_meter_per_sec
     propulsion = distance_in_one_minute / strokes_per_min
     return propulsion
-
-def _transpose_boatclass_intermediates(race_boats):
-    pass
-
-def process_intermediates():
-    pass
