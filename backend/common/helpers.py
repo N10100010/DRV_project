@@ -1,5 +1,5 @@
 import re
-
+from datetime import datetime
 
 def get_(data, key, default=None):
     if data == None:
@@ -22,7 +22,29 @@ def int_(s):
 class Timedelta_Parser:
     regex = re.compile( r"^(((\d*):)?((\d*):)?(\d*))(\.(\d*))?$" )
     
+    def to_microseconds(delta_str: str) -> int:
+        if not isinstance(delta_str, str):
+            raise TypeError("Not a string")
+
+        parsed = datetime.strptime(delta_str.strip(), '%H:%M:%S.%f')
+
+        SECOND_IN_MICROSEC = 1000000
+        MINUTE_IN_MICROSEC = 60 * SECOND_IN_MICROSEC
+        HOUR_IN_MICROSEC   = 60 * MINUTE_IN_MICROSEC
+
+        sum_us  = parsed.microsecond
+        sum_us += parsed.second * SECOND_IN_MICROSEC
+        sum_us += parsed.minute * MINUTE_IN_MICROSEC
+        sum_us += parsed.hour * HOUR_IN_MICROSEC
+
+        return sum_us
+
     def to_millis(delta_str: str) -> int:
+        us = Timedelta_Parser.to_microseconds(delta_str=delta_str)
+        ms = round(us/1000)
+        return ms
+
+    def to_millis__deprecated_(delta_str: str) -> int:
         """returns int in milliseconds
         
         Input format 'HH:MM:SS.mmm'. Examples: 
