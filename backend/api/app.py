@@ -69,7 +69,6 @@ def get_boatclass_information() -> dict:
     return globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT
 
 
-from flask import request as freq
 @app.route('/competition', methods=['GET'])
 def get_competitions_year_category() -> dict:
     """
@@ -86,8 +85,8 @@ def get_competitions_year_category() -> dict:
     from datetime import datetime
     import logging
 
-    year = freq.args.get('year')
-    competition_category_id = freq.args.get('competition_category_id')
+    year = request.args.get('year')
+    competition_category_id = request.args.get('competition_category_id')
     
     logging.debug(f"Year: {year}, comp cat: {competition_category_id}")
 
@@ -166,7 +165,7 @@ def get_matrix() -> dict:
     }
     
     # remove None's from the filters
-    filters = {k: v for k, v in freq.args.to_dict().items() if v}
+    filters = {k: v for k, v in request.args.to_dict().items() if v}
 
     # example filter args 
     # filters = {'gender': [1]}
