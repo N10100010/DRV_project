@@ -39,7 +39,7 @@ def scraper_postprocessing():
     with model.Scoped_Session() as session:
         statement = select(model.Boat_Class)
         iterator = session.execute(statement).scalars()
-        # set all is_outlier to NULL to ensure that the percentile-strategy works
+        # set all is_outlier to False to ensure that the percentile-strategy works
         session.execute(
             (
                 update(model.Intermediate_Time).values(is_outlier=False)

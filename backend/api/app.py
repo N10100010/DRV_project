@@ -183,8 +183,7 @@ def get_matrix() -> dict:
         .join(model.Race.event)
         .where(
             model.Intermediate_Time.distance_meter == 2000,
-            # todo: 
-            # model.Intermediate_Time.is_outlier  True
+            model.Intermediate_Time.is_outlier == True,
             model.Intermediate_Time.result_time_ms != 0
         )
         .group_by(
