@@ -68,7 +68,9 @@ def _find_min_difference(values):
         last_val = val
     return min_diff
 
-def process_intermediates(race_boats):
+def compute_intermediates_figures(race_boats):
+    """ returns: dict[race_boat_id][distance] each containing {"pace":..., ...}
+    """
     lookup = _transpose_boatclass_intermediates(race_boats)
     time_resolution = _find_min_difference(lookup.keys())
     # HIGH-PRIO TODO: case time_resolution==None
@@ -93,7 +95,7 @@ if __name__ == '__main__':
         stmt = (select(model.Race))
         iterator = session.execute(stmt).scalars()
         for race in iterator:
-            process_intermediates(race.race_boats)
+            compute_intermediates_figures(race.race_boats)
             break
 
     sysexit()
