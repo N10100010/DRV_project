@@ -34,6 +34,7 @@ def grab_competition_example(competition_id, out_path='dump.json'):
 
 
 def scraper_postprocessing():
+    # todo: add me to the actual postprocessing
     postprocess()
     with model.Scoped_Session() as session:
         statement = select(model.Boat_Class)
@@ -41,7 +42,7 @@ def scraper_postprocessing():
         # set all is_outlier to NULL to ensure that the percentile-strategy works
         session.execute(
             (
-                update(model.Intermediate_Time).values(is_outlier=None)
+                update(model.Intermediate_Time).values(is_outlier=False)
             )
         )
         for boat_class in iterator:
