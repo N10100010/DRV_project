@@ -74,8 +74,16 @@ def process_intermediates(race_boats):
     # HIGH-PRIO TODO: case time_resolution==None
 
     for distance, intermediates in lookup.items():
+        best_time = ...
+        deficit = ... # relative to best boat
+
+        relDiffToAvgSpeed = ...
+        rank  = ... #?
+
+        pace = ... # None if diff to last_distance != time_resolution
         pass
 
+    raise NotImplementedError
 
 
 if __name__ == '__main__':
