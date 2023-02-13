@@ -1,5 +1,7 @@
 import datetime
 from collections import OrderedDict
+import itertools
+import statistics
 
 from sqlalchemy import select, or_, and_, func
 
@@ -42,8 +44,7 @@ def result_time_best_of_year_interval(session, boat_class_id, year_start,
 
 
 def _transpose_boatclass_intermediates(race_boats) -> OrderedDict:
-    transposed = OrderedDict()
-
+    transposed = dict()
     race_boat: model.Race_Boat
     for race_boat in race_boats:
         intermediate: model.Intermediate_Time
@@ -54,10 +55,14 @@ def _transpose_boatclass_intermediates(race_boats) -> OrderedDict:
             transposed[dist].append(intermediate)
     return transposed
 
+def _skipping_non_int(values):
+    """iterates only ints"""
+    return ( val for val in values if isinstance(val,int) )
+
 def _find_min_difference(values):
     min_diff = None
     last_val = None
-    for idx, val in enumerate(values):
+    for idx, val in enumerate(_skipping_non_int(values)):
         first_loop = idx == 0
         if first_loop:
             last_val = val
@@ -71,9 +76,12 @@ def _find_min_difference(values):
 def compute_intermediates_figures(race_boats):
     """ returns: dict[race_boat_id][distance] each containing {"pace":..., ...}
     """
+    dict_key = lambda i: i[0]
     lookup = _transpose_boatclass_intermediates(race_boats)
+    lookup = OrderedDict( sorted(lookup.items(), key=dict_key ) )
     time_resolution = _find_min_difference(lookup.keys())
-    # HIGH-PRIO TODO: case time_resolution==None
+    if time_resolution == None:
+        return []
 
     for distance, intermediates in lookup.items():
         best_time = ...
