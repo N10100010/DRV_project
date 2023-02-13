@@ -15,7 +15,7 @@ from sqlalchemy.orm import joinedload
 
 from model import model
 from . import mocks
-from .race import result_time_best_of_year_interval
+from .race import result_time_best_of_year_interval, compute_intermediates_figures
 from common.rowing import propulsion_in_meters_per_stroke
 
 # app is the main controller for the Flask-Server and will start the app in the main function 
@@ -217,6 +217,8 @@ def get_race(race_id: int) -> dict:
         year_start=datetime.date.today().year - 4
     )
 
+    intermediates_figures = compute_intermediates_figures(race.race_boats)
+
     result = {
         "race_id": race.id,
         "display_name": race.name,
@@ -272,6 +274,7 @@ def get_race(race_id: int) -> dict:
         sorted_intermediates = sorted(race_boat.intermediates, key=lambda x: x.distance_meter)
         intermediate: model.Intermediate_Time
         for intermediate in sorted_intermediates:
+            figures = intermediates_figures[intermediate.race_boat_id][intermediate.distance_meter]
             result_time_ms = intermediate.result_time_ms
             if intermediate.is_outlier:
                 continue
@@ -279,7 +282,12 @@ def get_race(race_id: int) -> dict:
                 result_time_ms = intermediate.invalid_mark_result_code.id
             
             rb_result['intermediates'][str(intermediate.distance_meter)] = {
-                "time [t]": result_time_ms
+                "rank": intermediate.rank,
+                "time [millis]": result_time_ms,
+                "pace [millis]": figures.get('pace'),
+                "speed [m/s]": figures.get('speed'),
+                "deficit [millis]": figures.get('deficit'),
+                "rel_diff_to_avg_speed [%]": figures.get('rel_diff_to_avg_speed')
             }
             # relative difference to average time at this mark
 

@@ -152,7 +152,7 @@ def compute_intermediates_figures(race_boats):
             figures = result[intermediate.race_boat_id][distance]
 
             speed = figures['speed']
-            rel_diff_to_avg_speed = (speed - avg_speed) / avg_speed
+            rel_diff_to_avg_speed = (speed - avg_speed) / avg_speed * 100.0
             figures["rel_diff_to_avg_speed"] = rel_diff_to_avg_speed
 
         first_distance = False
