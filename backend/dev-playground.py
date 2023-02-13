@@ -14,8 +14,7 @@ from scraping_wr import api
 
 from tqdm import tqdm 
 
-from sqlalchemy import select
-from sqlalchemy import func
+from sqlalchemy import select, update
 from sqlalchemy.orm import Bundle
 from model import model
 from scraper import outlier_detection
@@ -35,10 +34,17 @@ def grab_competition_example(competition_id, out_path='dump.json'):
 
 
 def scraper_postprocessing():
+    # todo: add me to the actual postprocessing
     postprocess()
     with model.Scoped_Session() as session:
         statement = select(model.Boat_Class)
         iterator = session.execute(statement).scalars()
+        # set all is_outlier to False to ensure that the percentile-strategy works
+        session.execute(
+            (
+                update(model.Intermediate_Time).values(is_outlier=False)
+            )
+        )
         for boat_class in iterator:
             outlier_detection.outlier_detection(session=session, boat_class=boat_class)
 

@@ -14,7 +14,8 @@ from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import joinedload
 
 from model import model
-from . import mocks
+from . import mocks # todo: remove me 
+from . import globals
 
 # app is the main controller for the Flask-Server and will start the app in the main function 
 app = Flask(__name__, template_folder=None)
@@ -65,7 +66,11 @@ def get_competition_categories():
     return result
 
 
-from flask import request as freq
+@app.route('/boatclass_information')
+def get_boatclass_information() -> dict: 
+    return globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT
+
+
 @app.route('/competition', methods=['GET'])
 def get_competitions_year_category() -> dict:
     """
@@ -82,88 +87,148 @@ def get_competitions_year_category() -> dict:
     from datetime import datetime
     import logging
 
-    year = freq.args.get('year')
-    competition_category_id = freq.args.get('competition_category_id')
+    year = request.args.get('year')
+    competition_category_id = request.args.get('competition_category_id')
     
-
-    logging.info(f"Year: {year}, comp cat: {competition_category_id}")
-
-    print(f"Year: {year}, comp cat: {competition_category_id}")
+    logging.debug(f"Year: {year}, comp cat: {competition_category_id}")
 
     session = Scoped_Session()
 
     statement = (
         select(
-            model.Race.id, 
-            model.Event.id, 
-            model.Competition.name
+            model.Competition
         )
-        .join(model.Race.event)
-        .join(model.Event.competition)
+        .join(model.Competition.competition_category)
         .where(
             and_(
-            model.Competition.id == 11, 
-            model.Competition.year == 2020, 
+                model.Competition_Category.id == int(competition_category_id), 
+                model.Competition.year == int(year), 
             )
         )
     )
-    
 
-    competitions = session.execute(statement).fetchall()
+    filtered_competitions = session.execute(statement).fetchall()
 
-    def _extract(data: dict, koi: list[str]): 
-        ret = {}
+    competitions = []
+    for _comp in filtered_competitions: 
+        _comp = _comp['Competition']
+        _venue = _comp.venue
+        _country = _venue.country
+        comp = {
+            "id": _comp.id,
+            "name": _comp.name,
+            "start": _comp.start_date, 
+            "end": _comp.end_date, 
+            "venue": f"{_venue.site}/{_venue.city}, {_country.name}",
+        }
 
-        for key in koi: 
-            ret[key] = data.get(key, None)
+        events = []
+        for _event in _comp.events: 
+            event = {
+                "id": _event.id,
+                "name": _event.name, 
+                "boat_class": _event.boat_class.abbreviation
+            }
+
+            races = []
+            for _race in _event.races: 
+                race = {
+                    "id": _race.id,
+                    "name": _race.name, 
+                    "phase_type": _race.phase_type,
+                    "sub_phase": _race.phase_number if _race.phase_number else _race.phase_subtype
+                }
+                races.append(race)
+
+            event['races'] = races
+            events.append(event)
         
-        return ret
+        comp['events'] = events
+        competitions.append(comp)
+
+    return competitions
 
 
-    result = []
-    for comp in competitions: 
-        comp = comp['Competition']
-        comp_res = _extract(comp.__dict__, ["id", "name", "start_date"])
+@app.route('/matrix', methods=['GET'])
+def get_matrix() -> dict: 
 
-        comp_events = []
-
-        for event in comp.events: 
-            event_res = _extract(event.__dict__, ["id", "name",])
-
-            event_races = []
-
-            for race in event.races: 
-                race_res = _extract(race.__dict__, ["id", "name"])
-
-                event_races.append(race_res)
-            
-            event_res['races'] = event_races
-            comp_events.append(event_res)
-
-        comp_res['events'] = event_res
-        result.append(comp_res)
-                
-
-    result = []
-    for comp in competitions: 
-        comp = comp['Competition']
-        comp_res = _extract(comp.__dict__, ["id", "name", "venue", "start_date"])
-        comp_events = []
-        for event in comp.events: 
-            event_res = _extract(event.__dict__, ["id", "name",])
-            event_races = []
-            for race in event.races: 
-                race_res = _extract(race.__dict__, ["id", "name"])
-                event_races.append(race_res)
-                print()
-
-            event_res['races'] = event_races
-
-        comp_res['events'] = comp_events
-
-        result.append(comp_res)
-
+    """
+        todo: How to realize the filtering? 
+        @Harri: if a filter is filtering for all, do not put the filter in there 
+    """
+    filter_key_mapping = {
+        'gender': model.Event.gender_id, # list
+        'boat_class': model.Boat_Class.id, # list
+        'interval': model.Competition.year, # tuple
+        'competition_category': model.Competition_Category.id, # list
+        'race_phase_type': model.Race.phase_type, # list
+        'race_phase_subtype': model.Race.phase_number, # list
+        'placement': model.Race_Boat.rank # list
+    }
     
+    # remove None's from the filters
+    filters = {k: v for k, v in request.args.to_dict().items() if v}
+
+    # example filter args 
+    # filters = {'gender': [1]}
+    
+    session = Scoped_Session()
+    avg_times_statement = (
+        select(
+            func.avg(model.Intermediate_Time.result_time_ms).label("mean"),
+            func.min(model.Intermediate_Time.result_time_ms).label("min"),
+            func.count(model.Intermediate_Time.race_boat_id).label("cnt"),
+            model.Event.boat_class_id.label("id")
+        )
+        .join(model.Intermediate_Time.race_boat)
+        .join(model.Race_Boat.race)
+        .join(model.Race.event)
+        .where(
+            model.Intermediate_Time.distance_meter == 2000,
+            model.Intermediate_Time.is_outlier == True,
+            model.Intermediate_Time.result_time_ms != 0
+        )
+        .group_by(
+            model.Event.boat_class_id,
+        )
+    )
+
+    for k, v in filters.items(): 
+        if k == 'interval': 
+            avg_times_statement = avg_times_statement.where(filter_key_mapping[k].between(v[0], v[1]))
+        else: 
+            avg_times_statement = avg_times_statement.where(filter_key_mapping[k].in_(v))
+
+    wbt_statement = (
+        select(
+            model.Boat_Class.id, 
+            model.Race_Boat.result_time_ms
+        )
+        .join(model.Race_Boat)
+    )
+
+    avg_times = session.execute(avg_times_statement).fetchall()
+    wbts = session.execute(wbt_statement).fetchall()
+    
+    result = {}
+
+    for time in avg_times: 
+        wbt = [wbt for wbt in wbts if wbt.id == time.id]
+        if len(wbt) < 1: 
+            wbt = time.min
+            used_wbt = True
+        else: 
+            wbt = wbt[0][1]
+            used_wbt = False
+        
+        result[time.id] = {
+            'wbt': wbt,
+            'mean': time.mean,
+            'delta': float(time.mean) - float(wbt),
+            'count': time.cnt,
+            'used_wbt': used_wbt
+        }
+
     return result
 
 
