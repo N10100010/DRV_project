@@ -1,5 +1,5 @@
 <template>
-  <v-container :style="{'height': mobile ? '135%' : '100%'}">
+  <v-container :style="{'height': mobile ? '135%' : '140%', 'overflow-y': 'auto'}">
     <v-row>
       <v-col>
         <h2>Filter</h2>
@@ -66,7 +66,7 @@
 
       <v-label class="pt-1">Platzierung (optional)</v-label>
       <v-chip-group filter color="blue" multiple v-model="selectedRanks">
-        <v-chip v-for="rankName in ranksDisplayNames">{{ rankName }}</v-chip>
+        <v-chip v-for="rank in optionsRanks">{{ rank }}</v-chip>
       </v-chip-group>
 
       <v-container class="pa-0 pt-4 text-right">
@@ -94,11 +94,14 @@ export default {
     }),
     ...mapState(useBerichteState, {
       showFilter: "getFilterState"
-    })
+    }),
+    ...mapState(useBerichteState, {
+      filterConfig: "getLastFilterConfig"
+    }),
   },
   data() {
     return {
-      // api filter data
+      lastFilterConfig: {},
       filterData: [],
       // general
       mobile: false,
@@ -114,9 +117,10 @@ export default {
       endYear: 0,
       optionsStartYear: [],
       optionsEndYear: [],
-      yearShortCutOptions: ["Aktuelles Jahr", "Aktueller OZ", "letzter OZ"],
+      yearShortCutOptions: ["Ganzer Zeitraum", "Aktuelles Jahr", "Aktueller OZ", "letzter OZ"],
       selectedYearShortCutOptions: [0],
       // boat classes
+      boatClasses: {},
       genderTypeOptions: [],
       selectedGenders: [3],
       ageGroupOptions: [],
@@ -131,9 +135,8 @@ export default {
       optionsRunsFineSelection: null,
       selectedRunsFineSelection: ["fa", "fb", "fc", "fd", "f...", "sa/b, sa/b/c", "sc/d, sd/e/f", "s...", "q1-4"],
       // ranks
-      ranksDisplayNames: [],
-      ranksDict: {},
-      selectedRanks: [0, 1, 2, 3]
+      optionsRanks: [],
+      selectedRanks: []
     }
   },
   created() {
@@ -143,6 +146,20 @@ export default {
     const store = useBerichteState()
     store.fetchReportFilterOptions()
     this.initializeFilter(this.reportFilterOptions[0])
+
+    /*
+    if (this.reportFilterOptions[0].years[0].start_year === 0) {
+      store.fetchReportFilterOptions()
+      this.initializeFilter(this.reportFilterOptions[0])
+    } else {
+      this.initializeFilter(this.reportFilterOptions[0])
+      this.filterData = this.reportFilterOptions[0]
+      const lastFilterConf = store.getLastFilterConfig
+      // TODO: Add last filter config
+      this.startYear = lastFilterConf.years.start_year
+      this.endYear = lastFilterConf.years.end_year
+    }
+     */
   },
   methods: {
     initializeFilter(data) {
@@ -152,16 +169,15 @@ export default {
       this.optionsStartYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)
       this.optionsEndYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.endYear - i)
 
-      // create dict from keys to get mapping from ui-element index to corresponding rank display name
-      this.ranksDict = Object.fromEntries(data.ranks.map((x, idx) => [idx, x]))
-      this.ranks = Object.keys(this.ranksDict)
-      this.ranksDisplayNames = Object.values(this.ranksDict)
+      // ranks
+      this.optionsRanks = data.ranks
 
       // competition category id
       this.compTypes = data.competition_categories
       this.optionsCompTypes = this.compTypes.map(item => item.display_name)
 
       // boatclasses
+      this.boatClasses = {}
       this.genderTypeOptions = Object.keys(data.boat_classes)
       let ageGroupOptions = Object.keys(data.boat_classes.men)
       ageGroupOptions.push(...Object.keys(data.boat_classes.women))
@@ -172,7 +188,8 @@ export default {
       Object.entries(values).forEach(([key, value], index) => {
         if (index === 0) {
           Object.entries(value).forEach(([, val]) => {
-            boatClassOptions.push(Object.keys(val)[0])
+            boatClassOptions.push(val[0])
+            this.boatClasses[val[0]] = val[2]
           })
         }
       });
@@ -204,21 +221,19 @@ export default {
     },
     submitFormData() {
       const formData = {
-        "years": {
-          "start_year": this.startYear,
-          "end_year": this.endYear
-        },
-        "competition_categories": this.compTypes.filter(item => this.optionsCompTypes.includes(item.display_name))
-            .map(item => item.id),
-        "boat_classes": this.selectedBoatClasses,
-        "runs": this.selectedRuns,
+        "years": {"start_year": this.startYear, "end_year": this.endYear},
+        "competition_categories": this.compTypes.filter(item =>
+            this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
+        "boat_classes": this.boatClasses[this.selectedBoatClasses],
+        "runs": this.selectedRuns.map(item => this.optionsRuns[item]),
         "runs_fine": this.selectedRunsFineSelection,
-        "ranks": this.ranks.map(key => this.ranksDict[key])
+        "ranks": this.selectedRanks.map(item => this.optionsRanks[item])
       }
       const store = useBerichteState()
+      store.setLastFilterConfig(formData)
       store.postFormData(formData)
           .then(() => {
-            console.log("Form data sent...")
+            console.log("data sent...")
           })
           .catch(error => {
             console.error(error)
@@ -231,24 +246,34 @@ export default {
       this.startYear = 1950
       this.endYear = new Date().getFullYear()
       this.selectedCompTypes = []
-      this.selectedRanks = [0, 1, 2, 3]
+      this.selectedRanks = []
       this.selectedRuns = [0, 1, 2]
     },
     checkScreen() {
       this.windowWidth = window.innerWidth
-      this.mobile = this.windowWidth <= 769
+      this.mobile = this.windowWidth <= 750
     }
   },
   watch: {
     selectedYearShortCutOptions: function (newVal,) {
       if (newVal !== 'undefined') {
         if (newVal === 0) {
-          this.startYear = new Date().getFullYear();
-          this.endYear = new Date().getFullYear();
-        } else if (newVal === 1) {
-          // TODO: implement OZ
+          this.startYear = this.filterData.years[0].start_year
+          this.endYear = this.filterData.years[1].end_year
+        }
+        if (newVal === 1) {
+          this.startYear = new Date().getFullYear()
+          this.endYear = new Date().getFullYear()
         } else if (newVal === 2) {
-          // TODO: implement last OZ
+          const currentYear = new Date().getFullYear()
+          const olympicYear = currentYear - (currentYear % 4) + 4
+          this.startYear = olympicYear - 4
+          this.endYear = olympicYear
+        } else if (newVal === 3) {
+          const currentYear = new Date().getFullYear()
+          const olympicYear = currentYear - (currentYear % 4) + 4
+          this.startYear = olympicYear - 8
+          this.endYear = olympicYear - 4
         }
       }
     },
@@ -284,11 +309,13 @@ export default {
         Object.entries(Object.values(this.filterData.boat_classes)[newVal]).forEach(([key, value], index) => {
           if (index === this.selectedAgeGroups && this.selectedGenders !== 2) {
             Object.entries(value).forEach(([, val]) => {
-              boatClassOptions.push(Object.keys(val)[0])
+              boatClassOptions.push(val[0])
+              this.boatClasses[val[0]] = val[2]
             })
           } else if (this.selectedGenders === 2) {
-            Object.entries(value).forEach(([key, val]) => {
-              boatClassOptions.push(key)
+            Object.entries(value).forEach(([, val]) => {
+              boatClassOptions.push(val)
+              this.boatClasses[val] = val[2]
             })
           }
         });
@@ -308,7 +335,8 @@ export default {
         Object.entries(genderObj).forEach(([key, value], index) => {
           if (index === newVal) {
             Object.entries(value).forEach(([, val]) => {
-              boatClassOptions.push(Object.keys(val)[0])
+              boatClassOptions.push(val[0])
+              this.boatClasses[val[0]] = val[2]
             })
           }
         });
@@ -328,11 +356,14 @@ export default {
         Object.entries(genderObj).forEach(([key, value], index) => {
           if (index === this.selectedAgeGroups && this.selectedGenders !== 2) {
             Object.entries(value).forEach(([, val]) => {
-              boatClassOptions.push(Object.keys(val)[0])
+              boatClassOptions.push(val[0])
+              this.boatClasses[val[0]] = val[2]
             })
           } else if (this.selectedGenders === 2) {
-            Object.entries(value).forEach(([key, val]) => {
-              boatClassOptions.push(key)
+            boatClassOptions.push(value[0])
+            Object.values(value).forEach((val) => {
+              // TODO: Check if this is working
+              this.boatClasses[val[0]] = val[2]
             })
           }
         });

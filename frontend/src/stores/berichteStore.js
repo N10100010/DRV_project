@@ -9,9 +9,10 @@ export const useBerichteState = defineStore({
     state: () => ({
         filterOpen: false,
         tableExport: [],
+        lastFilterConfig: null,
         selectedBoatClass: {0: "Alle"},
         filterOptions: [{
-            "years": [{"start_year": 1950}, {"end_year": 2025}],
+            "years": [{"start_year": 0}, {"end_year": 0}],
             "boat_classes": {
                 'men': {
                     'junior': {
@@ -136,18 +137,18 @@ export const useBerichteState = defineStore({
             },
             "ranks": ["1", "2", "3", "4-6"],
         }],
-        data: [{
-            "results": 825,
-            "boat_class": "Men's Eight",
+        data: {
+            "results": null,
+            "boat_classes": null,
             "start_date": "2020-06-16 14:12:00",
             "end_date": "2022-06-16 14:12:00",
-            "world_best_time_boat_class": 358360,
-            "best_in_period": 358360,
+            "world_best_time_boat_class": 0,
+            "best_in_period": 0,
             "mean": {
-                "mm:ss,00": 467360,
-                "m/s": 4.54,
-                "pace 500m": 158360,
-                "pace 1000m": 282360
+                "mm:ss,00": 0,
+                "m/s": 0,
+                "pace 500m": 0,
+                "pace 1000m": 0
             },
             "std_dev": 43360,
             "median": 432360,
@@ -169,47 +170,27 @@ export const useBerichteState = defineStore({
             },
             "plot_data": {
                 "histogram": {
-                    "labels":
-                        [
-                            358360, 360360, 362360,
-                            364360, 366360, 368360,
-                            370360, 372360, 374360,
-                            376360, 378360, 380360,
-                            382360, 384360, 386360,
-                            388360, 390360, 392360,
-                            394360, 396360, 398360,
-                        ],
-                    "data": [2, 18, 20, 26, 45, 72, 120, 503, 160, 98, 55, 23, 16, 4, 5, 2, 1, 3, 1, 3, 1, 4, 3, 2]
+                    "labels": [],
+                    "data": []
                 },
-                "scatterPlot": {
-                    "labels": [
-                        '1930-01-01', '1940-01-01', '1950-01-01', '1960-01-01', '1970-01-01',
-                        '1980-01-01', '1990-01-01', '2000-01-01', '2010-01-01', '2020-01-01',
-                    ],
-                    "data": [
-                        390360, 392360, 396360, 382360, 384360,
-                        394360, 386360, 380360, 388360, 378360,
-                    ]
+                "scatter_plot": {
+                    "labels": [],
+                    "data": []
                 },
-                "scatter_percentile_75": {
-                    "labels": [
-                        '1930-01-01', '2020-01-01'
-                    ],
-                    "data": [
-                        388360, 388360
-                    ]
+                "scatter_1_sd_high": {
+                    "labels": [],
+                    "data": []
                 },
-                "scatter_percentile_25": {
-                    "labels": [
-                        '1930-01-01', '2020-01-01'
-                    ],
-                    "data": [
-                        380360, 380360
-                    ]
+                "scatter_1_sd_low": {
+                    "labels": [],
+                    "data": []
+                },
+                "scatter_mean": {
+                    "labels": [],
+                    "data": []
                 }
             }
-
-        }],
+            },
         matrixdata: [
             {
                 "results": 127973,
@@ -703,10 +684,13 @@ export const useBerichteState = defineStore({
             return state.filterOptions
         },
         getTableData(state) {
-            return state.data[0]
+            return state.data
         },
         getMatrixTableResults(state) {
             return state.matrixdata[0].results
+        },
+        getLastFilterConfig(state) {
+            return state.lastFilterConfig
         },
         getMatrixTableData(state) {
 
@@ -737,15 +721,17 @@ export const useBerichteState = defineStore({
         },
         getBarChartData(state) {
             return {
-                labels: state.data[0].plot_data.histogram.labels.map(x => formatMilliseconds(x)),
+                labels: state.data.plot_data.histogram.labels.map(x => formatMilliseconds(x)),
                 datasets: [
+
+                    /*
                     {
                         type: 'line',
                         data: [
                             {x: formatMilliseconds(366360), y: 0},
                             {
                                 x: formatMilliseconds(366360),
-                                y: Math.ceil(Math.max(...Object.values(state.data[0].plot_data.histogram.data)) / 100) * 100
+                                y: Math.ceil(Math.max(...Object.values(state.data.plot_data.histogram.data)) / 100) * 100
                             }],
                         label: "25. Perzentil",
                         borderColor: "darkgrey",
@@ -760,7 +746,7 @@ export const useBerichteState = defineStore({
                             {x: formatMilliseconds(376360), y: 0},
                             {
                                 x: formatMilliseconds(376360),
-                                y: Math.ceil(Math.max(...Object.values(state.data[0].plot_data.histogram.data)) / 100) * 100
+                                y: Math.ceil(Math.max(...Object.values(state.data.plot_data.histogram.data)) / 100) * 100
                             }],
                         label: "75. Perzentil",
                         borderColor: "darkgrey",
@@ -769,6 +755,7 @@ export const useBerichteState = defineStore({
                         pointRadius: 0,
                         pointHoverRadius: 0,
                     },
+                    */
                     {
                         type: 'line',
                         backgroundColor: "red",
@@ -777,12 +764,12 @@ export const useBerichteState = defineStore({
                         pointRadius: 1.5,
                         tension: 0.2,
                         label: "Anzahl Boote",
-                        data: state.data[0].plot_data.histogram.data,
+                        data: state.data.plot_data.histogram.data,
                     },
                     {
                         type: 'bar',
                         backgroundColor: '#5cc5ed',
-                        data: state.data[0].plot_data.histogram.data,
+                        data: state.data.plot_data.histogram.data,
                         label: "Anzahl Boote"
                     }
                 ]
@@ -801,7 +788,7 @@ export const useBerichteState = defineStore({
                     },
                     y: {
                         min: 0,
-                        max: Math.ceil(Math.max(...Object.values(state.data[0].plot_data.histogram.data)) / 100) * 100,
+                        // max: Math.ceil(Math.max(...Object.values(state.data.plot_data.histogram.data)) / 100) * 100,
                         title: {
                             display: true,
                             text: 'Anzahl Rennen'
@@ -814,28 +801,33 @@ export const useBerichteState = defineStore({
                     },
                     title: {
                         display: true,
-                        text: `Histogramm ${state.data[0].boat_class} (n = ${state.data[0].results})`
+                        text: `${state.data.boat_classes} (n = ${state.data.results})`
                     }
                 }
             }
         },
         getScatterChartData(state) {
-            const scatterData = state.data[0].plot_data.scatterPlot;
-            const firstPercentileData = state.data[0].plot_data.scatter_percentile_75;
-            const secondPercentileData = state.data[0].plot_data.scatter_percentile_25;
 
-            const plotData = scatterData.labels.map((label, i) => (
-                {
-                    x: label,
-                    y: formatMilliseconds(scatterData.data[i])
-                }));
-            const percentile25Data = secondPercentileData.labels.map((label, i) => ({
-                x: label,
-                y: formatMilliseconds(secondPercentileData.data[i])
+            const scatterData = state.data.plot_data.scatter_plot;
+            const scatter1SDHigh = state.data.plot_data.scatter_1_sd_high;
+            const scatter1SDLow = state.data.plot_data.scatter_1_sd_low;
+            const scatterMeanValues = state.data.plot_data.scatter_mean;
+
+            const plotData = scatterData.labels.map((label, i) => ({
+                x: new Date(label),
+                y: formatMilliseconds(scatterData.data[i])
             }));
-            const percentile75Data = firstPercentileData.labels.map((label, i) => ({
-                x: label,
-                y: formatMilliseconds(firstPercentileData.data[i])
+            const sd1Low = scatter1SDLow.labels.map((label, i) => ({
+                x: new Date(label),
+                y: formatMilliseconds(scatter1SDLow.data[i])
+            }));
+            const sd1High = scatter1SDHigh.labels.map((label, i) => ({
+                x: new Date(label),
+                y: formatMilliseconds(scatter1SDHigh.data[i])
+            }));
+            const meanValues = scatterMeanValues.labels.map((label, i) => ({
+                x: new Date(label),
+                y: formatMilliseconds(scatterMeanValues.data[i])
             }));
 
             return {
@@ -849,21 +841,31 @@ export const useBerichteState = defineStore({
                     },
                     {
                         type: 'line',
-                        data: percentile25Data,
-                        label: "25. Perzentil",
+                        data: sd1Low,
+                        label: "-1SD",
                         borderColor: "darkgrey",
                         backgroundColor: "darkgrey",
-                        borderWidth: 2,
+                        borderWidth: 1,
                         pointRadius: 0,
                         pointHoverRadius: 0,
                     },
                     {
                         type: 'line',
-                        data: percentile75Data,
-                        label: "75. Perzentil",
+                        data: meanValues,
+                        label: "Mittelwert",
+                        borderColor: "grey",
+                        backgroundColor: "grey",
+                        borderWidth: 1.5,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                    },
+                    {
+                        type: 'line',
+                        data: sd1High,
+                        label: "+1SD",
                         borderColor: "darkgrey",
                         backgroundColor: "darkgrey",
-                        borderWidth: 2,
+                        borderWidth: 1,
                         pointRadius: 0,
                         pointHoverRadius: 0,
                     }
@@ -878,8 +880,8 @@ export const useBerichteState = defineStore({
                     x: {
                         type: 'time',
                         time: {
-                            unit: 'year',
-                            parser: 'yyyy-mm-dd'
+                            unit: 'month',
+                            parser: 'yyyy–mm–dd'
                         },
                         title: {
                             display: true,
@@ -909,7 +911,7 @@ export const useBerichteState = defineStore({
                     },
                     title: {
                         display: true,
-                        text: `Scatter Plot ${state.data[0].boat_class} (n = ${state.data[0].results})`
+                        text: `${String(state.data.boat_classes)} (n = ${state.data.results})`
                     }
                 }
             }
@@ -925,18 +927,19 @@ export const useBerichteState = defineStore({
                 })
         },
         async postFormData(data) {
-            console.log(data)
             this.selectedBoatClass = data.boat_classes
-
             await axios.post('http://localhost:5000/get_report_boat_class', {data})
                 .then(response => {
-                    console.log(response)
+                    this.data = response.data
                 }).catch(error => {
                     console.error(`Request failed: ${error}`)
                 })
         },
         setFilterState(filterState) {
             this.filterOpen = !filterState
+        },
+        setLastFilterConfig(filterConfig) {
+            this.lastFilterConfig = filterConfig
         },
         exportTableData() {
             const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(row => {

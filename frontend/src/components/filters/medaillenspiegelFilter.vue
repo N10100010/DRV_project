@@ -32,16 +32,10 @@
                 v-model="selectedCompTypes" variant="outlined"
                 :rules="[v => v.length > 0 || 'Wähle mindestens eine Wettkampfklasse']"
       ></v-select>
-      <v-label>Medaillentyp</v-label>
-      <v-chip-group filter color="blue" v-model="selectedMedalTypes">
-        <v-chip v-for="medalType in optionsMedalTypes">{{ medalType }}</v-chip>
-      </v-chip-group>
       <v-autocomplete class="pt-4" :items="optionsNations" multiple chips v-model="selectedNation"
                       variant="outlined" color="blue" label="Nation" density="comfortable"
                       :rules="[v => !!v || 'Wähle mindestens eine Nation']"
       ></v-autocomplete>
-
-
       <!--
       <v-label>Bootsklasse</v-label>
       <v-chip-group filter color="blue" v-model="selectedGenders">
@@ -56,6 +50,9 @@
                 :rules="[v => !!v || 'Wähle mindestens eine Bootsklasse']"
       ></v-select>
       -->
+      <v-chip-group filter color="blue" v-model="selectedMedalTypes">
+        <v-chip v-for="medalType in optionsMedalTypes">{{ medalType }}</v-chip>
+      </v-chip-group>
       <v-select class="pt-3" label="Bootsklassen" clearable multiple chips density="comfortable"
                 :items="optionsBoatClasses" v-model="selectedBoatClasses" variant="outlined"
                 :rules="[v => !!v || 'Wähle mindestens eine Bootsklasse']"

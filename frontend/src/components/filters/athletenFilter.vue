@@ -11,7 +11,7 @@
     <v-form class="mt-2" id="athletenFilterFormular"
             v-model="formValid" lazy-validation
             @submit.prevent="onSubmit" ref="filterForm">
-      <v-autocomplete :items="previewAthleteResults" v-model="selectedAthlete" clearable
+      <v-autocomplete :items="previewAthleteResults.map(athlete => athlete.name)" v-model="selectedAthlete" clearable
                       variant="outlined" color="blue" label="Athlet" @input="searchAthletes"
                       class="pt-2" :rules="[v => !!v || 'Athletenname darf nicht leer sein']"
                       autofocus
@@ -93,9 +93,10 @@ export default {
 
       // nations
       optionsNations: [],
-      selectedNation: "GER (Deutschland)",
+      selectedNation: null,
 
       // boat classes
+      boatClasses: {},
       genderTypeOptions: [],
       selectedGenders: [3],
       ageGroupOptions: [],
@@ -131,6 +132,7 @@ export default {
       this.optionsNations = finalCountryNames
 
       // boatclasses
+      this.boatClasses = {}
       this.genderTypeOptions = Object.keys(data.boat_classes)
       let ageGroupOptions = Object.keys(data.boat_classes.men)
       ageGroupOptions.push(...Object.keys(data.boat_classes.women))
@@ -142,7 +144,8 @@ export default {
         if (index === 0) {
           Object.entries(value).forEach(([, val]) => {
             if (typeof val === "object") {
-              boatClassOptions.push(Object.values(val)[0])
+              boatClassOptions.push(val[0])
+              this.boatClasses[val[0]] = val[2]
             }
           })
         }
@@ -154,11 +157,14 @@ export default {
     searchAthletes(e) {
       const store = useAthletenState()
       const searchInput = e.target.value
-      if (searchInput.length > 2) {
+      if (searchInput.length > 0) {
         clearTimeout(this.timeoutId)
         this.timeoutId = setTimeout(() => {
           store.postSearchAthlete({
-            "searchInput": searchInput
+            "search_query": searchInput,
+            "nation": this.selectedNation,
+            "birth_year": this.selectedBirthYear,
+            "boat_class": this.boatClasses[this.selectedBoatClasses] || null
           })
         }, 450)
       }
@@ -178,12 +184,8 @@ export default {
     },
     submitFormData() {
       const store = useAthletenState()
-      return store.postFormData({
-        "athlete_name": this.selectedAthlete,
-        "birth_year": this.birthYear,
-        "gender": this.selectedGenders,
-        "competition_categories": this.compTypes.filter(item => this.optionsCompTypes.includes(item.display_name)).map(item => item.id),
-        "nation_ioc": this.selectedNation
+      return store.getAthlete({
+        "id": this.previewAthleteResults.find(item => item.name === this.selectedAthlete).id
       }).then(() => {
         console.log("Form data sent...")
       }).catch(error => {
@@ -192,7 +194,7 @@ export default {
     },
     clearFormInputs() {
       this.selectedAthlete = null
-      this.selectedNation = "GER (Deutschland)"
+      this.selectedNation = null
       this.selectedBirthYear = null
       this.selectedGenders = 0
       this.selectedAgeGroups = 0
@@ -210,7 +212,7 @@ export default {
   },
   watch: {
     selectedGenders: function (newVal,) {
-      if (newVal !== undefined) {
+      if (newVal !== undefined && this.filterData !== undefined) {
         this.selectedBoatClasses = null
         let optionsList = []
         if (newVal === 0) { // men
@@ -241,11 +243,13 @@ export default {
         Object.entries(Object.values(this.filterData.boat_classes)[newVal]).forEach(([key, value], index) => {
           if (index === this.selectedAgeGroups && this.selectedGenders !== 2) {
             Object.entries(value).forEach(([, val]) => {
-              boatClassOptions.push(Object.keys(val)[0])
+              boatClassOptions.push(val[0])
+              this.boatClasses[val[0]] = val[2]
             })
           } else if (this.selectedGenders === 2) {
-            Object.entries(value).forEach(([key, val]) => {
-              boatClassOptions.push(key)
+            boatClassOptions.push(value[0])
+            Object.entries(value).forEach(([, val]) => {
+              this.boatClasses[val] = val[2]
             })
           }
         });
@@ -258,14 +262,15 @@ export default {
       }
     },
     selectedAgeGroups: function (newVal,) {
-      if (newVal !== undefined) {
+      if (newVal !== undefined && this.filterData !== undefined) {
         this.selectedBoatClasses = null
         let genderObj = Object.values(this.filterData.boat_classes)[this.selectedGenders]
         let boatClassOptions = []
         Object.entries(genderObj).forEach(([key, value], index) => {
           if (index === newVal) {
             Object.entries(value).forEach(([, val]) => {
-              boatClassOptions.push(Object.keys(val)[0])
+              boatClassOptions.push(val[0])
+              this.boatClasses[val[0]] = val[2]
             })
           }
         });
@@ -278,18 +283,20 @@ export default {
       }
     },
     selectedDiscipline: function (newVal,) {
-      if (newVal !== undefined) {
+      if (newVal !== undefined && this.filterData !== undefined) {
         this.selectedBoatClasses = null
         let genderObj = Object.values(this.filterData.boat_classes)[this.selectedGenders]
         let boatClassOptions = []
         Object.entries(genderObj).forEach(([key, value], index) => {
           if (index === this.selectedAgeGroups && this.selectedGenders !== 2) {
             Object.entries(value).forEach(([, val]) => {
-              boatClassOptions.push(Object.keys(val)[0])
+              boatClassOptions.push(val[0])
+              this.boatClasses[val[0]] = val[2]
             })
           } else if (this.selectedGenders === 2) {
-            Object.entries(value).forEach(([key, val]) => {
-              boatClassOptions.push(key)
+            boatClassOptions.push(value[0])
+            Object.values(value).forEach((val) => {
+              this.boatClasses[val[0]] = val[2]
             })
           }
         });

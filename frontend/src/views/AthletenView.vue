@@ -31,75 +31,86 @@
           <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
         </v-col>
         <v-divider></v-divider>
-        <v-container class="pa-0 mt-8" style="min-height: 400px">
+
+        <v-col class="pa-0" :cols="mobile ? 12 : 6" v-if="!data.name">
+        <v-alert type="info" variant="tonal" class="my-2">
+                <v-row>
+                  <v-col>
+                    <p>Bitte suchen Sie nach Athletinnen/Athleten im Filter auf der linken Seite.</p>
+                  </v-col>
+                </v-row>
+        </v-alert>
+          </v-col>
+
+        <v-container class="pa-0 mt-5" v-else>
           <v-row>
             <v-col :cols="mobile ? 12 : 4">
-              <h2>{{ tableData.firstName }} {{ tableData.lastName }}</h2>
+              <h2>{{ data.name }}</h2>
               <v-table class="tableStyles" density="compact">
                 <tbody class="nth-grey">
                 <tr>
                   <th>Nation</th>
-                  <td>{{ tableData.nation_ioc }}</td>
+                  <td>{{data.nation ? `${data.nation}` : '–'}}</td>
                 </tr>
                 <tr>
                   <th>Geburtsdatum</th>
-                  <td>{{ tableData.dateOfBirth }}</td>
+                  <td>{{data.dob ? `${data.dob}` : '–'}}</td>
                 </tr>
                 <tr>
                   <th>Geschlecht</th>
-                  <td>{{ tableData.gender == 'male' ? 'Männlich' : 'Weiblich' }}</td>
+                  <td>{{data.gender ? `${data.gender}` : '–'}}</td>
                 </tr>
                 <tr>
                   <th>Gewicht</th>
-                  <td>{{ tableData.weight }} kg</td>
+                  <td>{{data.weight ? `${data.weight}kg` : "–"}}</td>
                 </tr>
                 <tr>
                   <th>Größe</th>
-                  <td>{{ tableData.height }} cm</td>
+                  <td>{{data.height ? `${data.height}cm` : "–"}}</td>
                 </tr>
                 <tr>
-                  <th>Bootsklasse</th>
-                  <td>{{ tableData.currentBoatClass }}</td>
+                  <th>Bootsklasse(n)</th>
+                  <td>{{ data.boat_class }}</td>
                 </tr>
                 <tr>
                   <th>Disziplin(en)</th>
-                  <td><p v-for="item in tableData.disciplines">{{ item }}</p></td>
+                  <td><p v-for="item in data.disciplines">{{ item }}</p></td>
                 </tr>
                 <tr>
                   <th>Rennanzahl</th>
-                  <td>{{ tableData.numberOfRaces }}</td>
+                  <td>{{ data.num_of_races }}</td>
                 </tr>
                 <tr>
                   <th>Medaillen Gesamt</th>
-                  <td>{{ tableData.medals_total }}</td>
+                  <td>{{ data.medals_total }}</td>
                 </tr>
                 <tr>
                   <th>Medaillen Gold</th>
-                  <td>{{ tableData.medals_gold }}</td>
+                  <td>{{ data.medals_gold }}</td>
                 </tr>
                 <tr>
                   <th>Medaillen Silber</th>
-                  <td>{{ tableData.medals_silver }}</td>
+                  <td>{{ data.medals_silver }}</td>
                 </tr>
                 <tr>
                   <th>Medaillen Bronze</th>
-                  <td>{{ tableData.medals_bronze }}</td>
+                  <td>{{ data.medals_bronze }}</td>
                 </tr>
                 <tr>
-                  <th>Platzierungen Finale A</th>
-                  <td>{{ tableData.placements_final_A }}</td>
+                  <th>Finale A</th>
+                  <td>{{ data.final_a }}</td>
                 </tr>
                 <tr>
-                  <th>Platzierungen Finale B</th>
-                  <td>{{ tableData.placements_final_B }}</td>
+                  <th>Finale B</th>
+                  <td>{{ data.final_a }}</td>
                 </tr>
                 <tr>
                   <th>Bestzeit Bootsklasse</th>
-                  <td>{{ formatMilliseconds(tableData.bestTimeBoatClass) }}</td>
+                  <td>{{ data.best_time_boat_class ? `${formatMilliseconds(data.best_time_boat_class)}` : "–"}}</td>
                 </tr>
                 <tr>
                   <th>Bestzeit Bootsklasse OZ/Jahr</th>
-                  <td>{{ formatMilliseconds(tableData.bestTimeBoatClassCurrentOZ) }}</td>
+                  <td>{{data.best_time_current_oz ? `${formatMilliseconds(data.best_time_current_oz)}` : "–"}}</td>
                 </tr>
                 </tbody>
               </v-table>
@@ -109,20 +120,20 @@
               <v-table class="tableStyles" density="compact">
                 <thead>
                 <tr>
-                  <th>Wettkampf</th>
-                  <th>Startzeit</th>
-                  <th>Platzierung</th>
-                  <th>Austragungsort</th>
-                  <th>Bootsklasse</th>
+                  <th class="px-1">Wettkampf</th>
+                  <th class="px-1">Startzeit</th>
+                  <th class="px-1">Platz</th>
+                  <th class="px-1">Ort</th>
+                  <th class="px-1">Bootsklasse</th>
                 </tr>
                 </thead>
                 <tbody class="nth-grey">
-                <tr v-for="(race, idx) in tableData.raceList">
-                  <td>{{ race.raceName }}</td>
-                  <td>{{ race.startDate }}</td>
+                <tr v-for="(race, idx) in data.race_list">
+                  <td>{{ race.name }}</td>
+                  <td>{{ race.start_time }}</td>
                   <td>{{ race.rank }}</td>
                   <td>{{ race.venue }}</td>
-                  <td>{{ race.boatClass }}</td>
+                  <td>{{ race.boat_class }}</td>
                 </tr>
                 </tbody>
               </v-table>
@@ -132,20 +143,20 @@
               <v-table class="tableStyles">
                 <thead>
                 <tr>
-                  <th>Wettkampf</th>
-                  <th>Startzeit</th>
-                  <th>Platzierung</th>
-                  <th>Austragungsort</th>
-                  <th>Bootsklasse</th>
+                  <th class="px-1">Wettkampf</th>
+                  <th class="px-1">Startzeit</th>
+                  <th class="px-1">Platz</th>
+                  <th class="px-1">Ort</th>
+                  <th class="px-1">Bootsklasse</th>
                 </tr>
                 </thead>
                 <tbody class="nth-grey">
-                <tr v-for="(race, idx) in tableData.raceList">
-                  <td>{{ race.raceName }}</td>
-                  <td>{{ race.startDate }}</td>
+                <tr v-for="(race, idx) in data.race_list">
+                  <td>{{ race.name }}</td>
+                  <td>{{ race.start_time }}</td>
                   <td>{{ race.rank }}</td>
                   <td>{{ race.venue }}</td>
-                  <td>{{ race.boatClass }}</td>
+                  <td>{{ race.boat_class }}</td>
                 </tr>
                 </tbody>
               </v-table>
@@ -196,7 +207,11 @@ export default {
       document.documentElement.style.setProperty('--navbar-height', navbarHeight);
     },
     formatMilliseconds(ms) {
-      return new Date(ms).toISOString().slice(14, -2)
+      if (ms) {
+        return new Date(ms).toISOString().slice(14, -2)
+      } else {
+        return 0
+      }
     }
   },
   created() {
@@ -219,6 +234,7 @@ export default {
     return {
       mobile: false,
       filterOpen: this.filterState,
+      data: []
     }
   },
   watch: {
@@ -231,13 +247,16 @@ export default {
         store.setFilterState(oldVal)
       }
     },
+    tableData: function (newVal, ){
+      this.data = newVal
+    }
+    /*
     tableData: function (newVal,) {
-      /*
       if (newVal !== undefined) {
         router.push(this.$route.path + `?athlete_id=${newVal.id}`)
       }
-      */
     }
+    */
   }
 }
 </script>
@@ -258,17 +277,28 @@ export default {
     border: 0.5px solid #e0e0e0;
     font-size: 14px !important;
     text-align: left;
+    padding: 0 5px;
   }
 
   td {
     text-align: left;
     border: 0.5px solid #e0e0e0;
+    padding: 0 5px;
   }
 }
 
 .nth-grey tr:nth-child(odd) {
   background-color: rgba(0, 0, 0, .05);
 }
+
+.v-table > .v-table__wrapper > table > tbody > tr > td {
+  padding: 0 6px;
+}
+
+.v-table > .v-table__wrapper > table > tbody > tr > th {
+  padding: 0 6px;
+}
+
 .filterToggleButton {
   position: fixed;
   z-index: 10;
