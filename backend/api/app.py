@@ -258,8 +258,9 @@ def get_race(race_id: int) -> dict:
             })
 
         # race_data aka gps data
+        sorted_race_data = sorted(race_boat.race_data, key=lambda x: x.distance_meter)
         race_data: model.Race_Data
-        for race_data in race_boat.race_data:
+        for race_data in sorted_race_data:
             propulsion = propulsion_in_meters_per_stroke(race_data.stroke, race_data.speed_meter_per_sec)
             rb_result['race_data'][str(race_data.distance_meter)] = {
                 "speed [m/s]": race_data.speed_meter_per_sec,
@@ -268,8 +269,9 @@ def get_race(race_id: int) -> dict:
             }
 
         # intermediates
+        sorted_intermediates = sorted(race_boat.intermediates, key=lambda x: x.distance_meter)
         intermediate: model.Intermediate_Time
-        for intermediate in race_boat.intermediates:
+        for intermediate in sorted_intermediates:
             result_time_ms = intermediate.result_time_ms
             if intermediate.is_outlier:
                 continue
