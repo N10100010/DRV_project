@@ -71,7 +71,7 @@ def get_boatclass_information() -> dict:
     return globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT
 
 
-@app.route('/competition', methods=['GET'])
+@app.route('/competition', methods=['POST'])
 def get_competitions_year_category() -> dict:
     """
     WHEN?
@@ -87,8 +87,8 @@ def get_competitions_year_category() -> dict:
     from datetime import datetime
     import logging
 
-    year = request.args.get('year')
-    competition_category_id = request.args.get('competition_category_id')
+    year = request.json["data"].get('year')
+    competition_category_id = request.json["data"].get('competition_category_id')
     
     logging.debug(f"Year: {year}, comp cat: {competition_category_id}")
 
@@ -101,8 +101,8 @@ def get_competitions_year_category() -> dict:
         .join(model.Competition.competition_category)
         .where(
             and_(
-                model.Competition_Category.id == int(competition_category_id), 
-                model.Competition.year == int(year), 
+                model.Competition_Category.id == competition_category_id,
+                model.Competition.year == year,
             )
         )
     )

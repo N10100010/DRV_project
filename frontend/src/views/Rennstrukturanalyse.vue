@@ -56,9 +56,9 @@
                         class="pa-2 mx-1"
                         v-for="competition in getAnalysis"
                         :key="competition"
-                        :title="competition.display_name"
-                        :subtitle="competition.start_date+' | '+competition.venue"
-                        @click="getEvents(competition.events, competition.display_name, competition.id)"
+                        :title="competition.name"
+                        :subtitle="competition.start+' | '+competition.venue"
+                        @click="getEvents(competition.events, competition.name, competition.id)"
                     ></v-list-item>
                     </div>
                   </v-list>
@@ -73,8 +73,8 @@
                         class="pa-1 mx-1"
                         v-for="event in events"
                         :key="event"
-                        :title="event.display_name"
-                        @click="getRaces(event.races, event.display_name, event.id)"
+                        :title="event.name"
+                        @click="getRaces(event.races, event.name, event.id)"
                     ></v-list-item>
                     </div>
                   </v-list>
@@ -89,8 +89,8 @@
                         class="pa-2 mx-1"
                         v-for="race in races"
                         :key="race"
-                        :title="race.display_name"
-                        @click="loadRaceAnalysis(race.display_name, race.id)"
+                        :title="race.name"
+                        @click="loadRaceAnalysis(race.name, race.id)"
                     ></v-list-item>
                     </div>
                   </v-list>
@@ -446,6 +446,10 @@ export default {
       this.displayRaces = true
     },
     loadRaceAnalysis(raceName, raceId) {
+
+      const store = useRennstrukturAnalyseState()
+      store.fetchAnalysisData(raceId)
+
       this.showEmailIcon = true
       const newPath = `/rennstrukturanalyse/${this.lastCompId}/${this.lastEventId}?race_id=${raceId}`
       router.push(newPath)
@@ -453,6 +457,7 @@ export default {
       const subject = "Wettkampfergebnisse"
       const body = `Sieh dir diese Wettkampfergebnisse an: http://${window.location.host + newPath}`
       this.emailLink = `mailto:?subject=${subject}&body=${body}`
+
     },
     checkScreen() {
       this.windowWidth = window.innerWidth;
