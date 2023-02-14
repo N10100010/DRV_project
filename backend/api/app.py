@@ -302,8 +302,9 @@ def get_race(race_id: int) -> dict:
         "race_boats": []
     }
 
+    sorted_race_boat_data = sorted(race.race_boats, key=lambda x: x.rank)
     race_boat: model.Race_Boat
-    for race_boat in race.race_boats:
+    for race_boat in sorted_race_boat_data:
         rb_result = {
             "name": race_boat.name, # e.g. DEU2
             "lane": race_boat.lane,

@@ -104,12 +104,12 @@
 
           <v-row no-gutters>
             <v-col cols="6">
-              <h2>{{ competitionData.displayName }}</h2>
+              <h2>{{ `${competitionData.display_name} (${competitionData.boat_class})` }}</h2>
             </v-col>
             <v-col cols="6" class="text-right">
-              <p style="color: grey">Bestzeiten: {{ competitionData.worldBestTimeBoatClass }} (WB) |
-                {{ competitionData.bestTimeBoatClassCurrentOZ }} (OZ/Jahr)</p>
-              <p><b>{{ competitionData.venue }} | {{ competitionData.startDate }}</b></p>
+              <p style="color: grey">Bestzeiten: {{ formatMilliseconds(competitionData.result_time_world_best) }} (WB) |
+                {{ formatMilliseconds(competitionData.result_time_best_of_current_olympia_cycle) }} (OZ/Jahr)</p>
+              <p><b>{{ competitionData.venue }} | {{ competitionData.start_date }}</b></p>
             </v-col>
           </v-row>
 
@@ -126,7 +126,6 @@
                 <thead>
                 <tr>
                   <th v-for="tableHead in tableData[0]" class="px-2">{{ tableHead }}</th>
-                  <th>Prog.<br>Code</th>
                 </tr>
                 </thead>
                 <tbody class="nth-grey">
@@ -142,9 +141,6 @@
                         {{ item }}
                       </p>
                     </template>
-                  </td>
-                  <td>
-                    {{ competitionData.data[idx].progressionCode }}
                   </td>
                 </tr>
                 </tbody>
@@ -414,9 +410,18 @@ export default {
       const url = new URL(window.location.href);
       const race_id = url.searchParams.get("race_id");
       this.displayRaceDataAnalysis = !!race_id;
+
+      const store = useRennstrukturAnalyseState()
+      store.fetchRaceData(race_id)
     }
   },
   methods: {
+    formatMilliseconds (ms) {
+      if (!ms) {
+          return '00:00.000';
+      }
+      return new Date(ms).toISOString().slice(14, -2);
+    },
     openPrintDialog() {
       window.print();
     },
@@ -448,7 +453,7 @@ export default {
     loadRaceAnalysis(raceName, raceId) {
 
       const store = useRennstrukturAnalyseState()
-      store.fetchAnalysisData(raceId)
+      store.fetchRaceData(raceId)
 
       this.showEmailIcon = true
       const newPath = `/rennstrukturanalyse/${this.lastCompId}/${this.lastEventId}?race_id=${raceId}`
