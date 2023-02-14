@@ -146,20 +146,6 @@ export default {
     const store = useBerichteState()
     store.fetchReportFilterOptions()
     this.initializeFilter(this.reportFilterOptions[0])
-
-    /*
-    if (this.reportFilterOptions[0].years[0].start_year === 0) {
-      store.fetchReportFilterOptions()
-      this.initializeFilter(this.reportFilterOptions[0])
-    } else {
-      this.initializeFilter(this.reportFilterOptions[0])
-      this.filterData = this.reportFilterOptions[0]
-      const lastFilterConf = store.getLastFilterConfig
-      // TODO: Add last filter config
-      this.startYear = lastFilterConf.years.start_year
-      this.endYear = lastFilterConf.years.end_year
-    }
-     */
   },
   methods: {
     initializeFilter(data) {
@@ -205,6 +191,15 @@ export default {
           return item.map(item => item.display_name)
         }
       })
+      const store = useBerichteState()
+      store.postFormDataMatrix({
+        "interval": [this.startYear, this.endYear],
+        "competition_category": this.compTypes.filter(item =>
+            this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
+        "boat_class": this.boatClasses[this.selectedBoatClasses],
+        "race_phase_type": this.selectedRuns.map(item => this.optionsRuns[item]),
+        "race_phase_subtype": [1,2,3], // this.selectedRunsFineSelection,
+      })
     },
     async onSubmit() {
       const {valid} = await this.$refs.filterForm.validate()
@@ -226,11 +221,17 @@ export default {
             this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
         "boat_class": this.boatClasses[this.selectedBoatClasses],
         "race_phase_type": this.selectedRuns.map(item => this.optionsRuns[item]),
-        // "race_phase_subtype": [1,2,3], // this.selectedRunsFineSelection,
-        "placement": this.selectedRanks.map(item => this.optionsRanks[item])
+        "race_phase_subtype": [1,2,3], // this.selectedRunsFineSelection,
       }
+
+      const placement = this.selectedRanks.map(item => this.optionsRanks[item])
+      if (placement.length !== 0) {
+        formData["placement"] = placement
+      }
+
       const store = useBerichteState()
       store.setLastFilterConfig(formData)
+      store.setSelectedBoatClass(this.selectedBoatClasses[0])
 
       if (formData.boat_class === undefined) {
          store.postFormDataMatrix(formData)

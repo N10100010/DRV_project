@@ -206,7 +206,7 @@ def get_matrix() -> dict:
         .join(model.Event.boat_class)
         .where(
             model.Intermediate_Time.distance_meter == 2000,
-            model.Intermediate_Time.is_outlier == True,
+            # model.Intermediate_Time.is_outlier == True,
             model.Intermediate_Time.result_time_ms != 0
         )
         .group_by(
@@ -234,7 +234,7 @@ def get_matrix() -> dict:
     result = {}
 
     for time in avg_times: 
-        wbt = [wbt for wbt in wbts if wbt.id == time.id]
+        wbt = [wbt for wbt in wbts if wbt[0] == time.id]
         if len(wbt) < 1: 
             wbt = time.min
             used_wbt = True
@@ -249,8 +249,8 @@ def get_matrix() -> dict:
             'count': time.cnt,
             'used_wbt': used_wbt
         }
-
     return result
+
 
 
 @app.route('/get_race/<int:race_id>/', methods=['GET'])

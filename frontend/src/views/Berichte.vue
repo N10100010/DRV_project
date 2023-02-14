@@ -51,7 +51,6 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
           <v-row>
             <v-col :cols="mobile ? 12 : 5">
               <h2>{{ data.boat_classes }}</h2>
-
               <v-alert type="error" variant="tonal" class="my-2" v-if="data.results === 0">
                 <v-row>
                   <v-col cols="12">
@@ -138,7 +137,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 </tbody>
               </v-table>
             </v-col>
-            <v-col :cols="mobile ? 12 : 8" v-if="matrixVisible">
+            <v-col :cols="mobile ? 12 : 8" v-if="matrixVisible" class="py-0">
               <v-table class="tableStyles" density="compact">
                 <thead>
                 <tr>
@@ -150,7 +149,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 </tr>
                 </thead>
                 <tbody class="nth-grey">
-                <template v-for="row in matrixTableData">
+                <template v-for="row in matrixData">
                   <tr v-if="(typeof row === 'string')" class="subheader">
                     <th><b>{{ row }}</b></th>
                     <td></td>
@@ -256,6 +255,9 @@ export default {
     return {
       mobile: false,
       filterOpen: false,
+      matrixData: {
+
+      },
       data: {
         "results": null,
         "boat_class": "Men's Eight",
@@ -322,6 +324,9 @@ export default {
     },
     tableData: function (newVal,) {
       this.data = newVal
+    },
+    matrixTableData: function (newVal,) {
+      this.matrixData = newVal
     }
   }
 }
