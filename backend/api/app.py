@@ -76,6 +76,21 @@ def get_boatclass_information() -> dict:
     return globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT
 
 
+@app.route('/competition_category_information')
+def get_competition_category_information() -> dict: 
+    session = Scoped_Session()
+    statement = (
+        select(
+            model.Competition_Category.additional_id_,
+            model.Competition_Category.name,
+            model.Competition_Type.abbreviation
+        )
+        .join(model.Competition_Category.competition_type)
+    )
+
+    return {v[0]: (v[1], v[2]) for v in session.execute(statement).fetchall()}
+
+
 @app.route('/competition', methods=['POST'])
 def get_competitions_year_category() -> dict:
     """
@@ -154,7 +169,7 @@ def get_competitions_year_category() -> dict:
     return competitions
 
 
-@app.route('/matrix', methods=['GET'])
+@app.route('/matrix', methods=['POST'])
 def get_matrix() -> dict: 
 
     """
@@ -172,7 +187,7 @@ def get_matrix() -> dict:
     }
     
     # remove None's from the filters
-    filters = {k: v for k, v in request.args.to_dict().items() if v}
+    filters = {k: v for k, v in request.json['data'].items() if v}
 
     # example filter args 
     # filters = {'gender': [1]}
@@ -183,18 +198,19 @@ def get_matrix() -> dict:
             func.avg(model.Intermediate_Time.result_time_ms).label("mean"),
             func.min(model.Intermediate_Time.result_time_ms).label("min"),
             func.count(model.Intermediate_Time.race_boat_id).label("cnt"),
-            model.Event.boat_class_id.label("id")
+            model.Boat_Class.additional_id_.label("id")  # add_id_
         )
         .join(model.Intermediate_Time.race_boat)
         .join(model.Race_Boat.race)
         .join(model.Race.event)
+        .join(model.Event.boat_class)
         .where(
             model.Intermediate_Time.distance_meter == 2000,
             model.Intermediate_Time.is_outlier == True,
             model.Intermediate_Time.result_time_ms != 0
         )
         .group_by(
-            model.Event.boat_class_id,
+            model.Boat_Class.additional_id_
         )
     )
 
@@ -206,7 +222,7 @@ def get_matrix() -> dict:
 
     wbt_statement = (
         select(
-            model.Boat_Class.id, 
+            model.Boat_Class.additional_id_, 
             model.Race_Boat.result_time_ms
         )
         .join(model.Race_Boat)
