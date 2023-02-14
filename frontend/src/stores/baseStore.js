@@ -684,12 +684,12 @@ export const useRennstrukturAnalyseState = defineStore({
                     const propulsionValues = [];
 
                     Object.values(dataObj.race_data).forEach(gpsData => {
-                           if(dataObj.intermediates !== '0') {
-                               speedValues.push(gpsData["speed [m/s]"] + "[m/s]");
-                                strokeValues.push(gpsData["stroke [1/min]"] + "[1/min]");
-                                propulsionValues.push(gpsData["propulsion [m/stroke]"].toFixed(2) + "[m/Schlag]");
+                        if (dataObj.intermediates !== '0') {
+                            speedValues.push(gpsData["speed [m/s]"] + "[m/s]");
+                            strokeValues.push(gpsData["stroke [1/min]"] + "[1/min]");
+                            propulsionValues.push(gpsData["propulsion [m/stroke]"].toFixed(2) + "[m/Schlag]");
 
-                           }
+                        }
                     });
                     for (const [index, [key, intermediate]] of Object.entries(dataObj.intermediates).entries()) {
                         if (key !== '0') {
@@ -717,16 +717,19 @@ export const useRennstrukturAnalyseState = defineStore({
             return tableData;
         },
         getDeficitInMeters(state) {
+            const raceBoats = state.data.raceData[0].race_boats
             // determine winner
-            const winnerIdx = state.data.raceData[0].race_boats.findIndex(team => team.rank === 1);
-            const winnerData = state.data.raceData[0].race_boats.map(dataObj => dataObj.race_data)[winnerIdx]
+            const winnerIdx = raceBoats.findIndex(team => team.rank === 1);
+            const winnerData = raceBoats.map(dataObj => dataObj.race_data)[winnerIdx]
             const winnerTeamSpeeds = Object.fromEntries(Object.entries(winnerData).map(
                 ([key, val]) => [key, val["speed [m/s]"]]));
 
             // calculate difference to winner based on speed
             let speedPerTeam = {};
-            for (const i in state.data.raceData[0].race_boats) {
-                const speedData = state.data.raceData[0].race_boats.map(dataObj => dataObj.race_data)[i];
+            let countries = []
+            for (const i in raceBoats) {
+                countries.push(raceBoats[i].name)
+                const speedData = raceBoats.map(dataObj => dataObj.race_data)[i];
                 let diffSpeedValues = {}
 
                 const interval_list = Object.keys(speedData).map((element, index, arr) => (arr[index + 1] || 0) - element)
@@ -749,14 +752,14 @@ export const useRennstrukturAnalyseState = defineStore({
             }
             let colorIndex = 0;
             const datasets = []
-            Object.entries(speedPerTeam).forEach(([key, value]) => {
-                const label = key;
-                const backgroundColor = COLORS[colorIndex % 6];
-                const borderColor = COLORS[colorIndex % 6];
-                const data = Object.values(value);
-                datasets.push({label, backgroundColor, borderColor, data});
-                colorIndex++;
-            });
+            Object.entries(speedPerTeam).forEach(([key, value], idx) => {
+                const label = countries[idx]
+                const backgroundColor = COLORS[colorIndex % 6]
+                const borderColor = COLORS[colorIndex % 6]
+                const data = Object.values(value)
+                datasets.push({label, backgroundColor, borderColor, data})
+                colorIndex++
+            })
             const allKeys = Object.values(speedPerTeam).map(obj => Object.keys(obj))
             return {
                 labels: Array.from(new Set([].concat(...allKeys))),
@@ -785,7 +788,7 @@ export const useRennstrukturAnalyseState = defineStore({
             })
         },
         getIntermediateChartData(state) {
-            const intermediateDataKeys = ["rank", "deficit [s]"];
+            const intermediateDataKeys = ["rank", "deficit [millis]"];
             return intermediateDataKeys.map(key => {
                 const datasets = [];
                 let colorIndex = 0;
@@ -794,9 +797,9 @@ export const useRennstrukturAnalyseState = defineStore({
                     const backgroundColor = COLORS[colorIndex % 6];
                     const borderColor = COLORS[colorIndex % 6];
                     // add zero values as start point
-                    dataObj.intermediates["0"] = {"rank": 1, "deficit [s]": 0}
+                    dataObj.intermediates["0"] = {"rank": 1, "deficit [millis]": 0}
                     let data = Object.values(dataObj.intermediates).map(distanceObj => distanceObj[key]);
-                    if (key === "deficit [s]") {
+                    if (key === "deficit [millis]") {
                         data = data.map(x => formatMilliseconds(x))
                     }
                     datasets.push({label, backgroundColor, borderColor, data});
@@ -808,6 +811,73 @@ export const useRennstrukturAnalyseState = defineStore({
                     datasets
                 };
             })
+        },
+        getIntermediateChartOptions(state) {
+            const max_val = Math.max(...state.data.raceData[0].race_boats.map(obj =>
+                Math.max(...Object.values(obj.intermediates).map(el => el["deficit [millis]"]))
+            ));
+
+            return [{
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Strecke [m]'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Platzierung'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: "Platzierung"
+                    }
+                }
+            },
+                {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Strecke [m]'
+                            }
+                        },
+                        y: {
+                            type: 'time',
+
+                            time: {
+                                parser: 'mm:ss.SS',
+                                displayFormats: {
+                                    second: 'mm:ss.SS',
+                                    tooltip: 'mm:ss.SS'
+                                }
+                            },
+                            min: '00:00,00',
+                            max: formatMilliseconds(max_val),
+                            unitTimeSteps: 1000,
+                            title: {
+                                display: true,
+                                text: 'Rückstand [mm:ss.ms]'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: "Rückstand zum Führenden [sek]"
+                        }
+                    }
+                }
+            ]
         }
     },
     actions: {
@@ -830,7 +900,7 @@ export const useRennstrukturAnalyseState = defineStore({
                 })
         },
         async fetchRaceData(raceId) {
-            await axios.get(`http://localhost:5000/get_race/${raceId}`)
+            await axios.get(`http://localhost:5000/get_race/${raceId}/`)
                 .then(response => {
                     this.data.raceData[0] = response.data
                     this.loadingState = false

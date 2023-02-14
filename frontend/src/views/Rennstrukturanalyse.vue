@@ -225,6 +225,9 @@ export default {
     ...mapState(useRennstrukturAnalyseState, {
       deficitMeters: "getDeficitInMeters"
     }),
+ ...mapState(useRennstrukturAnalyseState, {
+      intermediateChartOptions: "getIntermediateChartOptions"
+    }),
   },
   data() {
     return {
@@ -310,66 +313,6 @@ export default {
             title: {
               display: true,
               text: "Vortrieb"
-            }
-          }
-        }
-      ],
-      intermediateChartOptions: [{
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: 'Strecke [m]'
-            }
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'Platzierung'
-            }
-          }
-        },
-        plugins: {
-          title: {
-            display: true,
-            text: "Platzierung"
-          }
-        }
-      },
-        {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              title: {
-                display: true,
-                text: 'Strecke [m]'
-              }
-            },
-            y: {
-              type: 'time',
-              time: {
-                parser: 'mm:ss.SS',
-                displayFormats: {
-                  second: 'mm:ss.SS',
-                  tooltip: 'mm:ss.SS'
-                }
-              },
-              min: '00:00,00',
-              max: '00:20,00',
-              unitTimeSteps: 100,
-              title: {
-                display: true,
-                text: 'Rückstand [mm:ss.ms]'
-              }
-            }
-          },
-          plugins: {
-            title: {
-              display: true,
-              text: "Rückstand zum Führenden [sek]"
             }
           }
         }
@@ -483,6 +426,7 @@ export default {
     },
     loading() {
       router.push('/rennstrukturanalyse')
+      this.displayRaceDataAnalysis = false
     },
     $route: {
       immediate: true,
