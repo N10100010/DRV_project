@@ -12,7 +12,9 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
          :height="mobile ? 100: 180"
          size="x-small"
   >
-  <p style="writing-mode: vertical-rl; font-size: 16px; transform: rotate(180deg);"><v-icon style="transform: rotate(180deg); font-size: 14px; padding-left: 6px; padding-top: 10px;">mdi-filter</v-icon>FILTER</p>
+  <p style="writing-mode: vertical-rl; font-size: 16px; transform: rotate(180deg);">
+    <v-icon style="transform: rotate(180deg); font-size: 14px; padding-left: 6px; padding-top: 10px;">mdi-filter</v-icon>
+    FILTER</p>
   </v-btn>
   <v-card style="box-shadow: none; z-index: 1">
       <v-layout>
@@ -161,12 +163,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.filterToggleButton {
-  position: fixed;
-  z-index: 10;
-  left: 0;
-  border-radius: 0 5px 5px 0;
-}
 
 .tableStyles {
   border: 1px solid #e0e0e0;
