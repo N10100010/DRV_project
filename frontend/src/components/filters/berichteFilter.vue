@@ -221,23 +221,34 @@ export default {
     },
     submitFormData() {
       const formData = {
-        "years": {"start_year": this.startYear, "end_year": this.endYear},
-        "competition_categories": this.compTypes.filter(item =>
+        "interval": [this.startYear, this.endYear],
+        "competition_category": this.compTypes.filter(item =>
             this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
-        "boat_classes": this.boatClasses[this.selectedBoatClasses],
-        "runs": this.selectedRuns.map(item => this.optionsRuns[item]),
-        "runs_fine": this.selectedRunsFineSelection,
-        "ranks": this.selectedRanks.map(item => this.optionsRanks[item])
+        "boat_class": this.boatClasses[this.selectedBoatClasses],
+        "race_phase_type": this.selectedRuns.map(item => this.optionsRuns[item]),
+        "race_phase_subtype": [1,2,3], // this.selectedRunsFineSelection,
+        "placement": this.selectedRanks.map(item => this.optionsRanks[item])
       }
       const store = useBerichteState()
       store.setLastFilterConfig(formData)
-      store.postFormData(formData)
+
+      if (formData.boat_class === undefined) {
+         store.postFormDataMatrix(formData)
           .then(() => {
             console.log("data sent...")
           })
           .catch(error => {
             console.error(error)
           })
+      } else {
+        store.postFormData(formData)
+          .then(() => {
+            console.log("data sent...")
+          })
+          .catch(error => {
+            console.error(error)
+          })
+      }
     },
     clearFormInputs() {
       this.selectedGenders = 3

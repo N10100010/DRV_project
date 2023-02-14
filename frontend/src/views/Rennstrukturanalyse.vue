@@ -56,9 +56,9 @@
                         class="pa-2 mx-1"
                         v-for="competition in getAnalysis"
                         :key="competition"
-                        :title="competition.display_name"
-                        :subtitle="competition.start_date+' | '+competition.venue"
-                        @click="getEvents(competition.events, competition.display_name, competition.id)"
+                        :title="competition.name"
+                        :subtitle="competition.start+' | '+competition.venue"
+                        @click="getEvents(competition.events, competition.name, competition.id)"
                     ></v-list-item>
                     </div>
                   </v-list>
@@ -73,8 +73,8 @@
                         class="pa-1 mx-1"
                         v-for="event in events"
                         :key="event"
-                        :title="event.display_name"
-                        @click="getRaces(event.races, event.display_name, event.id)"
+                        :title="event.name"
+                        @click="getRaces(event.races, event.name, event.id)"
                     ></v-list-item>
                     </div>
                   </v-list>
@@ -89,8 +89,8 @@
                         class="pa-2 mx-1"
                         v-for="race in races"
                         :key="race"
-                        :title="race.display_name"
-                        @click="loadRaceAnalysis(race.display_name, race.id)"
+                        :title="race.name"
+                        @click="loadRaceAnalysis(race.name, race.id)"
                     ></v-list-item>
                     </div>
                   </v-list>
@@ -104,12 +104,12 @@
 
           <v-row no-gutters>
             <v-col cols="6">
-              <h2>{{ competitionData.displayName }}</h2>
+              <h2>{{ `${competitionData.display_name} (${competitionData.boat_class})` }}</h2>
             </v-col>
             <v-col cols="6" class="text-right">
-              <p style="color: grey">Bestzeiten: {{ competitionData.worldBestTimeBoatClass }} (WB) |
-                {{ competitionData.bestTimeBoatClassCurrentOZ }} (OZ/Jahr)</p>
-              <p><b>{{ competitionData.venue }} | {{ competitionData.startDate }}</b></p>
+              <p style="color: grey">Bestzeiten: {{ formatMilliseconds(competitionData.result_time_world_best) }} (WB) |
+                {{ formatMilliseconds(competitionData.result_time_best_of_current_olympia_cycle) }} (OZ/Jahr)</p>
+              <p><b>{{ competitionData.venue }} | {{ competitionData.start_date }}</b></p>
             </v-col>
           </v-row>
 
@@ -126,7 +126,6 @@
                 <thead>
                 <tr>
                   <th v-for="tableHead in tableData[0]" class="px-2">{{ tableHead }}</th>
-                  <th>Prog.<br>Code</th>
                 </tr>
                 </thead>
                 <tbody class="nth-grey">
@@ -142,9 +141,6 @@
                         {{ item }}
                       </p>
                     </template>
-                  </td>
-                  <td>
-                    {{ competitionData.data[idx].progressionCode }}
                   </td>
                 </tr>
                 </tbody>
@@ -228,6 +224,9 @@ export default {
     }),
     ...mapState(useRennstrukturAnalyseState, {
       deficitMeters: "getDeficitInMeters"
+    }),
+ ...mapState(useRennstrukturAnalyseState, {
+      intermediateChartOptions: "getIntermediateChartOptions"
     }),
   },
   data() {
@@ -318,66 +317,6 @@ export default {
           }
         }
       ],
-      intermediateChartOptions: [{
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: 'Strecke [m]'
-            }
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'Platzierung'
-            }
-          }
-        },
-        plugins: {
-          title: {
-            display: true,
-            text: "Platzierung"
-          }
-        }
-      },
-        {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              title: {
-                display: true,
-                text: 'Strecke [m]'
-              }
-            },
-            y: {
-              type: 'time',
-              time: {
-                parser: 'mm:ss.SS',
-                displayFormats: {
-                  second: 'mm:ss.SS',
-                  tooltip: 'mm:ss.SS'
-                }
-              },
-              min: '00:00,00',
-              max: '00:20,00',
-              unitTimeSteps: 100,
-              title: {
-                display: true,
-                text: 'Rückstand [mm:ss.ms]'
-              }
-            }
-          },
-          plugins: {
-            title: {
-              display: true,
-              text: "Rückstand zum Führenden [sek]"
-            }
-          }
-        }
-      ],
       deficitChartOptions: {
         responsive: true,
         maintainAspectRatio: false,
@@ -414,9 +353,18 @@ export default {
       const url = new URL(window.location.href);
       const race_id = url.searchParams.get("race_id");
       this.displayRaceDataAnalysis = !!race_id;
+
+      const store = useRennstrukturAnalyseState()
+      store.fetchRaceData(race_id)
     }
   },
   methods: {
+    formatMilliseconds (ms) {
+      if (!ms) {
+          return '00:00.000';
+      }
+      return new Date(ms).toISOString().slice(14, -2);
+    },
     openPrintDialog() {
       window.print();
     },
@@ -446,6 +394,10 @@ export default {
       this.displayRaces = true
     },
     loadRaceAnalysis(raceName, raceId) {
+
+      const store = useRennstrukturAnalyseState()
+      store.fetchRaceData(raceId)
+
       this.showEmailIcon = true
       const newPath = `/rennstrukturanalyse/${this.lastCompId}/${this.lastEventId}?race_id=${raceId}`
       router.push(newPath)
@@ -453,6 +405,7 @@ export default {
       const subject = "Wettkampfergebnisse"
       const body = `Sieh dir diese Wettkampfergebnisse an: http://${window.location.host + newPath}`
       this.emailLink = `mailto:?subject=${subject}&body=${body}`
+
     },
     checkScreen() {
       this.windowWidth = window.innerWidth;
@@ -473,6 +426,7 @@ export default {
     },
     loading() {
       router.push('/rennstrukturanalyse')
+      this.displayRaceDataAnalysis = false
     },
     $route: {
       immediate: true,

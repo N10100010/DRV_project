@@ -76,7 +76,7 @@ def get_boatclass_information() -> dict:
     return globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT
 
 
-@app.route('/competition', methods=['GET'])
+@app.route('/competition', methods=['POST'])
 def get_competitions_year_category() -> dict:
     """
     WHEN?
@@ -92,8 +92,8 @@ def get_competitions_year_category() -> dict:
     from datetime import datetime
     import logging
 
-    year = request.args.get('year')
-    competition_category_id = request.args.get('competition_category_id')
+    year = request.json["data"].get('year')
+    competition_category_id = request.json["data"].get('competition_category_id')
     
     logging.debug(f"Year: {year}, comp cat: {competition_category_id}")
 
@@ -106,8 +106,8 @@ def get_competitions_year_category() -> dict:
         .join(model.Competition.competition_category)
         .where(
             and_(
-                model.Competition_Category.id == int(competition_category_id), 
-                model.Competition.year == int(year), 
+                model.Competition_Category.id == competition_category_id,
+                model.Competition.year == year,
             )
         )
     )
@@ -302,8 +302,9 @@ def get_race(race_id: int) -> dict:
         "race_boats": []
     }
 
+    sorted_race_boat_data = sorted(race.race_boats, key=lambda x: x.rank)
     race_boat: model.Race_Boat
-    for race_boat in race.race_boats:
+    for race_boat in sorted_race_boat_data:
         rb_result = {
             "name": race_boat.name, # e.g. DEU2
             "lane": race_boat.lane,
@@ -419,11 +420,11 @@ def get_report_boat_class():
     Delivers the report results for a single boat class.
     """
     # TODO: extract data from filter | ignored for now: runs_fine
+
     filter_data = request.json["data"]
-    filter_keys = ["years", "competition_categories", "boat_classes", "runs", "ranks"]
-    years, competition_categories, boat_class, runs, ranks = [filter_data.get(key) for key in filter_keys]
-    start_year = years.get("start_year")
-    end_year = years.get("end_year")
+    filter_keys = ["interval", "competition_category", "boat_class", "race_phase_type", "race_phase_subtype" "placement"]
+    interval, competition_categories, boat_class, runs, ranks = [filter_data.get(key) for key in filter_keys]
+    start_year, end_year = interval[0], interval[1]
 
     # read from db
     session = Scoped_Session()
@@ -635,10 +636,12 @@ def get_athlete(athlete_id: int):
         boat_class_name = race.event.boat_class.abbreviation
         best_time_boat_class = str(race.event.boat_class.world_best_race_boat)
         athlete_boat_classes.add(boat_class_name)
+        comp_type = race.event.competition.competition_category.name
         race_results[i]["name"] = comp.name
         race_results[i]["venue"] = f'{comp.venue.city}, {comp.venue.country.name}'
         race_results[i]["boat_class"] = boat_class_name
         race_results[i]["start_time"] = str(race.date)
+        race_results[i]["competition_category"] = comp_type
 
     return json.dumps({
         "name": athlete.name,
@@ -1102,18 +1105,26 @@ def get_calendar():
     result = []
     session = Scoped_Session()
     iterator = session.execute(select(model.Competition)).scalars()
-    for entity in iterator:
+    for competition in iterator:
         # only include competitions that have a start and end date
-        if entity.start_date and entity.end_date:
+        if competition.start_date and competition.end_date:
+
+            comp_cat_id = session.query(model.Competition).filter(model.Competition.id == competition.id).one()
+            comp_type = set(session.query(model.Competition_Category).filter(
+                model.Competition_Category.id == comp_cat_id.id
+            ).all())
+
             result.append({
-                "key": entity.id,
+                "key": competition.id,
+                # "competition_type": comp_type.pop().name if comp_type else None,
+                "comp_type": competition.competition_category.name,
                 "customData": {
-                    "title": entity.name
+                    "title": competition.name
                 },
                 "dates": {
-                    "start": datetime.datetime.strptime(str(entity.start_date),
+                    "start": datetime.datetime.strptime(str(competition.start_date),
                                                         '%Y-%m-%d %H:%M:%S').strftime('%a, %d %b %Y %H:%M:%S GMT'),
-                    "end": datetime.datetime.strptime(str(entity.end_date),
+                    "end": datetime.datetime.strptime(str(competition.end_date),
                                                       '%Y-%m-%d %H:%M:%S').strftime('%a, %d %b %Y %H:%M:%S GMT')
                 }
             })

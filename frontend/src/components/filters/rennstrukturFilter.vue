@@ -55,7 +55,7 @@ export default {
       // competition type
       compTypes: [], // list of dicts with objects containing displayName, id and key
       optionsCompTypes: [],
-      selectedCompTypes: ["Olympics"],
+      selectedCompTypes: ["World Rowing Cup"],
       // year
       optionsYear: [],
       selectedYear: new Date().getFullYear(),
@@ -98,12 +98,12 @@ export default {
     submitFormData() {
       const store = useRennstrukturAnalyseState()
       store.setToLoadingState()
-      const formData = {
-        "year": this.year,
-        "competition_type": this.selectedCompTypes,
+      const data = {
+        "year": this.selectedYear,
+        "competition_category_id": this.compTypes.filter(item =>
+            this.selectedCompTypes.includes(item.display_name)).map(item => item.id)[0]
       }
-      // send data via pinia store action postFormData
-      return store.postFormData(formData).then(() => {
+      return store.postFormData(data).then(() => {
         console.log("Form data sent...")
       }).catch(error => {
         console.error(error)
