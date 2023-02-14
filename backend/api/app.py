@@ -1,6 +1,7 @@
 import os
 import datetime
 import json
+from collections import OrderedDict
 from statistics import stdev, median, mean
 import numpy as np
 from collections import OrderedDict
@@ -8,17 +9,21 @@ from collections import OrderedDict
 from flask import Flask
 from flask import request
 from flask import abort
+from flask import Response
 from flask_cors import CORS
 
 from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import joinedload
 
 from model import model
+from .race import result_time_best_of_year_interval, compute_intermediates_figures
+from common.rowing import propulsion_in_meters_per_stroke
 from . import mocks # todo: remove me 
 from . import globals
 
 # app is the main controller for the Flask-Server and will start the app in the main function 
 app = Flask(__name__, template_folder=None)
+app.config['JSON_SORT_KEYS'] = False
 
 # NOTE that the following line opnes ALL endpoints for cross-origin requests!
 # This has to be tied to the actual public frontend domain as soon as a
@@ -232,7 +237,7 @@ def get_matrix() -> dict:
     return result
 
 
-@app.route('/race/<int:race_id>/', methods=['GET'])
+@app.route('/get_race/<int:race_id>/', methods=['GET'])
 def get_race(race_id: int) -> dict:
     """
     WHEN? THIS FUNCTION IS CALLED WHEN THE USER SELECTED A RACE 
@@ -261,31 +266,99 @@ def get_race(race_id: int) -> dict:
         )
     )
 
-    competitions = session.execute(statement)
-    print()
-    # TODO: fill remaining fields (api-design.md)
-
+    race: model.Race
     race = session.execute(statement).scalars().first()
     if race == None:
         abort(404)
 
     venue = race.event.competition.venue
 
+    world_best_race_boat = race.event.boat_class.world_best_race_boat
+    world_best_time_ms = None
+    if world_best_race_boat:
+        world_best_time_ms = world_best_race_boat.result_time_ms
+
+    best_of_last_4_years_ms = result_time_best_of_year_interval(
+        session=session,
+        boat_class_id=race.event.boat_class.id,
+        year_start=datetime.date.today().year - 4
+    )
+
+    intermediates_figures = compute_intermediates_figures(race.race_boats)
+
     result = {
-        "raceId": race.id,
-        "displayName": race.name,
-        "startDate": str(race.date),
+        "race_id": race.id,
+        "display_name": race.name,
+        "start_date": str(race.date),
         "venue": f"{venue.site}/{venue.city}, {venue.country.name}",
-        "boatClass": race.event.boat_class.abbreviation,  # TODO: currrently only abbrev.
-        "worldBestTimeBoatClass": "############## TODO ##############",  # fmt: "00:05:58,36"
-        "bestTimeBoatClassCurrentOZ": "############## TODO ##############",  # fmt: "00:05:58,36"
+        "boat_class": race.event.boat_class.abbreviation,  # long name?
+        "result_time_world_best": world_best_time_ms,
+        "result_time_best_of_current_olympia_cycle": best_of_last_4_years_ms,  # int in ms
+        "progression_code": race.progression,
         "pdf_urls": {
             "result": race.pdf_url_results,
             "race_data": race.pdf_url_race_data
-        }
+        },
+        "race_boats": []
     }
 
-    return result
+    race_boat: model.Race_Boat
+    for race_boat in race.race_boats:
+        rb_result = {
+            "name": race_boat.name, # e.g. DEU2
+            "lane": race_boat.lane,
+            "rank": race_boat.rank,
+            "athletes": [],
+            "intermediates": OrderedDict(),
+            "race_data": OrderedDict()
+        }
+        result['race_boats'].append(rb_result)
+
+        # athletes
+        athlete_assoc: model.Association_Race_Boat_Athlete
+        for athlete_assoc in race_boat.athletes:
+            athlete: model.Athlete = athlete_assoc.athlete
+            rb_result['athletes'].append({
+                "id": athlete.id,
+                "first_name": athlete.first_name__,
+                "last_name": athlete.last_name__,
+                "full_name": athlete.name,
+                "boat_position": athlete_assoc.boat_position
+            })
+
+        # race_data aka gps data
+        sorted_race_data = sorted(race_boat.race_data, key=lambda x: x.distance_meter)
+        race_data: model.Race_Data
+        for race_data in sorted_race_data:
+            propulsion = propulsion_in_meters_per_stroke(race_data.stroke, race_data.speed_meter_per_sec)
+            rb_result['race_data'][str(race_data.distance_meter)] = {
+                "speed [m/s]": race_data.speed_meter_per_sec,
+                "stroke [1/min]": race_data.stroke,
+                "propulsion [m/stroke]": propulsion
+            }
+
+        # intermediates
+        sorted_intermediates = sorted(race_boat.intermediates, key=lambda x: x.distance_meter)
+        intermediate: model.Intermediate_Time
+        for intermediate in sorted_intermediates:
+            figures = intermediates_figures[intermediate.race_boat_id][intermediate.distance_meter]
+            result_time_ms = intermediate.result_time_ms
+            if intermediate.is_outlier:
+                continue
+            if intermediate.invalid_mark_result_code:
+                result_time_ms = intermediate.invalid_mark_result_code.id
+            
+            rb_result['intermediates'][str(intermediate.distance_meter)] = {
+                "rank": intermediate.rank,
+                "time [millis]": result_time_ms,
+                "pace [millis]": figures.get('pace'),
+                "speed [m/s]": figures.get('speed'),
+                "deficit [millis]": figures.get('deficit'),
+                "rel_diff_to_avg_speed [%]": figures.get('rel_diff_to_avg_speed')
+            }
+            # relative difference to average time at this mark
+
+    return Response(json.dumps(result, sort_keys=False), content_type='application/json')
 
 
 @app.teardown_appcontext

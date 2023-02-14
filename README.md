@@ -44,22 +44,22 @@ docker compose down --rmi all --volumes
 
 ### Backend Scrape/Maintenance Process (Python)
 
-    python -m procedures.scrape_service
+    python scraper.py
 
 ### Backend API Server (Python/Flask)
 
 *Note: `pwd` is `backend/`*
 
 ```sh
-python -m flask --app api.app:app run
+python -m flask --app api_server:app run
 ```
 
-Alternatively with `python -m app.app`
+Alternatively with `python api_server.py`
 
 Debug with hot reload:
 
 ```sh
-python -m flask --app api.app:app --debug run
+python -m flask --app api_server:app --debug run
 ```
 
 **Note** Do not use this command for deployment. Use something like `gunicorn`.
