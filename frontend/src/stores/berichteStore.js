@@ -173,6 +173,9 @@ export const useBerichteState = defineStore({
                     "labels": [],
                     "data": []
                 },
+                "histogram_mean": 0,
+                "histogram_sd_low": 0,
+                "histogram_sd_high": 0,
                 "scatter_plot": {
                     "labels": [],
                     "data": []
@@ -190,7 +193,7 @@ export const useBerichteState = defineStore({
                     "data": []
                 }
             }
-            },
+        },
         matrixdata: [
             {
                 "results": 127973,
@@ -720,42 +723,22 @@ export const useBerichteState = defineStore({
             return state.selectedBoatClass === "Alle"
         },
         getBarChartData(state) {
-            return {
-                labels: state.data.plot_data.histogram.labels.map(x => formatMilliseconds(x)),
-                datasets: [
+            const {labels} = state.data.plot_data.histogram;
+            const {
+                histogram_mean: meanValue,
+                histogram_sd_low: minusOneStdv,
+                histogram_sd_high: plusOneStdv
+            } = state.data.plot_data;
 
-                    /*
-                    {
-                        type: 'line',
-                        data: [
-                            {x: formatMilliseconds(366360), y: 0},
-                            {
-                                x: formatMilliseconds(366360),
-                                y: Math.ceil(Math.max(...Object.values(state.data.plot_data.histogram.data)) / 100) * 100
-                            }],
-                        label: "25. Perzentil",
-                        borderColor: "darkgrey",
-                        backgroundColor: "darkgrey",
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        pointHoverRadius: 0,
-                    },
-                    {
-                        type: 'line',
-                        data: [
-                            {x: formatMilliseconds(376360), y: 0},
-                            {
-                                x: formatMilliseconds(376360),
-                                y: Math.ceil(Math.max(...Object.values(state.data.plot_data.histogram.data)) / 100) * 100
-                            }],
-                        label: "75. Perzentil",
-                        borderColor: "darkgrey",
-                        backgroundColor: "darkgrey",
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        pointHoverRadius: 0,
-                    },
-                    */
+            const finalMean = formatMilliseconds(labels.reduce((a, b) => Math.abs(b - meanValue) < Math.abs(a - meanValue) ? b : a));
+            const sdLow = formatMilliseconds(labels.reduce((a, b) => Math.abs(b - minusOneStdv) < Math.abs(a - minusOneStdv) ? b : a));
+            const sdHigh = formatMilliseconds(labels.reduce((a, b) => Math.abs(b - plusOneStdv) < Math.abs(a - plusOneStdv) ? b : a));
+            const yMax = Math.ceil(Math.max(...Object.values(state.data.plot_data.histogram.data)) / 100) * 100;
+
+
+            return {
+                labels: labels.map(x => formatMilliseconds(x)),
+                datasets: [
                     {
                         type: 'line',
                         backgroundColor: "red",
@@ -771,6 +754,51 @@ export const useBerichteState = defineStore({
                         backgroundColor: '#5cc5ed',
                         data: state.data.plot_data.histogram.data,
                         label: "Anzahl Boote"
+                    },
+                    {
+                        type: 'line',
+                        data: [
+                            {x: sdLow, y: 0},
+                            {
+                                x: sdLow,
+                                y: yMax
+                            }],
+                        label: "-1SD",
+                        borderColor: "darkgrey",
+                        backgroundColor: "darkgrey",
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                    },
+                    {
+                        type: 'line',
+                        data: [
+                            {x: finalMean, y: 0},
+                            {
+                                x: finalMean,
+                                y: yMax
+                            }],
+                        label: "Mittelwert",
+                        borderColor: "grey",
+                        backgroundColor: "grey",
+                        borderWidth: 1.5,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                    },
+                    {
+                        type: 'line',
+                        data: [
+                            {x: sdHigh, y: 0},
+                            {
+                                x: sdHigh,
+                                y: yMax
+                            }],
+                        label: "+1SD",
+                        borderColor: "darkgrey",
+                        backgroundColor: "darkgrey",
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
                     }
                 ]
             }
@@ -781,14 +809,15 @@ export const useBerichteState = defineStore({
                 maintainAspectRatio: false,
                 scales: {
                     x: {
+                        min: 0,
                         title: {
                             display: true,
-                            text: 'Zeit [mm:ss]'
+                            text: 'Zeit [mm:ss:ms]'
                         }
                     },
                     y: {
-                        min: 0,
-                        // max: Math.ceil(Math.max(...Object.values(state.data.plot_data.histogram.data)) / 100) * 100,
+                        beginAtZero: true,
+                        max: Math.ceil(Math.max(...Object.values(state.data.plot_data.histogram.data)) / 100) * 100,
                         title: {
                             display: true,
                             text: 'Anzahl Rennen'
@@ -807,28 +836,28 @@ export const useBerichteState = defineStore({
             }
         },
         getScatterChartData(state) {
+            const {
+                scatter_plot: scatterData,
+                scatter_1_sd_high: scatter1SDHigh,
+                scatter_1_sd_low: scatter1SDLow,
+                scatter_mean: scatterMeanValues
+            } = state.data.plot_data;
 
-            const scatterData = state.data.plot_data.scatter_plot;
-            const scatter1SDHigh = state.data.plot_data.scatter_1_sd_high;
-            const scatter1SDLow = state.data.plot_data.scatter_1_sd_low;
-            const scatterMeanValues = state.data.plot_data.scatter_mean;
+            function computeData(data, labels, targetData) {
+                return labels.map((label, i) => ({
+                    x: new Date(label),
+                    y: formatMilliseconds(data.reduce((a, b) =>
+                        Math.abs(b - targetData.data[i]) < Math.abs(a - targetData.data[i]) ? b : a))
+                }));
+            }
 
             const plotData = scatterData.labels.map((label, i) => ({
                 x: new Date(label),
                 y: formatMilliseconds(scatterData.data[i])
             }));
-            const sd1Low = scatter1SDLow.labels.map((label, i) => ({
-                x: new Date(label),
-                y: formatMilliseconds(scatter1SDLow.data[i])
-            }));
-            const sd1High = scatter1SDHigh.labels.map((label, i) => ({
-                x: new Date(label),
-                y: formatMilliseconds(scatter1SDHigh.data[i])
-            }));
-            const meanValues = scatterMeanValues.labels.map((label, i) => ({
-                x: new Date(label),
-                y: formatMilliseconds(scatterMeanValues.data[i])
-            }));
+            const sd1Low = computeData(scatterData.data, scatter1SDLow.labels, scatter1SDLow);
+            const sd1High = computeData(scatterData.data, scatter1SDHigh.labels, scatter1SDHigh);
+            const meanValues = computeData(scatterData.data, scatterMeanValues.labels, scatterMeanValues);
 
             return {
                 datasets: [
@@ -935,7 +964,7 @@ export const useBerichteState = defineStore({
                     console.error(`Request failed: ${error}`)
                 })
         },
-         async postFormDataMatrix(data) {
+        async postFormDataMatrix(data) {
             await axios.post('http://localhost:5000/matrix', {data})
                 .then(response => {
                     this.matrixdata = response.data

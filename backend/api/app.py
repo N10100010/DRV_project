@@ -488,6 +488,7 @@ def get_report_boat_class():
     slow_times_mean, slow_times_n = 0, 0
     slowest_times_mean, slowest_times_n = 0, 0
     sd_1_low, sd_1_high = 0, 0
+    hist_mean, hist_sd_low, hist_sd_high = 0, 0, 0
 
     if race_times:
         results = len(race_times)
@@ -502,6 +503,11 @@ def get_report_boat_class():
         hist_data, bin_edges = np.histogram(race_times, bins="fd")
         hist_data = hist_data.tolist() if len(hist_data) > 0 else []
         hist_labels = [int(bin_edge) for bin_edge in bin_edges]
+        hist_mean = np.average(bin_edges[:-1], weights=hist_data)
+        hist_var = np.average((bin_edges[:-1] - hist_mean) ** 2, weights=hist_data)
+        hist_std = np.sqrt(hist_var)
+        hist_sd_low = hist_mean - hist_std
+        hist_sd_high = hist_mean + hist_std
 
         fastest_times = [x for x in race_times if x < (mean_time - stdev_race_time)]
         medium_times = [x for x in race_times if
@@ -524,7 +530,6 @@ def get_report_boat_class():
         sd_1_high = mean_time + stdev_race_time
 
     return json.dumps({
-        "test_2": ranks,
         "competition_categories": list(comp_categories),
         "results": results,
         "boat_classes": boat_class_name,
@@ -561,6 +566,9 @@ def get_report_boat_class():
                 "labels": hist_labels,
                 "data": hist_data,
             },
+            "histogram_mean": int(hist_mean),
+            "histogram_sd_low": int(hist_sd_low),
+            "histogram_sd_high": int(hist_sd_high),
             "scatter_plot": {
                 "labels": race_dates,
                 "data": race_times

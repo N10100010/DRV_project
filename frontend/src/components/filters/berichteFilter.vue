@@ -226,7 +226,7 @@ export default {
             this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
         "boat_class": this.boatClasses[this.selectedBoatClasses],
         "race_phase_type": this.selectedRuns.map(item => this.optionsRuns[item]),
-        "race_phase_subtype": [1,2,3], // this.selectedRunsFineSelection,
+        // "race_phase_subtype": [1,2,3], // this.selectedRunsFineSelection,
         "placement": this.selectedRanks.map(item => this.optionsRanks[item])
       }
       const store = useBerichteState()
