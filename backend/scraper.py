@@ -267,8 +267,9 @@ def scrape(parse_pdf=True):
             #   - set maintenance state in the end
             #   - set scraper_last_scrape in the end
 
-        session.commit()
-        # Race Data PDF here or in maintain()
+            session.commit()
+            # Race Data PDF here or in maintain()
+
 
 
 def _refresh_world_best_times(session, logger=logger):
@@ -375,7 +376,7 @@ def start_service(singlepass=False):
     logger.info("[start_service]")
     while True:
         prescrape()
-        scrape()
+        scrape(parse_pdf=True)
         postprocess()
 
         if SCRAPER_SINGLEPASS or singlepass:
