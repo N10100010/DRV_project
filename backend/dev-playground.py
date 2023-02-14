@@ -17,8 +17,8 @@ from tqdm import tqdm
 from sqlalchemy import select, update
 from sqlalchemy.orm import Bundle
 from model import model
-from scraper import outlier_detection
-from scraper_procedures import postprocess
+from scraper_procedures import outlier_detection
+from scraper import postprocess
 ########################################################################################################################
 # NOTE:
 # This dev-playground.py is just for rapid testing
@@ -46,8 +46,7 @@ def scraper_postprocessing():
             )
         )
         for boat_class in iterator:
-            #
-            # outlier_detection.outlier_detection_result_data(session=session, boat_class=boat_class)
+            outlier_detection.outlier_detection_result_data(session=session, boat_class=boat_class)
             outlier_detection.outlier_detection_race_data(session=session, boat_class=boat_class)
 
 
