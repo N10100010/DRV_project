@@ -105,9 +105,9 @@ def compute_intermediates_figures(race_boats):
     if grid_resolution == None:
         return []
 
-    result = defaultdict(lambda: defaultdict(list))
+    result = defaultdict(lambda: defaultdict(dict))
     last_distance = 0
-    last_intermediates_lookup = {}
+    last_valid_intermeds_lookup = {}
     first_distance = True
     for distance, intermediates in lookup.items():
         valid_intermediates = tuple(( i for i in intermediates if valid_intermediate(i) ))
@@ -115,10 +115,27 @@ def compute_intermediates_figures(race_boats):
         
         best_time = min(result_times)
 
-        intermediates_lookup = {}
+        valid_intermeds_lookup = {}
         intermediate: model.Intermediate_Time
         for intermediate in intermediates:
-            intermediates_lookup[intermediate.race_boat_id] = intermediate
+            figures = {
+                "deficit": None,
+                "rel_diff_to_avg_speed": None,
+                "pace": None,
+                "speed": None,
+                "result_time": None
+            }
+            result[intermediate.race_boat_id][distance] = figures
+
+            if not valid_intermediate(intermediate):
+                inv_mark_code = intermediate.invalid_mark_result_code_id
+                if inv_mark_code:
+                    figures["result_time"] = inv_mark_code
+                else:
+                    pass # is outlier -> leaves "result_time" as None
+                continue
+
+            valid_intermeds_lookup[intermediate.race_boat_id] = intermediate
 
             # relative to best boat
             deficit = intermediate.result_time_ms - best_time
@@ -128,8 +145,8 @@ def compute_intermediates_figures(race_boats):
             if within_grid_resolution:
                 if first_distance:
                     pace = intermediate.result_time_ms
-                elif intermediate.race_boat_id in last_intermediates_lookup:
-                    last_result_time = last_intermediates_lookup[intermediate.race_boat_id].result_time_ms
+                elif intermediate.race_boat_id in last_valid_intermeds_lookup:
+                    last_result_time = last_valid_intermeds_lookup[intermediate.race_boat_id].result_time_ms
                     pace = intermediate.result_time_ms - last_result_time
         
             speed = None
@@ -137,27 +154,23 @@ def compute_intermediates_figures(race_boats):
                 pace_in_seconds = pace / 1000 # assuming milliseconds here
                 speed = grid_resolution/pace_in_seconds
 
-            result[intermediate.race_boat_id][distance] = {
-                "deficit": deficit,
-                "rel_diff_to_avg_speed": None,
-                "pace": pace,
-                "speed": speed,
-                "result_time": intermediate.result_time_ms
-            }
+            figures["deficit"] = deficit
+            figures["pace"] = pace
+            figures["speed"] = speed
+            figures["result_time"] = intermediate.result_time_ms
 
         # now we have all the pace values, we can compute avg speeds
         avg_speed = statistics.mean(_skip_NoneType(_speeds(boats_dict=result, distance=distance)))
 
-        for intermediate in intermediates:
+        for race_boat_id, intermediate in valid_intermeds_lookup.items():
             figures = result[intermediate.race_boat_id][distance]
-
             speed = figures['speed']
             rel_diff_to_avg_speed = (speed - avg_speed) / avg_speed * 100.0
             figures["rel_diff_to_avg_speed"] = rel_diff_to_avg_speed
 
         first_distance = False
         last_distance = distance
-        last_intermediates_lookup = intermediates_lookup
+        last_valid_intermeds_lookup = valid_intermeds_lookup
 
     return result
 
