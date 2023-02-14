@@ -842,41 +842,41 @@ export const useRennstrukturAnalyseState = defineStore({
                 }
             },
                 {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Strecke [m]'
-                            }
-                        },
-                        y: {
-                            type: 'time',
-
-                            time: {
-                                parser: 'mm:ss.SS',
-                                displayFormats: {
-                                    second: 'mm:ss.SS',
-                                    tooltip: 'mm:ss.SS'
-                                }
-                            },
-                            min: '00:00,00',
-                            max: formatMilliseconds(max_val),
-                            unitTimeSteps: 1000,
-                            title: {
-                                display: true,
-                                text: 'Rückstand [mm:ss.ms]'
-                            }
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: "Rückstand zum Führenden [sek]"
-                        }
-                    }
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+        x: {
+            title: {
+                display: true,
+                text: 'Strecke [m]'
+            }
+        },
+        y: {
+            type: 'time',
+            time: {
+                parser: 'mm:ss.SS',
+                unit: 'millisecond',
+                displayFormats: {
+                    millisecond: 'mm:ss.SS',
+                    tooltip: 'mm:ss.SS'
                 }
+            },
+            min: '00:00.00',
+            max: formatMilliseconds(max_val + 100),
+            title: {
+                display: true,
+                text: 'Rückstand [mm:ss.ms]'
+            }
+        }
+    },
+    plugins: {
+        title: {
+            display: true,
+            text: "Rückstand zum Führenden [sek]"
+        }
+    }
+}
+
             ]
         }
     },

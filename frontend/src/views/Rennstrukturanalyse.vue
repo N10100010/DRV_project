@@ -5,7 +5,11 @@
          :height="mobile ? 100: 180"
          size="x-small"
   >
-  <p style="writing-mode: vertical-rl; font-size: 16px; transform: rotate(180deg);"><v-icon style="transform: rotate(180deg); font-size: 14px; padding-left: 6px; padding-top: 10px;">mdi-filter</v-icon>FILTER</p>
+    <p style="writing-mode: vertical-rl; font-size: 16px; transform: rotate(180deg);">
+      <v-icon style="transform: rotate(180deg); font-size: 14px; padding-left: 6px; padding-top: 10px;">mdi-filter
+      </v-icon>
+      FILTER
+    </p>
   </v-btn>
   <v-card style="box-shadow: none; z-index: 1">
     <v-layout>
@@ -19,7 +23,8 @@
       <v-container :class="mobile ? 'pa-5 main-container' : 'px-10 pt-0 main-container'">
         <v-col cols="6" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Rennstrukturanalyse</h1>
-          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>
+          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
+          </v-icon>
           <v-tooltip
               activator="#tooltip-analyis-icon"
               location="end"
@@ -28,11 +33,13 @@
             Daten.
           </v-tooltip>
           <a :href="emailLink" v-show="showEmailIcon">
-          <v-icon color="grey" class="ml-2 v-icon--size-large">mdi-email-outline
-          </v-icon>
+            <v-icon color="grey" class="ml-2 v-icon--size-large">mdi-email-outline
+            </v-icon>
           </a>
           <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
-           <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large" v-if="displayRaceDataAnalysis">mdi-table-arrow-right</v-icon>
+          <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large"
+                  v-if="displayRaceDataAnalysis">mdi-table-arrow-right
+          </v-icon>
         </v-col>
         <v-divider></v-divider>
         <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 my-2" :items="breadCrumbs"></v-breadcrumbs>
@@ -47,51 +54,70 @@
                   </v-alert>
                   <v-progress-circular v-if="loading" indeterminate color="blue" size="40"></v-progress-circular>
 
+                  <v-col :cols="mobile ? 12 : 6" class="pa-0">
+                    <v-alert type="error" variant="tonal" class="my-2" v-if="getAnalysis && !getAnalysis.length > 0">
+                      <v-row>
+                        <v-col cols="12">
+                          <p>Leider keine Ergebnisse gefunden.</p>
+                        </v-col>
+                      </v-row>
+                    </v-alert>
+                    <v-alert type="info" variant="tonal" class="my-2" v-if="noFurtherEntries">
+                      <v-row>
+                        <v-col cols="12">
+                          <p>Hierzu liegen leider keine weiteren Einträge vor.</p>
+                        </v-col>
+                      </v-row>
+                    </v-alert>
+                  </v-col>
+
                   <!-- competition list -->
                   <v-list density="compact" v-show="displayCompetitions && !loading">
-                    <div :style="{'display': 'grid', 'grid-template-columns': (mobile ? '1fr' : 'repeat(2, 1fr)'), 'grid-gap': '0.5rem'}">
-                    <v-list-item
-                        min-height="80"
-                        style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
-                        class="pa-2 mx-1"
-                        v-for="competition in getAnalysis"
-                        :key="competition"
-                        :title="competition.name"
-                        :subtitle="competition.start+' | '+competition.venue"
-                        @click="getEvents(competition.events, competition.name, competition.id)"
-                    ></v-list-item>
+                    <div
+                        :style="{'display': 'grid', 'grid-template-columns': (mobile ? '1fr' : 'repeat(2, 1fr)'), 'grid-gap': '0.5rem'}">
+                      <v-list-item
+                          min-height="80"
+                          style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
+                          class="pa-2 mx-1"
+                          v-for="competition in getAnalysis"
+                          :key="competition"
+                          :title="competition.name"
+                          :subtitle="competition.start+' | '+competition.venue"
+                          @click="getEvents(competition.events, competition.name, competition.id)"
+                      ></v-list-item>
                     </div>
                   </v-list>
 
-
                   <!-- events list -->
                   <v-list density="compact" v-show="displayEvents && !loading">
-                    <div :style="{'display': 'grid', 'grid-template-columns': (mobile ? '1fr' : 'repeat(2, 1fr)'), 'grid-gap': '0.5rem'}">
-                    <v-list-item
-                        min-height="50"
-                        style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
-                        class="pa-1 mx-1"
-                        v-for="event in events"
-                        :key="event"
-                        :title="event.name"
-                        @click="getRaces(event.races, event.name, event.id)"
-                    ></v-list-item>
+                    <div
+                        :style="{'display': 'grid', 'grid-template-columns': (mobile ? '1fr' : 'repeat(2, 1fr)'), 'grid-gap': '0.5rem'}">
+                      <v-list-item
+                          min-height="50"
+                          style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
+                          class="pa-1 mx-1"
+                          v-for="event in events"
+                          :key="event"
+                          :title="event.name"
+                          @click="getRaces(event.races, event.name, event.id)"
+                      ></v-list-item>
                     </div>
                   </v-list>
 
 
                   <!-- races list -->
                   <v-list density="compact" v-show="displayRaces && !loading">
-                    <div :style="{'display': 'grid', 'grid-template-columns': (mobile ? '1fr' : 'repeat(2, 1fr)'), 'grid-gap': '0.5rem'}">
-                    <v-list-item
-                        min-height="50"
-                        style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
-                        class="pa-2 mx-1"
-                        v-for="race in races"
-                        :key="race"
-                        :title="race.name"
-                        @click="loadRaceAnalysis(race.name, race.id)"
-                    ></v-list-item>
+                    <div
+                        :style="{'display': 'grid', 'grid-template-columns': (mobile ? '1fr' : 'repeat(2, 1fr)'), 'grid-gap': '0.5rem'}">
+                      <v-list-item
+                          min-height="50"
+                          style="background-color: whitesmoke; border-radius: 5px; border-left: 8px solid #5cc5ed;"
+                          class="pa-2 mx-1"
+                          v-for="race in races"
+                          :key="race"
+                          :title="race.name"
+                          @click="loadRaceAnalysis(race.name, race.id)"
+                      ></v-list-item>
                     </div>
                   </v-list>
                 </v-col>
@@ -225,12 +251,13 @@ export default {
     ...mapState(useRennstrukturAnalyseState, {
       deficitMeters: "getDeficitInMeters"
     }),
- ...mapState(useRennstrukturAnalyseState, {
+    ...mapState(useRennstrukturAnalyseState, {
       intermediateChartOptions: "getIntermediateChartOptions"
     }),
   },
   data() {
     return {
+      noFurtherEntries: false,
       filterOpen: false,
       breadCrumbs: [],
       mobile: false,
@@ -353,22 +380,23 @@ export default {
       const url = new URL(window.location.href);
       const race_id = url.searchParams.get("race_id");
       this.displayRaceDataAnalysis = !!race_id;
-
-      const store = useRennstrukturAnalyseState()
-      store.fetchRaceData(race_id)
+      if (race_id) {
+        const store = useRennstrukturAnalyseState()
+        store.fetchRaceData(race_id)
+      }
     }
   },
   methods: {
-    formatMilliseconds (ms) {
+    formatMilliseconds(ms) {
       if (!ms) {
-          return '00:00.000';
+        return '00:00.000';
       }
       return new Date(ms).toISOString().slice(14, -2);
     },
     openPrintDialog() {
       window.print();
     },
-     exportTableData() {
+    exportTableData() {
       const store = useRennstrukturAnalyseState()
       store.exportTableData()
     },
@@ -378,6 +406,9 @@ export default {
       store.setFilterState(this.filterState)
     },
     getEvents(competition, displayName, compId) {
+      if (competition.length === 0) {
+        this.noFurtherEntries = true
+      }
       router.push("/rennstrukturanalyse/" + compId)
       this.lastCompId = compId
       this.events = competition
@@ -386,6 +417,9 @@ export default {
       this.displayEvents = true
     },
     getRaces(events, displayName, eventId) {
+      if (events.length === 0) {
+        this.noFurtherEntries = true
+      }
       router.push(this.$route.fullPath + "/" + eventId)
       this.lastEventId = eventId
       this.races = events
@@ -394,10 +428,8 @@ export default {
       this.displayRaces = true
     },
     loadRaceAnalysis(raceName, raceId) {
-
       const store = useRennstrukturAnalyseState()
       store.fetchRaceData(raceId)
-
       this.showEmailIcon = true
       const newPath = `/rennstrukturanalyse/${this.lastCompId}/${this.lastEventId}?race_id=${raceId}`
       router.push(newPath)
@@ -405,7 +437,6 @@ export default {
       const subject = "Wettkampfergebnisse"
       const body = `Sieh dir diese Wettkampfergebnisse an: http://${window.location.host + newPath}`
       this.emailLink = `mailto:?subject=${subject}&body=${body}`
-
     },
     checkScreen() {
       this.windowWidth = window.innerWidth;
@@ -435,6 +466,7 @@ export default {
         if (typeof from !== 'undefined' && typeof to !== 'undefined') {
           // from events backwards to comp
           if (to.path === "/rennstrukturanalyse" && from.path.match(/\/rennstrukturanalyse\/[\w-]+/)) {
+            this.noFurtherEntries = false
             this.displayEvents = false
             this.displayCompetitions = true
             this.displayRaces = false
@@ -443,6 +475,7 @@ export default {
           // from races backwards to events
           else if (from.path.match(/\/rennstrukturanalyse\/[\w-]+\/[\w-]+/) && !to.fullPath.includes("?race_id=")
               && !from.fullPath.includes("?race_id=") && to.path.match(/\/rennstrukturanalyse\/[\w-]+/)) {
+            this.noFurtherEntries = false
             this.displayRaces = false
             this.displayCompetitions = false
             this.displayEvents = true
