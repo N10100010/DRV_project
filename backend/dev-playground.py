@@ -17,8 +17,8 @@ from tqdm import tqdm
 from sqlalchemy import select, update
 from sqlalchemy.orm import Bundle
 from model import model
-from scraper import outlier_detection
-from scrape_procedures import postprocess
+from scraper_procedures import outlier_detection
+from scraper import postprocess
 ########################################################################################################################
 # NOTE:
 # This dev-playground.py is just for rapid testing
@@ -37,7 +37,7 @@ def scraper_postprocessing():
     # todo: add me to the actual postprocessing
     postprocess()
     with model.Scoped_Session() as session:
-        statement = select(model.Boat_Class)
+        statement = select(model.Boat_Class).order_by(model.Boat_Class.id)
         iterator = session.execute(statement).scalars()
         # set all is_outlier to False to ensure that the percentile-strategy works
         session.execute(
@@ -46,7 +46,8 @@ def scraper_postprocessing():
             )
         )
         for boat_class in iterator:
-            outlier_detection.outlier_detection(session=session, boat_class=boat_class)
+            outlier_detection.outlier_detection_result_data(session=session, boat_class=boat_class)
+            outlier_detection.outlier_detection_race_data(session=session, boat_class=boat_class)
 
 
 if __name__ == '__main__':
