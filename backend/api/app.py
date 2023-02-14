@@ -346,11 +346,11 @@ def get_report_boat_class():
     Delivers the report results for a single boat class.
     """
     # TODO: extract data from filter | ignored for now: runs_fine
+
     filter_data = request.json["data"]
-    filter_keys = ["years", "competition_categories", "boat_classes", "runs", "ranks"]
-    years, competition_categories, boat_class, runs, ranks = [filter_data.get(key) for key in filter_keys]
-    start_year = years.get("start_year")
-    end_year = years.get("end_year")
+    filter_keys = ["interval", "competition_category", "boat_class", "race_phase_type", "race_phase_subtype" "placement"]
+    interval, competition_categories, boat_class, runs, ranks = [filter_data.get(key) for key in filter_keys]
+    start_year, end_year = interval[0], interval[1]
 
     # read from db
     session = Scoped_Session()

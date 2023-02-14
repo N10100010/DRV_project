@@ -717,7 +717,7 @@ export const useBerichteState = defineStore({
             return rowValues
         },
         getSelectedBoatClass(state) {
-            return state.selectedBoatClass[0] === "Alle"
+            return state.selectedBoatClass === "Alle"
         },
         getBarChartData(state) {
             return {
@@ -931,6 +931,14 @@ export const useBerichteState = defineStore({
             await axios.post('http://localhost:5000/get_report_boat_class', {data})
                 .then(response => {
                     this.data = response.data
+                }).catch(error => {
+                    console.error(`Request failed: ${error}`)
+                })
+        },
+         async postFormDataMatrix(data) {
+            await axios.post('http://localhost:5000/matrix', {data})
+                .then(response => {
+                    this.matrixdata = response.data
                 }).catch(error => {
                     console.error(`Request failed: ${error}`)
                 })
