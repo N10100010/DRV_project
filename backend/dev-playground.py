@@ -33,23 +33,6 @@ def grab_competition_example(competition_id, out_path='dump.json'):
         json.dump(comp_data, fp)
 
 
-def scraper_postprocessing():
-    # todo: add me to the actual postprocessing
-    postprocess()
-    with model.Scoped_Session() as session:
-        statement = select(model.Boat_Class).order_by(model.Boat_Class.id)
-        iterator = session.execute(statement).scalars()
-
-        # set all is_outlier to False to ensure that the percentile-strategy works
-        session.execute( update(model.Intermediate_Time).values(is_outlier=False) )
-        session.execute( update(model.Race_Data).values(is_outlier=False) )
-
-        for boat_class in iterator:
-            outlier_detection.outlier_detection_result_data(session=session, boat_class=boat_class)
-            outlier_detection.outlier_detection_race_data(session=session, boat_class=boat_class)
-
-            # Low Prio TODO: session.commit() should ideally be executed here
-
 
 if __name__ == '__main__':
     import argparse
