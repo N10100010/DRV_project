@@ -32,7 +32,7 @@
                 v-model="selectedCompTypes" variant="outlined"
                 :rules="[v => v.length > 0 || 'Wähle mindestens eine Wettkampfklasse']"
       ></v-select>
-      <v-autocomplete class="pt-4" :items="optionsNations" multiple chips v-model="selectedNation"
+      <v-autocomplete class="pt-4" :items="optionsNations" clearable multiple chips v-model="selectedNation"
                       variant="outlined" color="blue" label="Nation" density="comfortable"
                       :rules="[v => !!v || 'Wähle mindestens eine Nation']"
       ></v-autocomplete>
@@ -98,7 +98,7 @@ export default {
       // competition type
       compTypes: [],
       optionsCompTypes: [],
-      selectedCompTypes: ["Olympics"],
+      selectedCompTypes: ["WCH", "U23WCH"],
 
       // year
       startYear: 0,
@@ -112,7 +112,7 @@ export default {
 
       // nations
       optionsNations: [],
-      selectedNation: "GER (Deutschland)",
+      selectedNation: ["GER (Germany)", "AUT (Austria)", "FRA (France)", "ITA (Italia)"],
 
       // boat classes
       optionsBoatClasses: [],
@@ -127,7 +127,6 @@ export default {
     const store = useMedaillenspiegelState()
     store.fetchMedaillenspiegelFilterOptions()
     this.initializeFilter(this.filterOptions[0])
-
   },
   methods: {
     initializeFilter(data) {
@@ -150,6 +149,7 @@ export default {
       this.optionsNations = finalCountryNames
       // boat classes
       let boatClassValues = []
+
       function getMostInnerValue(o) {
         for (let key in o) {
           if (typeof o[key] === 'object') {
@@ -162,6 +162,18 @@ export default {
       getMostInnerValue(Object.values(data.boat_classes))
       this.selectedBoatClasses = boatClassValues[0]
       this.optionsBoatClasses = boatClassValues
+
+      if (this.startYear && this.endYear && this.selectedNation) {
+        const store = useMedaillenspiegelState()
+      store.postFormData({
+            "years": [this.startYear, this.endYear],
+            "gender": this.selectedGenders,
+            "competition_categories": this.compTypes.filter(item => this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
+            "nations": Array.isArray(this.selectedNation) ? this.selectedNation : [this.selectedNation],
+            "types": this.selectedMedalTypes
+          }
+      )
+      }
     },
     async onSubmit() {
       const {valid} = await this.$refs.filterForm.validate()
@@ -177,24 +189,16 @@ export default {
       store.setFilterState(this.showFilter)
     },
     submitFormData() {
-      // define store
       const store = useMedaillenspiegelState()
-      // access form data
-      const startYear = this.startYear
-      const endYear = this.endYear
-      const competitionTypes = this.compTypes.filter(item => this.optionsCompTypes.includes(item.display_name)).map(item => item.id)
-      const nationCode = this.selectedNation
-      const medalTypes = this.selectedMedalTypes
-      const gender = this.selectedGenders
+      const data = {
+        "years": [this.startYear, this.endYear],
+        "gender": this.selectedGenders,
+        "competition_categories": this.compTypes.filter(item => this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
+        "nations": Array.isArray(this.selectedNation) ? this.selectedNation : [this.selectedNation],
+        "types": this.selectedMedalTypes
+      }
 
-      // send data via pinia store action postFormData
-      return store.postFormData({
-        "years": [{"start_year": startYear}, {"end_year": endYear}],
-        "gender": gender,
-        "competition_categories": competitionTypes,
-        "nation_ioc": nationCode,
-        "medal_types": medalTypes
-      }).then(() => {
+      return store.postFormData(data).then(() => {
         console.log("Form data sent...")
       }).catch(error => {
         console.error(error)
@@ -204,8 +208,8 @@ export default {
       this.selectedGenders = 0
       this.startYear = 1950
       this.endYear = new Date().getFullYear()
-      this.selectedCompTypes = ["Olympics"]
-      this.selectedNation = "GER (Deutschland)"
+      this.selectedCompTypes = ["WCH", "U23WCH"]
+      this.selectedNation = []
       this.selectedMedalTypes = 0
       this.selectedBoatClasses = this.optionsBoatClasses[0]
     },

@@ -38,10 +38,10 @@
           <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
         </v-col>
         <v-divider></v-divider>
-        <v-container class="pa-0 mt-2 pb-8">
-          <v-row>
-            <v-col cols="12">
-              <h2><b> {{ filterSelection.start_date }}</b> | <b>{{ filterSelection.events }}</b> | <b>{{ filterSelection.category }}</b></h2>
+        <v-container class="pa-0">
+          <v-row class="ma-0">
+            <v-col cols="12" class="pa-0">
+              <h2><b> {{ `${filterSelection.start_date} bis ${filterSelection.end_date}` }}</b></h2>
               <v-col :cols="mobile ? 12 : 6" class="pa-0">
               <v-alert type="success" variant="tonal" class="my-2" v-if="filterSelection.results">
                 <v-row>
