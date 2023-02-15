@@ -1124,8 +1124,8 @@ def get_report_filter_options():
     }], sort_keys=False)
 
 
-@app.route('/calendar/', methods=['GET'])
-def get_calendar():
+@app.route('/calendar/<int:year>', methods=['GET'])
+def get_calendar(year: int):
     """
     TODO: If the db is complete there will be many competitions; perhaps we need some kind of pagination here.
     This route delivers calendar data for all competitions.
@@ -1133,7 +1133,7 @@ def get_calendar():
     """
     result = []
     session = Scoped_Session()
-    iterator = session.execute(select(model.Competition)).scalars()
+    iterator = session.execute(select(model.Competition).where(model.Competition.year == year)).scalars()
     for competition in iterator:
         # only include competitions that have a start and end date
         if competition.start_date and competition.end_date:
