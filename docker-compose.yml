@@ -73,7 +73,7 @@ services:
       - api
     environment:
       PORT: "5173"
-      BACKEND_API_BASE_URL: "http://localhost:5000/"
+      VITE_BACKEND_API_BASE_URL: "http://localhost:5000"
 
 volumes:
   db:
