@@ -2,11 +2,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Py: Dev Playgorund (Rapha)",
+            "name": "Py: Dev Playground (Rapha)",
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}/backend",
-            "module": "api.race",
+            "program": "raphael_temp.py",
             "justMyCode": true
         },
         {
