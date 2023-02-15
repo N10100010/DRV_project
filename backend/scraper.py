@@ -303,9 +303,8 @@ def postprocess():
         logger.info(f"Fetch & write world best times")
         postprocessing.refresh_world_best_times(session=session, logger=logger)
 
-        # -------------------------------------
-
-        logger.info("Check Quality of both Datasets")
+        logger.info("Outlier Marking")
+        postprocessing.mark_outliers(session=session, logger=logger)
 
 
 """
