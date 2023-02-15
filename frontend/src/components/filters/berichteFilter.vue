@@ -133,7 +133,15 @@ export default {
       optionsRuns: [],
       selectedRuns: [0, 1, 2],
       optionsRunsFineSelection: null,
-      selectedRunsFineSelection: ["fa", "fb", "fc", "fd", "f...", "sa/b, sa/b/c", "sc/d, sd/e/f", "s...", "q1-4"],
+      selectedRunsFineSelection: [
+        "fa",
+        "fb",
+        "fc",
+        "fd",
+        "sa/b",
+        "sc/d",
+        "q1-4"
+      ],
       // ranks
       optionsRanks: [],
       selectedRanks: []
@@ -184,13 +192,11 @@ export default {
       this.optionsBoatClasses = boatClassOptions
 
       // runs
+      this.runsData = data.runs
       this.optionsRuns = Object.keys(data.runs)
-      let runOptionsSelectionNames = Object.values(data.runs).filter(item => item !== null)
-      this.optionsRunsFineSelection = runOptionsSelectionNames.flatMap((item, idx) => {
-        if (this.selectedRuns.includes(idx)) {
-          return item.map(item => item.display_name)
-        }
-      })
+      const tempObj = Object.values(data.runs)
+      this.optionsRunsFineSelection = tempObj.reduce((acc, obj) => obj ? acc.concat(Object.keys(obj)) : acc, []);
+
       const store = useBerichteState()
       store.postFormDataMatrix({
         "interval": [this.startYear, this.endYear],
@@ -198,7 +204,6 @@ export default {
             this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
         "boat_class": this.boatClasses[this.selectedBoatClasses],
         "race_phase_type": this.selectedRuns.map(item => this.optionsRuns[item]),
-        "race_phase_subtype": [1,2,3], // this.selectedRunsFineSelection,
       })
     },
     async onSubmit() {
@@ -215,13 +220,25 @@ export default {
       store.setFilterState(this.showFilter)
     },
     submitFormData() {
+      // find run keys for race_phase_subtype
+      const racePhaseSubtypes = this.selectedRunsFineSelection.reduce((acc, key) => {
+        const value = Object.values(this.runsData).find(obj => obj.hasOwnProperty(key));
+        if (value && Array.isArray(value[key])) {
+          return acc.concat(value[key]);
+        } else if (value) {
+          return acc.concat(value[key]);
+        } else {
+          return acc;
+        }
+      }, []);
+
       const formData = {
         "interval": [this.startYear, this.endYear],
         "competition_category": this.compTypes.filter(item =>
             this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
         "boat_class": this.boatClasses[this.selectedBoatClasses],
         "race_phase_type": this.selectedRuns.map(item => this.optionsRuns[item]),
-        "race_phase_subtype": [1,2,3], // this.selectedRunsFineSelection,
+        "race_phase_subtype": [...new Set(racePhaseSubtypes)],
       }
 
       const placement = this.selectedRanks.map(item => this.optionsRanks[item])
@@ -234,21 +251,21 @@ export default {
       store.setSelectedBoatClass(this.selectedBoatClasses[0])
 
       if (formData.boat_class === undefined) {
-         store.postFormDataMatrix(formData)
-          .then(() => {
-            console.log("data sent...")
-          })
-          .catch(error => {
-            console.error(error)
-          })
+        store.postFormDataMatrix(formData)
+            .then(() => {
+              console.log("data sent...")
+            })
+            .catch(error => {
+              console.error(error)
+            })
       } else {
         store.postFormData(formData)
-          .then(() => {
-            console.log("data sent...")
-          })
-          .catch(error => {
-            console.error(error)
-          })
+            .then(() => {
+              console.log("data sent...")
+            })
+            .catch(error => {
+              console.error(error)
+            })
       }
     },
     clearFormInputs() {
@@ -388,15 +405,13 @@ export default {
     },
     selectedRuns: function (newVal,) {
       if (newVal !== undefined && this.reportFilterOptions !== undefined) {
-        let newList = Object.values(newVal)
-        const selectionOptions = Object.values(this.filterData.runs).filter(item => item !== null)
-        let newFineSelectionEntries = selectionOptions.flatMap((item, idx) => {
-          if (newList.includes(idx)) {
-            return item.map(item => item.display_name)
-          }
-        })
-        this.selectedRunsFineSelection = newFineSelectionEntries.filter(item => item !== undefined)
-        this.optionsRunsFineSelection = newFineSelectionEntries.filter(item => item !== undefined)
+        const newSelection = Object.values(newVal)
+        let newFineSelectionEntries = newSelection.reduce((acc, idx) => {
+          const obj = Object.values(this.runsData)[idx] ?? {};
+          return acc.concat(Object.keys(obj));
+        }, []);
+        this.selectedRunsFineSelection = newFineSelectionEntries
+        this.optionsRunsFineSelection = newFineSelectionEntries
       }
     },
     async reportFilterOptions(newVal,) {
@@ -405,11 +420,11 @@ export default {
     filterData: function (newVal,) {
       this.initializeFilter(newVal)
     },
-    startYear: function (newVal, ) {
+    startYear: function (newVal,) {
       const store = useBerichteState()
       store.setFilterConfig([newVal, this.endYear])
     },
-    endYear: function (newVal, ) {
+    endYear: function (newVal,) {
       const store = useBerichteState()
       store.setFilterConfig([this.startYear, newVal])
     }

@@ -18,7 +18,7 @@ from sqlalchemy.orm import joinedload
 from model import model
 from .race import result_time_best_of_year_interval, compute_intermediates_figures
 from common.rowing import propulsion_in_meters_per_stroke
-from . import mocks # todo: remove me 
+from . import mocks  # todo: remove me
 from . import globals
 
 # app is the main controller for the Flask-Server and will start the app in the main function 
@@ -72,12 +72,12 @@ def get_competition_categories():
 
 
 @app.route('/boatclass_information')
-def get_boatclass_information() -> dict: 
+def get_boatclass_information() -> dict:
     return globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT
 
 
 @app.route('/competition_category_information')
-def get_competition_category_information() -> dict: 
+def get_competition_category_information() -> dict:
     session = Scoped_Session()
     statement = (
         select(
@@ -109,7 +109,7 @@ def get_competitions_year_category() -> dict:
 
     year = request.json["data"].get('year')
     competition_category_id = request.json["data"].get('competition_category_id')
-    
+
     logging.debug(f"Year: {year}, comp cat: {competition_category_id}")
 
     session = Scoped_Session()
@@ -130,31 +130,31 @@ def get_competitions_year_category() -> dict:
     filtered_competitions = session.execute(statement).fetchall()
 
     competitions = []
-    for _comp in filtered_competitions: 
+    for _comp in filtered_competitions:
         _comp = _comp['Competition']
         _venue = _comp.venue
         _country = _venue.country
         comp = {
             "id": _comp.id,
             "name": _comp.name,
-            "start": _comp.start_date, 
-            "end": _comp.end_date, 
+            "start": _comp.start_date,
+            "end": _comp.end_date,
             "venue": f"{_venue.site}/{_venue.city}, {_country.name}",
         }
 
         events = []
-        for _event in _comp.events: 
+        for _event in _comp.events:
             event = {
                 "id": _event.id,
-                "name": _event.name, 
+                "name": _event.name,
                 "boat_class": _event.boat_class.abbreviation
             }
 
             races = []
-            for _race in _event.races: 
+            for _race in _event.races:
                 race = {
                     "id": _race.id,
-                    "name": _race.name, 
+                    "name": _race.name,
                     "phase_type": _race.phase_type,
                     "sub_phase": _race.phase_number if _race.phase_number else _race.phase_subtype
                 }
@@ -162,7 +162,7 @@ def get_competitions_year_category() -> dict:
 
             event['races'] = races
             events.append(event)
-        
+
         comp['events'] = events
         competitions.append(comp)
 
@@ -170,28 +170,27 @@ def get_competitions_year_category() -> dict:
 
 
 @app.route('/matrix', methods=['POST'])
-def get_matrix() -> dict: 
-
+def get_matrix() -> dict:
     """
         todo: How to realize the filtering? 
         @Harri: if a filter is filtering for all, do not put the filter in there 
     """
     filter_key_mapping = {
-        'gender': model.Event.gender_id, # list
-        'boat_class': model.Boat_Class.id, # list
-        'interval': model.Competition.year, # tuple
-        'competition_category': model.Competition_Category.id, # list
-        'race_phase_type': model.Race.phase_type, # list
-        'race_phase_subtype': model.Race.phase_number, # list
-        'placement': model.Race_Boat.rank # list
+        'gender': model.Event.gender_id,  # list
+        'boat_class': model.Boat_Class.id,  # list
+        'interval': model.Competition.year,  # tuple
+        'competition_category': model.Competition_Category.id,  # list
+        'race_phase_type': model.Race.phase_type,  # list
+        'race_phase_subtype': model.Race.phase_number,  # list
+        'placement': model.Race_Boat.rank  # list
     }
-    
+
     # remove None's from the filters
     filters = {k: v for k, v in request.json['data'].items() if v}
 
     # example filter args 
     # filters = {'gender': [1]}
-    
+
     session = Scoped_Session()
     avg_times_statement = (
         select(
@@ -214,15 +213,15 @@ def get_matrix() -> dict:
         )
     )
 
-    for k, v in filters.items(): 
-        if k == 'interval': 
+    for k, v in filters.items():
+        if k == 'interval':
             avg_times_statement = avg_times_statement.where(filter_key_mapping[k].between(v[0], v[1]))
-        else: 
+        else:
             avg_times_statement = avg_times_statement.where(filter_key_mapping[k].in_(v))
 
     wbt_statement = (
         select(
-            model.Boat_Class.additional_id_, 
+            model.Boat_Class.additional_id_,
             model.Race_Boat.result_time_ms
         )
         .join(model.Race_Boat)
@@ -230,18 +229,18 @@ def get_matrix() -> dict:
 
     avg_times = session.execute(avg_times_statement).fetchall()
     wbts = session.execute(wbt_statement).fetchall()
-    
+
     result = {}
 
-    for time in avg_times: 
+    for time in avg_times:
         wbt = [wbt for wbt in wbts if wbt[0] == time.id]
-        if len(wbt) < 1: 
+        if len(wbt) < 1:
             wbt = time.min
             used_wbt = True
-        else: 
+        else:
             wbt = wbt[0][1]
             used_wbt = False
-        
+
         result[time.id] = {
             'wbt': wbt,
             'mean': time.mean,
@@ -250,7 +249,6 @@ def get_matrix() -> dict:
             'used_wbt': used_wbt
         }
     return result
-
 
 
 @app.route('/get_race/<int:race_id>/', methods=['GET'])
@@ -322,7 +320,7 @@ def get_race(race_id: int) -> dict:
     race_boat: model.Race_Boat
     for race_boat in sorted_race_boat_data:
         rb_result = {
-            "name": race_boat.name, # e.g. DEU2
+            "name": race_boat.name,  # e.g. DEU2
             "lane": race_boat.lane,
             "rank": race_boat.rank,
             "athletes": [],
@@ -364,7 +362,7 @@ def get_race(race_id: int) -> dict:
                 continue
             if intermediate.invalid_mark_result_code:
                 result_time_ms = intermediate.invalid_mark_result_code.id
-            
+
             rb_result['intermediates'][str(intermediate.distance_meter)] = {
                 "rank": intermediate.rank,
                 "time [millis]": result_time_ms,
@@ -438,7 +436,8 @@ def get_report_boat_class():
     # TODO: extract data from filter | ignored for now: runs_fine
 
     filter_data = request.json["data"]
-    filter_keys = ["interval", "competition_category", "boat_class", "race_phase_type", "race_phase_subtype" "placement"]
+    filter_keys = ["interval", "competition_category", "boat_class", "race_phase_type",
+                   "race_phase_subtype" "placement"]
     interval, competition_categories, boat_class, runs, ranks = [filter_data.get(key) for key in filter_keys]
     start_year, end_year = interval[0], interval[1]
 
@@ -1097,21 +1096,19 @@ def get_report_filter_options():
         },
         "competition_categories": competition_categories,
         "runs": {
-            "final": [
-                {"display_name": "fa"},
-                {"display_name": "fb"},
-                {"display_name": "fc"},
-                {"display_name": "fd"},
-                {"display_name": "f..."}
-            ],
-            "semifinal": [
-                {"display_name": "sa/b, sa/b/c"},
-                {"display_name": "sc/d, sd/e/f"},
-                {"display_name": "s..."}
-            ],
-            "quarterfinal": [
-                {"display_name": "q1-4"},
-            ],
+            "final": {
+                "fa": 1,
+                "fb": 2,
+                "fc": 3,
+                "fd": 4
+            },
+            "semifinal": {
+                "sa/b": 1,
+                "sc/d": 2
+            },
+            "quarterfinal": {
+                "q1-4": [1, 2, 3, 4]
+            },
             "repechage": None,
             "preliminary": None,
         },
@@ -1132,7 +1129,6 @@ def get_calendar():
     for competition in iterator:
         # only include competitions that have a start and end date
         if competition.start_date and competition.end_date:
-
             comp_cat_id = session.query(model.Competition).filter(model.Competition.id == competition.id).one()
             comp_type = set(session.query(model.Competition_Category).filter(
                 model.Competition_Category.id == comp_cat_id.id
