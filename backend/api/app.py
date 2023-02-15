@@ -433,8 +433,6 @@ def get_report_boat_class():
     """
     Delivers the report results for a single boat class.
     """
-    # TODO: extract data from filter | ignored for now: runs_fine
-
     filter_data = request.json["data"]
     filter_keys = ["interval", "competition_category", "boat_class", "race_phase_type",
                    "race_phase_subtype" "placement"]
@@ -739,12 +737,6 @@ def get_athlete_by_name():
     } for athlete in output_athletes])
 
 
-"""
-ENDPOINTS TO GET FILTER SELECTION OPTIONS
-
-"""
-
-
 @app.route('/get_athletes_filter_options', methods=['GET'])
 def get_athletes_filter_options():
     """
@@ -990,6 +982,76 @@ def get_medals_filter_options():
             },
         }
     }], sort_keys=False)
+
+
+@app.route('/get_medals', methods=['POST'])
+def get_medals():
+    data = request.json["data"]
+    start, end = data["years"][0], data["years"][1]
+    start_date = func.to_timestamp(func.concat(start, "-01-01 00:00:00"), 'YYYY-MM-DD HH24:MI:SS')
+    end_date = func.to_timestamp(func.concat(end, "-12-31 23:59:59"), 'YYYY-MM-DD HH24:MI:SS')
+    nations = [nation[:3] for nation in data["nations"]]
+
+    session = Scoped_Session()
+
+    nation_ids = session.query(model.Country.id).filter(model.Country.country_code.in_(nations)).all()
+    nation_ids = [nation_id[0] for nation_id in nation_ids]
+
+    race_boats = (
+        session.query(model.Race_Boat)
+        .join(model.Race)
+        .join(model.Event)
+        .join(model.Boat_Class)
+        .where(
+            model.Race_Boat.country_id.in_(nation_ids),
+            model.Race.date >= start_date,
+            model.Race.date <= end_date
+        )
+        .all()
+    )
+
+    medal_data, total_result_counter = [], 0
+    for nation in nations:
+        total, gold, silver, bronze, final_a, final_b = 0, 0, 0, 0, 0, 0
+        for race_boat in race_boats:
+            if race_boat.race.phase_type == 'final' and race_boat.race.phase_number == 1 \
+                    and race_boat.country.country_code == nation:
+                total_result_counter += 1
+                final_a += 1
+                if race_boat.rank == 1:
+                    gold += 1
+                    total += 1
+                elif race_boat.rank == 2:
+                    silver += 1
+                    total += 1
+                elif race_boat.rank == 3:
+                    bronze += 1
+                    total += 1
+            elif race_boat.race.phase_type == 'final' and race_boat.race.phase_number == 2 \
+                    and race_boat.country.country_code == nation:
+                total_result_counter += 1
+                final_b += 1
+
+        medal_data.append({
+            "nation": nation,
+            "total": total,
+            "gold": gold,
+            "silver": silver,
+            "bronze": bronze,
+            "final_a": final_a,
+            "final_b": final_b
+        })
+
+    medal_data.sort(key=lambda x: x['gold'], reverse=True)
+    for i, obj in enumerate(medal_data):
+        obj['rank'] = i+1
+
+    return json.dumps({
+        "results": total_result_counter,
+        "start_date": start,
+        "end_date": end,
+        "data": medal_data
+    })
 
 
 @app.route('/get_report_filter_options', methods=['GET'])
