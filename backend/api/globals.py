@@ -1,6 +1,6 @@
 BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
     'men': {
-        'junior': {  # also called u19
+        'u19': {
             'single': ("JM1x", "Junior Men's Single Sculls", "079e71bb-98cd-47f4-8ca4-e3fd0cdbc538"),
             'double': ("JM2x", "Junior Men's Double Sculls", "78f004f6-cadd-4d0f-804b-21cf26458355"),
             'quad': ("JM4x", "Junior Men's Quadruple Sculls", "dc9439cd-36d9-47fd-a205-bc2612f4f83b"),
@@ -34,14 +34,14 @@ BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
             'lw_quad': ("LM4x", "Lightweight Men's Quadruple Sculls", "ba397032-a5c6-466a-ba1b-23e521237048"),
             'lw_pair': ("LM2-", "Lightweight Men's Pair", "46564a8c-b4b3-4bb3-bbf4-cd96bb4ee4f5"),
         },
-        'pr': {
+        'para': {
             '1': ("PR1 M1x", "PR1 Men's Single Sculls", "d7365b40-b544-480b-aa99-b0ffad7a13e9"),
             '2': ("PR2 M1x", "PR2 Men's Single Sculls", "731e3206-45c5-4596-b48e-5a21b1675918"),
             '3': ("PR3 M2-", "PR3 Men's Pair", "15e1ef74-79c6-4227-96f1-86d793efbf5b"),
         }
     },
     'women': {
-        'junior': {  # also called u19
+        'u19': {
             'single': ("JW1x", "Junior Women's Single Sculls", "683b227a-51fd-4c09-a6a0-460ca3711b08"),
             'double': ("JW2x", "Junior Women's Double Sculls", "26af8860-5146-422d-bb10-3eef8b28d883"),
             'quad': ("JW4x", "Junior Women's Quadruple Sculls", "6edc9d42-edda-4f32-9469-91d54e0eaeb1"),
@@ -75,7 +75,7 @@ BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
             'lw_quad': ("LW4x", "Lightweight Women's Quadruple Sculls", "c47c6b93-dd0d-4645-9545-2ee853db284c"),
             'lw_pair': ("LW2-", "Lightweight Women's Pair", "7b8c2fd0-0286-4bd3-a5c3-0f17a4bc3bd0"),
         },
-        'pr': {
+        'para': {
             '1': ("PR1 W1x", "PR1 Women's Single Sculls", "b61f430f-d4ee-48e0-a632-95b9194ccb16"),
             '2': ("PR2 W1x", "PR2 Women's Single Sculls", "dd434535-b9eb-4b38-9ecf-f3fd6dc9cadf"),
             '3': ("PR3 W2-", "PR3 Women's Pair", "15e1ef74-79c6-4227-96f1-86d793efbf5b"),
@@ -85,5 +85,26 @@ BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
         'double_2': ("PR2 Mix2x", "PR2 Mixed Double Sculls", "843310e2-f28c-41a7-90e9-b6f8c289b154"),
         'double_3': ("PR3 Mix2x", "PR3 Mixed Double Sculls", "e23cc24f-4a62-4de3-ab99-50a40c8416f0"),
         'four': ("PR3 Mix4+", "PR3 Mixed Coxed Four", "b6bcf280-a57c-4a6a-96fb-91e6a1355002"),
+    },
+    "all": {
+        "all": ("Alle", "Alle")
     }
+}
+
+RACE_PHASE_SUBTYPE_BY_RACE_PHASE = {
+    "final": {
+        "fa": 1,
+        "fb": 2,
+        "fc": 3,
+        "fd": 4
+    },
+    "semifinal": {
+        "sa/b": 1,
+        "sc/d": 2
+    },
+    "quarterfinal": {
+        "q1-4": [1, 2, 3, 4]
+    },
+    "repechage": None,
+    "preliminary": None,
 }

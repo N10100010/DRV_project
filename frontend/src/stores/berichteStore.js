@@ -1,6 +1,7 @@
 import axios from "axios";
 import {defineStore} from "pinia";
 import {resolve} from "chart.js/helpers";
+import {it} from "vuetify/locale";
 
 const formatMilliseconds = ms => new Date(ms).toISOString().slice(14, -2);
 
@@ -10,7 +11,11 @@ export const useBerichteState = defineStore({
         filterOpen: false,
         tableExport: [],
         lastFilterConfig: null,
-        selectedBoatClass: {0: "Alle"},
+        selectedBoatClass: "Alle",
+        filterConfig: {
+            start: 0,
+            end: 0,
+        },
         filterOptions: [{
             "years": [{"start_year": 0}, {"end_year": 0}],
             "boat_classes": {
@@ -170,518 +175,38 @@ export const useBerichteState = defineStore({
             },
             "plot_data": {
                 "histogram": {
-                    "labels": [],
-                    "data": []
+                    "labels": [0],
+                    "data": [0]
                 },
                 "histogram_mean": 0,
                 "histogram_sd_low": 0,
                 "histogram_sd_high": 0,
                 "scatter_plot": {
-                    "labels": [],
-                    "data": []
+                    "labels": [0],
+                    "data": [0]
                 },
                 "scatter_1_sd_high": {
-                    "labels": [],
-                    "data": []
+                    "labels": [0],
+                    "data": [0]
                 },
                 "scatter_1_sd_low": {
-                    "labels": [],
-                    "data": []
+                    "labels": [0],
+                    "data": [0]
                 },
                 "scatter_mean": {
-                    "labels": [],
-                    "data": []
+                    "labels": [0],
+                    "data": [0]
                 }
             }
         },
-        matrixdata: [
-            {
-                "results": 127973,
-                "men": {
-                    "junior": {
-                        "single": {
-                            "JM1x": "Junior Men's Single Sculls",
-                            "WB [t]": 378360,
-                            "avg [t]": 378360,
-                            "delta [s]": 378360,
-                            "num_of_boats": 2384
-                        },
-                        "double": {
-                            "JM2x": "Junior Men's Double Sculls",
-                            "WB [t]": 983745083746,
-                            "avg [t]": 983745083746,
-                            "delta [s]": 983745083746,
-                            "num_of_boats": 2385
-                        },
-                        "quad": {
-                            "JM4x": "Junior Men's Quadruple Sculls",
-                            "WB [t]": 983745083747,
-                            "avg [t]": 983745083747,
-                            "delta [s]": 983745083747,
-                            "num_of_boats": 2386
-                        },
-                        "pair": {
-                            "JM2-": "Junior Men's Pair",
-                            "WB [t]": 983745083748,
-                            "avg [t]": 983745083748,
-                            "delta [s]": 983745083748,
-                            "num_of_boats": 2387
-                        },
-                        "coxed_four": {
-                            "JM4+": "Junior Men's Coxed Four",
-                            "WB [t]": 983745083749,
-                            "avg [t]": 9837450837459,
-                            "delta [s]": 983745083749,
-                            "num_of_boats": 2388
-                        },
-                        "four": {
-                            "JM4-": "Junior Men's Four",
-                            "WB [t]": 983745083750,
-                            "avg [t]": 983745083750,
-                            "delta [s]": 98324234251,
-                            "num_of_boats": 2389
-                        },
-                        "eight": {
-                            "JM8-": "Junior Men's Eight",
-                            "WB [t]": 983745083752,
-                            "avg [t]": 983745083752,
-                            "delta [s]": 983732434252,
-                            "num_of_boats": 2390
-                        }
-                    },
-                    "u19": {},
-                    "u23": {
-                        "single": {
-                            "BM1x": "U23 Men's Single Sculls",
-                            "WB [t]": 983745083753,
-                            "avg [t]": 9837450834464,
-                            "delta [s]": 983745083754,
-                            "num_of_boats": 2391
-                        },
-                        "double": {
-                            "BM2x": "U23 Men's Double Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2392
-                        },
-                        "quad": {
-                            "BM4x": "U23 Men's Quadruple Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2393
-                        },
-                        "pair": {
-                            "BM2-": "U23 Men's Pair",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2394
-                        },
-                        "coxed_four": {
-                            "BM4+": "U23 Men's Coxed Four",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2395
-                        },
-                        "four": {
-                            "BM4-": "U23 Men's Four",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2396
-                        },
-                        "eight": {
-                            "BM8+": "U23 Men's Eight",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2397
-                        },
-                        "lw_single": {
-                            "BLM1x": "U23 Lightweight Men's Single Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2398
-                        },
-                        "lw_double": {
-                            "BLM2x": "U23 Lightweight Men's Double Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2399
-                        },
-                        "lw_quad": {
-                            "BLM4x": "U23 Lightweight Men's Quadruple Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2400
-                        },
-                        "lw_pair": {
-                            "BLM2-": "U23 Lightweight Men's Pair",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2401
-                        }
-                    },
-                    "elite": {
-                        "single": {
-                            "M1x": "Men's Single Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2402
-                        },
-                        "double": {
-                            "M2x": "Men's Double Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2403
-                        },
-                        "quad": {
-                            "M4x": "Men's Quadruple Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2404
-                        },
-                        "pair": {
-                            "M2-": "Men's Pair",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2405
-                        },
-                        "four": {
-                            "M4-": "Men's Four",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2406
-                        },
-                        "eight": {
-                            "M8+": "Men's Eight",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2407
-                        },
-                        "lw_single": {
-                            "LM1x": "Lightweight Men's Single Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2408
-                        },
-                        "lw_double": {
-                            "LM2x": "Lightweight Men's Double Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2409
-                        },
-                        "lw_quad": {
-                            "LM4x": "Lightweight Men's Quadruple Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2410
-                        },
-                        "lw_pair": {
-                            "LM2-": "Lightweight Men's Pair",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2411
-                        }
-                    },
-                    "para": {
-                        "1": {
-                            "PR1 M1x": "PR1 Men's Single Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2412
-                        },
-                        "2": {
-                            "PR2 M1x": "PR2 Men's Single Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2413
-                        },
-                        "3": {
-                            "PR3 M2-": "PR3 Men's Pair",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2414
-                        }
-                    }
-                },
-                "women": {
-                    "junior": {
-                        "single": {
-                            "JW1x": "Junior Women's Single Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2415
-                        },
-                        "double": {
-                            "JW2x": "Junior Women's Double Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2416
-                        },
-                        "quad": {
-                            "JW4x": "Junior Women's Quadruple Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2417
-                        },
-                        "pair": {
-                            "JW2-": "Junior Women's Pair",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2418
-                        },
-                        "coxed_four": {
-                            "JW4+": "Junior Women's Coxed Four",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2419
-                        },
-                        "four": {
-                            "JW4-": "Junior Women's Four",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2420
-                        },
-                        "eight": {
-                            "JW8-": "Junior Women's Eight",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2421
-                        }
-                    },
-                    "u19": {},
-                    "u23": {
-                        "single": {
-                            "BW1x": "U23 Women's Single Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2422
-                        },
-                        "double": {
-                            "BW2x": "U23 Women's Double Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2423
-                        },
-                        "quad": {
-                            "BW4x": "U23 Women's Quadruple Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2424
-                        },
-                        "pair": {
-                            "BW2-": "U23 Women's Pair",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2425
-                        },
-                        "coxed_four": {
-                            "BW4+": "U23 Women's Coxed Four",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2426
-                        },
-                        "four": {
-                            "BW4-": "U23 Women's Four",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2427
-                        },
-                        "eight": {
-                            "BW8+": "U23 Women's Eight",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2428
-                        },
-                        "lw_single": {
-                            "BLW1x": "U23 Lightweight Women's Single Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2429
-                        },
-                        "lw_double": {
-                            "BLW2x": "U23 Lightweight Women's Double Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2430
-                        },
-                        "lw_quad": {
-                            "BLW4x": "U23 Lightweight Women's Quadruple Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2431
-                        },
-                        "lw_pair": {
-                            "BLW2-": "U23 Lightweight Women's Pair",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2432
-                        }
-                    },
-                    "elite": {
-                        "single": {
-                            "W1x": "Women's Single Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2433
-                        },
-                        "double": {
-                            "W2x": "Women's Double Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2434
-                        },
-                        "quad": {
-                            "W4x": "Women's Quadruple Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2435
-                        },
-                        "pair": {
-                            "W2-": "Women's Pair",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2436
-                        },
-                        "four": {
-                            "W4-": "Women's Four",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2437
-                        },
-                        "eight": {
-                            "W8+": "Women's Eight",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2438
-                        },
-                        "lw_single": {
-                            "LW1x": "Lightweight Women's Single Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2439
-                        },
-                        "lw_double": {
-                            "LW2x": "Lightweight Women's Double Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2440
-                        },
-                        "lw_quad": {
-                            "LW4x": "Lightweight Women's Quadruple Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2441
-                        },
-                        "lw_pair": {
-                            "LW2-": "Lightweight Women's Pair",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2442
-                        }
-                    },
-                    "para": {
-                        "1": {
-                            "PR1 W1x": "PR1 Women's Single Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2443
-                        },
-                        "2": {
-                            "PR2 W1x": "PR2 Women's Single Sculls",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2444
-                        },
-                        "3": {
-                            "PR3 W2-": "PR3 Women's Pair",
-                            "WB [t]": 983745083745,
-                            "avg [t]": 983745083745,
-                            "delta [s]": 983745083745,
-                            "num_of_boats": 2445
-                        }
-                    }
-                },
-                "mixed": {
-                    "double_2": {
-                        "PR2 Mix2x": "PR2 Mixed Double Sculls",
-                        "WB [t]": 983745083745,
-                        "avg [t]": 983745083745,
-                        "delta [s]": 983745083745,
-                        "num_of_boats": 2446
-                    },
-                    "double_3": {
-                        "PR3 Mix2x": "PR3 Mixed Double Sculls",
-                        "WB [t]": 983745083745,
-                        "avg [t]": 983745083745,
-                        "delta [s]": 983745083745,
-                        "num_of_boats": 2447
-                    },
-                    "four": {
-                        "PR3 Mix4+": "PR3 Mixed Coxed Four",
-                        "WB [t]": 983745083745,
-                        "avg [t]": 983745083745,
-                        "delta [s]": 983745083745,
-                        "num_of_boats": 2448
-                    }
-                }
-            }
-        ]
+        matrixData: null,
     }),
     getters: {
         getFilterState(state) {
             return state.filterOpen
+        },
+        getFilterConfig(state) {
+            return state.filterConfig
         },
         getReportFilterOptions(state) {
             return state.filterOptions
@@ -690,30 +215,46 @@ export const useBerichteState = defineStore({
             return state.data
         },
         getMatrixTableResults(state) {
-            return state.matrixdata[0].results
+            if (state.matrixData === null) {
+                return null
+            }
+            const dataVals = Object.values(state.matrixData)
+            return dataVals.length !== 0 ? dataVals.reduce((acc, item) => acc + item["count"], 0) : 0;
         },
         getLastFilterConfig(state) {
             return state.lastFilterConfig
         },
         getMatrixTableData(state) {
-
+            if (state.matrixData === null) {
+                return null;
+            }
             const subHeaders = {
-                "OPEN MEN": Object.values(state.matrixdata[0].men.elite),
-                "OPEN WOMEN": Object.values(state.matrixdata[0].women.elite),
-                "PARA MEN": Object.values(state.matrixdata[0].men.para),
-                "PARA WOMEN": Object.values(state.matrixdata[0].women.para),
-                "U23 MEN": Object.values(state.matrixdata[0].men.u23),
-                "U23 WOMEN": Object.values(state.matrixdata[0].women.u23),
-                "U19 MEN": Object.values(state.matrixdata[0].men.u19),
-                "U19 WOMEN": Object.values(state.matrixdata[0].women.u19)
+                "OPEN MEN": Object.values(state.filterOptions[0].boat_classes.men.elite),
+                "OPEN WOMEN": Object.values(state.filterOptions[0].boat_classes.women.elite),
+                "PARA MEN": Object.values(state.filterOptions[0].boat_classes.men.para),
+                "PARA WOMEN": Object.values(state.filterOptions[0].boat_classes.women.para),
+                "U23 MEN": Object.values(state.filterOptions[0].boat_classes.men.u23),
+                "U23 WOMEN": Object.values(state.filterOptions[0].boat_classes.women.u23),
+                "U19 MEN": Object.values(state.filterOptions[0].boat_classes.men.u19),
+                "U19 WOMEN": Object.values(state.filterOptions[0].boat_classes.women.u19)
             }
 
             let rowValues = []
-
             Object.entries(subHeaders).forEach(([key, value], idx) => {
                 rowValues.push(key)
                 for (const item of value) {
-                    rowValues.push([Object.keys(item)[0], formatMilliseconds(item["WB [t]"]), formatMilliseconds(item["avg [t]"]), formatMilliseconds(item["delta [s]"]), item["num_of_boats"]])
+                    if (item !== undefined && item.length > 1) {
+                        const data = state.matrixData[item[2]]
+                        if (data !== undefined) {
+                            rowValues.push([
+                            item[0],
+                            formatMilliseconds(Number(data["wbt"])),
+                            formatMilliseconds(Number(data["mean"])),
+                            formatMilliseconds(Number(data["delta"])),
+                            data["count"]
+                        ])
+                        }
+                    }
                 }
             })
             state.tableExport = rowValues
@@ -723,6 +264,9 @@ export const useBerichteState = defineStore({
             return state.selectedBoatClass === "Alle"
         },
         getBarChartData(state) {
+            if (state.data.plot_data.histogram.length === 0) {
+                return null
+            }
             const {labels} = state.data.plot_data.histogram;
             const {
                 histogram_mean: meanValue,
@@ -844,7 +388,7 @@ export const useBerichteState = defineStore({
             } = state.data.plot_data;
 
             function computeData(data, labels, targetData) {
-                return labels.map((label, i) => ({
+                    return labels.map((label, i) => ({
                     x: new Date(label),
                     y: formatMilliseconds(data.reduce((a, b) =>
                         Math.abs(b - targetData.data[i]) < Math.abs(a - targetData.data[i]) ? b : a))
@@ -965,9 +509,10 @@ export const useBerichteState = defineStore({
                 })
         },
         async postFormDataMatrix(data) {
+            this.selectedBoatClass = "Alle"
             await axios.post('http://localhost:5000/matrix', {data})
                 .then(response => {
-                    this.matrixdata = response.data
+                    this.matrixData = response.data
                 }).catch(error => {
                     console.error(`Request failed: ${error}`)
                 })
@@ -975,8 +520,15 @@ export const useBerichteState = defineStore({
         setFilterState(filterState) {
             this.filterOpen = !filterState
         },
+        setSelectedBoatClass(boat_class) {
+            this.selectedBoatClass = boat_class
+        },
         setLastFilterConfig(filterConfig) {
             this.lastFilterConfig = filterConfig
+        },
+        setFilterConfig(interval) {
+            this.filterConfig.start = interval[0]
+             this.filterConfig.end = interval[1]
         },
         exportTableData() {
             const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(row => {

@@ -31,12 +31,13 @@
               'border-radius': '0'}"
             :rows="selectedView ? 3 : 1"
             :columns="selectedView ? 4 : 1"
+            ref="calendar"
         >
           <template v-slot:day-content="{ day, attributes }">
             <div class="h-full z-10" style="min-height: 60px; display: flex; flex-direction: column;">
               <span class="day-label text-sm">{{ day.day }}</span>
               <div>
-                <router-link style="color: white; display: flex; flex-direction: column;" to="/rennstrukturanalyse">
+                <router-link style="color: white; display: flex; flex-direction: column;" to="#">
                   <div v-for="attr in attributes" class="rounded-sm my-1"
                        :key="attr.key" :style=attr.customData.style>
                     <p
@@ -84,13 +85,22 @@ export default {
       selectedView: 0
     };
   },
+  mounted() {
+    this.$watch(
+      () => this.$refs.calendar.firstPage.year,
+      (newYear, ) => {
+        const store = useHomeStore()
+        store.fetchCalendarData(newYear)
+      }
+    )
+  },
   created() {
     this.attributes = this.calenderData
     window.addEventListener('resize', this.checkScreen);
     this.checkScreen();
 
     const store = useHomeStore()
-    store.fetchCalendarData()
+    store.fetchCalendarData(new Date().getFullYear())
   },
   methods: {
     checkScreen() {
@@ -103,9 +113,6 @@ export default {
   watch: {
     calenderData(newVal) {
       this.attributes = newVal
-    },
-    selectedView(newVal) {
-
     }
   }
 };

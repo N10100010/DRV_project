@@ -12,23 +12,21 @@ export const useHomeStore = defineStore({
     getters: {
         getCalenderData(state) {
             let calenderEntries = state.data.calender_data;
-
             const color_scheme = {
-                "Paralympics": "#776622",
-                "World Rowing Cup": "#00B0FF",
-                "World Rowing Championships": "#26A69A",
-                "World Rowing U23 Championships": "#0097A7",
-                "Olympics": "#B3E5FC",
-                "Masters": "#742042",
-                "World Rowing Under 19 Championships": "#0017A7",
-                "Indoor Championships": "#9238BE",
-                "Continental Championships": "#EE8822",
-                "International Regattas": "#3245BE",
-                "Coastal Championships": "#AADDEE",
-                "Other World Rowing Competitions": "#882233",
-                "World Rowing Combined Championships": "#00FF22"
+                "Paralympics": "#ff7f00",
+                "World Rowing Cup": "#b3de69",
+                "World Rowing Championships": "#a65628",
+                "World Rowing U23 Championships": "#f781bf",
+                "Olympics": "#377eb8",
+                "Masters": "#ffff33",
+                "World Rowing Under 19 Championships": "#e41a1c",
+                "Indoor Championships": "#a6cee3",
+                "Continental Championships": "#4daf4a",
+                "International Regattas": "#fdbf6f",
+                "Coastal Championships": "#bebada",
+                "Other World Rowing Competitions": "#8dd3c7",
+                "World Rowing Combined Championships": "#984ea3"
             }
-
             return calenderEntries.map((entry, index) => {
                 const hexCode = color_scheme[entry.comp_type]
                 state.legend[entry.comp_type] = hexCode
@@ -41,9 +39,9 @@ export const useHomeStore = defineStore({
         }
     },
     actions: {
-        async fetchCalendarData() {
+        async fetchCalendarData(year) {
             try {
-                const response = await axios.get(`http://localhost:5000/calendar/`);
+                const response = await axios.get(`http://localhost:5000/calendar/${year}`);
                 this.data.calender_data = response.data;
             } catch (error) {
                 console.error(error);
