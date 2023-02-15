@@ -3,7 +3,8 @@ from sqlalchemy import select, update, or_, and_, func
 from sqlalchemy.orm.session import Session
 from model import model
 
-from tqdm import tqdm 
+tqdm = lambda x: x
+#from tqdm import tqdm 
 
 import logging
 import os 
@@ -86,6 +87,7 @@ def outlier_detection_race_data(session:Session, boat_class: model.Boat_Class) -
             .join(model.Race_Data.race_boat)
             .join(model.Race_Boat.race)
             .join(model.Race.event)
+            .join(model.Event.competition)
             .where(
                 and_(
                     model.Event.boat_class_id == boat_class.id,
@@ -94,7 +96,7 @@ def outlier_detection_race_data(session:Session, boat_class: model.Boat_Class) -
                         ~model.Race_Data.stroke.between(min_stroke, max_stroke),
                     ),
                     model.Race_Data.distance_meter == row.distance_meter,
-                    model.Competition_Category.id == row.competition_category_id
+                    model.Competition.competition_category_id == row.competition_category_id
                 )
             )
         )
