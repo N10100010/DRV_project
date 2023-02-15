@@ -652,13 +652,20 @@ def get_athlete(athlete_id: int):
 
     races = session.query(model.Race).filter(model.Race.id.in_(race_ids)).all()
 
-    gender = set()
+    gender, athlete_disciplines = set(), set()
     for i, race in enumerate(races):
         gender.add(race.event.gender.name)
         comp = session.query(model.Competition).filter(model.Competition.id == race.event.competition_id).one()
         boat_class_name = race.event.boat_class.abbreviation
         best_time_boat_class = str(race.event.boat_class.world_best_race_boat)
         athlete_boat_classes.add(boat_class_name)
+
+        # check disciplines
+        if any(ath.endswith("x") for ath in athlete_boat_classes):
+            athlete_disciplines.add("Skull")
+        elif not any(ath.endswith("x") for ath in athlete_boat_classes):
+            athlete_disciplines.add("Riemen")
+
         comp_type = race.event.competition.competition_category.name
         race_results[i]["name"] = comp.name
         race_results[i]["venue"] = f'{comp.venue.city}, {comp.venue.country.name}'
@@ -674,6 +681,7 @@ def get_athlete(athlete_id: int):
         "dob": str(athlete.birthdate),
         "weight": athlete.weight_kg__,
         "height": athlete.height_cm__,
+        "disciplines": list(athlete_disciplines),
         "boat_class": ", ".join(athlete_boat_classes),
         "medals_total": total,
         "medals_gold": gold,
@@ -697,7 +705,7 @@ def get_athlete_by_name():
     data = request.json["data"]
     search_query = data["search_query"]
     birth_year = data["birth_year"]
-    nation = data["nation"][:3] if data["nation"] else None  # TODO: implement via ID?
+    nation = data["nation"][:3] if data["nation"] else None
     boat_class = data["boat_class"]
 
     session = Scoped_Session()

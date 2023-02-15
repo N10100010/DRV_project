@@ -828,6 +828,7 @@ export const useRennstrukturAnalyseState = defineStore({
                         }
                     },
                     y: {
+                        reverse: true,
                         title: {
                             display: true,
                             text: 'Platzierung'
