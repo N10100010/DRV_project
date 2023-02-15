@@ -111,7 +111,7 @@ export default {
       // competition type
       compTypes: [], // list of dicts with objects containing displayName, id and key
       optionsCompTypes: [],
-      selectedCompTypes: ["World Rowing Championships"],
+      selectedCompTypes: ["WCH"],
       // year
       startYear: 0,
       endYear: 0,
@@ -197,14 +197,16 @@ export default {
       const tempObj = Object.values(data.runs)
       this.optionsRunsFineSelection = tempObj.reduce((acc, obj) => obj ? acc.concat(Object.keys(obj)) : acc, []);
 
-      const store = useBerichteState()
-      store.postFormDataMatrix({
+      if (this.startYear && this.endYear) {
+        const store = useBerichteState()
+        store.postFormDataMatrix({
         "interval": [this.startYear, this.endYear],
         "competition_category": this.compTypes.filter(item =>
             this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
         "boat_class": this.boatClasses[this.selectedBoatClasses],
         "race_phase_type": this.selectedRuns.map(item => this.optionsRuns[item]),
       })
+      }
     },
     async onSubmit() {
       const {valid} = await this.$refs.filterForm.validate()
@@ -272,9 +274,9 @@ export default {
       this.selectedGenders = 3
       this.ageGroupOptions = []
       this.selectedBoatClasses = ["Alle"]
-      this.startYear = 1950
+      this.startYear = this.filterData.years[0].start_year
       this.endYear = new Date().getFullYear()
-      this.selectedCompTypes = []
+      this.selectedCompTypes = ["WCH"]
       this.selectedRanks = []
       this.selectedRuns = [0, 1, 2]
     },
