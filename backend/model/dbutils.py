@@ -157,7 +157,8 @@ def wr_map_race_boat(session, entity, data):
     # (Beware: Contains duplicates for same distance raceID:931fd903-1d44-4ace-8665-bf1230dc0227 -> boat:2d5a3f94-37ba-480d-9d72-eada6a4c30f9 (DEN))
     entity.intermediates.clear()
     seen_set = set()
-    for interm_data in get_(data, 'raceBoatIntermediates', []):
+    # Reversed iteration based on the assumption that newer (corrected) data for the same distance mark has higher index
+    for interm_data in reversed(get_(data, 'raceBoatIntermediates', [])):
         intermediate = model.Intermediate_Time()
 
         # filter out duplicates // Future TODO/NOTE: Check if current strategy is appropriate
