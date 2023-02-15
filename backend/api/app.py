@@ -25,7 +25,7 @@ from . import globals
 app = Flask(__name__, template_folder=None)
 app.config['JSON_SORT_KEYS'] = False
 
-# NOTE that the following line opnes ALL endpoints for cross-origin requests!
+# NOTE that the following line opens ALL endpoints for cross-origin requests!
 # This has to be tied to the actual public frontend domain as soon as a
 # serious authentication system is implemented. See docs of flask_cors
 CORS(app)
