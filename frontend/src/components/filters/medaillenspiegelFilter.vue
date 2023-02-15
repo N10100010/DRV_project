@@ -98,7 +98,7 @@ export default {
       // competition type
       compTypes: [],
       optionsCompTypes: [],
-      selectedCompTypes: ["Olympics"],
+      selectedCompTypes: ["WCH", "U23WCH"],
 
       // year
       startYear: 0,
@@ -168,7 +168,7 @@ export default {
       store.postFormData({
             "years": [this.startYear, this.endYear],
             "gender": this.selectedGenders,
-            "competition_categories": this.compTypes.filter(item => this.optionsCompTypes.includes(item.display_name)).map(item => item.id),
+            "competition_categories": this.compTypes.filter(item => this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
             "nations": Array.isArray(this.selectedNation) ? this.selectedNation : [this.selectedNation],
             "types": this.selectedMedalTypes
           }
@@ -193,7 +193,7 @@ export default {
       const data = {
         "years": [this.startYear, this.endYear],
         "gender": this.selectedGenders,
-        "competition_categories": this.compTypes.filter(item => this.optionsCompTypes.includes(item.display_name)).map(item => item.id),
+        "competition_categories": this.compTypes.filter(item => this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
         "nations": Array.isArray(this.selectedNation) ? this.selectedNation : [this.selectedNation],
         "types": this.selectedMedalTypes
       }
@@ -208,7 +208,7 @@ export default {
       this.selectedGenders = 0
       this.startYear = 1950
       this.endYear = new Date().getFullYear()
-      this.selectedCompTypes = ["Olympics"]
+      this.selectedCompTypes = ["WCH", "U23WCH"]
       this.selectedNation = []
       this.selectedMedalTypes = 0
       this.selectedBoatClasses = this.optionsBoatClasses[0]
