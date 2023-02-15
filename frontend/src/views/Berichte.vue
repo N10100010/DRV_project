@@ -51,7 +51,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
           <v-row>
             <v-col :cols="mobile ? 12 : 5">
               <h2>{{ data.boat_classes }}</h2>
-              <v-alert type="error" variant="tonal" class="my-2" v-if="data.results === 0">
+              <v-alert type="error" variant="tonal" class="my-2" v-if="data.results === 0 && !matrixVisible">
                 <v-row>
                   <v-col cols="12">
                     <p>Leider keine Ergebnisse gefunden.</p>
@@ -62,7 +62,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                 <v-row>
                   <v-col cols="12">
                     <p>{{ matrixVisible ? matrixResults : data.results }} Datensätze |
-                      Von {{ data.start_date }} bis {{ data.end_date }}</p>
+                      Von {{ filterConf.start }} bis {{ filterConf.end }}</p>
                   </v-col>
                 </v-row>
               </v-alert>
@@ -208,6 +208,9 @@ export default {
       barChartOptions: "getBarChartOptions"
     }),
     ...mapState(useBerichteState, {
+      filterConf: "getFilterConfig"
+    }),
+    ...mapState(useBerichteState, {
       getScatterChartData: "getScatterChartData"
     }),
     ...mapState(useBerichteState, {
@@ -260,34 +263,34 @@ export default {
       },
       data: {
         "results": null,
-        "boat_class": "Men's Eight",
+        "boat_class": "",
         "start_date": 0,
         "end_date": 0,
-        "world_best_time_boat_class": 358360,
-        "best_in_period": 358360,
+        "world_best_time_boat_class": 0,
+        "best_in_period": 0,
         "mean": {
-          "mm:ss,00": 467360,
-          "m/s": 4.54,
-          "pace 500m": 158360,
-          "pace 1000m": 282360
+          "mm:ss,00": 0,
+          "m/s": 0,
+          "pace 500m": 0,
+          "pace 1000m": 0
         },
-        "std_dev": 43360,
-        "median": 432360,
+        "std_dev": 0,
+        "median": 0,
         "gradation_fastest": {
-          "no_of_samples": 345,
-          "time": 358360
+          "no_of_samples": 0,
+          "time": 0
         },
         "gradation_medium": {
-          "no_of_samples": 239,
-          "time": 358360
+          "no_of_samples": 0,
+          "time": 0
         },
         "gradation_slow": {
-          "no_of_samples": 167,
-          "time": 358360
+          "no_of_samples": 0,
+          "time": 0
         },
         "gradation_slowest": {
-          "no_of_samples": 463,
-          "time": 358360
+          "no_of_samples": 0,
+          "time": 0
         },
         "plot_data": {
           "histogram": {
@@ -310,6 +313,8 @@ export default {
         }
 
       }
+
+
     }
   },
   watch: {

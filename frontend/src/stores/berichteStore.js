@@ -12,6 +12,10 @@ export const useBerichteState = defineStore({
         tableExport: [],
         lastFilterConfig: null,
         selectedBoatClass: "Alle",
+        filterConfig: {
+            start: 0,
+            end: 0,
+        },
         filterOptions: [{
             "years": [{"start_year": 0}, {"end_year": 0}],
             "boat_classes": {
@@ -171,27 +175,27 @@ export const useBerichteState = defineStore({
             },
             "plot_data": {
                 "histogram": {
-                    "labels": [],
-                    "data": []
+                    "labels": [0],
+                    "data": [0]
                 },
                 "histogram_mean": 0,
                 "histogram_sd_low": 0,
                 "histogram_sd_high": 0,
                 "scatter_plot": {
-                    "labels": [],
-                    "data": []
+                    "labels": [0],
+                    "data": [0]
                 },
                 "scatter_1_sd_high": {
-                    "labels": [],
-                    "data": []
+                    "labels": [0],
+                    "data": [0]
                 },
                 "scatter_1_sd_low": {
-                    "labels": [],
-                    "data": []
+                    "labels": [0],
+                    "data": [0]
                 },
                 "scatter_mean": {
-                    "labels": [],
-                    "data": []
+                    "labels": [0],
+                    "data": [0]
                 }
             }
         },
@@ -200,6 +204,9 @@ export const useBerichteState = defineStore({
     getters: {
         getFilterState(state) {
             return state.filterOpen
+        },
+        getFilterConfig(state) {
+            return state.filterConfig
         },
         getReportFilterOptions(state) {
             return state.filterOptions
@@ -211,8 +218,8 @@ export const useBerichteState = defineStore({
             if (state.matrixData === null) {
                 return null
             }
-            return Object.values(state.matrixData)
-              .reduce((acc, item) => acc + item["count"], 0);
+            const dataVals = Object.values(state.matrixData)
+            return dataVals.length !== 0 ? dataVals.reduce((acc, item) => acc + item["count"], 0) : 0;
         },
         getLastFilterConfig(state) {
             return state.lastFilterConfig
@@ -257,6 +264,9 @@ export const useBerichteState = defineStore({
             return state.selectedBoatClass === "Alle"
         },
         getBarChartData(state) {
+            if (state.data.plot_data.histogram.length === 0) {
+                return null
+            }
             const {labels} = state.data.plot_data.histogram;
             const {
                 histogram_mean: meanValue,
@@ -378,7 +388,7 @@ export const useBerichteState = defineStore({
             } = state.data.plot_data;
 
             function computeData(data, labels, targetData) {
-                return labels.map((label, i) => ({
+                    return labels.map((label, i) => ({
                     x: new Date(label),
                     y: formatMilliseconds(data.reduce((a, b) =>
                         Math.abs(b - targetData.data[i]) < Math.abs(a - targetData.data[i]) ? b : a))
@@ -499,6 +509,7 @@ export const useBerichteState = defineStore({
                 })
         },
         async postFormDataMatrix(data) {
+            this.selectedBoatClass = "Alle"
             await axios.post('http://localhost:5000/matrix', {data})
                 .then(response => {
                     this.matrixData = response.data
@@ -514,6 +525,10 @@ export const useBerichteState = defineStore({
         },
         setLastFilterConfig(filterConfig) {
             this.lastFilterConfig = filterConfig
+        },
+        setFilterConfig(interval) {
+            this.filterConfig.start = interval[0]
+             this.filterConfig.end = interval[1]
         },
         exportTableData() {
             const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(row => {

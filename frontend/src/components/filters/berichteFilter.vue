@@ -128,7 +128,7 @@ export default {
       optionsDisciplines: [],
       selectedDiscipline: 0,
       optionsBoatClasses: [],
-      selectedBoatClasses: null,
+      selectedBoatClasses: ["Alle"],
       // runs
       optionsRuns: [],
       selectedRuns: [0, 1, 2],
@@ -374,7 +374,6 @@ export default {
           } else if (this.selectedGenders === 2) {
             boatClassOptions.push(value[0])
             Object.values(value).forEach((val) => {
-              // TODO: Check if this is working
               this.boatClasses[val[0]] = val[2]
             })
           }
@@ -405,6 +404,14 @@ export default {
     },
     filterData: function (newVal,) {
       this.initializeFilter(newVal)
+    },
+    startYear: function (newVal, ) {
+      const store = useBerichteState()
+      store.setFilterConfig([newVal, this.endYear])
+    },
+    endYear: function (newVal, ) {
+      const store = useBerichteState()
+      store.setFilterConfig([this.startYear, newVal])
     }
   }
 }
