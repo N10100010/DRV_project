@@ -97,7 +97,8 @@
             "cwd": "${workspaceFolder}/backend",
             "module": "flask",
             "env": {
-                "FLASK_ENV": "development"
+                "FLASK_ENV": "development",
+                "JWT_SECRET_KEY": "dev-secret-str"
             },
             "args": [
                 "--app",

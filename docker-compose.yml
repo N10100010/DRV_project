@@ -19,6 +19,7 @@ services:
       PGPORT: "5432"
       PGDATABASE: "rowing"
       DB_VERBOSITY: "1"
+      JWT_SECRET_KEY: "dev-secret-str"
 
   scraper:
     build:

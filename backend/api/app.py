@@ -1,4 +1,5 @@
 import os
+from secrets import token_hex
 import datetime
 import json
 from collections import OrderedDict
@@ -11,6 +12,7 @@ from flask import request
 from flask import abort
 from flask import Response
 from flask_cors import CORS
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 
 from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import joinedload
@@ -29,6 +31,10 @@ app.config['JSON_SORT_KEYS'] = False
 # This has to be tied to the actual public frontend domain as soon as a
 # serious authentication system is implemented. See docs of flask_cors
 CORS(app)
+
+# Auth / JWT
+app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY') or token_hex(16)
+jwt = JWTManager(app)
 
 # used similar to a context manager. using the constructor creates a scoped session, bound to its creating function scope 
 Scoped_Session = model.Scoped_Session
