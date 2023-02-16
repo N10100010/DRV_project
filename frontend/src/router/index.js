@@ -16,85 +16,37 @@ const router = createRouter({
         {
             path: '/',
             name: 'home',
-            component: HomeView,
-            beforeEnter: (to, from, next) => {
-                const token = localStorage.getItem('token')
-                if (token) {
-                    next()
-                } else {
-                    next({path: '/auth', query: {redirect_to: '/'}})
-                }
-            }
+            component: HomeView
         },
         {
             path: '/berichte',
             name: 'berichte',
-            component: Berichte,
-            beforeEnter: (to, from, next) => {
-                const token = localStorage.getItem('token')
-                if (token) {
-                    next()
-                } else {
-                    next({path: '/auth', query: {redirect_to: '/berichte'}})
-                }
-            }
+            component: Berichte
         },
         {
             path: '/rennstrukturanalyse/:comp_id?/:event_id?/:race_id?',
             name: 'rennstrukturanalyse',
-            component: Rennstrukturanalyse,
-            beforeEnter: (to, from, next) => {
-                const token = localStorage.getItem('token')
-                if (token) {
-                    next()
-                } else {
-                    next({path: '/auth', query: {redirect_to: '/rennstrukturanalyse'}})
-                }
-            }
+            component: Rennstrukturanalyse
         },
         {
             path: '/athleten',
             name: 'athleten',
-            component: AthletenView,
-            beforeEnter: (to, from, next) => {
-                const token = localStorage.getItem('token')
-                if (token) {
-                    next()
-                } else {
-                    next({path: '/auth', query: {redirect_to: '/athleten'}})
-                }
-            }
+            component: AthletenView
         },
         {
             path: '/teams',
             name: 'teams',
-            component: TeamsView,
-            beforeEnter: (to, from, next) => {
-                const token = localStorage.getItem('token')
-                if (token) {
-                    next()
-                } else {
-                    next({path: '/auth', query: {redirect_to: '/teams'}})
-                }
-            }
+            component: TeamsView
         },
         {
             path: '/medaillenspiegel',
             name: 'medaillenspiegel',
-            component: MedaillenspiegelView,
-            beforeEnter: (to, from, next) => {
-                const token = localStorage.getItem('token')
-                if (token) {
-                    next()
-                } else {
-                    next({path: '/auth', query: {redirect_to: '/medaillenspiegel'}})
-                }
-            }
+            component: MedaillenspiegelView
         },
         {
             path: '/datenschutz',
             name: 'datenschutz',
-            component: DatenschutzView,
+            component: DatenschutzView
         },
         {
             path: '/impressum',
@@ -104,15 +56,7 @@ const router = createRouter({
         {
             path: '/hilfe',
             name: 'hilfe',
-            component: HilfeView,
-            beforeEnter: (to, from, next) => {
-                const token = localStorage.getItem('token')
-                if (token) {
-                    next()
-                } else {
-                    next({path: '/auth', query: {redirect_to: '/hilfe'}})
-                }
-            }
+            component: HilfeView
         },
         {
             path: '/auth',
