@@ -241,8 +241,11 @@ class Competition_Type(Base):
     abbreviation = Column(String)
     name = Column(String)
 
+    competition_category_id = Column(ForeignKey("competition_categories.id"))
+    competition_category    = relationship("Competition_Category", back_populates="competition_types")
+
     # relationships
-    competition_categories = relationship("Competition_Category", back_populates="competition_type")
+    competitions = relationship("Competition", back_populates="competition_type")
 
 
 class Competition_Category(Base):
@@ -254,11 +257,8 @@ class Competition_Category(Base):
 
     name = Column(String)
 
-    competition_type_id = Column(ForeignKey("competition_types.id"))
-    competition_type    = relationship("Competition_Type", back_populates="competition_categories")
-
     # relationships
-    competitions = relationship("Competition", back_populates="competition_category")
+    competition_types = relationship("Competition_Type", back_populates="competition_category")
 
 
 class Competition(Base):
@@ -273,8 +273,8 @@ class Competition(Base):
     scraper_last_scrape = Column(DateTime)
     scraper_data_provider = Column(Integer) # Use Enum_Data_Provider
 
-    competition_category_id = Column(ForeignKey("competition_categories.id"))
-    competition_category    = relationship("Competition_Category", back_populates="competitions")
+    competition_type_id = Column(ForeignKey("competition_types.id"))
+    competition_type    = relationship("Competition_Type", back_populates="competitions")
     venue_id = Column(ForeignKey("venues.id"))
     venue    = relationship("Venue", back_populates="competitions")
 
