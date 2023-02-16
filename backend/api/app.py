@@ -15,7 +15,7 @@ from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, JWTManager
 
 # disable auth by uncommenting the following line
-# jwt_required = lambda: (lambda x: x) # disable auth
+jwt_required = lambda: (lambda x: x) # disable auth
 
 from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import joinedload
@@ -89,45 +89,23 @@ def healthcheck():
 @jwt_required()
 def get_competition_categories():
     """
-    todo: comment
+    This endpoint give the filter options data for the race data page.
     """
-    result = []
-
     session = Scoped_Session()
-    iterator = session.execute(select(model.Competition_Category)).scalars()
-    for entity in iterator:
-        mapped = {"id": entity.id, "display_name": entity.name}
-        result.append(mapped)
+    min_year, max_year = session.query(func.min(model.Competition.year), func.max(model.Competition.year)).first()
 
-    return result
+    statement = select(model.Competition_Type.additional_id_, model.Competition_Type.abbreviation)
+    competition_categories = [{
+        "id": v[0],
+        "display_name": v[1],
+    } for v in session.execute(statement).fetchall()]
+    return {"years": (min_year, max_year), "competition_categories": competition_categories}
 
 
 @app.route('/boatclass_information')
 @jwt_required()
 def get_boatclass_information() -> dict:
     return globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT
-
-
-@app.route('/competition_category_information')
-@jwt_required()
-def get_competition_category_information() -> dict:
-    session = Scoped_Session()
-    statement = (
-        select(
-            model.Competition_Type.additional_id_,
-            model.Competition_Type.name,
-            model.Competition_Type.abbreviation
-        )
-    )
-
-    return {
-        v[0]: (
-            v[1], 
-            globals.ALLOWED_COMPETITION_TYPES_MAPPING[v[2]]
-            ) 
-        for v in session.execute(statement).fetchall()
-        if v[2] in globals.ALLOWED_COMPETITION_TYPES_MAPPING
-        }
 
 
 @app.route('/competition', methods=['POST'])
@@ -246,7 +224,7 @@ def get_matrix() -> dict:
         .join(model.Event.boat_class)
         .where(
             model.Intermediate_Time.distance_meter == 2000,
-            # model.Intermediate_Time.is_outlier == True,
+            # model.Intermediate_Time.is_outlier == False,
             model.Intermediate_Time.result_time_ms != 0
         )
         .group_by(
@@ -829,15 +807,15 @@ def get_medals_filter_options():
     session = Scoped_Session()
     min_year, max_year = session.query(func.min(model.Competition.year), func.max(model.Competition.year)).first()
 
-    statement = select(model.Competition_Category, model.Competition_Type.abbreviation
-                       ).join(model.Competition_Category.competition_type)
+    statement = select(model.Competition_Type.additional_id_, model.Competition_Type.abbreviation)
+    competition_categories = [{
+        "id": v[0],
+        "display_name": v[1],
+    } for v in session.execute(statement).fetchall()]
 
     return json.dumps([{
         "years": [{"start_year": min_year}, {"end_year": max_year}],
-        "competition_categories": [{
-            "id": entity[0].id,
-            "display_name": entity[1],
-        } for entity in session.execute(statement).fetchall()],
+        "competition_categories": competition_categories,
         "medal_types": [
             {"display_name": "Gesamt", "id": "0"},
             {"display_name": "Olympisch", "id": "1"},
@@ -931,13 +909,11 @@ def get_report_filter_options():
     session = Scoped_Session()
     min_year, max_year = session.query(func.min(model.Competition.year), func.max(model.Competition.year)).first()
 
-    statement = select(model.Competition_Category, model.Competition_Type.abbreviation
-                       ).join(model.Competition_Category.competition_type)
-
+    statement = select(model.Competition_Type.additional_id_, model.Competition_Type.abbreviation)
     competition_categories = [{
-        "id": entity[0].id,
-        "display_name": entity[1],
-    } for entity in session.execute(statement).fetchall()]
+        "id": v[0],
+        "display_name": v[1],
+    } for v in session.execute(statement).fetchall()]
 
     return json.dumps([{
         "years": [{"start_year": min_year}, {"end_year": max_year}],
