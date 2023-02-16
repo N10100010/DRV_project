@@ -1,3 +1,19 @@
+ALLOWED_COMPETITION_TYPES_MAPPING = {
+    'ID_NF': 'ID', 
+    'CONT NF': 'CONT', 
+    'WCp 1': 'WCh 1', 
+    'WCp 2': 'WCh 2', 
+    'WCp 3': 'WCh 3', 
+    'WCH': 'WCh', 
+    'JWCH': 'JWCh', 
+    'MASTER_NF': 'MASTER', 
+    'YOG': 'YOG', 
+    'OG': 'OG', 
+    'PG': 'PG', 
+    'ERCC': 'ERCC', 
+    'WCH IE': 'WCh IE', 
+}
+
 BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
     'men': {
         'u19': {
