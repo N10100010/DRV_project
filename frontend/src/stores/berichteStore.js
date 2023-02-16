@@ -493,7 +493,7 @@ export const useBerichteState = defineStore({
     },
     actions: {
         async fetchReportFilterOptions() {
-            await axios.get('http://localhost:5000/get_report_filter_options')
+            await axios.get(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/get_report_filter_options`)
                 .then(response => {
                     this.filterOptions = response.data
                 }).catch(error => {
@@ -502,7 +502,7 @@ export const useBerichteState = defineStore({
         },
         async postFormData(data) {
             this.selectedBoatClass = data.boat_classes
-            await axios.post('http://localhost:5000/get_report_boat_class', {data})
+            await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/get_report_boat_class`, {data})
                 .then(response => {
                     this.data = response.data
                 }).catch(error => {
@@ -511,7 +511,7 @@ export const useBerichteState = defineStore({
         },
         async postFormDataMatrix(data) {
             this.selectedBoatClass = "Alle"
-            await axios.post('http://localhost:5000/matrix', {data})
+            await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/matrix`, {data})
                 .then(response => {
                     this.matrixData = response.data
                 }).catch(error => {

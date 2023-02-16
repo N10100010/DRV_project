@@ -1,4 +1,5 @@
 import os
+from secrets import token_hex
 import datetime
 import json
 from collections import OrderedDict
@@ -8,13 +9,18 @@ from collections import OrderedDict
 
 from flask import Flask
 from flask import request
-from flask import abort
+from flask import abort, jsonify
 from flask import Response
 from flask_cors import CORS
+from flask_jwt_extended import create_access_token, jwt_required, JWTManager
+
+# disable auth by uncommenting the following line
+# jwt_required = lambda: (lambda x: x) # disable auth
 
 from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import joinedload
 
+from . import auth
 from model import model
 from .race import result_time_best_of_year_interval, compute_intermediates_figures
 from common.rowing import propulsion_in_meters_per_stroke
@@ -24,11 +30,16 @@ from . import globals
 # app is the main controller for the Flask-Server and will start the app in the main function 
 app = Flask(__name__, template_folder=None)
 app.config['JSON_SORT_KEYS'] = False
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=60)
 
-# NOTE that the following line opnes ALL endpoints for cross-origin requests!
+# NOTE that the following line opens ALL endpoints for cross-origin requests!
 # This has to be tied to the actual public frontend domain as soon as a
 # serious authentication system is implemented. See docs of flask_cors
 CORS(app)
+
+# Auth / JWT
+app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY') or token_hex(16)
+jwt = JWTManager(app)
 
 # used similar to a context manager. using the constructor creates a scoped session, bound to its creating function scope 
 Scoped_Session = model.Scoped_Session
@@ -40,7 +51,26 @@ Scoped_Session = model.Scoped_Session
 # Multiple Joins: https://docs.sqlalchemy.org/en/14/orm/queryguide.html#chaining-multiple-joins
 
 
+@app.route("/login", methods=["POST"])
+def login():
+    username = request.json.get("user", "")
+    password = request.json.get("pass", "")
+    authorized = auth.hashed(password) == auth.MASTER_PASSWORD_HASHED
+    if not authorized:
+        return jsonify({"msg": "Bad username or password"}), 401
+
+    access_token = create_access_token(identity=username)
+    return jsonify(access_token=access_token)
+
+
+@jwt.invalid_token_loader
+def invalid_token_handler(reason):
+    http_status_code = 401 # Code 401 is important here for robust login handling in the frontend
+    return {"msg": str(reason)}, http_status_code
+
+
 @app.route('/report', methods=['POST'])
+@jwt_required()
 def get_report():
     """
     
@@ -56,6 +86,7 @@ def healthcheck():
 
 
 @app.route('/competition_category/', methods=['GET', 'POST'])
+@jwt_required()
 def get_competition_categories():
     """
     todo: comment
@@ -72,26 +103,35 @@ def get_competition_categories():
 
 
 @app.route('/boatclass_information')
+@jwt_required()
 def get_boatclass_information() -> dict:
     return globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT
 
 
 @app.route('/competition_category_information')
+@jwt_required()
 def get_competition_category_information() -> dict:
     session = Scoped_Session()
     statement = (
         select(
-            model.Competition_Category.additional_id_,
-            model.Competition_Category.name,
+            model.Competition_Type.additional_id_,
+            model.Competition_Type.name,
             model.Competition_Type.abbreviation
         )
-        .join(model.Competition_Category.competition_type)
     )
 
-    return {v[0]: (v[1], v[2]) for v in session.execute(statement).fetchall()}
+    return {
+        v[0]: (
+            v[1], 
+            globals.ALLOWED_COMPETITION_TYPES_MAPPING[v[2]]
+            ) 
+        for v in session.execute(statement).fetchall()
+        if v[2] in globals.ALLOWED_COMPETITION_TYPES_MAPPING
+        }
 
 
 @app.route('/competition', methods=['POST'])
+@jwt_required()
 def get_competitions_year_category() -> dict:
     """
     WHEN?
@@ -170,6 +210,7 @@ def get_competitions_year_category() -> dict:
 
 
 @app.route('/matrix', methods=['POST'])
+@jwt_required()
 def get_matrix() -> dict:
     """
         todo: How to realize the filtering? 
@@ -252,6 +293,7 @@ def get_matrix() -> dict:
 
 
 @app.route('/get_race/<int:race_id>/', methods=['GET'])
+@jwt_required()
 def get_race(race_id: int) -> dict:
     """
     WHEN? THIS FUNCTION IS CALLED WHEN THE USER SELECTED A RACE 
@@ -429,6 +471,7 @@ def shutdown_session(exception=None):
 
 
 @app.route('/get_report_boat_class', methods=['POST'])
+@jwt_required()
 def get_report_boat_class():
     """
     Delivers the report results for a single boat class.
@@ -609,6 +652,7 @@ def get_report_boat_class():
 
 
 @app.route('/get_athlete/<int:athlete_id>', methods=['GET'])
+@jwt_required()
 def get_athlete(athlete_id: int):
     """
     Give athlete data for specific athlete
@@ -695,6 +739,7 @@ def get_athlete(athlete_id: int):
 
 
 @app.route('/get_athlete_by_name/', methods=['POST'])
+@jwt_required()
 def get_athlete_by_name():
     """
     Delivers the athlete search result depending on the search query.
@@ -738,6 +783,7 @@ def get_athlete_by_name():
 
 
 @app.route('/get_athletes_filter_options', methods=['GET'])
+@jwt_required()
 def get_athletes_filter_options():
     """
     Delivers the filter options for the athletes page.
@@ -757,6 +803,7 @@ def get_athletes_filter_options():
 
 
 @app.route('/get_teams_filter_options', methods=['GET'])
+@jwt_required()
 def get_teams_filter_options():
     """
         Delivers the filter options for the teams page.
@@ -774,6 +821,7 @@ def get_teams_filter_options():
 
 
 @app.route('/get_medals_filter_options', methods=['GET'])
+@jwt_required()
 def get_medals_filter_options():
     """
     Delivers the filter options for the medals page.
@@ -802,6 +850,7 @@ def get_medals_filter_options():
 
 
 @app.route('/get_medals', methods=['POST'])
+@jwt_required()
 def get_medals():
     data = request.json["data"]
     start, end = data["years"][0], data["years"][1]
@@ -873,6 +922,7 @@ def get_medals():
 
 
 @app.route('/get_report_filter_options', methods=['GET'])
+@jwt_required()
 def get_report_filter_options():
     """
     Delivers the filter options for the report page.
@@ -899,6 +949,7 @@ def get_report_filter_options():
 
 
 @app.route('/calendar/<int:year>', methods=['GET'])
+@jwt_required()
 def get_calendar(year: int):
     """
     This route delivers calendar data for all competitions.

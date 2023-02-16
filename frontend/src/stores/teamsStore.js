@@ -995,7 +995,7 @@ export const useTeamsState = defineStore({
     },
     actions: {
         async fetchTeamsFilterOptions() {
-            await axios.get('http://localhost:5000/get_teams_filter_options')
+            await axios.get(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/get_teams_filter_options`)
                 .then(response => {
                     this.filterOptions = response.data
                 }).catch(error => {

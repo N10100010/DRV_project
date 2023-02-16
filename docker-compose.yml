@@ -19,6 +19,7 @@ services:
       PGPORT: "5432"
       PGDATABASE: "rowing"
       DB_VERBOSITY: "1"
+      JWT_SECRET_KEY: "dev-secret-str"
 
   scraper:
     build:
@@ -73,7 +74,7 @@ services:
       - api
     environment:
       PORT: "5173"
-      BACKEND_API_BASE_URL: "http://localhost:5000/"
+      VITE_BACKEND_API_BASE_URL: "http://localhost:5000"
 
 volumes:
   db:

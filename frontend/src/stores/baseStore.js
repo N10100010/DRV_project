@@ -887,14 +887,14 @@ export const useRennstrukturAnalyseState = defineStore({
         async getFilterOptions() {
             try {
                 this.data.filterOptions[0].competition_category_ids = await axios.get(
-                    'http://localhost:5000/competition_category/'
+                    `${import.meta.env.VITE_BACKEND_API_BASE_URL}/competition_category/`
                 )
             } catch (error) {
                 console.error(error)
             }
         },
         async postFormData(data) {
-            await axios.post('http://localhost:5000/competition', {data})
+            await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/competition`, {data})
                 .then(response => {
                     this.data.analysis = response.data
                     this.loadingState = false
@@ -903,7 +903,7 @@ export const useRennstrukturAnalyseState = defineStore({
                 })
         },
         async fetchRaceData(raceId) {
-            await axios.get(`http://localhost:5000/get_race/${raceId}/`)
+            await axios.get(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/get_race/${raceId}/`)
                 .then(response => {
                     this.data.raceData[0] = response.data
                     this.loadingState = false

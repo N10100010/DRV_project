@@ -2,11 +2,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Py: Dev Playgorund (Rapha)",
+            "name": "Py: Dev Playground (Rapha)",
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}/backend",
-            "module": "api.race",
+            "program": "raphael_temp.py",
             "justMyCode": true
         },
         {
@@ -97,7 +97,8 @@
             "cwd": "${workspaceFolder}/backend",
             "module": "flask",
             "env": {
-                "FLASK_ENV": "development"
+                "FLASK_ENV": "development",
+                "JWT_SECRET_KEY": "dev-secret-str"
             },
             "args": [
                 "--app",

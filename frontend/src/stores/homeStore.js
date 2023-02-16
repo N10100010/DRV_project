@@ -41,7 +41,7 @@ export const useHomeStore = defineStore({
     actions: {
         async fetchCalendarData(year) {
             try {
-                const response = await axios.get(`http://localhost:5000/calendar/${year}`);
+                const response = await axios.get(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/calendar/${year}`);
                 this.data.calender_data = response.data;
             } catch (error) {
                 console.error(error);

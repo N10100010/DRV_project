@@ -71,10 +71,10 @@ The following **service settings** have to be made on *railway.app*:
 
 **Step 2**
 
-Set the environment variable `BACKEND_API_BASE_URL` to tell the *frontend* how to connect to the Backend API. To do this you have to find out the public (!) URL of the Backend API. The following is just an **example**:
+Set the environment variable `VITE_BACKEND_API_BASE_URL` to tell the *frontend* how to connect to the Backend API. To do this you have to find out the public (!) URL of the Backend API. The following is just an **example**:
 
 ```
-BACKEND_API_BASE_URL=https://backend-api-production-drv-project.up.railway.app/
+VITE_BACKEND_API_BASE_URL=https://backend-api-production-drv-project.up.railway.app
 ```
 
 

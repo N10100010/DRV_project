@@ -139,6 +139,7 @@ backend/scraping_wr/*.json
 backend/tmp.*.json
 /database/secret.*
 /*.tar
+/backend/*_temp.py
 
 #-------------------------------------------------------------
 
@@ -514,3 +515,6 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,flask,node,vuejs
+
+# Allows
+!/frontend/.env

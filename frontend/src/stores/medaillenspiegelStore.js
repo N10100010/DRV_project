@@ -69,7 +69,7 @@ export const useMedaillenspiegelState = defineStore({
     },
     actions: {
         async fetchMedaillenspiegelFilterOptions() {
-            await axios.get('http://localhost:5000/get_medals_filter_options')
+            await axios.get(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/get_medals_filter_options`)
                 .then(response => {
                     this.filterOptions = response.data
                 }).catch(error => {
@@ -77,7 +77,7 @@ export const useMedaillenspiegelState = defineStore({
                 })
         },
         async postFormData(data) {
-             await axios.post('http://localhost:5000/get_medals', {data})
+             await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/get_medals`, {data})
                 .then(response => {
                     this.data = response.data
                 }).catch(error => {

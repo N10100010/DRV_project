@@ -153,7 +153,7 @@ export const useAthletenState = defineStore({
     },
     actions: {
         async fetchAthletesFilterOptions() {
-            await axios.get('http://localhost:5000/get_athletes_filter_options')
+            await axios.get(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/get_athletes_filter_options`)
                 .then(response => {
                     this.filterOptions = response.data
                 }).catch(error => {
@@ -161,7 +161,7 @@ export const useAthletenState = defineStore({
                 })
         },
         async postSearchAthlete(data) {
-            await axios.post("http://localhost:5000/get_athlete_by_name/", {data})
+            await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/get_athlete_by_name/`, {data})
                 .then(response => {
                     this.previewAthleteResults = response.data
                 }).catch(error => {
@@ -169,7 +169,7 @@ export const useAthletenState = defineStore({
                 })
         },
         async getAthlete(data) {
-            await axios.get(`http://localhost:5000/get_athlete/${data.id}`)
+            await axios.get(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/get_athlete/${data.id}`)
                 .then(response => {
                     this.data.athlete = response.data
                 }).catch(error => {
