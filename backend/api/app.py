@@ -15,7 +15,7 @@ from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, JWTManager
 
 # disable auth by uncommenting the following line
-# jwt_required = lambda: (lambda x: x) # disable auth
+jwt_required = lambda: (lambda x: x) # disable auth
 
 from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import joinedload
@@ -112,7 +112,14 @@ def get_competition_category_information() -> dict:
         )
     )
 
-    return {v[0]: (v[1], v[2]) for v in session.execute(statement).fetchall()}
+    return {
+        v[0]: (
+            v[1], 
+            globals.ALLOWED_COMPETITION_TYPES_MAPPING[v[2]]
+            ) 
+        for v in session.execute(statement).fetchall()
+        if v[2] in globals.ALLOWED_COMPETITION_TYPES_MAPPING
+        }
 
 
 @app.route('/competition', methods=['POST'])
