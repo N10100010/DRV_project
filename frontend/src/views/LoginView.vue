@@ -8,7 +8,7 @@
         </v-alert>
       </v-col>
       <v-col cols="12" sm="8" md="4" class="px-0">
-        <v-form class="px-0">
+        <v-form class="px-0" @submit.prevent="login">
           <v-text-field
               label="Nutzername"
               v-model="username"
@@ -20,7 +20,7 @@
               v-model="password"
               variant="outlined"
               density="compact"></v-text-field>
-          <v-btn color="#1369b0" style="color: white" @click="login">Login</v-btn>
+          <v-btn color="#1369b0" style="color: white" type="submit">Login</v-btn>
         </v-form>
       </v-col>
     </v-col>
