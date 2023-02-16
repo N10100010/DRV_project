@@ -8,7 +8,7 @@
         </v-alert>
       </v-col>
       <v-col cols="12" sm="8" md="4" class="px-0">
-        <v-form class="px-0">
+        <v-form class="px-0" @submit.prevent="login">
           <v-text-field
               label="Nutzername"
               v-model="username"
@@ -20,7 +20,7 @@
               v-model="password"
               variant="outlined"
               density="compact"></v-text-field>
-          <v-btn color="#1369b0" style="color: white" @click="login">Login</v-btn>
+          <v-btn color="#1369b0" style="color: white" type="submit">Login</v-btn>
         </v-form>
       </v-col>
     </v-col>
@@ -28,11 +28,14 @@
 </template>
 
 <script>
+import axios from 'axios';
+import router from '../router'
+
 export default {
   data() {
     return {
       username: 'drv_test_user',
-      password: '000000'
+      password: ''
     }
   },
   created() {
@@ -41,24 +44,21 @@ export default {
     this.checkScreen();
   },
   methods: {
-    login() {
+    async login() {
+      try {
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/login`, {
+          user: this.username,
+          pass: this.password
+        });
 
-      const token = 'test_token_value'
-      const expires = Date.now() + 7 * 24 * 60 * 60 * 1000
+        const token = response.data.access_token;
+        localStorage.setItem('session_token', token)
+        router.push('/');
 
-      localStorage.setItem('token', token)
-      localStorage.setItem('expires', expires)
-
-      if (Date.now() >= localStorage.getItem('expires')) {
-        localStorage.removeItem('token')
-        localStorage.removeItem('expires')
-      } else {
-        console.log("Wird ausgeüfhrt.")
-        const url = new URL(window.location.href);
-        const redirectTo = url.searchParams.get("redirect_to");
-        if (redirectTo) {
-          window.location.href = redirectTo;
-        }
+      } catch (error) {
+        console.log("Login failed. Wrong credentials.")
+        console.log(error)
+        /** TODO: render fail msg to DOM */
       }
     },
     checkScreen() {

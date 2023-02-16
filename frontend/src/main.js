@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+// import { pinia } from './stores'
 import App from './App.vue'
 import router from './router'
 import './assets/main.css'
@@ -16,4 +17,9 @@ const vuetify = createVuetify({
   directives,
 })
 
-createApp(App).use(createPinia()).use(router).use(vuetify).use(VCalendar).mount('#app')
+const pinia = createPinia() /* axios interceptors needs Pinia already */
+
+// auth: axios interceptors
+import './api/axios';
+
+createApp(App).use(pinia).use(router).use(vuetify).use(VCalendar).mount('#app')
