@@ -677,6 +677,8 @@ export const useRennstrukturAnalyseState = defineStore({
                         `(${athlete.boat_position}) ${athlete.first_name} ${athlete.last_name}`)
                     rowData.push(athleteNames);
 
+                    // <a href="http://localhost:5173/athleten?athlete_id=${athlete.id}"
+
                     const firstArray = [];
                     const secondArray = [];
                     const speedValues = [];

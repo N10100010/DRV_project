@@ -173,8 +173,8 @@ export default {
       // boatclasses
       this.boatClasses = {}
       this.genderTypeOptions = Object.keys(data.boat_classes)
-      let ageGroupOptions = Object.keys(data.boat_classes.men)
-      ageGroupOptions.push(...Object.keys(data.boat_classes.women))
+      let ageGroupOptions = Object.keys(data.boat_classes.m)
+      ageGroupOptions.push(...Object.keys(data.boat_classes.w))
       this.ageGroupOptions = ageGroupOptions.filter((v, i, a) => a.indexOf(v) === i); // exclude non-unique values
 
       let boatClassOptions = []
@@ -313,11 +313,11 @@ export default {
         this.selectedBoatClasses = null
         let optionsList = []
         if (newVal === 0) { // men
-          optionsList.push(...Object.keys(this.filterData.boat_classes.men))
+          optionsList.push(...Object.keys(this.filterData.boat_classes.m))
           this.optionsDisciplines = ["Skull", "Riemen"]
         }
         if (newVal === 1) { // women
-          optionsList.push(...Object.keys(this.filterData.boat_classes.women))
+          optionsList.push(...Object.keys(this.filterData.boat_classes.w))
           this.optionsDisciplines = ["Skull", "Riemen"]
         }
         if (newVal === 2) { // mixed

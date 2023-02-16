@@ -19,7 +19,7 @@ export const useBerichteState = defineStore({
         filterOptions: [{
             "years": [{"start_year": 0}, {"end_year": 0}],
             "boat_classes": {
-                'men': {
+                'm': {
                     'junior': {
                         'single': {"JM1x": "Junior Men's Single Sculls"},
                         'double': {"JM2x": "Junior Men's Double Sculls"},
@@ -61,7 +61,7 @@ export const useBerichteState = defineStore({
                         '3': {"PR3 M2-": "PR3 Men's Pair"}
                     }
                 },
-                'women': {
+                'w': {
                     'junior': {
                         'single': {"JW1x": "Junior Women's Single Sculls"},
                         'double': {"JW2x": "Junior Women's Double Sculls"},
@@ -229,14 +229,14 @@ export const useBerichteState = defineStore({
                 return null;
             }
             const subHeaders = {
-                "OPEN MEN": Object.values(state.filterOptions[0].boat_classes.men.elite),
-                "OPEN WOMEN": Object.values(state.filterOptions[0].boat_classes.women.elite),
-                "PARA MEN": Object.values(state.filterOptions[0].boat_classes.men.para),
-                "PARA WOMEN": Object.values(state.filterOptions[0].boat_classes.women.para),
-                "U23 MEN": Object.values(state.filterOptions[0].boat_classes.men.u23),
-                "U23 WOMEN": Object.values(state.filterOptions[0].boat_classes.women.u23),
-                "U19 MEN": Object.values(state.filterOptions[0].boat_classes.men.u19),
-                "U19 WOMEN": Object.values(state.filterOptions[0].boat_classes.women.u19)
+                "OPEN MEN": Object.values(state.filterOptions[0].boat_classes.m.elite),
+                "OPEN WOMEN": Object.values(state.filterOptions[0].boat_classes.w.elite),
+                "PARA MEN": Object.values(state.filterOptions[0].boat_classes.m.para),
+                "PARA WOMEN": Object.values(state.filterOptions[0].boat_classes.w.para),
+                "U23 MEN": Object.values(state.filterOptions[0].boat_classes.m.u23),
+                "U23 WOMEN": Object.values(state.filterOptions[0].boat_classes.w.u23),
+                "U19 MEN": Object.values(state.filterOptions[0].boat_classes.m.u19),
+                "U19 WOMEN": Object.values(state.filterOptions[0].boat_classes.w.u19)
             }
 
             let rowValues = []
@@ -463,6 +463,7 @@ export const useBerichteState = defineStore({
                     },
                     y: {
                         type: 'time',
+                        reverse: true,
                         time: {
                             parser: 'HH:mm:ss',
                             unit: "seconds",

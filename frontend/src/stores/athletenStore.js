@@ -10,7 +10,7 @@ export const useAthletenState = defineStore({
         filterOptions: [{
             "birth_years": [{"start_year": 1950}, {"end_year": 2025}],
             "boat_classes": {
-                'men': {
+                'm': {
                     'junior': {
                         'single': {"JM1x": "Junior Men's Single Sculls"},
                         'double': {"JM2x": "Junior Men's Double Sculls"},
@@ -52,7 +52,7 @@ export const useAthletenState = defineStore({
                         '3': {"PR3 M2-": "PR3 Men's Pair"}
                     }
                 },
-                'women': {
+                'w': {
                     'junior': {
                         'single': {"JW1x": "Junior Women's Single Sculls"},
                         'double': {"JW2x": "Junior Women's Double Sculls"},

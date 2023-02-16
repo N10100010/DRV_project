@@ -112,7 +112,7 @@ export default {
 
       // nations
       optionsNations: [],
-      selectedNation: ["GER (Germany)", "AUT (Austria)", "FRA (France)", "ITA (Italia)"],
+      selectedNation: ["GER (Germany)", "AUT (Austria)", "FRA (France)", "ITA (Italy)"],
 
       // boat classes
       optionsBoatClasses: [],

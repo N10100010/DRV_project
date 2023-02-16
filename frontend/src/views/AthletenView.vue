@@ -221,15 +221,12 @@ export default {
     window.addEventListener('resize', this.checkScreen);
     this.checkScreen();
 
-    // possible solution for permanent url --> in the real scenario there must be a fetch to the backend
     window.onload = () => {
       const url = new URL(window.location.href);
-      const race_id = url.searchParams.get("athlete_id");
-      if (race_id !== null) {
-        console.log("Permanent URL active: " + race_id)
-        // make api call with respective id here
-        // ...
-        // ...
+      const athlete_id = url.searchParams.get("athlete_id");
+      if (athlete_id !== undefined && athlete_id !== null) {
+        const store = useAthletenState()
+        store.getAthlete({"id":athlete_id})
       }
     }
   },
