@@ -30,6 +30,7 @@ from . import globals
 # app is the main controller for the Flask-Server and will start the app in the main function 
 app = Flask(__name__, template_folder=None)
 app.config['JSON_SORT_KEYS'] = False
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=60)
 
 # NOTE that the following line opens ALL endpoints for cross-origin requests!
 # This has to be tied to the actual public frontend domain as soon as a
@@ -60,6 +61,13 @@ def login():
 
     access_token = create_access_token(identity=username)
     return jsonify(access_token=access_token)
+
+
+@jwt.invalid_token_loader
+def invalid_token_handler(reason):
+    http_status_code = 401 # Code 401 is important here for robust login handling in the frontend
+    return {"msg": str(reason)}, http_status_code
+
 
 @app.route('/report', methods=['POST'])
 @jwt_required()
