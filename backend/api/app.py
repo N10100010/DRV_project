@@ -8,12 +8,11 @@ import numpy as np
 from collections import OrderedDict
 
 from flask import Flask
-from flask import Blueprint
 from flask import request
 from flask import abort, jsonify
 from flask import Response
 from flask_cors import CORS
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
+from flask_jwt_extended import create_access_token, jwt_required, JWTManager
 
 # disable auth by uncommenting the following line
 # jwt_required = lambda: (lambda x: x) # disable auth
@@ -107,11 +106,10 @@ def get_competition_category_information() -> dict:
     session = Scoped_Session()
     statement = (
         select(
-            model.Competition_Category.additional_id_,
-            model.Competition_Category.name,
+            model.Competition_Type.additional_id_,
+            model.Competition_Type.name,
             model.Competition_Type.abbreviation
         )
-        .join(model.Competition_Category.competition_type)
     )
 
     return {v[0]: (v[1], v[2]) for v in session.execute(statement).fetchall()}
