@@ -125,6 +125,11 @@ def wr_insert_invalid_mark_result_code(session, data):
     return entity
 
 
+def wr_map_race_boat_wbt(session, entity, data):
+    entity.invalid_mark_result_code = None
+    entity.result_time_ms = data.get('result_time_ms')
+
+
 def wr_map_race_boat(session, entity, data):
     entity.country = wr_insert(session, model.Country, wr_map_country, get_(data, 'country'))
     
