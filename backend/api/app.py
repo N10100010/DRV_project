@@ -28,7 +28,6 @@ from . import globals
 # app is the main controller for the Flask-Server and will start the app in the main function 
 app = Flask(__name__, template_folder=None)
 app.config['JSON_SORT_KEYS'] = False
-protected_blueprint = Blueprint('example_blueprint', __name__)
 
 # NOTE that the following line opens ALL endpoints for cross-origin requests!
 # This has to be tied to the actual public frontend domain as soon as a
