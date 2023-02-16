@@ -85,9 +85,9 @@ def healthcheck():
     return "healthy"
 
 
-@app.route('/competition_category/', methods=['GET', 'POST'])
+@app.route('/race_analysis_filter_options/', methods=['GET', 'POST'])
 @jwt_required()
-def get_competition_categories():
+def get_race_analysis_filter_options():
     """
     This endpoint give the filter options data for the race data page.
     """
@@ -102,22 +102,16 @@ def get_competition_categories():
     return {"years": (min_year, max_year), "competition_categories": competition_categories}
 
 
-@app.route('/boatclass_information')
+@app.route('/race_analysis_filter_results', methods=['POST'])
 @jwt_required()
-def get_boatclass_information() -> dict:
-    return globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT
-
-
-@app.route('/competition', methods=['POST'])
-@jwt_required()
-def get_competitions_year_category() -> dict:
+def get_race_analysis_filter_results() -> dict:
     """
     WHEN?
     This endpoint is used, when the user is on the page for the 'Rennstrukturanalyse' and selected filter for
         - year
-        - competition_category
+        - competition_type
     of interest.
-    @param filter_dict: example for filter_dict {  "year": 2008, "competition_category_id": 5  }
+    @param filter_dict: example for filter_dict {  "year": 2008, "competition_type": f5da0ad6-afea-436c-a396-19de6497762f  }
     @return: nested dict/json: structure containing competitions, their events and their races respectively.
     See https://github.com/N10100010/DRV_project/blob/api-design/doc/backend-api.md#user-auswahl-jahr-einzeln-und-wettkampfklasse-zb-olympics for mock of return value.
 
@@ -126,9 +120,9 @@ def get_competitions_year_category() -> dict:
     import logging
 
     year = request.json["data"].get('year')
-    competition_category_id = request.json["data"].get('competition_category_id')
+    competition_type_id = request.json["data"].get('competition_type') 
 
-    logging.debug(f"Year: {year}, comp cat: {competition_category_id}")
+    logging.debug(f"Year: {year}, comp cat: {competition_type_id}")
 
     session = Scoped_Session()
 
@@ -137,9 +131,10 @@ def get_competitions_year_category() -> dict:
             model.Competition
         )
         .join(model.Competition.competition_category)
+        .join(model.Competition_Category.competition_type)
         .where(
             and_(
-                model.Competition_Category.id == competition_category_id,
+                model.Competition_Type.additional_id_ == competition_type_id,
                 model.Competition.year == year,
             )
         )
@@ -191,14 +186,13 @@ def get_competitions_year_category() -> dict:
 @jwt_required()
 def get_matrix() -> dict:
     """
-        todo: How to realize the filtering? 
-        @Harri: if a filter is filtering for all, do not put the filter in there 
+
     """
     filter_key_mapping = {
         'gender': model.Event.gender_id,  # list
         'boat_class': model.Boat_Class.id,  # list
         'interval': model.Competition.year,  # tuple
-        'competition_category': model.Competition_Category.id,  # list
+        'competition_type': model.Competition_Type.additional_id_,  # list
         'race_phase_type': model.Race.phase_type,  # list
         'race_phase_subtype': model.Race.phase_number,  # list
         'placement': model.Race_Boat.rank  # list
@@ -216,19 +210,22 @@ def get_matrix() -> dict:
             func.avg(model.Intermediate_Time.result_time_ms).label("mean"),
             func.min(model.Intermediate_Time.result_time_ms).label("min"),
             func.count(model.Intermediate_Time.race_boat_id).label("cnt"),
-            model.Boat_Class.additional_id_.label("id")  # add_id_
+            model.Boat_Class.additional_id_.label('id')
         )
         .join(model.Intermediate_Time.race_boat)
         .join(model.Race_Boat.race)
         .join(model.Race.event)
         .join(model.Event.boat_class)
+        .join(model.Event.competition)
+        .join(model.Competition.competition_category)
+        .join(model.Competition_Category.competition_type)
         .where(
             model.Intermediate_Time.distance_meter == 2000,
-            # model.Intermediate_Time.is_outlier == False,
+            model.Intermediate_Time.is_outlier == False,
             model.Intermediate_Time.result_time_ms != 0
         )
         .group_by(
-            model.Boat_Class.additional_id_
+            model.Boat_Class.id
         )
     )
 
@@ -406,48 +403,6 @@ def shutdown_session(exception=None):
     Scoped_Session.remove()
 
 
-# @app.route('/result', 'POST')
-# def get_result(filter_dict: dict):
-#     """
-
-#     """
-#     data = mocks.generic_get_data(_filter=filter_dict)
-#     return data
-
-
-# @app.route('/analysis', 'POST')
-# def get_analysis(filter_dict: dict) -> Union[list, dict]:
-#     """
-#     When?
-#     This endpoint is used, when the user is on the page for the 'Rennstrukturanalyse' and selected filter for
-#         - year
-#         - competition_category
-#     of interest.
-#     @param filter_dict: example for filter_dict {  "year": 2008, "competition_category_id": 5  }
-#     @return: nested dict/json: structure containing competitions, their events and their races respectively.
-# See https://github.com/N10100010/DRV_project/blob/api-design/doc/backend-api.md#user-auswahl-jahr-einzeln-und-wettkampfklasse-zb-olympics for mock of return value.
-#     """
-#     # data = generic_get_data(_filter=filter_dict)
-#     data = mocks.mock_standard_analysis_endpoint()
-#     return data
-
-
-# @app.route('/analysis/<race_id>', 'GET')
-# def get_race_analysis(race_id: str):
-#     race_id = "bcda473e-f602-4747-a61e-a35963bd7198"
-#     # data = generic_get_data(_filter={'id': race_id})
-#     data = mocks.mock_race_analysis_endpoint()
-#     return data
-
-
-# @app.route('/get_report_filter_options', 'GET')
-# def get_report_filter_options(filter_dict: dict):
-#     """
-#     todo:
-#     """
-#     return {}
-
-
 @app.route('/get_report_boat_class', methods=['POST'])
 @jwt_required()
 def get_report_boat_class():
@@ -455,9 +410,9 @@ def get_report_boat_class():
     Delivers the report results for a single boat class.
     """
     filter_data = request.json["data"]
-    filter_keys = ["interval", "competition_category", "boat_class", "race_phase_type",
+    filter_keys = ["interval", "competition_type", "boat_class", "race_phase_type",
                    "race_phase_subtype" "placement"]
-    interval, competition_categories, boat_class, runs, ranks = [filter_data.get(key) for key in filter_keys]
+    interval, competition_types, boat_class, runs, ranks = [filter_data.get(key) for key in filter_keys]
     start_year, end_year = interval[0], interval[1]
 
     # read from db
@@ -473,12 +428,13 @@ def get_report_boat_class():
         .join(model.Race.event)
         .join(model.Event.competition)
         .join(model.Competition.competition_category)
+        .join(model.Competition_Category.competition_type)
         .where(and_(
             model.Race.date >= start_date,
             model.Race.date <= end_date,
             model.Event.boat_class_id == model.Boat_Class.id,
             model.Boat_Class.additional_id_ == boat_class,
-            model.Competition_Category.competition_type_id.in_(competition_categories)
+            model.Competition_Type.additional_id_.in_(competition_types)
         ))
     )
 
