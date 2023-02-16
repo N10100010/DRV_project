@@ -11,6 +11,8 @@ ALLOWED_COMPETITION_TYPES_MAPPING = {
     'OG': 'OG', 
     'PG': 'PG', 
     'ERCC': 'ERCC', 
+    'ECH': 'ECh',
+    'EJCH': 'EJCh',
     'WCH IE': 'WCh IE', 
 }
 
