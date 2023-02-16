@@ -65,3 +65,58 @@ def mark_outliers(session, logger=logger):
             outlier_detection.outlier_detection_race_data(session=session, boat_class=boat_class)
 
             # Low Prio TODO: session.commit() should ideally be executed here
+
+# def _get_competitions_to_maintain(session):
+#     """Returns tuple: competitions_iterator, number_of_competitions"""
+#     DATA_PROVIDER_ID = model.Enum_Data_Provider.world_rowing.value
+#     LEVEL_SCRAPED = model.Enum_Maintenance_Level.world_rowing_api_scraped.value
+#     LEVEL_POSTPROCESSED = model.Enum_Maintenance_Level.world_rowing_api_postprocessed.value
+#     scrape_before_date = datetime.datetime.now() - datetime.timedelta(days=int(SCRAPER_MAINTENANCE_PERIOD_DAYS))
+
+#     statement = (
+#         select(model.Competition)
+#         .where(model.Competition.scraper_data_provider == DATA_PROVIDER_ID)
+#         .where(
+#             or_(
+#                 model.Competition.scraper_maintenance_level == LEVEL_SCRAPED,
+#                 and_(
+#                     model.Competition.scraper_maintenance_level == LEVEL_POSTPROCESSED,
+#                     model.Competition.scraper_last_scrape < scrape_before_date
+#                 )
+#             )
+#         )
+#     )
+#     competitions = session.execute(statement).scalars().all()
+#     return competitions, len(competitions)
+
+
+def postprocess():
+    logger = logging.getLogger("postprocessing")
+    with model.Scoped_Session() as session:
+        logger.info(f"Fetch & write world best times")
+        refresh_world_best_times(session=session, logger=logger)
+
+        logger.info("Outlier Marking")
+        mark_outliers(session=session, logger=logger)
+
+
+"""
+        logger.info("Find competitions that have to be maintained")
+        competitions, N = _get_competitions_to_maintain(session)
+        logger.info(f"Found N={N} competitions")
+        for competition in competitions:
+            competition_uuid = competition.additional_id_
+            if not competition_uuid:
+                logger.error(f"Competition with id={competition.id} has no UUID (w.r.t. World Rowing API); Skip")
+                continue
+            logger.info(f"Competition id={competition.additional_id_}")
+
+            # New concept: api.get_by_competition_id_(..., parse_pdf=True)
+            #    -> does it make sense to put validation logic (db/model imports) inside api?
+
+            logger.info("Fetch & Parse PDF")
+
+            logger.info("Check Quality of both Datasets")
+
+            # logger.info("Mark maintenance state in db") # Deprecated (?)
+"""
