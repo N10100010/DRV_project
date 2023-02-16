@@ -20,11 +20,10 @@ export const useRennstrukturAnalyseState = defineStore({
         loadingState: false,
         tableExport: [],
         data: {
-            filterOptions: [{
-                // TODO: Year also has to be defined by backend data
-                "year": [{"start_year": 1950}, {"end_year": 2025}],
-                "competition_category_ids": []
-            }],
+            filterOptions: {
+                "years": [0, 0],
+                "competition_categories": []
+            },
             raceData: [{
                 "race_id": 2841,
                 "display_name": "FA",
@@ -677,6 +676,8 @@ export const useRennstrukturAnalyseState = defineStore({
                         `(${athlete.boat_position}) ${athlete.first_name} ${athlete.last_name}`)
                     rowData.push(athleteNames);
 
+                    // <a href="http://localhost:5173/athleten?athlete_id=${athlete.id}"
+
                     const firstArray = [];
                     const secondArray = [];
                     const speedValues = [];
@@ -883,16 +884,15 @@ export const useRennstrukturAnalyseState = defineStore({
     },
     actions: {
         async getFilterOptions() {
-            try {
-                this.data.filterOptions[0].competition_category_ids = await axios.get(
-                    `${import.meta.env.VITE_BACKEND_API_BASE_URL}/competition_category/`
-                )
-            } catch (error) {
-                console.error(error)
-            }
+            await axios.get(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/race_analysis_filter_options/`)
+                .then(response => {
+                this.data.filterOptions = response.data
+            }).catch(error => {
+                console.error(`Request failed: ${error}`)
+            })
         },
         async postFormData(data) {
-            await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/competition`, {data})
+            await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/race_analysis_filter_results`, {data})
                 .then(response => {
                     this.data.analysis = response.data
                     this.loadingState = false

@@ -17,7 +17,7 @@ ALLOWED_COMPETITION_TYPES_MAPPING = {
 }
 
 BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
-    'men': {
+    'm': {
         'u19': {
             'single': ("JM1x", "Junior Men's Single Sculls", "079e71bb-98cd-47f4-8ca4-e3fd0cdbc538"),
             'double': ("JM2x", "Junior Men's Double Sculls", "78f004f6-cadd-4d0f-804b-21cf26458355"),
@@ -58,7 +58,7 @@ BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
             '3': ("PR3 M2-", "PR3 Men's Pair", "15e1ef74-79c6-4227-96f1-86d793efbf5b"),
         }
     },
-    'women': {
+    'w': {
         'u19': {
             'single': ("JW1x", "Junior Women's Single Sculls", "683b227a-51fd-4c09-a6a0-460ca3711b08"),
             'double': ("JW2x", "Junior Women's Double Sculls", "26af8860-5146-422d-bb10-3eef8b28d883"),
