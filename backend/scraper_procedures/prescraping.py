@@ -3,7 +3,7 @@ import datetime
 
 from sqlalchemy import select
 
-from scraper_procedures.config import *
+from .config import *
 from model import model
 from model import dbutils
 from scraping_wr import api
