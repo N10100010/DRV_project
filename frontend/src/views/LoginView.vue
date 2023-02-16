@@ -30,7 +30,6 @@
 <script>
 import axios from 'axios';
 import router from '../router'
-import { useLoginStore } from '../stores/loginStore';
 
 export default {
   data() {
@@ -46,16 +45,16 @@ export default {
   },
   methods: {
     async login() {
-      const loginStore = useLoginStore()
-
       try {
         const response = await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/login`, {
           user: this.username,
           pass: this.password
         });
 
-        loginStore.token = response.data.access_token;
-        router.push('/')
+        const token = response.data.access_token;
+        localStorage.setItem('session_token', token)
+        router.push('/');
+
       } catch (error) {
         console.log("Login failed. Wrong credentials.")
         console.log(error)

@@ -1,8 +1,5 @@
 import router from '../router'
 import axios from "axios";
-import { useLoginStore } from "../stores/loginStore";
-
-// const loginStore = useLoginStore();
 
 axios.interceptors.response.use(
     function (response) {
@@ -10,9 +7,7 @@ axios.interceptors.response.use(
     }, function (error) {
         console.log(error.response.data)
         if (error.response.status === 401) {
-            const loginStore = useLoginStore();
-            loginStore.token = "";
-            console.log(loginStore)
+            localStorage.setItem('session_token', '')
             router.push('/auth')
         }
         return Promise.reject(error)
@@ -20,10 +15,10 @@ axios.interceptors.response.use(
 );
 
 axios.interceptors.request.use((request) => {
-    const loginStore = useLoginStore();
-    if (loginStore.token) {
-        // console.log('Add token to header', loginStore.token);
-        request.headers.Authorization = `Bearer ${loginStore.token}`;
+    const token = localStorage.getItem('session_token')
+    if (token) {
+        // console.log('Add token to header', token);
+        request.headers.Authorization = `Bearer ${token}`;
     }
     return request;
 });
