@@ -200,6 +200,7 @@ def wr_map_race_boat(session, entity: model.Race_Boat, data):
 
         except (TypeError, ValueError) as e:
             logger.error(f'Intermediate_Time could not be parsed/converted/written')
+            logger.error(str(e))
 
     return entity
 
