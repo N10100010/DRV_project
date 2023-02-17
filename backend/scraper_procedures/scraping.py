@@ -14,7 +14,7 @@ from model import model
 from model import dbutils
 from scraping_wr import api, pdf_race_data
 from common import rowing
-from common.helpers import get_
+from common.helpers import get_, select_first
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -137,10 +137,12 @@ def _scrape_competition(session, competition: model.Competition, parse_pdf_race_
                                 logger.error(f'Data is inconsistent: Arrays have different lengths')
                                 continue # TODO: consider not commiting for this Race_Boat at all
                             
-                            race_boat.race_data.clear()
                             for dist, speed, stroke in zip(dists, speeds, strokes):
                                 try:
-                                    race_data_point = model.Race_Data(data_source=model.Enum_Data_Source.world_rowing_pdf.value)
+                                    race_data_point = select_first(race_boat.race_data, lambda i: i.distance_meter==dist)
+                                    if not race_data_point:
+                                        race_data_point = model.Race_Data()
+                                    race_data_point.data_source=model.Enum_Data_Source.world_rowing_pdf.value
                                     race_data_point.distance_meter = dist
                                     race_data_point.speed_meter_per_sec = speed
                                     race_data_point.stroke = stroke
