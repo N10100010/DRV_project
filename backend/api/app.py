@@ -130,8 +130,8 @@ def get_race_analysis_filter_results() -> dict:
         select(
             model.Competition
         )
-        .join(model.Competition.competition_category)
-        .join(model.Competition_Category.competition_type)
+        .join(model.Competition.competition_type)
+        .join(model.Competition_Type.competition_category)
         .where(
             and_(
                 model.Competition_Type.additional_id_ == competition_type_id,
@@ -217,11 +217,11 @@ def get_matrix() -> dict:
         .join(model.Race.event)
         .join(model.Event.boat_class)
         .join(model.Event.competition)
-        .join(model.Competition.competition_category)
-        .join(model.Competition_Category.competition_type)
+        .join(model.Competition.competition_type)
+        .join(model.Competition_Type.competition_category)
         .where(
             model.Intermediate_Time.distance_meter == 2000,
-            model.Intermediate_Time.is_outlier == False,
+            # model.Intermediate_Time.is_outlier == False, # TODO:
             model.Intermediate_Time.result_time_ms != 0
         )
         .group_by(
@@ -427,8 +427,8 @@ def get_report_boat_class():
         )
         .join(model.Race.event)
         .join(model.Event.competition)
-        .join(model.Competition.competition_category)
-        .join(model.Competition_Category.competition_type)
+        .join(model.Competition.competition_type)
+        .join(model.Competition_Type.competition_category)
         .where(and_(
             model.Race.date >= start_date,
             model.Race.date <= end_date,
@@ -447,7 +447,7 @@ def get_report_boat_class():
         race_id, competition_id = row
         race = session.query(model.Race).get(race_id)
         boat_class_name = race.event.boat_class.abbreviation
-        comp_categories.add(race.event.competition.competition_category.name)
+        comp_categories.add(race.event.competition.competition_type.competition_category.name)
 
         world_best_race_boat = race.event.boat_class.world_best_race_boat
         if world_best_race_boat:
@@ -642,7 +642,7 @@ def get_athlete(athlete_id: int):
         elif not any(ath.endswith("x") for ath in athlete_boat_classes):
             athlete_disciplines.add("Riemen")
 
-        comp_type = race.event.competition.competition_category.name
+        comp_type = race.event.competition.competition_type.competition_category.name
         race_results[i]["name"] = comp.name
         race_results[i]["venue"] = f'{comp.venue.city}, {comp.venue.country.name}'
         race_results[i]["boat_class"] = boat_class_name
@@ -791,7 +791,7 @@ def get_medals():
     start_date = func.to_timestamp(func.concat(start, "-01-01 00:00:00"), 'YYYY-MM-DD HH24:MI:SS')
     end_date = func.to_timestamp(func.concat(end, "-12-31 23:59:59"), 'YYYY-MM-DD HH24:MI:SS')
     nations = [nation[:3] for nation in data["nations"]]
-    comp_ids = data["competition_categories"]
+    # comp_ids = data["competition_categories"]
 
     session = Scoped_Session()
 
@@ -893,15 +893,9 @@ def get_calendar(year: int):
     for competition in iterator:
         # only include competitions that have a start and end date
         if competition.start_date and competition.end_date:
-            comp_cat_id = session.query(model.Competition).filter(model.Competition.id == competition.id).one()
-            comp_type = set(session.query(model.Competition_Category).filter(
-                model.Competition_Category.id == comp_cat_id.id
-            ).all())
-
             result.append({
                 "key": competition.id,
-                # "competition_type": comp_type.pop().name if comp_type else None,
-                "comp_type": competition.competition_category.name,
+                "comp_type": competition.competition_type.competition_category.name,
                 "customData": {
                     "title": competition.name
                 },

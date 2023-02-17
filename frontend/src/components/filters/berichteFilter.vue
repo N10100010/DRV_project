@@ -201,7 +201,7 @@ export default {
         const store = useBerichteState()
         store.postFormDataMatrix({
         "interval": [this.startYear, this.endYear],
-        "competition_category": this.compTypes.filter(item =>
+        "competition_type": this.compTypes.filter(item =>
             this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
         "boat_class": this.boatClasses[this.selectedBoatClasses],
         "race_phase_type": this.selectedRuns.map(item => this.optionsRuns[item]),
