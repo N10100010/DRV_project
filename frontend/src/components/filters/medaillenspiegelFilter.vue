@@ -98,7 +98,7 @@ export default {
       // competition type
       compTypes: [],
       optionsCompTypes: [],
-      selectedCompTypes: ["WCH", "U23WCH"],
+      selectedCompTypes: ["WCH"],
 
       // year
       startYear: 0,
@@ -112,7 +112,7 @@ export default {
 
       // nations
       optionsNations: [],
-      selectedNation: ["GER (Germany)", "AUT (Austria)", "FRA (France)", "ITA (Italia)"],
+      selectedNation: ["GER (Germany)", "AUT (Austria)", "FRA (France)", "ITA (Italy)"],
 
       // boat classes
       optionsBoatClasses: [],
@@ -193,7 +193,7 @@ export default {
       const data = {
         "years": [this.startYear, this.endYear],
         "gender": this.selectedGenders,
-        "competition_categories": this.compTypes.filter(item => this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
+        "competition_type": this.compTypes.filter(item => this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
         "nations": Array.isArray(this.selectedNation) ? this.selectedNation : [this.selectedNation],
         "types": this.selectedMedalTypes
       }
@@ -208,7 +208,7 @@ export default {
       this.selectedGenders = 0
       this.startYear = 1950
       this.endYear = new Date().getFullYear()
-      this.selectedCompTypes = ["WCH", "U23WCH"]
+      this.selectedCompTypes = ["WCH"]
       this.selectedNation = []
       this.selectedMedalTypes = 0
       this.selectedBoatClasses = this.optionsBoatClasses[0]

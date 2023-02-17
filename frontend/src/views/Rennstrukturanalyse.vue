@@ -185,16 +185,23 @@
               </v-col>
             </v-col>
             <v-col :cols="mobile ? 12 : 6" class="pa-0">
-              <v-container v-for="(data, idx) in getGPsData" :class="mobile ? 'pa-0' : 'pa-2'">
-                <LineChart :data="data" :chartOptions="gpsChartOptions[idx]" class="chart-bg"></LineChart>
+              <v-container :class="mobile ? 'pa-0' : 'pa-2'">
+                <LineChart :data="getGPsData[0]" :chartOptions="gpsChartOptions[0]" class="chart-bg"></LineChart>
+              </v-container>
+              <v-container :class="mobile ? 'pa-0' : 'pa-2'">
+                <LineChart :data="getGPsData[2]" :chartOptions="gpsChartOptions[2]" class="chart-bg"></LineChart>
+              </v-container>
+              <v-container :class="mobile ? 'pa-0' : 'pa-2'">
+                <LineChart :data="getIntermediateData[1]" :chartOptions="intermediateChartOptions[1]" class="chart-bg"></LineChart>
               </v-container>
             </v-col>
             <v-col :cols="mobile ? 12 : 6" class="pa-0">
-              <v-container v-for="(data, idx) in getIntermediateData" :class="mobile ? 'pa-0' : 'pa-2'">
-                <LineChart :data="data" :chartOptions="intermediateChartOptions[idx]" class="chart-bg"></LineChart>
+              <v-container :class="mobile ? 'pa-0' : 'pa-2'">
+                <LineChart :data="getGPsData[1]" :chartOptions="gpsChartOptions[1]" class="chart-bg"></LineChart>
               </v-container>
-            </v-col>
-            <v-col :cols="mobile ? 12 : 6" class="pa-0">
+              <v-container :class="mobile ? 'pa-0' : 'pa-2'">
+                <LineChart :data="getIntermediateData[0]" :chartOptions="intermediateChartOptions[0]" class="chart-bg"></LineChart>
+              </v-container>
               <v-container :class="mobile ? 'pa-0' : 'pa-2'">
                 <LineChart :data="deficitMeters" :chartOptions="deficitChartOptions" class="chart-bg"></LineChart>
               </v-container>

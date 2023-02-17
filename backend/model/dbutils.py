@@ -258,9 +258,20 @@ def wr_map_event(session, entity, data):
     return entity
 
 
-def wr_map_competition_type(session, entity, data):
+def wr_map_competition_type(session, entity: model.Competition_Type, data):
     entity.name = get_(data, 'DisplayName')
     entity.abbreviation = get_(data, 'Abbreviation')
+
+    # Competition_Type
+    competition_category = wr_insert(
+        session,
+        model.Competition_Category,
+        wr_map_competition_category,
+        get_(data, 'competitionCategory')
+    )
+
+    entity.competition_category = competition_category
+
     return entity
 
 
@@ -295,29 +306,18 @@ def wr_map_competition_prescrape(session, entity, data):
 
 
 def __wr_map_competition(session, entity: model.Competition, data):
-    # Competition_Category
-    competition_category = wr_insert(
+    # Competition_Type
+    competition_type = wr_insert(
         session,
-        model.Competition_Category,
-        wr_map_competition_category,
-        get_(get_(data, 'competitionType'), 'competitionCategory')
+        model.Competition_Type,
+        wr_map_competition_type,
+        get_(data, 'competitionType')
     )
-    
-    if competition_category:
-        # Competition_Type
-        competition_type = wr_insert(
-            session,
-            model.Competition_Type,
-            wr_map_competition_type,
-            get_(data, 'competitionType')
-        )
-
-        competition_category.competition_type = competition_type
 
     # Venue
     venue = wr_insert(session, model.Venue, wr_map_venue, get_(data, 'venue'))
 
-    entity.competition_category = competition_category
+    entity.competition_type = competition_type
     entity.venue = venue
     entity.name = get_(data, 'DisplayName')
     with suppress(TypeError, ValueError):
