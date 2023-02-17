@@ -36,8 +36,8 @@ export const useMedaillenspiegelState = defineStore({
             return state.data
         },
         getTableData(state) {
-            let tableData = [["Platz", "Nation", "Punkte", "Gold", "Silber", "Bronze", "Gesamt", "Finale A", "Finale B"]];
-            const valueKeys = ["rank", "nation", "points", "gold", "silver", "bronze", "total", "final_a", "final_b"];
+            let tableData = [["Platz", "Nation", "Gold", "Silber", "Bronze", "Gesamt", "Finale A", "Finale B"]];
+            const valueKeys = ["rank", "nation", "gold", "silver", "bronze", "total", "final_a", "final_b"];
             const data = state.data.data
             for (const el of data) {
                 let temp1Array = []
