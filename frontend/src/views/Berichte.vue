@@ -54,7 +54,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
         <v-container class="pa-0 mt-2 pb-8" v-else>
           <v-row>
             <v-col :cols="mobile ? 12 : 5">
-              <h2>{{ data.boat_classes }}</h2>
+              <h2 v-if="!matrixVisible">{{ data.boat_classes }}</h2>
               <v-alert type="error" variant="tonal" class="my-2" v-if="data.results === 0 && !matrixVisible">
                 <v-row>
                   <v-col cols="12">

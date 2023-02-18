@@ -78,7 +78,7 @@
               </v-table>
             </v-col>
           </v-row>
-          <v-col :cols="mobile ? 12 : 8" class="pa-0">
+          <v-col cols="12" class="pa-0">
             <v-container class="chart-bg pa-0">
               <BarChart :data="medalChartData" :chartOptions="medalChartOptions"></BarChart>
             </v-container>

@@ -115,8 +115,16 @@ export default {
 
       // nations
       optionsNations: [],
-      selectedNation: ["GER (Germany)", "AUT (Austria)", "FRA (France)", "ITA (Italy)"],
-
+      selectedNation: [
+        "ITA (Italy)",
+        "GER (Germany)",
+        "GBR (Great Britain)",
+        "USA (United States)",
+        "AUS (Australia)",
+        "NZL (New Zealand)",
+        "ROU (Romania)",
+        "FRA (France)"
+      ],
       // boat classes
       optionsBoatClasses: [],
       selectedBoatClasses: this.optionsBoatClasses,
@@ -162,20 +170,21 @@ export default {
           }
         }
       }
+
       getMostInnerValue(Object.values(data.boat_classes))
       this.selectedBoatClasses = boatClassValues[0]
       this.optionsBoatClasses = boatClassValues
 
       if (this.startYear && this.endYear && this.selectedNation) {
         const store = useMedaillenspiegelState()
-      store.postFormData({
-            "years": [this.startYear, this.endYear],
-            "gender": this.selectedGenders,
-            "competition_categories": this.compTypes.filter(item => this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
-            "nations": Array.isArray(this.selectedNation) ? this.selectedNation : [this.selectedNation],
-            "types": this.selectedMedalTypes
-          }
-      )
+        store.postFormData({
+              "years": [this.startYear, this.endYear],
+              "gender": this.selectedGenders,
+              "competition_categories": this.compTypes.filter(item => this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
+              "nations": Array.isArray(this.selectedNation) ? this.selectedNation : [this.selectedNation],
+              "types": this.selectedMedalTypes
+            }
+        )
       }
     },
     async onSubmit() {

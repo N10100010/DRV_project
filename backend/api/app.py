@@ -822,13 +822,12 @@ def get_medals():
 
     medal_data, total_result_counter = {}, 0
     for race_boat in race_boats:
-        if race_boat.race.phase_type == 'final' and race_boat.race.phase_number in (1, 2) \
-                and race_boat.country.country_code in nations:
+        if race_boat.race.phase_type == 'final' and race_boat.race.phase_number == 1 and race_boat.country.country_code in nations:
             total_result_counter += 1
             nation = race_boat.country.country_code
             if nation not in medal_data:
                 medal_data[nation] = {"total": 0, "gold": 0, "silver": 0, "bronze": 0, "final_a": 0, "final_b": 0}
-            medal_data[nation]["total"] += 1
+            medal_data[nation]["final_a"] += 1
             if race_boat.rank == 1:
                 medal_data[nation]["gold"] += 1
                 medal_data[nation]["total"] += 1
@@ -838,10 +837,11 @@ def get_medals():
             elif race_boat.rank == 3:
                 medal_data[nation]["bronze"] += 1
                 medal_data[nation]["total"] += 1
-            if race_boat.race.phase_number == 1:
-                medal_data[nation]["final_a"] += 1
-            else:
-                medal_data[nation]["final_b"] += 1
+        elif race_boat.race.phase_type == 'final' and race_boat.race.phase_number == 2 and race_boat.country.country_code in nations:
+            nation = race_boat.country.country_code
+            if nation not in medal_data:
+                medal_data[nation] = {"total": 0, "gold": 0, "silver": 0, "bronze": 0, "final_a": 0, "final_b": 0}
+            medal_data[nation]["final_b"] += 1
 
     medal_data = [{"nation": nation, **medal_data[nation]} for nation in medal_data]
     medal_data.sort(key=lambda x: x['gold'], reverse=True)
