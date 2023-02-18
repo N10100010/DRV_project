@@ -53,7 +53,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
         </v-container>
         <v-container class="pa-0 mt-2 pb-8" v-else>
           <v-row>
-            <v-col :cols="mobile ? 12 : 5">
+            <v-col :cols="mobile ? 12 : (matrixVisible ? 8 : 5)" class="py-0 pt-1">
               <h2 v-if="!matrixVisible">{{ data.boat_classes }}</h2>
               <v-alert type="error" variant="tonal" class="my-2" v-if="data.results === 0 && !matrixVisible">
                 <v-row>
@@ -65,8 +65,11 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
               <v-alert type="success" variant="tonal" class="my-2" v-else>
                 <v-row>
                   <v-col cols="12">
-                    <p>{{ matrixVisible ? matrixResults : data.results }} Datensätze |
-                      Von {{ filterConf.start }} bis {{ filterConf.end }}</p>
+                    <p><b>{{ matrixVisible ? matrixResults : data.results }} Datensätze |
+                      Von {{ filterConf.interval[0] }} bis {{ filterConf.interval[1] }}</b></p>
+                    <p><b>Events</b>: {{filterConf.competition_type}}</p>
+                    <p><b>Läufe</b>: {{filterConf.race_phase_type}}</p>
+                    <p><b>Läufe (erweitert)</b>: {{filterConf.race_phase_subtype}}</p>
                   </v-col>
                 </v-row>
               </v-alert>

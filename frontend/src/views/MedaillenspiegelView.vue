@@ -64,7 +64,7 @@
                   </v-row>
                 </v-alert>
               </v-col>
-              <v-table class="tableStyles mb-4" density="compact">
+              <v-table class="tableStyles mb-4" density="compact" v-if="filterSelection.results">
                 <tbody class="nth-grey">
                 <template v-for="(el, idx) in tableData">
                   <tr>
@@ -78,7 +78,7 @@
               </v-table>
             </v-col>
           </v-row>
-          <v-col cols="12" class="pa-0">
+          <v-col cols="12" class="pa-0" v-if="filterSelection.results">
             <v-container class="chart-bg pa-0">
               <BarChart :data="medalChartData" :chartOptions="medalChartOptions"></BarChart>
             </v-container>

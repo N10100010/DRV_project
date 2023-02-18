@@ -1,7 +1,5 @@
 import axios from "axios";
 import {defineStore} from "pinia";
-import {resolve} from "chart.js/helpers";
-import {it} from "vuetify/locale";
 
 const formatMilliseconds = ms => new Date(ms).toISOString().slice(14, -2);
 
@@ -11,12 +9,13 @@ export const useBerichteState = defineStore({
         filterOpen: false,
         loading: true,
         tableExport: [],
-        lastFilterConfig: null,
-        selectedBoatClass: "Alle",
-        filterConfig: {
-            start: 0,
-            end: 0,
+        lastFilterConfig: {
+          "interval": [0, 0],
+          "competition_type": "",
+          "boat_class": "",
+          "race_phase_type": "",
         },
+        selectedBoatClass: "Alle",
         filterOptions: [{
             "years": [{"start_year": 0}, {"end_year": 0}],
             "boat_classes": {
@@ -207,7 +206,7 @@ export const useBerichteState = defineStore({
             return state.filterOpen
         },
         getFilterConfig(state) {
-            return state.filterConfig
+            return state.lastFilterConfig
         },
         getReportFilterOptions(state) {
             return state.filterOptions
@@ -535,9 +534,8 @@ export const useBerichteState = defineStore({
         setLastFilterConfig(filterConfig) {
             this.lastFilterConfig = filterConfig
         },
-        setFilterConfig(interval) {
-            this.filterConfig.start = interval[0]
-             this.filterConfig.end = interval[1]
+        setFilterConfig(data) {
+            this.filterConfig = data
         },
         exportTableData() {
             const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(row => {

@@ -111,7 +111,7 @@ export default {
       // competition type
       compTypes: [], // list of dicts with objects containing displayName, id and key
       optionsCompTypes: [],
-      selectedCompTypes: ["WCH"],
+      selectedCompTypes: ["WCH", "OG", "WCp 1", "WCp 2", "WCp 3"],
       // year
       startYear: 0,
       endYear: 0,
@@ -199,13 +199,18 @@ export default {
 
       if (this.startYear && this.endYear) {
         const store = useBerichteState()
-        store.postFormDataMatrix({
-        "interval": [this.startYear, this.endYear],
-        "competition_type": this.compTypes.filter(item =>
-            this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
-        "boat_class": this.boatClasses[this.selectedBoatClasses],
-        "race_phase_type": this.selectedRuns.map(item => this.optionsRuns[item]),
-      })
+        const data = {
+          "interval": [this.startYear, this.endYear],
+          "competition_type": this.compTypes.filter(item =>
+              this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
+          "boat_class": this.boatClasses[this.selectedBoatClasses],
+          "race_phase_type": this.selectedRuns.map(item => this.optionsRuns[item]),
+        }
+        store.postFormDataMatrix(data)
+        data["competition_type"] = this.selectedCompTypes.join(", ")
+      data["race_phase_type"] = this.selectedRuns.map(item => this.optionsRuns[item]).join(", ")
+      data["race_phase_subtype"] = this.selectedRunsFineSelection.join(", ")
+      store.setLastFilterConfig(data)
       }
     },
     async onSubmit() {
@@ -249,7 +254,6 @@ export default {
       }
 
       const store = useBerichteState()
-      store.setLastFilterConfig(formData)
       store.setSelectedBoatClass(this.selectedBoatClasses[0])
 
       if (formData.boat_class === undefined) {
@@ -269,6 +273,11 @@ export default {
               console.error(error)
             })
       }
+
+      formData["competition_type"] = this.selectedCompTypes.join(", ")
+      formData["race_phase_type"] = this.selectedRuns.map(item => this.optionsRuns[item]).join(", ")
+      formData["race_phase_subtype"] = this.selectedRunsFineSelection.join(", ")
+      store.setLastFilterConfig(formData)
     },
     clearFormInputs() {
       this.selectedGenders = 3
@@ -421,14 +430,6 @@ export default {
     },
     filterData: function (newVal,) {
       this.initializeFilter(newVal)
-    },
-    startYear: function (newVal,) {
-      const store = useBerichteState()
-      store.setFilterConfig([newVal, this.endYear])
-    },
-    endYear: function (newVal,) {
-      const store = useBerichteState()
-      store.setFilterConfig([this.startYear, newVal])
     }
   }
 }
