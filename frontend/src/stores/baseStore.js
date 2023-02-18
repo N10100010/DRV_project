@@ -4,7 +4,7 @@ import {defineStore} from "pinia";
 // function to convert milliseconds to min:sec:ms
 const formatMilliseconds = ms => {
     if (!ms) {
-        return '00:00.000';
+        return '00:00.00';
     }
     return new Date(ms).toISOString().slice(14, -2);
 };

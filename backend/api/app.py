@@ -99,7 +99,9 @@ def get_race_analysis_filter_options():
         "id": v[0],
         "display_name": v[1],
     } for v in session.execute(statement).fetchall()]
-    return {"years": (min_year, max_year), "competition_categories": competition_categories}
+    sorted_categories = sorted(competition_categories, key=lambda x: x['display_name'])
+
+    return {"years": (min_year, max_year), "competition_categories": sorted_categories}
 
 
 @app.route('/race_analysis_filter_results', methods=['POST'])
@@ -415,11 +417,10 @@ def get_report_boat_class():
                    "race_phase_subtype" "placement"]
     interval, competition_types, boat_class, runs, ranks = [filter_data.get(key) for key in filter_keys]
     start_year, end_year = interval[0], interval[1]
+    start_date = datetime.datetime(start_year, 1, 1, 0, 0, 0)
+    end_date = datetime.datetime(end_year, 12, 31, 23, 59, 59)
 
-    # read from db
     session = Scoped_Session()
-    start_date = func.to_timestamp(func.concat(start_year, "-01-01 00:00:00"), 'YYYY-MM-DD HH24:MI:SS')
-    end_date = func.to_timestamp(func.concat(end_year, "-12-31 23:59:59"), 'YYYY-MM-DD HH24:MI:SS')
 
     statement = (
         select(
@@ -590,13 +591,12 @@ def get_report_boat_class():
 @jwt_required()
 def get_athlete(athlete_id: int):
     """
-    Give athlete data for specific athlete
+    Gives athlete data and race list for specific athlete.
     """
     session = Scoped_Session()
     athlete = session.query(model.Athlete).filter_by(id=int(athlete_id)).first()
     athlete_race_boats = [race_boat.race_boat_id for race_boat in athlete.race_boats]
 
-    # get race_boat related data
     race_boats = session.query(model.Race_Boat).filter(model.Race_Boat.id.in_(athlete_race_boats)).all()
 
     race_results, race_ids, athlete_boat_classes, best_time_boat_class, nation, race_phase = {}, [], set(), "", "", ""
@@ -626,9 +626,9 @@ def get_athlete(athlete_id: int):
 
         race_results[i] = {
             "race_id": race_boat.race_id,
-            "time": race_boat.result_time_ms,
             "rank": race_boat.rank,
-            "race_phase": race_phase
+            "race_phase": race_phase,
+            "result_time": race_boat.result_time_ms
         }
         nation = race_boat.country.country_code
 
@@ -652,7 +652,7 @@ def get_athlete(athlete_id: int):
         race_results[i]["name"] = comp.name
         race_results[i]["venue"] = f'{comp.venue.city}, {comp.venue.country.name}'
         race_results[i]["boat_class"] = boat_class_name
-        race_results[i]["start_time"] = str(race.date)
+        race_results[i]["start_time"] = str((race.date).strftime("%Y-%m-%d %H:%M"))
         race_results[i]["competition_category"] = comp_type
 
     return json.dumps({
@@ -672,7 +672,6 @@ def get_athlete(athlete_id: int):
         "final_a": final_a,
         "final_b": final_b,
         "world_best_boat_class": best_time_boat_class,
-        "best_time_current_oz": None,  # TODO: Where to find this?
         "num_of_races": len(athlete_race_boats),
         "race_list": race_results,
     })
@@ -731,13 +730,13 @@ def get_athletes_filter_options():
     session = Scoped_Session()
     iterator = session.execute(select(model.Athlete)).scalars()
     birth_years = [entity.birthdate.year for entity in iterator]
+    nations = {entity.country_code: entity.name for entity in session.execute(select(model.Country)).scalars()}
 
     return json.dumps([{
         "birth_years": [
             {"start_year": min(birth_years)},
             {"end_year": max(birth_years)}],
-        "nations": {entity.country_code: entity.name for entity in
-                    session.execute(select(model.Country)).scalars()},
+        "nations": dict(sorted(nations.items(), key=lambda x: x[0])),
         "boat_classes": globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT
     }], sort_keys=False)
 
@@ -774,17 +773,17 @@ def get_medals_filter_options():
         "id": v[0],
         "display_name": v[1],
     } for v in session.execute(statement).fetchall()]
+    nations = {entity.country_code: entity.name for entity in session.execute(select(model.Country)).scalars()}
 
     return json.dumps([{
         "years": [{"start_year": min_year}, {"end_year": max_year}],
-        "competition_categories": competition_categories,
+        "competition_categories": sorted(competition_categories, key=lambda x: x['display_name']),
         "medal_types": [
             {"display_name": "Gesamt", "id": "0"},
             {"display_name": "Olympisch", "id": "1"},
             {"display_name": "Nicht-Olympisch", "id": "2"}
         ],
-        "nations": {entity.country_code: entity.name for entity in
-                    session.execute(select(model.Country)).scalars()},
+        "nations": dict(sorted(nations.items(), key=lambda x: x[0])),
         "boat_classes": globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT,
     }], sort_keys=False)
 
@@ -831,7 +830,7 @@ def get_medals():
             total_result_counter += 1
             nation = race_boat.country.country_code
             if nation not in medal_data:
-                medal_data[nation] = {"total": 0, "gold": 0, "silver": 0, "bronze": 0, "final_a": 0, "final_b": 0}
+                medal_data[nation] = {"total": 0, "gold": 0, "silver": 0, "bronze": 0, "four_to_six": 0, "final_a": 0, "final_b": 0}
             medal_data[nation]["final_a"] += 1
             if race_boat.rank == 1:
                 medal_data[nation]["gold"] += 1
@@ -842,10 +841,12 @@ def get_medals():
             elif race_boat.rank == 3:
                 medal_data[nation]["bronze"] += 1
                 medal_data[nation]["total"] += 1
+            elif 3 < race_boat.rank <= 6:
+                medal_data[nation]["four_to_six"] += 1
         elif race_boat.race.phase_type == 'final' and race_boat.race.phase_number == 2 and race_boat.country.country_code in nations:
             nation = race_boat.country.country_code
             if nation not in medal_data:
-                medal_data[nation] = {"total": 0, "gold": 0, "silver": 0, "bronze": 0, "final_a": 0, "final_b": 0}
+                medal_data[nation] = {"total": 0, "gold": 0, "silver": 0, "bronze": 0, "four_to_six": 0, "final_a": 0, "final_b": 0}
             medal_data[nation]["final_b"] += 1
 
     medal_data = [{"nation": nation, **medal_data[nation]} for nation in medal_data]
@@ -879,11 +880,12 @@ def get_report_filter_options():
         "id": v[0],
         "display_name": v[1],
     } for v in session.execute(statement).fetchall()]
+    sorted_categories = sorted(competition_categories, key=lambda x: x['display_name'])
 
     return json.dumps([{
         "years": [{"start_year": min_year}, {"end_year": max_year}],
         "boat_classes": globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT,
-        "competition_categories": competition_categories,
+        "competition_categories": sorted_categories,
         "runs": globals.RACE_PHASE_SUBTYPE_BY_RACE_PHASE,
         "ranks": [1, 2, 3, 4, 5, 6]
     }], sort_keys=False)

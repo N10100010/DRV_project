@@ -1,7 +1,12 @@
 import axios from "axios";
 import {defineStore} from "pinia";
-import {ar, el, he} from "vuetify/locale";
-import AthletenView from "@/views/AthletenView.vue";
+
+const formatMilliseconds = ms => {
+    if (!ms) {
+        return '00:00.00';
+    }
+    return new Date(ms).toISOString().slice(14, -2);
+};
 
 export const useAthletenState = defineStore({
     id: "athleten",
@@ -158,10 +163,11 @@ export const useAthletenState = defineStore({
                         return null
                     }
                 }).filter(val => val !== null);
-
                 state.tableExportAthlete = [Object.keys(athleteData).filter((v) => v !== "race_list"), athleteValues];
+
                 let raceListExportData = [Object.keys(athleteData.race_list[0])];
                 Object.values(athleteData.race_list).forEach(race => {
+                    race["result_time"] = formatMilliseconds(race["result_time"])
                     const subArray = Object.values(race).map(el => String(el).replace(/,/g, ' '));
                     raceListExportData = raceListExportData.concat([subArray]);
                 })
