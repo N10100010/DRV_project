@@ -177,17 +177,20 @@
                 </tr>
                 </tbody>
               </v-table>
-              <v-col class="text-right font-weight-black" style="font-size: 0.9em">
-                <a v-if="competitionData.pdf_urls.result"
-                   :href=competitionData.pdf_urls.result target="_blank" class="mr-2" style="color: black">
-                  Ergebnisse
-                  <v-icon color="grey">mdi-open-in-new</v-icon>
-                </a>
-                <a v-if="competitionData.pdf_urls.race_data"
-                   :href=competitionData.pdf_urls.race_data target="_blank" class="ml-2" style="color: black">
-                  GPS-Daten
-                  <v-icon color="grey">mdi-open-in-new</v-icon>
-                </a>
+              <v-col class="d-flex align-center justify-space-between font-weight-black px-0" style="font-size: 0.9em">
+                <p class="mr-2"><b>Progression:</b> {{ competitionData.progression_code || '–' }}</p>
+                <div class="text-right">
+                  <a v-if="competitionData.pdf_urls.result" :href=competitionData.pdf_urls.result target="_blank"
+                     class="mr-2" style="color: black">
+                    Ergebnisse
+                    <v-icon color="grey">mdi-open-in-new</v-icon>
+                  </a>
+                  <a v-if="competitionData.pdf_urls.race_data" :href=competitionData.pdf_urls.race_data target="_blank"
+                     class="ml-2" style="color: black">
+                    GPS-Daten
+                    <v-icon color="grey">mdi-open-in-new</v-icon>
+                  </a>
+                </div>
               </v-col>
             </v-col>
             <v-col :cols="mobile ? 12 : 6" class="pa-0">
