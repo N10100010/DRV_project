@@ -45,14 +45,14 @@
         <v-container class="pa-0" v-else>
           <v-row class="ma-0">
             <v-col cols="12" class="pa-0">
-              <v-col :cols="mobile ? 12 : 6" class="pa-0">
+              <v-col :cols="mobile ? 12 : 8" class="pa-0">
                 <v-alert type="success" variant="tonal" class="my-2" v-if="filterSelection.results">
                   <v-row>
                     <v-col>
-                      <p>{{
-                          `${filterSelection.results} Datensätze | ${filterSelection.start_date} bis ${filterSelection.end_date}`
-                        }}
-                      </p>
+                      <p><b>{{
+                          `${filterSelection.results} Datensätze | Von ${filterSelection.start_date} bis ${filterSelection.end_date}`
+                        }}</b></p>
+                      <p><b>Events:</b> {{filterSelection.comp_types}}</p>
                     </v-col>
                   </v-row>
                 </v-alert>

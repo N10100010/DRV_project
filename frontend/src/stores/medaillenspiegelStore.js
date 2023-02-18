@@ -27,7 +27,7 @@ export const useMedaillenspiegelState = defineStore({
                 "results": 0,
                 "start_date": 0,
                 "end_date": 0,
-                "events": 0,
+                "comp_types": [],
                 "category": 0,
                 "boat_classes": [],
                 "data": []

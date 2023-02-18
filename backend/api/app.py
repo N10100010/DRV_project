@@ -797,6 +797,7 @@ def get_medals():
     start_date = datetime.datetime(start, 1, 1, 0, 0, 0)
     end_date = datetime.datetime(end, 12, 31, 23, 59, 59)
     nations = {nation[:3] for nation in data["nations"]}
+    comp_types = data["competition_type"]
 
     session = Scoped_Session()
 
@@ -808,10 +809,13 @@ def get_medals():
         .join(model.Race)
         .join(model.Event)
         .join(model.Boat_Class)
+        .join(model.Competition)
+        .join(model.Competition_Type)
         .filter(
             model.Race_Boat.country_id.in_(nation_ids),
             model.Race.date >= start_date,
-            model.Race.date <= end_date
+            model.Race.date <= end_date,
+            model.Competition_Type.additional_id_.in_(comp_types)
         )
         .options(
             joinedload(model.Race_Boat.country),
@@ -820,8 +824,9 @@ def get_medals():
         .all()
     )
 
-    medal_data, total_result_counter = {}, 0
+    medal_data, total_result_counter, comp_types = {}, 0, set()
     for race_boat in race_boats:
+        comp_types.add(race_boat.race.event.competition.competition_type.abbreviation)
         if race_boat.race.phase_type == 'final' and race_boat.race.phase_number == 1 and race_boat.country.country_code in nations:
             total_result_counter += 1
             nation = race_boat.country.country_code
@@ -853,7 +858,8 @@ def get_medals():
         "results": total_result_counter,
         "start_date": start,
         "end_date": end,
-        "data": medal_data
+        "data": medal_data,
+        "comp_types": ", ".join(comp_types)
     })
 
 
