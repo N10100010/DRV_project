@@ -1,6 +1,7 @@
 import axios from "axios";
 import {defineStore} from "pinia";
-import {ar} from "vuetify/locale";
+import {ar, el, he} from "vuetify/locale";
+import AthletenView from "@/views/AthletenView.vue";
 
 export const useAthletenState = defineStore({
     id: "athleten",
@@ -146,9 +147,27 @@ export const useAthletenState = defineStore({
             return state.filterOptions
         },
         getTableData(state) {
-            // TODO: Convert table data to array that could be rendered in the template.
-            // Also relevant for CSV Export as the export data should be the same.
-            return state.data.athlete
+            const athleteData = state.data.athlete
+            if (athleteData && athleteData.race_list) {
+                const athleteValues = Object.entries(athleteData).map(([key, val]) => {
+                    if (typeof val === 'string') {
+                        return val.replace(/,/g, ' ');
+                    } else if (val !== null) {
+                        return val;
+                    } else {
+                        return null
+                    }
+                }).filter(val => val !== null);
+
+                state.tableExportAthlete = [Object.keys(athleteData).filter((v) => v !== "race_list"), athleteValues];
+                let raceListExportData = [Object.keys(athleteData.race_list[0])];
+                Object.values(athleteData.race_list).forEach(race => {
+                    const subArray = Object.values(race).map(el => String(el).replace(/,/g, ' '));
+                    raceListExportData = raceListExportData.concat([subArray]);
+                })
+                state.tableExportAthleteRaceList = raceListExportData;
+            }
+            return athleteData
         }
     },
     actions: {
@@ -180,13 +199,21 @@ export const useAthletenState = defineStore({
             this.filterOpen = !filterState
         },
         exportTableData() {
-            const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(row => row.join(",")).join("\n");
+            const csvContent = "data:text/csv;charset=utf-8," + this.tableExportAthlete.map(row => row.join(",")).join("\n");
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "athleten.csv");
+            link.setAttribute("download", `${this.data.athlete.name.replace(", ", "_")}_Profile.csv`);
             document.body.appendChild(link);
             link.click();
+
+            const csvContentRaceList = "data:text/csv;charset=utf-8," + this.tableExportAthleteRaceList.map(row => row.join(",")).join("\n");
+            const encodedUriRaceList = encodeURI(csvContentRaceList);
+            const linkRaceList = document.createElement("a");
+            linkRaceList.setAttribute("href", encodedUriRaceList);
+            linkRaceList.setAttribute("download", `${this.data.athlete.name.replace(", ", "_")}_Races.csv`);
+            document.body.appendChild(linkRaceList);
+            linkRaceList.click();
         }
     }
 })

@@ -59,6 +59,7 @@
 import Checkbox from "@/components/filters/checkbox.vue";
 import {mapState} from "pinia";
 import {useAthletenState} from "@/stores/athletenStore";
+import router from "@/router";
 
 export default {
   components: {Checkbox},
@@ -184,10 +185,9 @@ export default {
     },
     submitFormData() {
       const store = useAthletenState()
-      return store.getAthlete({
-        "id": this.previewAthleteResults.find(item => item.name === this.selectedAthlete).id
-      }).then(() => {
-        console.log("Form data sent...")
+      const athleteId = this.previewAthleteResults.find(item => item.name === this.selectedAthlete).id
+      store.getAthlete({"id": athleteId}).then(() => {
+        router.push(`/athleten?athlete_id=${athleteId}`)
       }).catch(error => {
         console.error(error)
       })
