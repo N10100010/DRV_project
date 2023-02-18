@@ -158,9 +158,15 @@
                 <tr v-for="(country, idx) in tableData.slice(1)">
                   <td v-for="item in country" class="px-2">
                     <template v-if="Array.isArray(item)">
-                      <p v-for="element in item">
-                        {{ element }}
-                      </p>
+                      <template v-for="element in item">
+                        <a v-if="element && typeof element === 'object'
+                        && element.hasOwnProperty('link') && element.hasOwnProperty('name')"
+                           :href="element.link"
+                           class="link-underline">
+                          {{ element.name }}<br/>
+                        </a>
+                        <p v-else-if="element">{{ element }}</p>
+                      </template>
                     </template>
                     <template v-else>
                       <p>
@@ -192,7 +198,8 @@
                 <LineChart :data="getGPsData[2]" :chartOptions="gpsChartOptions[2]" class="chart-bg"></LineChart>
               </v-container>
               <v-container :class="mobile ? 'pa-0' : 'pa-2'">
-                <LineChart :data="getIntermediateData[1]" :chartOptions="intermediateChartOptions[1]" class="chart-bg"></LineChart>
+                <LineChart :data="getIntermediateData[1]" :chartOptions="intermediateChartOptions[1]"
+                           class="chart-bg"></LineChart>
               </v-container>
             </v-col>
             <v-col :cols="mobile ? 12 : 6" class="pa-0">
@@ -200,7 +207,8 @@
                 <LineChart :data="getGPsData[1]" :chartOptions="gpsChartOptions[1]" class="chart-bg"></LineChart>
               </v-container>
               <v-container :class="mobile ? 'pa-0' : 'pa-2'">
-                <LineChart :data="getIntermediateData[0]" :chartOptions="intermediateChartOptions[0]" class="chart-bg"></LineChart>
+                <LineChart :data="getIntermediateData[0]" :chartOptions="intermediateChartOptions[0]"
+                           class="chart-bg"></LineChart>
               </v-container>
               <v-container :class="mobile ? 'pa-0' : 'pa-2'">
                 <LineChart :data="deficitMeters" :chartOptions="deficitChartOptions" class="chart-bg"></LineChart>
@@ -578,5 +586,16 @@ export default {
   i, .filterToggleButton, .filterToggleButtonMobile {
     display: none;
   }
+}
+
+.link-underline {
+  text-decoration: none;
+  color: #1369b0;
+}
+
+.link-underline:hover {
+  text-decoration: none;
+  color: black;
+  border-bottom: 1px solid black;
 }
 </style>

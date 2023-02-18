@@ -1,7 +1,5 @@
 import axios from "axios";
 import {defineStore} from "pinia";
-import {resolve} from "chart.js/helpers";
-import {it} from "vuetify/locale";
 
 const formatMilliseconds = ms => new Date(ms).toISOString().slice(14, -2);
 
@@ -9,13 +7,15 @@ export const useBerichteState = defineStore({
     id: "berichte",
     state: () => ({
         filterOpen: false,
+        loading: true,
         tableExport: [],
-        lastFilterConfig: null,
-        selectedBoatClass: "Alle",
-        filterConfig: {
-            start: 0,
-            end: 0,
+        lastFilterConfig: {
+          "interval": [0, 0],
+          "competition_type": "",
+          "boat_class": "",
+          "race_phase_type": "",
         },
+        selectedBoatClass: "Alle",
         filterOptions: [{
             "years": [{"start_year": 0}, {"end_year": 0}],
             "boat_classes": {
@@ -206,13 +206,16 @@ export const useBerichteState = defineStore({
             return state.filterOpen
         },
         getFilterConfig(state) {
-            return state.filterConfig
+            return state.lastFilterConfig
         },
         getReportFilterOptions(state) {
             return state.filterOptions
         },
         getTableData(state) {
             return state.data
+        },
+        getLoadingState(state) {
+            return state.loading
         },
         getMatrixTableResults(state) {
             if (state.matrixData === null) {
@@ -501,19 +504,23 @@ export const useBerichteState = defineStore({
                 })
         },
         async postFormData(data) {
+            this.loading = true
             this.selectedBoatClass = data.boat_classes
             await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/get_report_boat_class`, {data})
                 .then(response => {
                     this.data = response.data
+                    this.loading = false
                 }).catch(error => {
                     console.error(`Request failed: ${error}`)
                 })
         },
         async postFormDataMatrix(data) {
             this.selectedBoatClass = "Alle"
+            this.loading = true
             await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/matrix`, {data})
                 .then(response => {
                     this.matrixData = response.data
+                    this.loading = false
                 }).catch(error => {
                     console.error(`Request failed: ${error}`)
                 })
@@ -527,9 +534,8 @@ export const useBerichteState = defineStore({
         setLastFilterConfig(filterConfig) {
             this.lastFilterConfig = filterConfig
         },
-        setFilterConfig(interval) {
-            this.filterConfig.start = interval[0]
-             this.filterConfig.end = interval[1]
+        setFilterConfig(data) {
+            this.filterConfig = data
         },
         exportTableData() {
             const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(row => {

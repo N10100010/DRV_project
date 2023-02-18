@@ -127,6 +127,7 @@
                   <th class="px-1">Startzeit</th>
                   <th class="px-1">Platz</th>
                   <th class="px-1">Ort</th>
+                  <th class="px-1">Lauf</th>
                   <th class="px-1">Bootsklasse</th>
                 </tr>
                 </thead>
@@ -136,6 +137,7 @@
                   <td>{{ race.start_time }}</td>
                   <td>{{ race.rank }}</td>
                   <td>{{ race.venue }}</td>
+                  <td>{{ race.race_phase }}</td>
                   <td>{{ race.boat_class }}</td>
                 </tr>
                 </tbody>

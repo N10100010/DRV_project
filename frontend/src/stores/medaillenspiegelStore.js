@@ -7,6 +7,7 @@ export const useMedaillenspiegelState = defineStore({
     id: "medaillenspiegel",
     state: () => ({
         filterOpen: false,
+        loading: true,
         tableExport: [],
         filterOptions: [{
             "years": [{"start_year": ""}, {"end_year": ""}],
@@ -16,11 +17,11 @@ export const useMedaillenspiegelState = defineStore({
             "medal_types": [{"":""}]
         }],
         data: {
-                "results": 1,
+                "results": 0,
                 "start_date": 0,
                 "end_date": 0,
-                "events": null,
-                "category": null,
+                "events": 0,
+                "category": 0,
                 "boat_classes": [],
                 "data": []
             }
@@ -34,6 +35,9 @@ export const useMedaillenspiegelState = defineStore({
         },
         getFilterSelection(state) {
             return state.data
+        },
+        getLoadingState(state) {
+            return state.loading
         },
         getTableData(state) {
             let tableData = [["Platz", "Nation", "Gold", "Silber", "Bronze", "Gesamt", "Finale A", "Finale B"]];
@@ -77,9 +81,11 @@ export const useMedaillenspiegelState = defineStore({
                 })
         },
         async postFormData(data) {
+            this.loading = true
              await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/get_medals`, {data})
                 .then(response => {
                     this.data = response.data
+                    this.loading = false
                 }).catch(error => {
                     console.error(`Request failed: ${error}`)
                 })

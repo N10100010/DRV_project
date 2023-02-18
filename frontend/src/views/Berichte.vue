@@ -47,10 +47,14 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
           <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
         </v-col>
         <v-divider></v-divider>
-        <v-container class="pa-0 mt-2 pb-8">
+        <v-container v-if="loading" class="d-flex flex-column align-center">
+          <v-progress-circular indeterminate color="blue" size="40" class="mt-15"></v-progress-circular>
+          <div class="text-center" style="color: #1369b0">Lade Ergebnisse...</div>
+        </v-container>
+        <v-container class="pa-0 mt-2 pb-8" v-else>
           <v-row>
-            <v-col :cols="mobile ? 12 : 5">
-              <h2>{{ data.boat_classes }}</h2>
+            <v-col :cols="mobile ? 12 : (matrixVisible ? 8 : 5)" class="py-0 pt-1">
+              <h2 v-if="!matrixVisible">{{ data.boat_classes }}</h2>
               <v-alert type="error" variant="tonal" class="my-2" v-if="data.results === 0 && !matrixVisible">
                 <v-row>
                   <v-col cols="12">
@@ -61,8 +65,11 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
               <v-alert type="success" variant="tonal" class="my-2" v-else>
                 <v-row>
                   <v-col cols="12">
-                    <p>{{ matrixVisible ? matrixResults : data.results }} Datensätze |
-                      Von {{ filterConf.start }} bis {{ filterConf.end }}</p>
+                    <p><b>{{ matrixVisible ? matrixResults : data.results }} Datensätze |
+                      Von {{ filterConf.interval[0] }} bis {{ filterConf.interval[1] }}</b></p>
+                    <p><b>Events</b>: {{filterConf.competition_type}}</p>
+                    <p><b>Läufe</b>: {{filterConf.race_phase_type}}</p>
+                    <p><b>Läufe (erweitert)</b>: {{filterConf.race_phase_subtype}}</p>
                   </v-col>
                 </v-row>
               </v-alert>
@@ -221,6 +228,9 @@ export default {
     }),
     ...mapState(useBerichteState, {
       matrixVisible: "getSelectedBoatClass"
+    }),
+    ...mapState(useBerichteState, {
+      loading: "getLoadingState"
     })
   },
   methods: {

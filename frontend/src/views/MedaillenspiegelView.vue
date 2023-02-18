@@ -38,29 +38,33 @@
           <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
         </v-col>
         <v-divider></v-divider>
-        <v-container class="pa-0">
+        <v-container v-if="loading" class="d-flex flex-column align-center">
+          <v-progress-circular indeterminate color="blue" size="40" class="mt-15"></v-progress-circular>
+          <div class="text-center" style="color: #1369b0">Lade Ergebnisse...</div>
+        </v-container>
+        <v-container class="pa-0" v-else>
           <v-row class="ma-0">
             <v-col cols="12" class="pa-0">
-              <h2><b> {{ `${filterSelection.start_date} bis ${filterSelection.end_date}` }}</b></h2>
               <v-col :cols="mobile ? 12 : 6" class="pa-0">
-              <v-alert type="success" variant="tonal" class="my-2" v-if="filterSelection.results">
-                <v-row>
-                  <v-col>
-                    <p>{{ filterSelection.results }} Datensätze
-                      <!--bis {{ filterSelection.end_date }}<br>-->
-                    </p>
-                  </v-col>
-                </v-row>
-              </v-alert>
-              <v-alert type="error" variant="tonal" class="my-2" v-else>
-                <v-row>
-                  <v-col cols="12">
-                    <p>Leider keine Ergebnisse gefunden.</p>
-                  </v-col>
-                </v-row>
-              </v-alert>
+                <v-alert type="success" variant="tonal" class="my-2" v-if="filterSelection.results">
+                  <v-row>
+                    <v-col>
+                      <p>{{
+                          `${filterSelection.results} Datensätze | ${filterSelection.start_date} bis ${filterSelection.end_date}`
+                        }}
+                      </p>
+                    </v-col>
+                  </v-row>
+                </v-alert>
+                <v-alert type="error" variant="tonal" class="my-2" v-else>
+                  <v-row>
+                    <v-col cols="12">
+                      <p>Leider keine Ergebnisse gefunden.</p>
+                    </v-col>
+                  </v-row>
+                </v-alert>
               </v-col>
-              <v-table class="tableStyles mb-4" density="compact">
+              <v-table class="tableStyles mb-4" density="compact" v-if="filterSelection.results">
                 <tbody class="nth-grey">
                 <template v-for="(el, idx) in tableData">
                   <tr>
@@ -74,11 +78,11 @@
               </v-table>
             </v-col>
           </v-row>
-          <v-col :cols="mobile ? 12 : 8" class="pa-0">
-              <v-container class="chart-bg pa-0">
-                <BarChart :data="medalChartData" :chartOptions="medalChartOptions"></BarChart>
-              </v-container>
-            </v-col>
+          <v-col cols="12" class="pa-0" v-if="filterSelection.results">
+            <v-container class="chart-bg pa-0">
+              <BarChart :data="medalChartData" :chartOptions="medalChartOptions"></BarChart>
+            </v-container>
+          </v-col>
         </v-container>
       </v-container>
     </v-layout>
@@ -110,7 +114,10 @@ export default {
     }),
     ...mapState(useMedaillenspiegelState, {
       tableData: "getTableData"
-    })
+    }),
+    ...mapState(useMedaillenspiegelState, {
+      loading: "getLoadingState"
+    }),
   },
   methods: {
     openPrintDialog() {
