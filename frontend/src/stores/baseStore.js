@@ -25,13 +25,13 @@ export const useRennstrukturAnalyseState = defineStore({
                 "competition_categories": []
             },
             raceData: [{
-                "race_id": 2841,
-                "display_name": "FA",
-                "start_date": "2019-07-13 16:15:00",
-                "venue": "None/Rotterdam, Netherlands",
-                "boat_class": "LM2-",
-                "result_time_world_best": null,
-                "result_time_best_of_current_olympia_cycle": 407360.0,
+                "race_id": "",
+                "display_name": "",
+                "start_date": "",
+                "venue": "",
+                "boat_class": "",
+                "result_time_world_best": 0,
+                "result_time_best_of_current_olympia_cycle": null,
                 "progression_code": null,
                 "pdf_urls": {
                     "result": "https://d3fpn4c9813ycf.cloudfront.net/pdfDocuments/WCp3_2019_1/WCP3_2019_1_ROWMNOCOX2-L----------FNL-000100--_C73X2971.PDF",

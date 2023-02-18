@@ -340,23 +340,24 @@ def get_race(race_id: int) -> dict:
             "name": race_boat.name,  # e.g. DEU2
             "lane": race_boat.lane,
             "rank": race_boat.rank,
-            "athletes": [],
+            "athletes": OrderedDict(),
             "intermediates": OrderedDict(),
             "race_data": OrderedDict()
         }
         result['race_boats'].append(rb_result)
 
         # athletes
+        sorted_athletes = sorted(race_boat.athletes, key=lambda x: (x.boat_position != 'b', x.boat_position))
         athlete_assoc: model.Association_Race_Boat_Athlete
-        for athlete_assoc in race_boat.athletes:
+        for idx, athlete_assoc in enumerate(sorted_athletes):
             athlete: model.Athlete = athlete_assoc.athlete
-            rb_result['athletes'].append({
+            rb_result['athletes'][idx] = {
                 "id": athlete.id,
                 "first_name": athlete.first_name__,
                 "last_name": athlete.last_name__,
                 "full_name": athlete.name,
                 "boat_position": athlete_assoc.boat_position
-            })
+            }
 
         # race_data aka gps data
         sorted_race_data = sorted(race_boat.race_data, key=lambda x: x.distance_meter)
@@ -598,12 +599,18 @@ def get_athlete(athlete_id: int):
     # get race_boat related data
     race_boats = session.query(model.Race_Boat).filter(model.Race_Boat.id.in_(athlete_race_boats)).all()
 
-    race_results, race_ids, athlete_boat_classes, best_time_boat_class, nation = {}, [], set(), "", ""
+    race_results, race_ids, athlete_boat_classes, best_time_boat_class, nation, race_phase = {}, [], set(), "", "", ""
     total, gold, silver, bronze, final_a, final_b = 0, 0, 0, 0, 0, 0
 
     for i, race_boat in enumerate(race_boats):
         race_ids.append(race_boat.race_id)
-        if race_boat.race.phase_type == 'final' and race_boat.race.phase_number == 1:
+        boat = race_boat.race
+        phase = boat.phase_type
+        phase_num = boat.phase_number
+        phase_subtype = boat.phase_subtype if boat.phase_subtype else ""
+        phase_string = globals.RACE_PHASE_MAPPING.get(phase + phase_subtype + str(phase_num))
+        race_phase = phase_string if phase_string else phase + str(phase_num)
+        if phase == 'final' and phase_num == 1:
             final_a += 1
             if race_boat.rank == 1:
                 gold += 1
@@ -614,15 +621,14 @@ def get_athlete(athlete_id: int):
             elif race_boat.rank == 3:
                 bronze += 1
                 total += 1
-        elif race_boat.race.phase_type == 'final' and race_boat.race.phase_number == 2:
+        elif phase == 'final' and phase_num == 2:
             final_b += 1
 
         race_results[i] = {
             "race_id": race_boat.race_id,
             "time": race_boat.result_time_ms,
             "rank": race_boat.rank,
-            "boat_class": None,
-            "start_time": None
+            "race_phase": race_phase
         }
         nation = race_boat.country.country_code
 
