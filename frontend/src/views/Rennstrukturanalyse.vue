@@ -590,7 +590,7 @@ export default {
 
 .link-underline {
   text-decoration: none;
-  color: #555555;
+  color: #1369b0;
 }
 
 .link-underline:hover {
