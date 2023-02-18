@@ -14,7 +14,7 @@ from model import model
 from model import dbutils
 from scraping_wr import api, pdf_race_data
 from common import rowing
-from common.helpers import get_
+from common.helpers import get_, select_first
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -137,10 +137,12 @@ def _scrape_competition(session, competition: model.Competition, parse_pdf_race_
                                 logger.error(f'Data is inconsistent: Arrays have different lengths')
                                 continue # TODO: consider not commiting for this Race_Boat at all
                             
-                            race_boat.race_data.clear()
                             for dist, speed, stroke in zip(dists, speeds, strokes):
                                 try:
-                                    race_data_point = model.Race_Data(data_source=model.Enum_Data_Source.world_rowing_pdf.value)
+                                    race_data_point = select_first(race_boat.race_data, lambda i: i.distance_meter==dist)
+                                    if not race_data_point:
+                                        race_data_point = model.Race_Data()
+                                    race_data_point.data_source=model.Enum_Data_Source.world_rowing_pdf.value
                                     race_data_point.distance_meter = dist
                                     race_data_point.speed_meter_per_sec = speed
                                     race_data_point.stroke = stroke
@@ -163,28 +165,33 @@ def scrape(parse_pdf=True):
 
         for competition in tqdm(competitions_iter):
             competition_uuid = competition.additional_id_
-            if not competition_uuid:
-                logger.error(f"Competition with id={competition.id} has no UUID (w.r.t. World Rowing API); Skip")
-                continue
-            
-            scrape = True
-            if competition.scraper_maintenance_level in [LEVEL_SCRAPED, LEVEL_POSTPROCESSED]:
-                scrape = _competition_within_rescrape_window(comp=competition)
+            logger.info(f'Competition uuid="{competition_uuid}"')
+            try:
+                if not competition_uuid:
+                    logger.error(f"Competition with id={competition.id} has no UUID (w.r.t. World Rowing API); Skip")
+                    continue
+                
+                scrape = True
+                if competition.scraper_maintenance_level in [LEVEL_SCRAPED, LEVEL_POSTPROCESSED]:
+                    scrape = _competition_within_rescrape_window(comp=competition)
 
-            if scrape:
-                # this also advances the maintenance_level
-                _scrape_competition(
-                    session=session,
-                    competition=competition,
-                    parse_pdf_intermediates=parse_pdf,
-                    parse_pdf_race_data=parse_pdf,
-                    logger=logger
-                )
+                if scrape:
+                    # this also advances the maintenance_level
+                    _scrape_competition(
+                        session=session,
+                        competition=competition,
+                        parse_pdf_intermediates=parse_pdf,
+                        parse_pdf_race_data=parse_pdf,
+                        logger=logger
+                    )
 
-            # HIGH PRIO TODO:
-            #   - introduce deep_scrape/parse_pdf param?
-            #   - set maintenance state in the end
-            #   - set scraper_last_scrape in the end
+                # HIGH PRIO TODO:
+                #   - introduce deep_scrape/parse_pdf param?
+                #   - set maintenance state in the end
+                #   - set scraper_last_scrape in the end
 
-            session.commit()
-            # Race Data PDF here or in maintain()
+                session.commit()
+                # Race Data PDF here or in maintain()
+            except Exception as error:
+                logger.error(f'ERROR while scraping Competition uuid="{competition_uuid}"')
+                logger.error(str(error))

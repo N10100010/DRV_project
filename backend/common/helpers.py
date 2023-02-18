@@ -107,3 +107,8 @@ def make_keys_lowercase(dict_: dict) -> dict:
 
 def is_number(obj):
     return isinstance(obj, int) or isinstance(obj, float)
+
+def select_first(iterable, condition_func, default_value=None):
+    """ Return first element in iterable fullfilling condition_func(element)
+    https://stackoverflow.com/a/2364277 """
+    return next((x for x in iterable if condition_func(x)), default_value)

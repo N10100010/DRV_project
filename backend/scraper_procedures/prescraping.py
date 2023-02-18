@@ -24,7 +24,12 @@ def _scrape_range_full_year_window():
 
 def _scrape_range_max():
     today = datetime.date.today()
-    return SCRAPER_YEAR_MIN, today.year+1
+    year_max = today.year+1
+
+    if SCRAPER_YEAR_MAX:
+        year_max = SCRAPER_YEAR_MAX
+
+    return SCRAPER_YEAR_MIN, year_max
 
 def _detect_wr_scrapes(session):
     # HIGH-PRIO TODO: Introduce a field for source == WorldRowing
