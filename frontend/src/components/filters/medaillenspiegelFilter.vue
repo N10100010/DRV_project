@@ -77,7 +77,6 @@
 import Checkbox from "@/components/filters/checkbox.vue";
 import {mapState} from "pinia";
 import {useMedaillenspiegelState} from "@/stores/medaillenspiegelStore";
-import {useBerichteState} from "@/stores/berichteStore";
 
 export default {
   components: {Checkbox},

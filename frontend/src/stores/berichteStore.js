@@ -9,6 +9,7 @@ export const useBerichteState = defineStore({
     id: "berichte",
     state: () => ({
         filterOpen: false,
+        loading: true,
         tableExport: [],
         lastFilterConfig: null,
         selectedBoatClass: "Alle",
@@ -213,6 +214,9 @@ export const useBerichteState = defineStore({
         },
         getTableData(state) {
             return state.data
+        },
+        getLoadingState(state) {
+            return state.loading
         },
         getMatrixTableResults(state) {
             if (state.matrixData === null) {
@@ -501,19 +505,23 @@ export const useBerichteState = defineStore({
                 })
         },
         async postFormData(data) {
+            this.loading = true
             this.selectedBoatClass = data.boat_classes
             await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/get_report_boat_class`, {data})
                 .then(response => {
                     this.data = response.data
+                    this.loading = false
                 }).catch(error => {
                     console.error(`Request failed: ${error}`)
                 })
         },
         async postFormDataMatrix(data) {
             this.selectedBoatClass = "Alle"
+            this.loading = true
             await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/matrix`, {data})
                 .then(response => {
                     this.matrixData = response.data
+                    this.loading = false
                 }).catch(error => {
                     console.error(`Request failed: ${error}`)
                 })

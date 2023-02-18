@@ -47,7 +47,11 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
           <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
         </v-col>
         <v-divider></v-divider>
-        <v-container class="pa-0 mt-2 pb-8">
+        <v-container v-if="loading" class="d-flex flex-column align-center">
+          <v-progress-circular indeterminate color="blue" size="40" class="mt-15"></v-progress-circular>
+          <div class="text-center" style="color: #1369b0">Lade Ergebnisse...</div>
+        </v-container>
+        <v-container class="pa-0 mt-2 pb-8" v-else>
           <v-row>
             <v-col :cols="mobile ? 12 : 5">
               <h2>{{ data.boat_classes }}</h2>
@@ -221,6 +225,9 @@ export default {
     }),
     ...mapState(useBerichteState, {
       matrixVisible: "getSelectedBoatClass"
+    }),
+    ...mapState(useBerichteState, {
+      loading: "getLoadingState"
     })
   },
   methods: {

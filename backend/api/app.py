@@ -794,15 +794,14 @@ def get_medals_filter_options():
 def get_medals():
     data = request.json["data"]
     start, end = data["years"][0], data["years"][1]
-    start_date = func.to_timestamp(func.concat(start, "-01-01 00:00:00"), 'YYYY-MM-DD HH24:MI:SS')
-    end_date = func.to_timestamp(func.concat(end, "-12-31 23:59:59"), 'YYYY-MM-DD HH24:MI:SS')
-    nations = [nation[:3] for nation in data["nations"]]
-    # comp_ids = data["competition_categories"]
+    start_date = datetime.datetime(start, 1, 1, 0, 0, 0)
+    end_date = datetime.datetime(end, 12, 31, 23, 59, 59)
+    nations = {nation[:3] for nation in data["nations"]}
 
     session = Scoped_Session()
 
-    nation_ids = session.query(model.Country.id).filter(model.Country.country_code.in_(nations)).all()
-    nation_ids = [nation_id[0] for nation_id in nation_ids]
+    nation_ids = [country.id for country in
+                  session.query(model.Country.id).filter(model.Country.country_code.in_(nations)).all()]
 
     race_boats = (
         session.query(model.Race_Boat)
@@ -814,44 +813,41 @@ def get_medals():
             model.Race.date >= start_date,
             model.Race.date <= end_date
         )
+        .options(
+            joinedload(model.Race_Boat.country),
+            joinedload(model.Race_Boat.race),
+        )
         .all()
     )
 
-    medal_data, total_result_counter = [], 0
-    for nation in nations:
-        total, gold, silver, bronze, final_a, final_b = 0, 0, 0, 0, 0, 0
-        for race_boat in race_boats:
-            if race_boat.race.phase_type == 'final' and race_boat.race.phase_number == 1 \
-                    and race_boat.country.country_code == nation:
-                total_result_counter += 1
-                final_a += 1
-                if race_boat.rank == 1:
-                    gold += 1
-                    total += 1
-                elif race_boat.rank == 2:
-                    silver += 1
-                    total += 1
-                elif race_boat.rank == 3:
-                    bronze += 1
-                    total += 1
-            elif race_boat.race.phase_type == 'final' and race_boat.race.phase_number == 2 \
-                    and race_boat.country.country_code == nation:
-                total_result_counter += 1
-                final_b += 1
+    medal_data, total_result_counter = {}, 0
+    for race_boat in race_boats:
+        if race_boat.race.phase_type == 'final' and race_boat.race.phase_number in (1, 2) \
+                and race_boat.country.country_code in nations:
+            total_result_counter += 1
+            nation = race_boat.country.country_code
+            if nation not in medal_data:
+                medal_data[nation] = {"total": 0, "gold": 0, "silver": 0, "bronze": 0, "final_a": 0, "final_b": 0}
+            medal_data[nation]["total"] += 1
+            if race_boat.rank == 1:
+                medal_data[nation]["gold"] += 1
+                medal_data[nation]["total"] += 1
+            elif race_boat.rank == 2:
+                medal_data[nation]["silver"] += 1
+                medal_data[nation]["total"] += 1
+            elif race_boat.rank == 3:
+                medal_data[nation]["bronze"] += 1
+                medal_data[nation]["total"] += 1
+            if race_boat.race.phase_number == 1:
+                medal_data[nation]["final_a"] += 1
+            else:
+                medal_data[nation]["final_b"] += 1
 
-        medal_data.append({
-            "nation": nation,
-            "total": total,
-            "gold": gold,
-            "silver": silver,
-            "bronze": bronze,
-            "final_a": final_a,
-            "final_b": final_b
-        })
-
+    medal_data = [{"nation": nation, **medal_data[nation]} for nation in medal_data]
     medal_data.sort(key=lambda x: x['gold'], reverse=True)
-    for i, obj in enumerate(medal_data):
-        obj['rank'] = i + 1
+
+    for i in range(len(medal_data)):
+        medal_data[i]['rank'] = i + 1
 
     return json.dumps({
         "results": total_result_counter,
@@ -859,6 +855,7 @@ def get_medals():
         "end_date": end,
         "data": medal_data
     })
+
 
 
 @app.route('/get_report_filter_options', methods=['GET'])
