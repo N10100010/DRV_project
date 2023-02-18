@@ -46,7 +46,7 @@
         <v-container class="pa-0" v-if="!displayRaceDataAnalysis">
           <v-row>
             <v-col cols="12">
-              <h2>Suchergebnisse</h2>
+              <h2 v-if="getAnalysis && !loading">Suchergebnisse</h2>
               <v-container class="pa-0 mt-3">
                 <v-col cols="12" class="pa-0">
                   <v-alert type="info" variant="tonal" v-if="!getAnalysis && !loading" :width="mobile ? '100%':'50%'">
@@ -393,7 +393,6 @@ export default {
     this.checkScreen();
     this.filterOpen = this.filterState
 
-    // possible solution for permanent url --> in the real scenario there must be a fetch to the backend
     window.onload = () => {
       const url = new URL(window.location.href);
       const race_id = url.searchParams.get("race_id");
