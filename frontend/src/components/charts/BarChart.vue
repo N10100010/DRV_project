@@ -28,7 +28,7 @@ export default {
   methods: {
     checkScreen() {
       this.windowWidth = window.innerWidth;
-      this.mobile = this.windowWidth <= 750
+      this.mobile = this.windowWidth < 890
     }
   }
 }

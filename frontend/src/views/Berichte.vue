@@ -248,7 +248,7 @@ export default {
     },
     checkScreen() {
       this.windowWidth = window.innerWidth;
-      this.mobile = this.windowWidth <= 750
+      this.mobile = this.windowWidth < 890
     },
     formatMilliseconds(ms) {
       if (ms) {
@@ -261,7 +261,7 @@ export default {
   created() {
     window.addEventListener('resize', this.checkScreen);
     this.checkScreen();
-    let navbarHeight = window.innerWidth < 750 ? '71.25px' : '160px';
+    let navbarHeight = window.innerWidth < 890 ? '71.25px' : '160px';
     document.documentElement.style.setProperty('--navbar-height', navbarHeight);
   },
   data() {
