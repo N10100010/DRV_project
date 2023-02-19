@@ -33,3 +33,19 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+@media print {
+  canvas {
+    min-height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    height: auto!important;
+    width: auto!important;
+  }
+
+  .chart-container {
+    min-height: 0 !important;
+  }
+}
+</style>

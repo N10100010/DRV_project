@@ -177,7 +177,7 @@
                 </tr>
                 </tbody>
               </v-table>
-              <v-col class="text-right font-weight-black" style="font-size: 0.9em">
+              <v-col class="sources text-right font-weight-black" style="font-size: 0.9em">
                 <a v-if="competitionData.pdf_urls.result"
                    :href=competitionData.pdf_urls.result target="_blank" class="mr-2" style="color: black">
                   Ergebnisse
@@ -583,7 +583,7 @@ export default {
 }
 
 @media print {
-  i, .filterToggleButton, .filterToggleButtonMobile {
+  i, .filterToggleButton, .filterToggleButtonMobile, .sources {
     display: none;
   }
 }
