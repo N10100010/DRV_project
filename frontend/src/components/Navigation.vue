@@ -82,16 +82,16 @@ export default {
 
 <template>
   <header v-bind:style='{"padding-top" : (mobile ? "0em" : "18px" )}' :class="{ 'scrolled-nav': scrollPosition }">
-      <!-- Title element -->
-      <v-container class="title-container px-10 py-0" v-show="!mobile">
-        <p>DRV Stats</p>
-        <p><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></p>
-      </v-container>
+    <!-- Title element -->
+    <v-container class="title-container px-10 py-0" v-show="!mobile">
+      <p>DRV Stats</p>
+      <p><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></p>
+    </v-container>
 
-      <!-- navbar incl. mobile navbar -->
-      <v-container :class="mobile ? 'px-5 py-0' : 'px-10 py-0'">
+    <!-- navbar incl. mobile navbar -->
+    <v-container :class="mobile ? 'px-5 py-0' : 'px-10 py-0'">
       <nav v-bind:style='{"padding-top" : (!mobile ? "2.5em" : "15px"), "padding-bottom" : (!mobile ? "15px" : "0")}'
-           @mouseleave="onMouseLeaveNav">
+          @mouseleave="onMouseLeaveNav">
         <div class="nav-links-wrapper">
           <div v-show="!mobile" class="branding">
             <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="105" height="45"/></RouterLink>
@@ -104,7 +104,7 @@ export default {
               <!-- To activate the submenu add this (@mouseover="expandSubPageMenu(navEntry)") to the Link below -->
               <RouterLink :class="isActive(navEntry.link, navEntry.displayName) ?
                 'router-link-exact-active' : null"
-              :to="navEntry.link"><b>{{ navEntry.displayName }}</b></RouterLink>
+                :to="navEntry.link"><b>{{ navEntry.displayName }}</b></RouterLink>
             </li>
           </ul>
         </div>
@@ -130,8 +130,8 @@ export default {
           </div>
         </transition>
       </nav>
-      </v-container>
-      </header>
+    </v-container>
+  </header>
 </template>
 
 <style lang="scss" scoped>
