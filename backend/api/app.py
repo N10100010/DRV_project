@@ -749,15 +749,66 @@ def get_teams_filter_options():
         """
     session = Scoped_Session()
     min_year, max_year = session.query(func.min(model.Competition.year), func.max(model.Competition.year)).first()
+    statement = select(model.Competition_Type.additional_id_, model.Competition_Type.abbreviation)
+    competition_categories = [{
+        "id": v[0],
+        "display_name": v[1],
+    } for v in session.execute(statement).fetchall()]
+    nations = {entity.country_code: entity.name for entity in session.execute(select(model.Country)).scalars()}
 
     return json.dumps([{
         "years": [{"start_year": min_year}, {"end_year": max_year}],
-        "competition_categories": [{"id": entity.id, "display_name": entity.name} for entity in
-                                   session.execute(select(model.Competition_Category)).scalars()],
-        "nations": {entity.country_code: entity.name for entity in
-                    session.execute(select(model.Country)).scalars()}
+        "competition_categories": sorted(competition_categories, key=lambda x: x['display_name']),
+        "nations": dict(sorted(nations.items(), key=lambda x: x[0]))
     }], sort_keys=False)
 
+
+@app.route('/get_teams', methods=['POST'])
+@jwt_required()
+def get_teams():
+    """
+    This endpoint serves the teams data for a given nation and further filter criteria.
+    """
+    data = request.json["data"]
+    start_date = datetime.datetime(data["interval"][0], 1, 1, 0, 0, 0)
+    end_date = datetime.datetime(data["interval"][1], 12, 31, 23, 59, 59)
+    nation = data["nation"][:3] if data["nation"] else None
+
+    session = Scoped_Session()
+
+    # get all race boats for given nation
+    race_boats = session.query(model.Race_Boat)\
+        .join(model.Country, model.Race_Boat.country_id == model.Country.id)\
+        .join(model.Race, model.Race_Boat.race_id == model.Race.id)\
+        .filter(model.Country.country_code == str(nation))\
+        .filter(model.Race.date >= start_date)\
+        .filter(model.Race.date <= end_date).all()
+
+    athletes = set()
+    for race_boat in race_boats:
+        boat_class = race_boat.race.event.boat_class.additional_id_
+        athlete_assoc: model.Association_Race_Boat_Athlete
+        for idx, athlete_assoc in enumerate(race_boat.athletes):
+            athlete: model.Athlete = athlete_assoc.athlete
+            athletes.add((athlete.name, athlete.id, boat_class))
+
+    num_of_results = len(athletes)
+    result = {}
+    for entry in athletes:
+        name, id, key = entry
+        if key not in result:
+            result[key] = [{"name": name, "id": id}]
+        else:
+            result[key].append({"name": name, "id": id})
+
+    return {
+        "interval": [data["interval"][0], data["interval"][1]],
+        "nation": data["nation"],
+        "race_boats": str(len(race_boats)),
+        "results": num_of_results,
+        "athletes": result,
+        "boat_classes": globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT
+    }
 
 @app.route('/get_medals_filter_options', methods=['GET'])
 @jwt_required()
