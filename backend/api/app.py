@@ -189,7 +189,7 @@ def get_race_analysis_filter_results() -> dict:
 @jwt_required()
 def get_matrix() -> dict:
     """
-
+    COMMENT KAY WINKERT: Events begrenzen auf JWCh, WCh, Ech, WCp1, WCp2, WCp3, OG
     """
     filter_key_mapping = {
         'gender': model.Event.gender_id,  # list
@@ -934,7 +934,9 @@ def get_report_filter_options():
     session = Scoped_Session()
     min_year, max_year = session.query(func.min(model.Competition.year), func.max(model.Competition.year)).first()
 
-    statement = select(model.Competition_Type.additional_id_, model.Competition_Type.abbreviation)
+    statement = select(model.Competition_Type.additional_id_, model.Competition_Type.abbreviation).where(
+        model.Competition_Type.abbreviation.in_(globals.RELEVANT_CMP_TYPE_ABBREVATIONS)
+    )
     competition_categories = [{
         "id": v[0],
         "display_name": v[1],
@@ -959,19 +961,6 @@ def get_calendar(year: int):
 
     COMMENT KAY WINKERT: Auf relevante Termine begrenzen (EM, WC I-III, WM, OG)
     """
-    RELEVANT_CMP_TYPE_ABBREVATIONS = [
-        "EJCH", 
-        "ECH", 
-        "WCp 1", 
-        "WCp 2", 
-        "WCp 3", 
-        "WCH", 
-        "U23WCH", 
-        "OG", 
-        "YOG", 
-        "WCH IE", 
-        "WCH IE JWCH", 
-    ]
     result = []
     session = Scoped_Session()
     iterator = session.execute(
@@ -980,7 +969,7 @@ def get_calendar(year: int):
         .where(
             and_(
                 model.Competition.year == year,
-                model.Competition_Type.abbreviation.in_(RELEVANT_CMP_TYPE_ABBREVATIONS)
+                model.Competition_Type.abbreviation.in_(globals.RELEVANT_CMP_TYPE_ABBREVATIONS)
             )
         )
     ).scalars()

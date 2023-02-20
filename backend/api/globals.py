@@ -16,6 +16,20 @@ ALLOWED_COMPETITION_TYPES_MAPPING = {
     'WCH IE': 'WCh IE',
 }
 
+RELEVANT_CMP_TYPE_ABBREVATIONS = [
+    "EJCH", 
+    "ECH", 
+    "WCp 1", 
+    "WCp 2", 
+    "WCp 3", 
+    "WCH", 
+    "U23WCH", 
+    "OG", 
+    "YOG", 
+    "WCH IE", 
+    "WCH IE JWCH", 
+]
+
 BOATCLASSES_BY_GENDER_AGE_WEIGHT = {
     'm': {
         'u19': {
