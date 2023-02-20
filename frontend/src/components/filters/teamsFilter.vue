@@ -200,7 +200,7 @@ export default {
     },
     checkScreen() {
       this.windowWidth = window.innerWidth
-      this.mobile = this.windowWidth <= 769
+      this.mobile = this.windowWidth < 890
     },
     setFilterState() {
       this.filterOpen = !this.filterOpen;

@@ -66,7 +66,7 @@ export default {
     },
     checkScreen() {
       this.windowWidth = window.innerWidth;
-      if (this.windowWidth <= 750) {
+      if (this.windowWidth < 890) {
         this.mobile = true;
         document.querySelector('body').style.paddingTop = '4.5em';
         return;
@@ -81,25 +81,23 @@ export default {
 </script>
 
 <template>
-  <header>
-  <div class="header-box">
-    <header v-bind:style='{"padding-top" : (mobile? "0em" : "18px" )}' :class="{ 'scrolled-nav': scrollPosition }">
-
+  <header v-bind:style='{"padding-top" : (mobile ? "0em" : "18px" )}' :class="{ 'scrolled-nav': scrollPosition }">
       <!-- Title element -->
-      <div id="desktop-title" class="title-container" v-show="!mobile">
-        <p>U ->- Row</p>
+      <v-container class="title-container px-10 py-0" v-show="!mobile">
+        <p>DRV Stats</p>
         <p><a href="https://www.rudern.de/">Deutscher Ruderverband e.V.</a></p>
-      </div>
+      </v-container>
 
       <!-- navbar incl. mobile navbar -->
-      <nav v-bind:style='{"padding-top" : (!mobile? "2.5em" : "15px"), "padding-bottom" : (!mobile? "15px" : "5px")}'
+      <v-container :class="mobile ? 'px-5 py-0' : 'px-10 py-0'">
+      <nav v-bind:style='{"padding-top" : (!mobile ? "2.5em" : "15px"), "padding-bottom" : (!mobile ? "15px" : "0")}'
            @mouseleave="onMouseLeaveNav">
         <div class="nav-links-wrapper">
           <div v-show="!mobile" class="branding">
             <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="105" height="45"/></RouterLink>
           </div>
           <div v-show="mobile" class="branding-mobile">
-            <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="64" height="30"/></RouterLink>
+            <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="80" height="40"/></RouterLink>
           </div>
           <ul v-show="!mobile" class="navigation" :class="{'collapsed-nav': !showSubMenu, 'expanded': showSubMenu}">
             <li v-for="navEntry in navigationLinks">
@@ -117,7 +115,7 @@ export default {
             </li>
           </ul>
         </div>
-        <p v-show="mobile" id="mobile-title">U ->- Row</p>
+        <p v-show="mobile" id="mobile-title">DRV Stats</p>
         <div v-show="mobile" class="icon included">
           <i @click="toggleMobileNav" class="far fa-bars" :class="{ 'icon-active': mobileNav }"></i>
         </div>
@@ -132,9 +130,8 @@ export default {
           </div>
         </transition>
       </nav>
-    </header>
-  </div>
-  </header>
+      </v-container>
+      </header>
 </template>
 
 <style lang="scss" scoped>
@@ -157,10 +154,8 @@ header {
     flex-direction: column;
     padding: 12px 0;
     transition: 0.5s ease all;
-    width: 90%;
     margin: 0 auto;
-    max-width: 1140px;
-    @media (max-width: 750px) {
+    @media (max-width: 890px) {
       flex-direction: row;
     }
 
@@ -208,10 +203,11 @@ header {
     }
 
     #mobile-title {
+      font-size: medium;
       margin-left: auto;
       margin-right: auto;
-      width: 9em;
-      align-self: center;
+      margin-top: 0.3em;
+      width: 9.5em;
       color: #fff;
     }
 
@@ -258,20 +254,20 @@ header {
       transform: translateX(0);
     }
   }
+}
 
-  header::after {
+header::after {
     content: '';
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    @media(min-width: 750px) {
+    @media(min-width: 890px) {
       border-top: 0.5rem solid #008000;
       border-bottom: 1rem solid #1369b0;
     }
     border-top: 0.25rem solid #008000;
     border-bottom: 0.5rem solid #1369b0;
-  }
 }
 
 p {
@@ -281,14 +277,11 @@ p {
   display: flex;
   flex-direction: row;
   transition: 0.5s ease all;
-  @media(min-width: 1140px) {
-    max-width: 1140px;
-  }
-  color: #d6f0fa;
+  color: #ffffff;
   font-style: italic;
 
   a {
-    color: #d6f0fa;
+    color: #ffffff;
   }
 
   a:hover {
@@ -305,9 +298,7 @@ p {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 90%;
   margin: 0 auto;
-  max-width: 1140px;
 }
 
 #sub-menu {

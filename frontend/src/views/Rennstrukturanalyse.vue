@@ -457,8 +457,8 @@ export default {
     },
     checkScreen() {
       this.windowWidth = window.innerWidth;
-      this.mobile = this.windowWidth <= 750
-      let navbarHeight = window.innerWidth < 750 ? '71.25px' : '160px';
+      this.mobile = this.windowWidth < 890
+      let navbarHeight = window.innerWidth < 890 ? '71.25px' : '160px';
       document.documentElement.style.setProperty('--navbar-height', navbarHeight);
     }
   },
@@ -585,7 +585,7 @@ export default {
 }
 
 @media print {
-  i, .filterToggleButton, .filterToggleButtonMobile {
+  i, .filterToggleButton, .filterToggleButtonMobile, .sources {
     display: none;
   }
 }
