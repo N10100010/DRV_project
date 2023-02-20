@@ -171,11 +171,12 @@ def get_race_analysis_filter_results() -> dict:
                     "id": _race.id,
                     "name": _race.name,
                     "phase_type": _race.phase_type,
-                    "sub_phase": _race.phase_number if _race.phase_number else _race.phase_subtype
+                    "sub_phase": _race.phase_number if _race.phase_number else _race.phase_subtype,
+                    "race_nr": int(_race.race_nr__)
                 }
                 races.append(race)
 
-            event['races'] = races
+            event['races'] = sorted(races, key=lambda d: d["race_nr"])
             events.append(event)
 
         comp['events'] = events
@@ -223,7 +224,7 @@ def get_matrix() -> dict:
         .join(model.Competition_Type.competition_category)
         .where(
             model.Intermediate_Time.distance_meter == 2000,
-            # model.Intermediate_Time.is_outlier == False, # TODO:
+            model.Intermediate_Time.is_outlier == False, 
             model.Intermediate_Time.result_time_ms != 0
         )
         .group_by(
@@ -632,7 +633,7 @@ def get_athlete(athlete_id: int):
         }
         nation = race_boat.country.country_code
 
-    races = session.query(model.Race).filter(model.Race.id.in_(race_ids)).all()
+    races = session.query(model.Race).order_by(model.Race.date.desc()).filter(model.Race.id.in_(race_ids)).all()
 
     gender, athlete_disciplines = set(), set()
     for i, race in enumerate(races):
