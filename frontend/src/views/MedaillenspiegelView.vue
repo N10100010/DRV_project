@@ -54,7 +54,7 @@
                       <p><b>{{
                           `${filterSelection.results} Datensätze | Von ${filterSelection.start_date} bis ${filterSelection.end_date}`
                         }}</b></p>
-                      <p><b>Events:</b> {{filterSelection.comp_types}}</p>
+                      <p><b>Events:</b> {{ filterSelection.comp_types }}</p>
                     </v-col>
                   </v-row>
                 </v-alert>
@@ -148,6 +148,20 @@ export default {
       medalChartOptions: {
         responsive: true,
         maintainAspectRatio: false,
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Medaillenverteilung'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Anzahl Medaillen'
+            }
+          }
+        },
         plugins: {
           legend: {
             display: true
