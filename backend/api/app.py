@@ -171,11 +171,12 @@ def get_race_analysis_filter_results() -> dict:
                     "id": _race.id,
                     "name": _race.name,
                     "phase_type": _race.phase_type,
-                    "sub_phase": _race.phase_number if _race.phase_number else _race.phase_subtype
+                    "sub_phase": _race.phase_number if _race.phase_number else _race.phase_subtype,
+                    "race_nr": int(_race.race_nr__)
                 }
                 races.append(race)
 
-            event['races'] = races
+            event['races'] = sorted(races, key=lambda d: d["race_nr"])
             events.append(event)
 
         comp['events'] = events
@@ -188,7 +189,7 @@ def get_race_analysis_filter_results() -> dict:
 @jwt_required()
 def get_matrix() -> dict:
     """
-
+    COMMENT KAY WINKERT: Events begrenzen auf JWCh, WCh, Ech, WCp1, WCp2, WCp3, OG
     """
     filter_key_mapping = {
         'gender': model.Event.gender_id,  # list
@@ -223,7 +224,7 @@ def get_matrix() -> dict:
         .join(model.Competition_Type.competition_category)
         .where(
             model.Intermediate_Time.distance_meter == 2000,
-            # model.Intermediate_Time.is_outlier == False, # TODO:
+            model.Intermediate_Time.is_outlier == False, 
             model.Intermediate_Time.result_time_ms != 0
         )
         .group_by(
@@ -632,7 +633,7 @@ def get_athlete(athlete_id: int):
         }
         nation = race_boat.country.country_code
 
-    races = session.query(model.Race).filter(model.Race.id.in_(race_ids)).all()
+    races = session.query(model.Race).order_by(model.Race.date.desc()).filter(model.Race.id.in_(race_ids)).all()
 
     gender, athlete_disciplines = set(), set()
     for i, race in enumerate(races):
@@ -933,7 +934,9 @@ def get_report_filter_options():
     session = Scoped_Session()
     min_year, max_year = session.query(func.min(model.Competition.year), func.max(model.Competition.year)).first()
 
-    statement = select(model.Competition_Type.additional_id_, model.Competition_Type.abbreviation)
+    statement = select(model.Competition_Type.additional_id_, model.Competition_Type.abbreviation).where(
+        model.Competition_Type.abbreviation.in_(globals.RELEVANT_CMP_TYPE_ABBREVATIONS)
+    )
     competition_categories = [{
         "id": v[0],
         "display_name": v[1],
@@ -955,10 +958,21 @@ def get_calendar(year: int):
     """
     This route delivers calendar data for all competitions.
     @return: key (relevant for frontend), title, dates for competition
+
+    COMMENT KAY WINKERT: Auf relevante Termine begrenzen (EM, WC I-III, WM, OG)
     """
     result = []
     session = Scoped_Session()
-    iterator = session.execute(select(model.Competition).where(model.Competition.year == year)).scalars()
+    iterator = session.execute(
+        select(model.Competition)
+        .join(model.Competition.competition_type)
+        .where(
+            and_(
+                model.Competition.year == year,
+                model.Competition_Type.abbreviation.in_(globals.RELEVANT_CMP_TYPE_ABBREVATIONS)
+            )
+        )
+    ).scalars()
     for competition in iterator:
         # only include competitions that have a start and end date
         if competition.start_date and competition.end_date:
