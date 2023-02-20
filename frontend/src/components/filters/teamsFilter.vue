@@ -98,7 +98,7 @@ export default {
       // competition type
       compTypes: [],
       optionsCompTypes: [],
-      selectedCompTypes: ["WCH"],
+      selectedCompTypes: ["WCH", "WCp 1", "WCp 2", "WCp 3", "OG", "JWCH", "U23WCH", "PG"],
 
       // year
       birthYear: null,

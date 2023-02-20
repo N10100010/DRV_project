@@ -6,6 +6,7 @@ export const useTeamsState = defineStore({
     state: () => ({
         filterOpen: false,
         tableExport: [],
+        loading: true,
         filterOptions: [{
             "years": [{ "start_year": "" }, { "end_year": ""}],
             "competition_categories": [{"": ""}],
@@ -18,7 +19,7 @@ export const useTeamsState = defineStore({
             "athletes": {},
             "boat_classes": {
                 'm': {
-                    'junior': {
+                    'u19': {
                         'single': {"JM1x": "Junior Men's Single Sculls"},
                         'double': {"JM2x": "Junior Men's Double Sculls"},
                         'quad': {"JM4x": "Junior Men's Quadruple Sculls"},
@@ -27,7 +28,6 @@ export const useTeamsState = defineStore({
                         'four': {"JM4-": "Junior Men's Four"},
                         'eight': {"JM8-": "Junior Men's Eight"}
                     },
-                    'u19': {},
                     'u23': {
                         'single': {"BM1x": "U23 Men's Single Sculls"},
                         'double': {"BM2x": "U23 Men's Double Sculls"},
@@ -60,7 +60,7 @@ export const useTeamsState = defineStore({
                     }
                 },
                 'w': {
-                    'junior': {
+                    'u19': {
                         'single': {"JW1x": "Junior Women's Single Sculls"},
                         'double': {"JW2x": "Junior Women's Double Sculls"},
                         'quad': {"JW4x": "Junior Women's Quadruple Sculls"},
@@ -69,7 +69,6 @@ export const useTeamsState = defineStore({
                         'four': {"JW4-": "Junior Women's Four"},
                         'eight': {"JW8-": "Junior Women's Eight"}
                     },
-                    'u19': {},
                     'u23': {
                         'single': {"BW1x": "U23 Women's Single Sculls"},
                         'double': {"BW2x": "U23 Women's Double Sculls"},
@@ -122,6 +121,9 @@ export const useTeamsState = defineStore({
         getMetaData(state) {
             return state.data
         },
+        getLoadingState(state) {
+            return state.loading
+        },
         getTableData(state) {
             const data = state.data.boat_classes
             const subHeaders = {
@@ -132,7 +134,8 @@ export const useTeamsState = defineStore({
                 "U23 MEN": Object.values(data.m.u23),
                 "U23 WOMEN": Object.values(data.w.u23),
                 "U19 MEN": Object.values(data.m.u19),
-                "U19 WOMEN": Object.values(data.w.u19)
+                "U19 WOMEN": Object.values(data.w.u19),
+                "MIXED": Object.values(data.mixed)
             }
             let rowValues = []
             Object.entries(subHeaders).forEach(([key, value], idx) => {
@@ -160,9 +163,11 @@ export const useTeamsState = defineStore({
                 })
         },
         async fetchTeams(data) {
+            this.loading = true
             await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/get_teams`, {data})
                 .then(response => {
                     this.data = response.data
+                    this.loading = false
                 }).catch(error => {
                     console.error(`Request failed: ${error}`)
                 })

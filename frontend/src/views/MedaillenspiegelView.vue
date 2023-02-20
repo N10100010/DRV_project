@@ -38,10 +38,12 @@
           <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
         </v-col>
         <v-divider></v-divider>
+
         <v-container v-if="loading" class="d-flex flex-column align-center">
           <v-progress-circular indeterminate color="blue" size="40" class="mt-15"></v-progress-circular>
           <div class="text-center" style="color: #1369b0">Lade Ergebnisse...</div>
         </v-container>
+
         <v-container class="pa-0" v-else>
           <v-row class="ma-0">
             <v-col cols="12" class="pa-0">

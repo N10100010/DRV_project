@@ -773,16 +773,23 @@ def get_teams():
     start_date = datetime.datetime(data["interval"][0], 1, 1, 0, 0, 0)
     end_date = datetime.datetime(data["interval"][1], 12, 31, 23, 59, 59)
     nation = data["nation"][:3] if data["nation"] else None
+    comp_types = data["competition_categories"]
 
     session = Scoped_Session()
 
     # get all race boats for given nation
-    race_boats = session.query(model.Race_Boat)\
-        .join(model.Country, model.Race_Boat.country_id == model.Country.id)\
-        .join(model.Race, model.Race_Boat.race_id == model.Race.id)\
-        .filter(model.Country.country_code == str(nation))\
-        .filter(model.Race.date >= start_date)\
-        .filter(model.Race.date <= end_date).all()
+    race_boats = session.query(model.Race_Boat) \
+        .join(model.Country, model.Race_Boat.country_id == model.Country.id) \
+        .join(model.Race, model.Race_Boat.race_id == model.Race.id) \
+        .join(model.Race.event)\
+        .join(model.Event.competition)\
+        .join(model.Competition.competition_type)\
+        .join(model.Competition_Type.competition_category)\
+        .filter(model.Country.country_code == str(nation)) \
+        .filter(model.Race.date >= start_date) \
+        .filter(model.Race.date <= end_date) \
+        .filter(model.Competition_Type.additional_id_.in_(comp_types)) \
+        .all()
 
     athletes = set()
     for race_boat in race_boats:
