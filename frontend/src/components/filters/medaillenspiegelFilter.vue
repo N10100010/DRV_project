@@ -27,13 +27,11 @@
           ></v-select>
         </v-col>
       </v-container>
-      <!--
       <v-select class="pt-2" clearable chips multiple color="blue"
                 label="Event(s)" :items="optionsCompTypes"
                 v-model="selectedCompTypes" variant="outlined"
                 :rules="[v => v.length > 0 || 'Wähle mindestens eine Wettkampfklasse']"
       ></v-select>
-      -->
       <v-autocomplete class="pt-4" :items="optionsNations" clearable multiple chips v-model="selectedNation"
                       variant="outlined" color="blue" label="Nation" density="comfortable"
                       :rules="[v => !!v || 'Wähle mindestens eine Nation']"
@@ -101,7 +99,7 @@ export default {
       // competition type
       compTypes: [],
       optionsCompTypes: [],
-      selectedCompTypes: ["WCH"],
+      selectedCompTypes: ["WCH", "WCp 1", "WCp 2", "WCp 3", "OG"],
 
       // year
       startYear: 0,
@@ -180,7 +178,7 @@ export default {
         store.postFormData({
               "years": [this.startYear, this.endYear],
               "gender": this.selectedGenders,
-              "competition_categories": this.compTypes.filter(item => this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
+              "competition_type": this.compTypes.filter(item => this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
               "nations": Array.isArray(this.selectedNation) ? this.selectedNation : [this.selectedNation],
               "types": this.selectedMedalTypes
             }

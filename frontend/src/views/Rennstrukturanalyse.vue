@@ -42,15 +42,15 @@
           </v-icon>
         </v-col>
         <v-divider></v-divider>
-        <v-breadcrumbs style="color: grey; height: 22px" class="pa-0 my-2" :items="breadCrumbs"></v-breadcrumbs>
+        <v-breadcrumbs v-if="getAnalysis" style="color: grey; height: 22px" class="pa-0 my-2" :items="breadCrumbs"></v-breadcrumbs>
         <v-container class="pa-0" v-if="!displayRaceDataAnalysis">
           <v-row>
             <v-col cols="12">
-              <h2>Suchergebnisse</h2>
+              <h2 v-if="getAnalysis && !loading">Suchergebnisse</h2>
               <v-container class="pa-0 mt-3">
                 <v-col cols="12" class="pa-0">
                   <v-alert type="info" variant="tonal" v-if="!getAnalysis && !loading" :width="mobile ? '100%':'50%'">
-                    Bitte wählen Sie ein Jahr und eine Wettkampfklasse in dem Filter auf der linken Seite.
+                    Bitte wähle ein Jahr und ein Event in dem Filter auf der linken Seite.
                   </v-alert>
                   <v-progress-circular v-if="loading" indeterminate color="blue" size="40"></v-progress-circular>
 
@@ -177,17 +177,20 @@
                 </tr>
                 </tbody>
               </v-table>
-              <v-col class="sources text-right font-weight-black" style="font-size: 0.9em">
-                <a v-if="competitionData.pdf_urls.result"
-                   :href=competitionData.pdf_urls.result target="_blank" class="mr-2" style="color: black">
-                  Ergebnisse
-                  <v-icon color="grey">mdi-open-in-new</v-icon>
-                </a>
-                <a v-if="competitionData.pdf_urls.race_data"
-                   :href=competitionData.pdf_urls.race_data target="_blank" class="ml-2" style="color: black">
-                  GPS-Daten
-                  <v-icon color="grey">mdi-open-in-new</v-icon>
-                </a>
+              <v-col class="d-flex align-center justify-space-between font-weight-black px-0" style="font-size: 0.9em">
+                <p class="mr-2"><b>Progression:</b> {{ competitionData.progression_code || '–' }}</p>
+                <div class="text-right">
+                  <a v-if="competitionData.pdf_urls.result" :href=competitionData.pdf_urls.result target="_blank"
+                     class="mr-2" style="color: black">
+                    Ergebnisse
+                    <v-icon color="grey">mdi-open-in-new</v-icon>
+                  </a>
+                  <a v-if="competitionData.pdf_urls.race_data" :href=competitionData.pdf_urls.race_data target="_blank"
+                     class="ml-2" style="color: black">
+                    GPS-Daten
+                    <v-icon color="grey">mdi-open-in-new</v-icon>
+                  </a>
+                </div>
               </v-col>
             </v-col>
             <v-col :cols="mobile ? 12 : 6" class="pa-0">
@@ -390,7 +393,6 @@ export default {
     this.checkScreen();
     this.filterOpen = this.filterState
 
-    // possible solution for permanent url --> in the real scenario there must be a fetch to the backend
     window.onload = () => {
       const url = new URL(window.location.href);
       const race_id = url.searchParams.get("race_id");

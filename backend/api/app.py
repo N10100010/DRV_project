@@ -15,7 +15,7 @@ from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, JWTManager
 
 # disable auth by uncommenting the following line
-jwt_required = lambda: (lambda x: x) # disable auth
+# jwt_required = lambda: (lambda x: x) # disable auth
 
 from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import joinedload
@@ -99,7 +99,9 @@ def get_race_analysis_filter_options():
         "id": v[0],
         "display_name": v[1],
     } for v in session.execute(statement).fetchall()]
-    return {"years": (min_year, max_year), "competition_categories": competition_categories}
+    sorted_categories = sorted(competition_categories, key=lambda x: x['display_name'])
+
+    return {"years": (min_year, max_year), "competition_categories": sorted_categories}
 
 
 @app.route('/race_analysis_filter_results', methods=['POST'])
@@ -415,11 +417,10 @@ def get_report_boat_class():
                    "race_phase_subtype" "placement"]
     interval, competition_types, boat_class, runs, ranks = [filter_data.get(key) for key in filter_keys]
     start_year, end_year = interval[0], interval[1]
+    start_date = datetime.datetime(start_year, 1, 1, 0, 0, 0)
+    end_date = datetime.datetime(end_year, 12, 31, 23, 59, 59)
 
-    # read from db
     session = Scoped_Session()
-    start_date = func.to_timestamp(func.concat(start_year, "-01-01 00:00:00"), 'YYYY-MM-DD HH24:MI:SS')
-    end_date = func.to_timestamp(func.concat(end_year, "-12-31 23:59:59"), 'YYYY-MM-DD HH24:MI:SS')
 
     statement = (
         select(
@@ -590,13 +591,12 @@ def get_report_boat_class():
 @jwt_required()
 def get_athlete(athlete_id: int):
     """
-    Give athlete data for specific athlete
+    Gives athlete data and race list for specific athlete.
     """
     session = Scoped_Session()
     athlete = session.query(model.Athlete).filter_by(id=int(athlete_id)).first()
     athlete_race_boats = [race_boat.race_boat_id for race_boat in athlete.race_boats]
 
-    # get race_boat related data
     race_boats = session.query(model.Race_Boat).filter(model.Race_Boat.id.in_(athlete_race_boats)).all()
 
     race_results, race_ids, athlete_boat_classes, best_time_boat_class, nation, race_phase = {}, [], set(), "", "", ""
@@ -626,9 +626,9 @@ def get_athlete(athlete_id: int):
 
         race_results[i] = {
             "race_id": race_boat.race_id,
-            "time": race_boat.result_time_ms,
             "rank": race_boat.rank,
-            "race_phase": race_phase
+            "race_phase": race_phase,
+            "result_time": race_boat.result_time_ms
         }
         nation = race_boat.country.country_code
 
@@ -652,7 +652,7 @@ def get_athlete(athlete_id: int):
         race_results[i]["name"] = comp.name
         race_results[i]["venue"] = f'{comp.venue.city}, {comp.venue.country.name}'
         race_results[i]["boat_class"] = boat_class_name
-        race_results[i]["start_time"] = str(race.date)
+        race_results[i]["start_time"] = str((race.date).strftime("%Y-%m-%d %H:%M"))
         race_results[i]["competition_category"] = comp_type
 
     return json.dumps({
@@ -672,7 +672,6 @@ def get_athlete(athlete_id: int):
         "final_a": final_a,
         "final_b": final_b,
         "world_best_boat_class": best_time_boat_class,
-        "best_time_current_oz": None,  # TODO: Where to find this?
         "num_of_races": len(athlete_race_boats),
         "race_list": race_results,
     })
@@ -731,13 +730,13 @@ def get_athletes_filter_options():
     session = Scoped_Session()
     iterator = session.execute(select(model.Athlete)).scalars()
     birth_years = [entity.birthdate.year for entity in iterator]
+    nations = {entity.country_code: entity.name for entity in session.execute(select(model.Country)).scalars()}
 
     return json.dumps([{
         "birth_years": [
             {"start_year": min(birth_years)},
             {"end_year": max(birth_years)}],
-        "nations": {entity.country_code: entity.name for entity in
-                    session.execute(select(model.Country)).scalars()},
+        "nations": dict(sorted(nations.items(), key=lambda x: x[0])),
         "boat_classes": globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT
     }], sort_keys=False)
 
@@ -750,15 +749,73 @@ def get_teams_filter_options():
         """
     session = Scoped_Session()
     min_year, max_year = session.query(func.min(model.Competition.year), func.max(model.Competition.year)).first()
+    statement = select(model.Competition_Type.additional_id_, model.Competition_Type.abbreviation)
+    competition_categories = [{
+        "id": v[0],
+        "display_name": v[1],
+    } for v in session.execute(statement).fetchall()]
+    nations = {entity.country_code: entity.name for entity in session.execute(select(model.Country)).scalars()}
 
     return json.dumps([{
         "years": [{"start_year": min_year}, {"end_year": max_year}],
-        "competition_categories": [{"id": entity.id, "display_name": entity.name} for entity in
-                                   session.execute(select(model.Competition_Category)).scalars()],
-        "nations": {entity.country_code: entity.name for entity in
-                    session.execute(select(model.Country)).scalars()}
+        "competition_categories": sorted(competition_categories, key=lambda x: x['display_name']),
+        "nations": dict(sorted(nations.items(), key=lambda x: x[0]))
     }], sort_keys=False)
 
+
+@app.route('/get_teams', methods=['POST'])
+@jwt_required()
+def get_teams():
+    """
+    This endpoint serves the teams data for a given nation and further filter criteria.
+    """
+    data = request.json["data"]
+    start_date = datetime.datetime(data["interval"][0], 1, 1, 0, 0, 0)
+    end_date = datetime.datetime(data["interval"][1], 12, 31, 23, 59, 59)
+    nation = data["nation"][:3] if data["nation"] else None
+    comp_types = data["competition_categories"]
+
+    session = Scoped_Session()
+
+    # get all race boats for given nation
+    race_boats = session.query(model.Race_Boat) \
+        .join(model.Country, model.Race_Boat.country_id == model.Country.id) \
+        .join(model.Race, model.Race_Boat.race_id == model.Race.id) \
+        .join(model.Race.event)\
+        .join(model.Event.competition)\
+        .join(model.Competition.competition_type)\
+        .join(model.Competition_Type.competition_category)\
+        .filter(model.Country.country_code == str(nation)) \
+        .filter(model.Race.date >= start_date) \
+        .filter(model.Race.date <= end_date) \
+        .filter(model.Competition_Type.additional_id_.in_(comp_types)) \
+        .all()
+
+    athletes = set()
+    for race_boat in race_boats:
+        boat_class = race_boat.race.event.boat_class.additional_id_
+        athlete_assoc: model.Association_Race_Boat_Athlete
+        for idx, athlete_assoc in enumerate(race_boat.athletes):
+            athlete: model.Athlete = athlete_assoc.athlete
+            athletes.add((athlete.name, athlete.id, boat_class))
+
+    num_of_results = len(athletes)
+    result = {}
+    for entry in athletes:
+        name, id, key = entry
+        if key not in result:
+            result[key] = [{"name": name, "id": id}]
+        else:
+            result[key].append({"name": name, "id": id})
+
+    return {
+        "interval": [data["interval"][0], data["interval"][1]],
+        "nation": data["nation"],
+        "race_boats": str(len(race_boats)),
+        "results": num_of_results,
+        "athletes": result,
+        "boat_classes": globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT
+    }
 
 @app.route('/get_medals_filter_options', methods=['GET'])
 @jwt_required()
@@ -774,17 +831,17 @@ def get_medals_filter_options():
         "id": v[0],
         "display_name": v[1],
     } for v in session.execute(statement).fetchall()]
+    nations = {entity.country_code: entity.name for entity in session.execute(select(model.Country)).scalars()}
 
     return json.dumps([{
         "years": [{"start_year": min_year}, {"end_year": max_year}],
-        "competition_categories": competition_categories,
+        "competition_categories": sorted(competition_categories, key=lambda x: x['display_name']),
         "medal_types": [
             {"display_name": "Gesamt", "id": "0"},
             {"display_name": "Olympisch", "id": "1"},
             {"display_name": "Nicht-Olympisch", "id": "2"}
         ],
-        "nations": {entity.country_code: entity.name for entity in
-                    session.execute(select(model.Country)).scalars()},
+        "nations": dict(sorted(nations.items(), key=lambda x: x[0])),
         "boat_classes": globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT,
     }], sort_keys=False)
 
@@ -797,6 +854,7 @@ def get_medals():
     start_date = datetime.datetime(start, 1, 1, 0, 0, 0)
     end_date = datetime.datetime(end, 12, 31, 23, 59, 59)
     nations = {nation[:3] for nation in data["nations"]}
+    comp_types = data["competition_type"]
 
     session = Scoped_Session()
 
@@ -808,10 +866,13 @@ def get_medals():
         .join(model.Race)
         .join(model.Event)
         .join(model.Boat_Class)
+        .join(model.Competition)
+        .join(model.Competition_Type)
         .filter(
             model.Race_Boat.country_id.in_(nation_ids),
             model.Race.date >= start_date,
-            model.Race.date <= end_date
+            model.Race.date <= end_date,
+            model.Competition_Type.additional_id_.in_(comp_types)
         )
         .options(
             joinedload(model.Race_Boat.country),
@@ -820,13 +881,14 @@ def get_medals():
         .all()
     )
 
-    medal_data, total_result_counter = {}, 0
+    medal_data, total_result_counter, comp_types = {}, 0, set()
     for race_boat in race_boats:
+        comp_types.add(race_boat.race.event.competition.competition_type.abbreviation)
         if race_boat.race.phase_type == 'final' and race_boat.race.phase_number == 1 and race_boat.country.country_code in nations:
             total_result_counter += 1
             nation = race_boat.country.country_code
             if nation not in medal_data:
-                medal_data[nation] = {"total": 0, "gold": 0, "silver": 0, "bronze": 0, "final_a": 0, "final_b": 0}
+                medal_data[nation] = {"total": 0, "gold": 0, "silver": 0, "bronze": 0, "four_to_six": 0, "final_a": 0, "final_b": 0}
             medal_data[nation]["final_a"] += 1
             if race_boat.rank == 1:
                 medal_data[nation]["gold"] += 1
@@ -837,10 +899,12 @@ def get_medals():
             elif race_boat.rank == 3:
                 medal_data[nation]["bronze"] += 1
                 medal_data[nation]["total"] += 1
+            elif 3 < race_boat.rank <= 6:
+                medal_data[nation]["four_to_six"] += 1
         elif race_boat.race.phase_type == 'final' and race_boat.race.phase_number == 2 and race_boat.country.country_code in nations:
             nation = race_boat.country.country_code
             if nation not in medal_data:
-                medal_data[nation] = {"total": 0, "gold": 0, "silver": 0, "bronze": 0, "final_a": 0, "final_b": 0}
+                medal_data[nation] = {"total": 0, "gold": 0, "silver": 0, "bronze": 0, "four_to_six": 0, "final_a": 0, "final_b": 0}
             medal_data[nation]["final_b"] += 1
 
     medal_data = [{"nation": nation, **medal_data[nation]} for nation in medal_data]
@@ -853,7 +917,8 @@ def get_medals():
         "results": total_result_counter,
         "start_date": start,
         "end_date": end,
-        "data": medal_data
+        "data": medal_data,
+        "comp_types": ", ".join(comp_types)
     })
 
 
@@ -873,11 +938,12 @@ def get_report_filter_options():
         "id": v[0],
         "display_name": v[1],
     } for v in session.execute(statement).fetchall()]
+    sorted_categories = sorted(competition_categories, key=lambda x: x['display_name'])
 
     return json.dumps([{
         "years": [{"start_year": min_year}, {"end_year": max_year}],
         "boat_classes": globals.BOATCLASSES_BY_GENDER_AGE_WEIGHT,
-        "competition_categories": competition_categories,
+        "competition_categories": sorted_categories,
         "runs": globals.RACE_PHASE_SUBTYPE_BY_RACE_PHASE,
         "ranks": [1, 2, 3, 4, 5, 6]
     }], sort_keys=False)

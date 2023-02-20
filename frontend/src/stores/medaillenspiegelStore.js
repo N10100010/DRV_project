@@ -1,7 +1,14 @@
 import axios from "axios";
 import {defineStore} from "pinia";
 
-const COLORS = ['#0C67F7', '#93E9ED', '#E0A9FA', '#E0B696', '#E0FAAC', '#F0E95A'];
+const COLORS = [
+    '#0C67F7', '#D8C9BF', '#93E9ED',
+    '#B5A68D', '#E0A9FA', '#E0FAAC',
+    '#F0E95A', '#807E6D', '#5EFF5E',
+    '#FF5E5E', '#FF9C5E', '#5EFF9C',
+    '#9C5EFF', '#010101', '#C5B5B5',
+    '#E0B696', '#7C6B6B', '#5EFFBE'
+]
 
 export const useMedaillenspiegelState = defineStore({
     id: "medaillenspiegel",
@@ -20,7 +27,7 @@ export const useMedaillenspiegelState = defineStore({
                 "results": 0,
                 "start_date": 0,
                 "end_date": 0,
-                "events": 0,
+                "comp_types": [],
                 "category": 0,
                 "boat_classes": [],
                 "data": []
@@ -40,8 +47,8 @@ export const useMedaillenspiegelState = defineStore({
             return state.loading
         },
         getTableData(state) {
-            let tableData = [["Platz", "Nation", "Gold", "Silber", "Bronze", "Gesamt", "Finale A", "Finale B"]];
-            const valueKeys = ["rank", "nation", "gold", "silver", "bronze", "total", "final_a", "final_b"];
+            let tableData = [["Platz", "Nation", "Gold", "Silber", "Bronze", "Medaillen", "Platz 4-6", "Finale A", "Finale B"]];
+            const valueKeys = ["rank", "nation", "gold", "silver", "bronze", "total", "four_to_six", "final_a", "final_b"];
             const data = state.data.data
             for (const el of data) {
                 let temp1Array = []

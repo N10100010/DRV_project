@@ -4,7 +4,7 @@ import {defineStore} from "pinia";
 // function to convert milliseconds to min:sec:ms
 const formatMilliseconds = ms => {
     if (!ms) {
-        return '00:00.000';
+        return '00:00.00';
     }
     return new Date(ms).toISOString().slice(14, -2);
 };
@@ -108,7 +108,7 @@ export const useRennstrukturAnalyseState = defineStore({
                         if (dataObj.intermediates !== '0') {
                             speedValues.push(gpsData["speed [m/s]"] + "[m/s]");
                             strokeValues.push(gpsData["stroke [1/min]"] + "[1/min]");
-                            propulsionValues.push(gpsData["propulsion [m/stroke]"].toFixed(2) + "[m/Schlag]");
+                            propulsionValues.push(gpsData["propulsion [m/stroke]"] ? gpsData["propulsion [m/stroke]"].toFixed(2) : "–" + "[m/Schlag]");
                         }
                     });
                     for (const [index, [key, intermediate]] of Object.entries(dataObj.intermediates).entries()) {

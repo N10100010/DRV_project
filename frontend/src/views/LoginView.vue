@@ -13,14 +13,23 @@
               label="Nutzername"
               v-model="username"
               variant="outlined"
-              density="compact"></v-text-field>
+              hide-details
+              density="compact"
+              class="py-2"
+          >
+          </v-text-field>
           <v-text-field
               label="Passwort"
               type="password"
               v-model="password"
               variant="outlined"
-              density="compact"></v-text-field>
-          <v-btn color="#1369b0" style="color: white" type="submit">Login</v-btn>
+              hide-details
+              density="compact"
+              class="py-2"
+          >
+          </v-text-field>
+          <p v-if="credentialsWrong" style="color: red">Nutzername oder Passwort falsch.<br>Bitte überprüfe deine Eingabe.</p>
+          <v-btn class="mt-2" color="#1369b0" style="color: white; width: 150px" type="submit">Login</v-btn>
         </v-form>
       </v-col>
     </v-col>
@@ -35,7 +44,8 @@ export default {
   data() {
     return {
       username: 'drv_test_user',
-      password: ''
+      password: '',
+      credentialsWrong: false,
     }
   },
   created() {
@@ -50,15 +60,13 @@ export default {
           user: this.username,
           pass: this.password
         });
-
         const token = response.data.access_token;
         localStorage.setItem('session_token', token)
         router.push('/');
 
       } catch (error) {
         console.log("Login failed. Wrong credentials.")
-        console.log(error)
-        /** TODO: render fail msg to DOM */
+        this.credentialsWrong = true
       }
     },
     checkScreen() {

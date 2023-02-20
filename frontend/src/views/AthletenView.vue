@@ -36,16 +36,17 @@
         <v-divider></v-divider>
 
         <v-col class="pa-0" :cols="mobile ? 12 : 6" v-if="!data.name">
-        <v-alert type="info" variant="tonal" class="my-2">
-                <v-row>
-                  <v-col>
-                    <p>Bitte suchen Sie nach Athletinnen/Athleten im Filter auf der linken Seite.</p>
-                  </v-col>
-                </v-row>
-        </v-alert>
-          </v-col>
+        <v-container class="pa-0 mt-3">
+                <v-col cols="12" class="pa-0">
 
-        <v-container class="pa-0 mt-5" v-else>
+                    <v-alert type="info" variant="tonal" >
+                    <p>Bitte suche nach Athletinnen/Athleten im Filter auf der linken Seite.</p>
+                      </v-alert>
+          </v-col>
+        </v-container>
+        </v-col>
+
+        <v-container class="pa-0 mt-3" v-else>
           <v-row>
             <v-col :cols="mobile ? 12 : 4">
               <h2>{{ data.name }}</h2>
@@ -112,7 +113,7 @@
                   <td>{{ data.best_time_boat_class ? `${formatMilliseconds(data.best_time_boat_class)}` : "–"}}</td>
                 </tr>
                 <tr>
-                  <th>Bestzeit Bootsklasse OZ/Jahr</th>
+                  <th>Bestzeit Bootsklasse OZ</th>
                   <td>{{data.best_time_current_oz ? `${formatMilliseconds(data.best_time_current_oz)}` : "–"}}</td>
                 </tr>
                 </tbody>
@@ -128,7 +129,7 @@
                   <th class="px-1">Platz</th>
                   <th class="px-1">Ort</th>
                   <th class="px-1">Lauf</th>
-                  <th class="px-1">Bootsklasse</th>
+                  <th class="px-1">Disziplin</th>
                 </tr>
                 </thead>
                 <tbody class="nth-grey">

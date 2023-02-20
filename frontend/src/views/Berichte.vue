@@ -44,7 +44,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
           >In Berichte kannst du Analysen über längere Zeiträume und weitere Filterkriterien erstellen.
           </v-tooltip>
           <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
-          <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
+          <v-icon v-if="matrixVisible" @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
         </v-col>
         <v-divider></v-divider>
         <v-container v-if="loading" class="d-flex flex-column align-center">
