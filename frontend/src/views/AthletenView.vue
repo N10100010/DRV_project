@@ -19,7 +19,7 @@
         <athleten-filter/>
       </v-navigation-drawer>
 
-      <v-container :class="mobile ? 'px-5 py-0 pb-8 main-container' : 'px-10 py-0 pb-8 main-container'">
+      <v-container :class="mobile ? 'px-5 py-2 pb-8 main-container' : 'px-10 py-0 pb-8 main-container'">
         <v-col cols="12" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Athleten</h1>
           <v-icon id="tooltip-athlete-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline</v-icon>

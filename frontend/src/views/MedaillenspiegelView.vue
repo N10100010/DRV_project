@@ -21,7 +21,7 @@
           width="600">
         <medaillenspiegel-filter/>
       </v-navigation-drawer>
-      <v-container :class="mobile ? 'pa-5 main-container' : 'px-10 pt-0 main-container'">
+      <v-container :class="mobile ? 'px-5 py-2 main-container' : 'px-10 pt-0 main-container'">
 
         <v-col :cols="mobile ? 12 : 6" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Medaillenspiegel</h1>

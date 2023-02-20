@@ -1,8 +1,9 @@
 <template>
-  <v-container :class="mobile ? 'px-5 main-container' : 'px-10 pt-0 main-container'">
+  <v-container :class="mobile ? 'px-5 py-2 main-container' : 'px-10 pt-0 main-container'">
     <v-col cols="12" class="pa-0 pt-0" justify="center">
       <h1 class="py-3">Login</h1>
-      <v-col cols="6" class="px-0">
+      <v-divider></v-divider>
+      <v-col :cols="mobile ? 12 : 6" class="px-0">
         <v-alert type="info" variant="tonal">
           Diese Seite ist passwortgeschützt. Bitte melde dich an um fortzufahren.
         </v-alert>
@@ -46,6 +47,7 @@ export default {
       username: 'drv_test_user',
       password: '',
       credentialsWrong: false,
+      mobile: false
     }
   },
   created() {
