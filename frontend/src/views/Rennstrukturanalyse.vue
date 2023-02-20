@@ -21,12 +21,12 @@
         <rennstruktur-filter/>
       </v-navigation-drawer>
       <v-container :class="mobile ? 'px-5 py-2 main-container' : 'px-10 pt-0 main-container'">
-        <v-col cols="6" class="d-flex flex-row px-0" style="align-items: center">
-          <h1>Rennstrukturanalyse</h1>
-          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
+        <v-col cols="6" class="d-flex flex-row px-0" style="align-items: center" v-bind:style='{"padding-top": windowWidth < 450 ? "18px" : "12px"}, {"padding-bottom": (windowWidth < 450 ? "18px" : "12px")}'>
+          <h1 v-bind:style='{"font-size": (windowWidth < 450 ? "22px" : "30px")}'>Rennstrukturanalyse</h1>
+          <v-icon id="tooltip-analysis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
           </v-icon>
           <v-tooltip
-              activator="#tooltip-analyis-icon"
+              activator="#tooltip-analysis-icon"
               location="end"
               open-on-hover
           >Die Rennstrukturanalyse erlaubt die gezielte Betrachtung des Rennverlaufs auf Basis von Ergebnis- und GPS

@@ -35,10 +35,10 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
       <v-container :class="mobile ? 'px-5 py-2 main-container' : 'px-10 py-0 main-container'">
         <v-col cols="12" class="d-flex flex-row px-0" style="align-items: center">
           <h1>Berichte</h1>
-          <v-icon id="tooltip-analyis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
+          <v-icon id="tooltip-analysis-icon" color="grey" class="ml-2 v-icon--size-large">mdi-information-outline
           </v-icon>
           <v-tooltip
-              activator="#tooltip-analyis-icon"
+              activator="#tooltip-analysis-icon"
               location="end"
               open-on-hover
           >In Berichte kannst du Analysen über längere Zeiträume und weitere Filterkriterien erstellen.
