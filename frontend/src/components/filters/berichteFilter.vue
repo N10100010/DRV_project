@@ -111,7 +111,7 @@ export default {
       // competition type
       compTypes: [], // list of dicts with objects containing displayName, id and key
       optionsCompTypes: [],
-      selectedCompTypes: ["WCH", "OG", "WCp 1", "WCp 2", "WCp 3"],
+      selectedCompTypes: ["WCH", "OG", "WCp 1", "WCp 2", "WCp 3", "JWCH", "U23WCH"],
       // year
       startYear: 0,
       endYear: 0,

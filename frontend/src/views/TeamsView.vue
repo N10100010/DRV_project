@@ -63,6 +63,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
                         Von {{ metaData["interval"][0] }}
                         bis {{ metaData["interval"][1] }}</b>
                       </p>
+                      <p><b>Events: </b>{{filterConf.events}}</p>
                     </v-col>
                   </v-row>
                 </v-alert>
@@ -130,6 +131,9 @@ export default {
     }),
     ...mapState(useTeamsState, {
       loading: "getLoadingState"
+    }),
+    ...mapState(useTeamsState, {
+      filterConf: "getFilterConfig"
     }),
   },
   methods: {

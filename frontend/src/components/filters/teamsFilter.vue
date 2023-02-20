@@ -155,11 +155,12 @@ export default {
 
       if (this.startYear && this.endYear) {
         const store = useTeamsState()
-      store.fetchTeams({
-        "interval": [this.startYear, this.endYear],
-        "competition_categories": this.compTypes.filter(item => this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
-        "nation": this.selectedNation
-      })
+        store.setFilterConfig({"events": this.selectedCompTypes.join(", ")})
+        store.fetchTeams({
+          "interval": [this.startYear, this.endYear],
+          "competition_categories": this.compTypes.filter(item => this.selectedCompTypes.includes(item.display_name)).map(item => item.id),
+          "nation": this.selectedNation
+        })
       }
     },
     async onSubmit() {
@@ -177,6 +178,7 @@ export default {
     },
     submitFormData() {
       const store = useTeamsState()
+      store.setFilterConfig({"events": this.selectedCompTypes.join(", ")})
       return store.fetchTeams({
         "interval": [this.startYear, this.endYear],
         "competition_categories": this.compTypes.filter(item => this.selectedCompTypes.includes(item.display_name)).map(item => item.id),

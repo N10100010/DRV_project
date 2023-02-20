@@ -7,6 +7,9 @@ export const useTeamsState = defineStore({
         filterOpen: false,
         tableExport: [],
         loading: true,
+        filterConfig: {
+            "events": []
+        },
         filterOptions: [{
             "years": [{ "start_year": "" }, { "end_year": ""}],
             "competition_categories": [{"": ""}],
@@ -124,6 +127,9 @@ export const useTeamsState = defineStore({
         getLoadingState(state) {
             return state.loading
         },
+        getFilterConfig(state) {
+            return state.filterConfig
+        },
         getTableData(state) {
             const data = state.data.boat_classes
             const subHeaders = {
@@ -174,6 +180,9 @@ export const useTeamsState = defineStore({
         },
         setFilterState(filterState) {
             this.filterOpen = !filterState
+        },
+        setFilterConfig(data) {
+            this.filterConfig = data
         },
         exportTableData() {
              const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(row => {
