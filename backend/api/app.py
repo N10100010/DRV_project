@@ -956,10 +956,34 @@ def get_calendar(year: int):
     """
     This route delivers calendar data for all competitions.
     @return: key (relevant for frontend), title, dates for competition
+
+    COMMENT KAY WINKERT: Auf relevante Termine begrenzen (EM, WC I-III, WM, OG)
     """
+    RELEVANT_CMP_TYPE_ABBREVATIONS = [
+        "EJCH", 
+        "ECH", 
+        "WCp 1", 
+        "WCp 2", 
+        "WCp 3", 
+        "WCH", 
+        "U23WCH", 
+        "OG", 
+        "YOG", 
+        "WCH IE", 
+        "WCH IE JWCH", 
+    ]
     result = []
     session = Scoped_Session()
-    iterator = session.execute(select(model.Competition).where(model.Competition.year == year)).scalars()
+    iterator = session.execute(
+        select(model.Competition)
+        .join(model.Competition.competition_type)
+        .where(
+            and_(
+                model.Competition.year == year,
+                model.Competition_Type.abbreviation.in_(RELEVANT_CMP_TYPE_ABBREVATIONS)
+            )
+        )
+    ).scalars()
     for competition in iterator:
         # only include competitions that have a start and end date
         if competition.start_date and competition.end_date:
