@@ -21,10 +21,16 @@
       </v-col>
       <v-col :cols="mobile ? 12 : 6">
         <h2>Entwicklung</h2>
-        <p>Diese Web-App wurde im Wintersemester 2022/2023 im Rahmen eines Innovationsprojekts in Kooperation mit dem Deutschen Ruderverband am Institute for Applied Artificial Intelligence (IAAI) an der Hochschule der Medien Stuttgart entwickelt.</p>
+        <p>Diese Webanwendung wurde im Wintersemester 2022/2023 von Studierenden des Masterstudiengangs Computer Science and Media am Institute for Applied Artificial Intelligence (IAAI) an der Hochschule der Medien Stuttgart entwickelt.</p>
         <br>
-        <a href="https://ai.hdm-stuttgart.de/" class="pr-5"><img src="@/assets/images/IAAI_Logo_black.svg" width="100"></a>
-        <a href="https://www.hdm-stuttgart.de/" class="pl-5"><img src="@/assets/images/HDM_Logo_black.svg" width="80"></a>
+        <a href="https://ai.hdm-stuttgart.de/" class="mr-5"><img src="@/assets/images/IAAI_Logo_black.svg" width="100"></a>
+        <a href="https://www.hdm-stuttgart.de/"><img src="@/assets/images/HDM_Logo_color.svg" width="80"></a>
+        <br>
+        <br>
+        <h2>Idee</h2>
+        <p>Die Idee für diese Webanwendung stammt von Mitgliedern des Deutschen Ruderverbands. Sie wurde im engen Austausch mit den Enwicklern verfeinert und umgesetzt.</p>
+        <br>
+        <a href="https://www.rudern.de/"><img src="@/assets/images/DRV_Logo_large.svg" width="120"></a>
       </v-col>
       </v-row>
     </v-container>
