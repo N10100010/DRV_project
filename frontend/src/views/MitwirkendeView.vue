@@ -5,30 +5,28 @@
     </v-col>
     <v-divider></v-divider>
     <v-container class="pa-0 mt-2" style="min-height: 450px">
-      <v-col class="pl-0 pr-0">
-      <h2><i>Herausgeber:</i></h2>
-      <p>Deutscher Ruderverband<br />
-        Markus Last<br />
-        Ferdinand-Wilhelm-Fricke-Weg 10<br />
-        30169 Hannover<br />
-        Telefon: +49 (0) 4541 8643 46<br />
-        E-Mail: <a href="mailto:markus.last@rudern.de">markus.last@rudern.de</a></p>
-      <br>
-      <h2>Rechtliche Hinweise</h2>
-      <p>Wichtiger Hinweis zu allen Links. Wir sind nicht für die Inhalte fremder Seiten verantwortlich, die über einen
-      Link erreicht werden. Diese Erklärung gilt für alle auf <a href="https://drv-stats.up.railway.app/">https://drv-stats.up.railway.app/</a> angebrachten Links.</p>
-      <br>
-      <h2>Haftungsausschluss</h2>
-      <p>Die auf diesen Websites bereitgestellten Informationen wurden geprüft und werden regelmäßig aktualisiert. Es kann
-      jedoch keine Garantie dafür übernommen werden, dass alle Angaben zu jeder Zeit vollständig, richtig und in letzter
-      Aktualität dargestellt sind. Dies gilt insbesondere für alle Links zu anderen Websites, auf die direkt oder
-      indirekt verwiesen wird. Alle Angaben können ohne vorherige Ankündigung ergänzt, entfernt oder geändert werden.</p>
-      <br>
-      <h2>Urheberrecht</h2>
-      <p>Die auf <a href="https://drv-stats.up.railway.app/">https://drv-stats.up.railway.app/</a> veröffentlichen Informationen stammen aus öffentlich zugänglichen
-      Wettkampf- und Ergebnisinformationen. Für die Verwendung von dem aufgearbeiteten Text- oder Bildmaterial bedarf es
-      dennoch der vorherigen Zustimmung durch den Seitenbetreiber.</p>
+      <v-row class="mt-2 mb-2" style="min-height: 450px">
+      <v-col :cols="mobile ? 12 : 6">
+        <h2>UI/UX</h2>
+        <p>Anke Müller</p>
+        <br>
+        <h2>Frontend</h2>
+        <p>Harri Faßbender<br />
+          Julian Fritzmann</p>
+        <br>
+        <h2>Backend</h2>
+        <p>Nicolas Reinhart<br />
+          Raphael Wettinger<br />
+          Harri Faßbender</p>
       </v-col>
+      <v-col :cols="mobile ? 12 : 6">
+        <h2>Entwicklung</h2>
+        <p>Diese Web-App wurde im Wintersemester 2022/2023 im Rahmen eines Innovationsprojekts in Kooperation mit dem Deutschen Ruderverband am Institute for Applied Artificial Intelligence (IAAI) an der Hochschule der Medien Stuttgart entwickelt.</p>
+        <br>
+        <a href="https://ai.hdm-stuttgart.de/" class="pr-5"><img src="@/assets/images/IAAI_Logo_black.svg" width="100"></a>
+        <a href="https://www.hdm-stuttgart.de/" class="pl-5"><img src="@/assets/images/HDM_Logo_black.svg" width="80"></a>
+      </v-col>
+      </v-row>
     </v-container>
   </v-container>
 </template>
