@@ -210,9 +210,9 @@ export default {
         }
         store.postFormDataMatrix(data)
         data["competition_type"] = this.selectedCompTypes.join(", ")
-      data["race_phase_type"] = this.selectedRuns.map(item => this.optionsRuns[item]).join(", ")
-      data["race_phase_subtype"] = this.selectedRunsFineSelection.join(", ")
-      store.setLastFilterConfig(data)
+        data["race_phase_type"] = this.selectedRuns.map(item => this.optionsRuns[item]).join(", ")
+        data["race_phase_subtype"] = this.selectedRunsFineSelection.join(", ")
+        store.setLastFilterConfig(data)
       }
     },
     async onSubmit() {
@@ -297,25 +297,39 @@ export default {
     }
   },
   watch: {
-    selectedYearShortCutOptions: function (newVal,) {
-      if (newVal !== 'undefined') {
-        if (newVal === 0) {
-          this.startYear = this.filterData.years[0].start_year
-          this.endYear = this.filterData.years[1].end_year
+    selectedYearShortCutOptions: function (newVal) {
+      const currentYear = new Date().getFullYear();
+      if (newVal === 0) {
+        this.startYear = this.filterData.years[0].start_year;
+        this.endYear = this.filterData.years[1].end_year;
+      } else if (newVal === 1) {
+        this.startYear = currentYear;
+        this.endYear = currentYear;
+      } else if (newVal === 2 || newVal === 3) {
+        const olympicYear = currentYear - (currentYear % 4) + 4;
+        if (newVal === 2) {
+          if (currentYear >= 2022 && currentYear <= 2024) {
+            this.startYear = 2022;
+            this.endYear = 2024;
+          } else if (currentYear >= 2025 && currentYear <= 2028) {
+            this.startYear = 2025;
+            this.endYear = 2028;
+          } else {
+            this.startYear = olympicYear - 3;
+            this.endYear = olympicYear - 1;
+          }
         }
-        if (newVal === 1) {
-          this.startYear = new Date().getFullYear()
-          this.endYear = new Date().getFullYear()
-        } else if (newVal === 2) {
-          const currentYear = new Date().getFullYear()
-          const olympicYear = currentYear - (currentYear % 4) + 4
-          this.startYear = olympicYear - 4
-          this.endYear = olympicYear
-        } else if (newVal === 3) {
-          const currentYear = new Date().getFullYear()
-          const olympicYear = currentYear - (currentYear % 4) + 4
-          this.startYear = olympicYear - 8
-          this.endYear = olympicYear - 4
+        else {
+          if (currentYear >= 2022 && currentYear <= 2024) {
+            this.startYear = 2017;
+            this.endYear = 2021;
+          } else if (currentYear >= 2025 && currentYear <= 2028) {
+            this.startYear = 2022;
+            this.endYear = 2024
+          } else {
+            this.startYear = olympicYear - 7;
+            this.endYear = olympicYear - 3;
+          }
         }
       }
     },
