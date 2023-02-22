@@ -1,4 +1,5 @@
 <script>
+import {useGlobalState} from "@/stores/globalStore";
 export default {
   name: "navigation",
   data() {
@@ -70,9 +71,14 @@ export default {
     },
     updateScroll() {
       const scrollPosition = window.scrollY;
+      const globalStore = useGlobalState();
       if(!this.mobile && scrollPosition > 50) {
         this.scrolledNav = true;
+        globalStore.setHeaderReducedState(true);
         return;
+      }
+      if(!this.mobile && scrollPosition <= 50) {
+        globalStore.setHeaderReducedState(false);
       }
       this.scrolledNav = false;
     },
@@ -165,7 +171,6 @@ header {
     display: flex;
     flex-direction: column;
     padding: 12px 0;
-    transition: 0.5s ease all;
     margin: 0 auto;
     @media (max-width: 890px) {
       flex-direction: row;

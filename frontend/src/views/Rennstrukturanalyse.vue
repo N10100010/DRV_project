@@ -16,7 +16,7 @@
       <v-navigation-drawer
           v-model="filterOpen"
           temporary
-          v-bind:style='{"margin-top" : (mobile? "71.25px" : "160px" )}'
+          v-bind:style='{"margin-top": (mobile ? "71.25px" : (headerReduced ? "81px" : "159px"))}'
           width="500">
         <rennstruktur-filter/>
       </v-navigation-drawer>
@@ -238,10 +238,13 @@ ChartJS.register(Tooltip, Legend, TimeScale);
 import {useRennstrukturAnalyseState} from "@/stores/baseStore";
 import {mapState} from "pinia";
 import router from "@/router";
-import {useMedaillenspiegelState} from "@/stores/medaillenspiegelStore";
+import {useGlobalState} from "@/stores/globalStore";
 
 export default {
   computed: {
+    ...mapState(useGlobalState, {
+      headerReduced: "getHeaderReducedState"
+    }),
     ...mapState(useRennstrukturAnalyseState, {
       getAnalysis: "getAnalysisData"
     }),
