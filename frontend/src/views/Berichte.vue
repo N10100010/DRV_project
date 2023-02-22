@@ -26,7 +26,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
       <v-navigation-drawer
           v-model="filterOpen"
           temporary
-          v-bind:style='{"margin-top" : (mobile? "71.25px" : "160px" )}'
+          v-bind:style='{"margin-top": (mobile ? "71.25px" : (headerReduced ? "81px" : "159px"))}'
           style="background-color: white; border: none"
           width="600">
         <berichte-filter/>
@@ -195,10 +195,13 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
 <script>
 import {mapState} from "pinia";
 import {useBerichteState} from "@/stores/berichteStore";
-import {useMedaillenspiegelState} from "@/stores/medaillenspiegelStore";
+import {useGlobalState} from "@/stores/globalStore";
 
 export default {
   computed: {
+    ...mapState(useGlobalState, {
+      headerReduced: "getHeaderReducedState"
+    }),
     ...mapState(useBerichteState, {
       tableData: "getTableData"
     }),

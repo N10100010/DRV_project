@@ -12,10 +12,12 @@
   </v-btn>
   <v-card style="box-shadow: none; z-index: 1">
     <v-layout>
-      <v-navigation-drawer v-model="filterOpen" temporary
-                           v-bind:style='{ "margin-top": (mobile ? "71.25px" : "160px") }'
-                           style="background-color: white; border: none"
-                           width="600">
+      <v-navigation-drawer
+          v-model="filterOpen"
+          temporary
+          v-bind:style='{"margin-top": (mobile ? "71.25px" : (headerReduced ? "81px" : "159px"))}'
+          style="background-color: white; border: none"
+          width="600">
         <athleten-filter/>
       </v-navigation-drawer>
 
@@ -180,11 +182,13 @@ import AthletenFilter from "@/components/filters/athletenFilter.vue";
 <script>
 import {mapState} from "pinia";
 import {useAthletenState} from "@/stores/athletenStore";
-import router from "@/router";
-import {useRennstrukturAnalyseState} from "@/stores/baseStore";
+import {useGlobalState} from "@/stores/globalStore";
 
 export default {
   computed: {
+    ...mapState(useGlobalState, {
+      headerReduced: "getHeaderReducedState"
+    }),
     ...mapState(useAthletenState, {
       filterState: "getFilterState"
     }),
