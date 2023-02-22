@@ -13,7 +13,7 @@
   <v-card style="box-shadow: none; z-index: 1">
     <v-layout>
       <v-navigation-drawer v-model="filterOpen" temporary
-                           v-bind:style='{ "margin-top": (mobile ? "71.25px" : "130px") }'
+                           v-bind:style='{ "margin-top": (mobile ? "71.25px" : "160px") }'
                            style="background-color: white; border: none"
                            width="600">
         <athleten-filter/>
@@ -208,7 +208,7 @@ export default {
     checkScreen() {
       this.windowWidth = window.innerWidth;
       this.mobile = this.windowWidth < 890
-      let navbarHeight = window.innerWidth < 890 ? '71.25px' : '130px';
+      let navbarHeight = window.innerWidth < 890 ? '71.25px' : '160px';
       document.documentElement.style.setProperty('--navbar-height', navbarHeight);
     },
     formatMilliseconds(ms) {

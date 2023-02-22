@@ -1,5 +1,5 @@
 <template>
-  <footer class="footer" :style="mobile ? 'min-height: 100px' : 'min-height: 96px;'">
+  <footer class="footer" :style="mobile ? 'min-height: 99px' : 'min-height: 96px;'">
     <v-container :class="mobile ? 'px-5 pt-2 pb-1 d-sm-flex' : 'px-10 pt-6 d-sm-flex flex-justify-between flex-items-center'">
       <RouterLink to="/impressum" :class="mobile ? (minreached ? 'ml-2' : 'mt-3 ml-6 mr-3' ) : 'mt-3 mr-3'">Impressum</RouterLink>
       <RouterLink to="/datenschutz" :class="minreached ? 'ml-2' : 'ma-3'">Datenschutz</RouterLink>
