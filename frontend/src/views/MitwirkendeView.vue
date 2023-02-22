@@ -23,7 +23,7 @@
         <p>Prof. Dr.-Ing. Johannes Maucher</p>
         <br>
         <h2>DRV-Vertreter</h2>
-        <p>Kay Winkert<br />
+        <p>Dr. Kay Winkert (Sportwissenschaftler)<br />
           Markus Last</p>
       </v-col>
       <v-col :cols="mobile ? 12 : 6">
