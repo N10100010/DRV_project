@@ -16,7 +16,7 @@
       <v-navigation-drawer
           v-model="filterOpen"
           temporary
-          v-bind:style='{"margin-top" : (mobile? "71.25px" : "160px" )}'
+          v-bind:style='{"margin-top" : (mobile? "71.25px" : "130px" )}'
           style="background-color: white; border: none"
           width="600">
         <medaillenspiegel-filter/>
@@ -32,7 +32,7 @@
               location="end"
               open-on-hover
           >Im Rahmen des Medaillenspiegels können die Erfolge von Nationen betrachtet werden.<br>
-            Wähle hierzu aus den Filteroptionen im Filter (links) einen Zeitraum und eine Nation aus.
+            Zur Präzisierung der Ansicht kann aus den vorhandenen Einstellmöglichkeiten des Filters (links) gewählt werden.
           </v-tooltip>
           <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
           <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
@@ -54,7 +54,7 @@
                       <p><b>{{
                           `${filterSelection.results} Datensätze | Von ${filterSelection.start_date} bis ${filterSelection.end_date}`
                         }}</b></p>
-                      <p><b>Events:</b> {{filterSelection.comp_types}}</p>
+                      <p><b>Events:</b> {{ filterSelection.comp_types }}</p>
                     </v-col>
                   </v-row>
                 </v-alert>
@@ -137,7 +137,7 @@ export default {
     checkScreen() {
       this.windowWidth = window.innerWidth;
       this.mobile = this.windowWidth < 890
-      let navbarHeight = window.innerWidth < 890 ? '71.25px' : '160px';
+      let navbarHeight = window.innerWidth < 890 ? '71.25px' : '130px';
       document.documentElement.style.setProperty('--navbar-height', navbarHeight);
     }
   },
@@ -148,6 +148,20 @@ export default {
       medalChartOptions: {
         responsive: true,
         maintainAspectRatio: false,
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Medaillenverteilung'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Anzahl Medaillen'
+            }
+          }
+        },
         plugins: {
           legend: {
             display: true

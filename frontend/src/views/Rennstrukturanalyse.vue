@@ -16,7 +16,7 @@
       <v-navigation-drawer
           v-model="filterOpen"
           temporary
-          v-bind:style='{"margin-top" : (mobile? "71.25px" : "158px" )}'
+          v-bind:style='{"margin-top" : (mobile? "71.25px" : "130px" )}'
           width="500">
         <rennstruktur-filter/>
       </v-navigation-drawer>
@@ -458,7 +458,7 @@ export default {
     checkScreen() {
       this.windowWidth = window.innerWidth;
       this.mobile = this.windowWidth < 890
-      let navbarHeight = window.innerWidth < 890 ? '71.25px' : '160px';
+      let navbarHeight = window.innerWidth < 890 ? '71.25px' : '130px';
       document.documentElement.style.setProperty('--navbar-height', navbarHeight);
     }
   },

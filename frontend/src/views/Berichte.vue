@@ -26,7 +26,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
       <v-navigation-drawer
           v-model="filterOpen"
           temporary
-          v-bind:style='{"margin-top" : (mobile? "71.25px" : "158px" )}'
+          v-bind:style='{"margin-top" : (mobile? "71.25px" : "130px" )}'
           style="background-color: white; border: none"
           width="600">
         <berichte-filter/>
@@ -41,7 +41,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
               activator="#tooltip-analysis-icon"
               location="end"
               open-on-hover
-          >In Berichte kannst du Analysen über längere Zeiträume und weitere Filterkriterien erstellen.
+          >Auf der Seite Berichte lassen sich Analysen über längere Zeiträume und weitere Filterkriterien erstellen.
           </v-tooltip>
           <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
           <v-icon v-if="matrixVisible" @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
@@ -261,7 +261,7 @@ export default {
   created() {
     window.addEventListener('resize', this.checkScreen);
     this.checkScreen();
-    let navbarHeight = window.innerWidth < 890 ? '71.25px' : '160px';
+    let navbarHeight = window.innerWidth < 890 ? '71.25px' : '130px';
     document.documentElement.style.setProperty('--navbar-height', navbarHeight);
   },
   data() {

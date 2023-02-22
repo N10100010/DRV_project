@@ -2,13 +2,14 @@ import axios from "axios";
 import {defineStore} from "pinia";
 
 const COLORS = [
-    '#0C67F7', '#D8C9BF', '#93E9ED',
-    '#B5A68D', '#E0A9FA', '#E0FAAC',
-    '#F0E95A', '#807E6D', '#5EFF5E',
-    '#FF5E5E', '#FF9C5E', '#5EFF9C',
-    '#9C5EFF', '#010101', '#C5B5B5',
-    '#E0B696', '#7C6B6B', '#5EFFBE'
+    '#2d8bcf', '#dfc1b6', '#73dee9',
+    '#ff7f7f', '#ffa97f', '#7fffaf',
+    '#7fff7f', '#e099f9', '#e0faad',
+    '#e0a079', '#897373', '#7fffbe',
+    '#f5ed5f', '#918e7f', '#c6b09e',
+    '#9f7fff', '#262626', '#bdbdbd'
 ]
+
 
 export const useMedaillenspiegelState = defineStore({
     id: "medaillenspiegel",

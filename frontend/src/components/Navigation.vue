@@ -73,7 +73,7 @@ export default {
       }
       this.mobile = false;
       this.mobileNav = false;
-      document.querySelector('body').style.paddingTop = '10.6em';
+      document.querySelector('body').style.paddingTop = '8.5em'; // 10.6em
       return;
     }
   }
@@ -90,7 +90,7 @@ export default {
 
     <!-- navbar incl. mobile navbar -->
     <v-container :class="mobile ? 'px-5 py-0' : 'px-10 py-0'">
-      <nav v-bind:style='{"padding-top" : (!mobile ? "2.5em" : "15px"), "padding-bottom" : (!mobile ? "15px" : "0")}'
+      <nav v-bind:style='{"padding-top" : (!mobile ? "0.5em" : "15px"), "padding-bottom" : (!mobile ? "15px" : "0")}'
           @mouseleave="onMouseLeaveNav">
         <div class="nav-links-wrapper">
           <div v-show="!mobile" class="branding">
@@ -166,7 +166,6 @@ header {
     li {
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      font-style: italic;
       padding: 0 0.625rem;
     }
 
@@ -224,19 +223,26 @@ header {
       width: 100%;
       max-width: 250px;
       height: 100%;
-      background-color: #000000;
+      background-color: #646464;;
       top: 0;
       left: 0;
 
       li {
         margin-left: 0;
-        color: #fff;
+        color: rgba(255,255,255,0.75);
         padding: 0.6rem 1rem;
       }
 
       #nav-header {
         font-size: 12px;
         padding: 1.5em;
+      }
+
+      a:hover {
+        color: white;
+      }
+      a.router-link-exact-active {
+        color: white;
       }
     }
 
@@ -278,7 +284,6 @@ p {
   flex-direction: row;
   transition: 0.5s ease all;
   color: #ffffff;
-  font-style: italic;
 
   a {
     color: #ffffff;
