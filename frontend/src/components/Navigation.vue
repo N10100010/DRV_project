@@ -254,7 +254,7 @@ header {
 
       #nav-header {
         font-size: 12px;
-        padding-left: 1em;
+        padding-left: 1rem;
         padding-top: 28.5px;
         padding-bottom: 28.5px;
         background-color: #505050;
