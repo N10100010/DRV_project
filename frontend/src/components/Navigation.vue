@@ -3,7 +3,7 @@ export default {
   name: "navigation",
   data() {
     return {
-      scrollPosition: null,
+      scrolledNav: null,
       mobile: null,
       mobileNav: null,
       currentSubMenu: {},
@@ -41,6 +41,10 @@ export default {
     window.addEventListener('resize', this.checkScreen);
     this.checkScreen();
   },
+  mounted() {
+    window.addEventListener('scroll', this.updateScroll);
+  },
+
   methods: {
      isActive(link, linkName) {
        if (linkName !== "Kalender") {
@@ -64,6 +68,14 @@ export default {
     onMouseLeaveNav() {
       this.showSubMenu = false;
     },
+    updateScroll() {
+      const scrollPosition = window.scrollY;
+      if(!this.mobile && scrollPosition > 50) {
+        this.scrolledNav = true;
+        return;
+      }
+      this.scrolledNav = false;
+    },
     checkScreen() {
       this.windowWidth = window.innerWidth;
       if (this.windowWidth < 890) {
@@ -73,7 +85,7 @@ export default {
       }
       this.mobile = false;
       this.mobileNav = false;
-      document.querySelector('body').style.paddingTop = '8.5em'; // 10.6em
+      document.querySelector('body').style.paddingTop = '10.6em';
       return;
     }
   }
@@ -81,7 +93,7 @@ export default {
 </script>
 
 <template>
-  <header v-bind:style='{"padding-top" : (mobile ? "0em" : "18px" )}' :class="{ 'scrolled-nav': scrollPosition }">
+  <header v-bind:style='{"padding-top" : (mobile ? "0em" : "18px" )}' :class="{ 'scrolled-nav': scrolledNav }">
     <!-- Title element -->
     <v-container class="title-container px-10 py-0" v-show="!mobile">
       <p>DRV Stats</p>
@@ -90,11 +102,11 @@ export default {
 
     <!-- navbar incl. mobile navbar -->
     <v-container :class="mobile ? 'px-5 py-0' : 'px-10 py-0'">
-      <nav v-bind:style='{"padding-top" : (!mobile ? "0.5em" : "15px"), "padding-bottom" : (!mobile ? "15px" : "0")}'
+      <nav v-bind:style='{"padding-top" : (!mobile ? "2.5em" : "15px"), "padding-bottom" : (!mobile ? "10px" : "0")}'
           @mouseleave="onMouseLeaveNav">
         <div class="nav-links-wrapper">
           <div v-show="!mobile" class="branding">
-            <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="105" height="45"/></RouterLink>
+            <RouterLink to="/"><img alt="DRV Logo" class="logo" style="margin-top: 5px;" src="@/assets/images/DRV_Logo_white.svg" width="105" height="45"/></RouterLink>
           </div>
           <div v-show="mobile" class="branding-mobile">
             <RouterLink to="/"><img alt="DRV Logo" class="logo" src="@/assets/images/DRV_Logo_white.svg" width="80" height="40"/></RouterLink>
@@ -227,15 +239,25 @@ header {
       top: 0;
       left: 0;
 
+      ul {
+        padding-top: 1em;
+      }
+
       li {
         margin-left: 0;
-        color: rgba(255,255,255,0.75);
         padding: 0.6rem 1rem;
+
+        a {
+          color: #d8d8d8;
+        }
       }
 
       #nav-header {
         font-size: 12px;
-        padding: 1.5em;
+        padding-left: 1em;
+        padding-top: 28.5px;
+        padding-bottom: 28.5px;
+        background-color: #505050;
       }
 
       a:hover {
@@ -274,6 +296,16 @@ header::after {
     }
     border-top: 0.25rem solid #008000;
     border-bottom: 0.5rem solid #1369b0;
+}
+
+.scrolled-nav {
+  padding-top: 0px !important;
+  nav {
+    padding-top: 0px !important;
+  }
+  .title-container {
+    display: none;
+  }
 }
 
 p {

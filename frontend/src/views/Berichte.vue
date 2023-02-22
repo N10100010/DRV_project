@@ -26,7 +26,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
       <v-navigation-drawer
           v-model="filterOpen"
           temporary
-          v-bind:style='{"margin-top" : (mobile? "71.25px" : "130px" )}'
+          v-bind:style='{"margin-top" : (mobile? "71.25px" : "160px" )}'
           style="background-color: white; border: none"
           width="600">
         <berichte-filter/>
@@ -261,7 +261,7 @@ export default {
   created() {
     window.addEventListener('resize', this.checkScreen);
     this.checkScreen();
-    let navbarHeight = window.innerWidth < 890 ? '71.25px' : '130px';
+    let navbarHeight = window.innerWidth < 890 ? '71.25px' : '160px';
     document.documentElement.style.setProperty('--navbar-height', navbarHeight);
   },
   data() {
