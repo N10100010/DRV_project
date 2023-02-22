@@ -69,6 +69,6 @@ export default {
 
 <style lang="scss" scoped>
 .main-container {
-  min-height: calc(100vh - (var(--navbar-height)) - 95px);
+  min-height: calc(100vh - (var(--navbar-height)) - 94px);
 }
 </style>
