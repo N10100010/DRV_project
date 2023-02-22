@@ -24,7 +24,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
       <v-navigation-drawer
           v-model="filterOpen"
           temporary
-          v-bind:style='{"margin-top" : (mobile? "71.25px" : "158px" )}'
+          v-bind:style='{"margin-top" : (mobile? "71.25px" : "130px" )}'
           style="background-color: white; border: none"
           width="600">
         <teams-filter/>
@@ -38,8 +38,8 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
               activator="#tooltip-teams-icon"
               location="end"
               open-on-hover
-          >Hier findest du die Zusammensetzung der gewählten Nationalmannschaft
-            mit Besetzung der Bootsklassen.
+          >Hier findet sich die Zusammensetzung der gewählten Nationalmannschaft
+            einschließlich der Besetzung innerhalb der verschiedenen Bootsklassen.
           </v-tooltip>
           <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
           <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
@@ -51,7 +51,7 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
           <div class="text-center" style="color: #1369b0">Lade Ergebnisse...</div>
         </v-container>
 
-        <v-container class="pa-0 mt-2 pb-8" style="min-height: 400px" v-if="!loading">
+        <v-container class="pa-0 mt-2 pb-8" style="min-height: 400px" v-if="!loading && metaData.results">
           <v-row>
             <v-col cols="12">
               <h2>{{ metaData.nation }}</h2>
@@ -152,7 +152,7 @@ export default {
     checkScreen() {
       this.windowWidth = window.innerWidth;
       this.mobile = this.windowWidth < 890
-      let navbarHeight = window.innerWidth < 890 ? '71.25px' : '160px';
+      let navbarHeight = window.innerWidth < 890 ? '71.25px' : '130px';
       document.documentElement.style.setProperty('--navbar-height', navbarHeight);
     }
   },

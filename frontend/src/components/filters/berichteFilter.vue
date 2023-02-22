@@ -159,7 +159,7 @@ export default {
     initializeFilter(data) {
       this.startYear = Object.values(data.years[0])[0];
       this.endYear = Object.values(data.years[1])[0];
-      this.yearShortCutOptions = [`Zeitraum von ${this.startYear} bis ${this.endYear}`, "Aktuelles Jahr", "Aktueller OZ", "letzter OZ"]
+      this.yearShortCutOptions = [`Zeitraum von ${this.startYear} bis ${this.endYear}`, "Aktuelles Jahr", "Aktueller OZ", "Letzter OZ"]
       this.selectedYearShortCutOptions = [0]
 
       this.optionsStartYear = Array.from({length: this.endYear - this.startYear + 1}, (_, i) => this.startYear + i)

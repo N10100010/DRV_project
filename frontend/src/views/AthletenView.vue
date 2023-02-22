@@ -13,7 +13,7 @@
   <v-card style="box-shadow: none; z-index: 1">
     <v-layout>
       <v-navigation-drawer v-model="filterOpen" temporary
-                           v-bind:style='{ "margin-top": (mobile ? "71.25px" : "160px") }'
+                           v-bind:style='{ "margin-top": (mobile ? "71.25px" : "130px") }'
                            style="background-color: white; border: none"
                            width="600">
         <athleten-filter/>
@@ -27,8 +27,7 @@
               activator="#tooltip-athlete-icon"
               location="end"
               open-on-hover
-          >Auf der Athleten-Seite findest du die Stammdaten des Athletens und kannst
-            eine Übersicht zu seinen Ergebnissen (inkl. Medaillenspiegel) betrachten.
+          >Hier können die Stammdaten sowie alle Wettkampfergebnisse eines Athleten eingesehen werden.
           </v-tooltip>
           <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
           <v-icon @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
@@ -40,7 +39,7 @@
                 <v-col cols="12" class="pa-0">
 
                     <v-alert type="info" variant="tonal" >
-                    <p>Bitte suche nach Athletinnen/Athleten im Filter auf der linken Seite.</p>
+                    <p>Bitte wähle einen Athleten im Filter auf der linken Seite.</p>
                       </v-alert>
           </v-col>
         </v-container>
@@ -209,7 +208,7 @@ export default {
     checkScreen() {
       this.windowWidth = window.innerWidth;
       this.mobile = this.windowWidth < 890
-      let navbarHeight = window.innerWidth < 890 ? '71.25px' : '160px';
+      let navbarHeight = window.innerWidth < 890 ? '71.25px' : '130px';
       document.documentElement.style.setProperty('--navbar-height', navbarHeight);
     },
     formatMilliseconds(ms) {

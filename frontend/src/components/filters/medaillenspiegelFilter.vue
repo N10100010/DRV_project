@@ -33,7 +33,7 @@
                 :rules="[v => v.length > 0 || 'Wähle mindestens eine Wettkampfklasse']"
       ></v-select>
       <v-autocomplete class="pt-4" :items="optionsNations" clearable multiple chips v-model="selectedNation"
-                      variant="outlined" color="blue" label="Nation" density="comfortable"
+                      variant="outlined" color="blue" label="Nation(en)" density="comfortable"
                       :rules="[v => !!v || 'Wähle mindestens eine Nation']"
       ></v-autocomplete>
       <!--
