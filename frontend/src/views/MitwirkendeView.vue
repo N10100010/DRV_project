@@ -18,6 +18,13 @@
         <p>Nicolas Reinhart<br />
           Raphael Wettinger<br />
           Harri Faßbender</p>
+        <br>
+        <h2>Betreuer</h2>
+        <p>Prof. Dr.-Ing. Johannes Maucher</p>
+        <br>
+        <h2>DRV-Vertreter</h2>
+        <p>Kay Winkert<br />
+          Markus Last</p>
       </v-col>
       <v-col :cols="mobile ? 12 : 6">
         <h2>Entwicklung</h2>
