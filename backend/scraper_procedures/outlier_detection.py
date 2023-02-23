@@ -75,7 +75,7 @@ def outlier_detection_race_data(session:Session, boat_class: model.Boat_Class) -
                 f"""Could not calculate the percentiles. The folloing filters result in no data:
                     - Event.boat_class_id: {boat_class.id}
                     - Race_Data.distance_meter: {row.distance_meter}
-                    - Event.boat_class_id: {row.competition_category_id}
+                    - Event.competition_category: {row.competition_category_id}
                 moving on to next distance_meter."""
             )
             continue
