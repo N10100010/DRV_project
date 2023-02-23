@@ -10,7 +10,7 @@ const formatMilliseconds = ms => {
 };
 
 function roundToTwoDecimal(num) {
-  return num ? Number(num.toFixed(2)) : num;
+    return num ? Number(num.toFixed(2)) : num;
 }
 
 
@@ -112,8 +112,6 @@ export const useRennstrukturAnalyseState = defineStore({
 
                     Object.values(dataObj.race_data).forEach(gpsData => {
                         if (dataObj.intermediates !== '0') {
-
-                            // speedValues.push(gpsData["speed [m/s]"] + "[m/s]");
                             strokeValues.push(gpsData["stroke [1/min]"] + "[1/min]");
                             propulsionValues.push(gpsData["propulsion [m/stroke]"] ? roundToTwoDecimal(gpsData["propulsion [m/stroke]"]) : "–" + "[m/Schlag]");
                         }
@@ -145,7 +143,15 @@ export const useRennstrukturAnalyseState = defineStore({
                     tableData.push(rowData);
                 }
             })
-            state.tableExport = tableData
+            // changes for correct representation in csv export
+            // deep copy here so the changes for the export won't change the original table data
+            let tableExportData = JSON.parse(JSON.stringify(tableData));
+            for (let i = 1; i < tableExportData.length; i++) {
+                tableExportData[i][3] = tableExportData[i][3].map(el => el.name);
+            }
+            state.tableExport = tableExportData;
+
+            // return original table data for rendering
             return tableData;
         },
         getDeficitInMeters(state) {
@@ -190,8 +196,6 @@ export const useRennstrukturAnalyseState = defineStore({
             }
             let colorIndex = 0
             const datasets = []
-
-            console.log(speedPerTeam)
             Object.entries(speedPerTeam).forEach(([key, value], idx) => {
                 const label = countries[idx]
                 const backgroundColor = COLORS[colorIndex % 6]
@@ -206,7 +210,6 @@ export const useRennstrukturAnalyseState = defineStore({
                 datasets,
             };
         },
-
         getGPSChartData(state) {
             const chartDataKeys = ['speed [m/s]', 'stroke [1/min]', 'propulsion [m/stroke]']
             return chartDataKeys.map(key => {
@@ -358,7 +361,7 @@ export const useRennstrukturAnalyseState = defineStore({
         exportTableData() {
             let finalData = []
             var progression = null
-            if(this.compData.progression_code) {
+            if (this.compData.progression_code) {
                 progression = this.compData.progression_code
             } else {
                 progression = "-"
@@ -375,7 +378,7 @@ export const useRennstrukturAnalyseState = defineStore({
                 + "Rennen," + this.compData.display_name + "\n"
                 + "Ort," + this.compData.venue.replace(",", " |") + "\n"
                 + "Startzeit," + this.compData.start_date + "\n"
-                + "Weltbestzeit," +  this.compData.worldBestTimeBoatClass + "\n"
+                + "Weltbestzeit," + this.compData.worldBestTimeBoatClass + "\n"
                 + "Bestzeit laufender OZ/Jahr," + this.compData.bestTimeBoatClassCurrentOZ + "\n"
                 + "Progression," + progression
                 + "\n\n"
