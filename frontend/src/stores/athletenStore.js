@@ -153,6 +153,7 @@ export const useAthletenState = defineStore({
         },
         getTableData(state) {
             const athleteData = state.data.athlete
+
             if (athleteData && athleteData.race_list) {
                 const athleteValues = Object.entries(athleteData).map(([key, val]) => {
                     if (typeof val === 'string') {
@@ -205,7 +206,51 @@ export const useAthletenState = defineStore({
             this.filterOpen = !filterState
         },
         exportTableData() {
-            const csvContent = "data:text/csv;charset=utf-8," + this.tableExportAthlete.map(row => row.join(",")).join("\n");
+            var weight = 0;
+            var height = 0;
+            var gender = "";
+
+            if(this.data.athlete.weight > 0) {
+                weight = this.data.athlete.weight + "kg"
+            } else {
+                weight = "-"
+            }
+
+            if(this.data.athlete.height > 0) {
+                height = this.data.athlete.height + "cm"
+            } else {
+                height = "-"
+            }
+
+            if(this.data.athlete.gender == "Men") {
+                gender = "Männlich"
+            } else {
+                gender = "Weiblich"
+            }
+
+            var disciplines = []
+            for(const item of this.data.athlete.disciplines) {
+                disciplines.push(item)
+            }
+            disciplines = disciplines.toString()
+
+            const csvContent = "data:text/csv;charset=utf-8,"
+                + "Name,Nation,Geburtsdatum,Geschlecht,Gewicht,Größe,Bootsklasse(n),Disziplin(en),Rennanzahl,Medaillen Gesamt,Medaillen Gold,Medaillen Silber,Medaillen Bronze,Finale A,Finale B\n"
+                + this.data.athlete.name.replaceAll(",", " ") + ","
+                + this.data.athlete.nation + ","
+                + this.data.athlete.dob + ","
+                + gender + ","
+                + weight + ","
+                + height + ","
+                + this.data.athlete.boat_class.replaceAll(",", " |") + ","
+                + disciplines.replaceAll(",", " | ") + ","
+                + this.data.athlete.num_of_races + ","
+                + this.data.athlete.medals_total + ","
+                + this.data.athlete.medals_gold + ","
+                + this.data.athlete.medals_silver + ","
+                + this.data.athlete.medals_bronze + ","
+                + this.data.athlete.final_a + ","
+                + this.data.athlete.final_b
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
