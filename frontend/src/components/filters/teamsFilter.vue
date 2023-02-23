@@ -190,13 +190,10 @@ export default {
       })
     },
     clearFormInputs() {
-      this.startYear = 1950
-      this.endYear = new Date().getFullYear()
-      this.selectedCompTypes = []
+      this.startYear = Object.values(this.filterOptions[0].years[0])[0]
+      this.endYear = Object.values(this.filterOptions[0].years[1])[0]
+      this.selectedCompTypes = ["WCH"]
       this.selectedNation = "GER (Germany))"
-      this.selectedGenders = [3]
-      this.selectedAgeGroups = 0
-      this.selectedBoatClasses = this.optionsBoatClasses[0]
     },
     checkScreen() {
       this.windowWidth = window.innerWidth
