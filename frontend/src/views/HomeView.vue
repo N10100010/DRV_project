@@ -28,8 +28,8 @@
           disable-page-swipe
           is-expanded
           :style="{'border-radius': '0'}"
-          :rows="selectedView ? 3 : 1"
-          :columns="selectedView ? 4 : 1"
+          :rows="selectedView ? (mobile ? 12 : 3) : 1"
+          :columns="selectedView ? (mobile ? 1 : 4) : 1"
           ref="calendar"
       >
         <template v-slot:day-content="{ day, attributes }">
