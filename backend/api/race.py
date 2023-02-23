@@ -46,13 +46,17 @@ def result_time_best_of_year_interval(session, boat_class_id, year_start,
     return result_time
 
 
-def _transpose_boatclass_intermediates(race_boats) -> OrderedDict:
+def _transpose_boatclass_intermediates(race_boats, force_500m_grid) -> OrderedDict:
     transposed = dict()
     race_boat: model.Race_Boat
     for race_boat in race_boats:
         intermediate: model.Intermediate_Time
         for intermediate in race_boat.intermediates:
             dist = intermediate.distance_meter
+            if force_500m_grid:
+                fits_on_500m_grid = dist%500 == 0
+                if not fits_on_500m_grid:
+                    continue
             if not dist in transposed:
                 transposed[dist] = []
             transposed[dist].append(intermediate)
@@ -98,15 +102,17 @@ def _speeds(boats_dict, distance):
         figures = distance_dict[distance]
         yield figures['speed']
 
-def compute_intermediates_figures(race_boats):
+def compute_intermediates_figures(race_boats, force_500m_grid=True):
     """ returns: dict[race_boat_id][distance] each containing {"pace":..., ...}
     """
     dict_key = lambda i: i[0]
-    lookup = _transpose_boatclass_intermediates(race_boats)
+    lookup = _transpose_boatclass_intermediates(race_boats, force_500m_grid=force_500m_grid)
     lookup = OrderedDict( sorted(lookup.items(), key=dict_key ) )
-    grid_resolution = _find_min_difference(lookup.keys())
-    if grid_resolution == None:
-        return []
+    grid_resolution = 500
+    if not force_500m_grid:
+        grid_resolution = _find_min_difference(lookup.keys())
+        if grid_resolution == None:
+            return []
 
     result = defaultdict(lambda: defaultdict(dict))
     last_distance = 0
