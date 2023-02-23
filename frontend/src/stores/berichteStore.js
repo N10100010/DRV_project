@@ -547,7 +547,7 @@ export const useBerichteState = defineStore({
             }
 
             const csvContent = "data:text/csv;charset=utf-8,"
-                + "\nBootsklassen,Alle\n"
+                + "Bootsklassen,Alle\n"
                 + "Datensätze," + results + "\n"
                 + "Zeitraum," + this.lastFilterConfig.interval[0] + " - " + this.lastFilterConfig.interval[1] + "\n"
                 + "Events," + this.lastFilterConfig.competition_type.replaceAll(",", " |") + "\n"
@@ -590,7 +590,7 @@ export const useBerichteState = defineStore({
             }
             
             const csvContent = "data:text/csv;charset=utf-8,"
-                + "\nBootsklasse," + this.data.boat_classes + "\n"
+                + "Bootsklasse," + this.data.boat_classes + "\n"
                 + "Datensätze," + this.data.results + "\n"
                 + "Zeitraum," + this.lastFilterConfig.interval[0] + " - " + this.lastFilterConfig.interval[1] + "\n"
                 + "Events," + this.lastFilterConfig.competition_type.replaceAll(",", " |") + "\n"

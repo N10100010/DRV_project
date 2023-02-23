@@ -371,13 +371,15 @@ export const useRennstrukturAnalyseState = defineStore({
                 }
                 finalData.push(rowData)
             }
-            const csvContent = "data:text/csv;charset=utf-8," + finalData.map(e => e.join(",")).join("\n")
-                + "\n\nRennen," + this.compData.display_name + "\n"
+            const csvContent = "data:text/csv;charset=utf-8,"
+                + "Rennen," + this.compData.display_name + "\n"
                 + "Ort," + this.compData.venue.replace(",", " |") + "\n"
                 + "Startzeit," + this.compData.start_date + "\n"
                 + "Weltbestzeit," +  this.compData.worldBestTimeBoatClass + "\n"
                 + "Bestzeit laufender OZ/Jahr," + this.compData.bestTimeBoatClassCurrentOZ + "\n"
-                + "Progression," + progression    
+                + "Progression," + progression
+                + "\n\n"
+                + finalData.map(e => e.join(",")).join("\n")
             ;
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");

@@ -102,10 +102,12 @@ export const useMedaillenspiegelState = defineStore({
             this.filterOpen = !filterState
         },
         exportTableData() {
-            const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(e => e.join(",")).join("\n")
-                + "\n\nDatensätze," + this.data.results + "\n"
+            const csvContent = "data:text/csv;charset=utf-8,"
+                + "Datensätze," + this.data.results + "\n"
                 + "Zeitraum," + this.data.start_date + " - " + this.data.end_date + "\n"
                 + "Events," + this.data.comp_types.replaceAll(",", " |")
+                + "\n\n"
+                + this.tableExport.map(e => e.join(",")).join("\n")
             ;
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");

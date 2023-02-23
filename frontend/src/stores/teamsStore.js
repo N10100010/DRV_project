@@ -205,7 +205,7 @@ export const useTeamsState = defineStore({
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "teams.csv");
+            link.setAttribute("download", "Teams_" + this.data.nation + ".csv");
             document.body.appendChild(link);
             link.click();
         }
