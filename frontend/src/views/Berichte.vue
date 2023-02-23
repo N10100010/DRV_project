@@ -44,7 +44,8 @@ ChartJS.register(LinearScale, PointElement, Tooltip, Legend, TimeScale);
           >Auf der Seite Berichte lassen sich Analysen über längere Zeiträume und weitere Filterkriterien erstellen.
           </v-tooltip>
           <v-icon @click="openPrintDialog()" color="grey" class="ml-2 v-icon--size-large">mdi-printer</v-icon>
-          <v-icon v-if="matrixVisible" @click="exportTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
+          <v-icon v-if="matrixVisible" @click="exportMatrixTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
+          <v-icon v-if="!matrixVisible" @click="exportBoatClassTableData()" color="grey" class="ml-2 v-icon--size-large">mdi-table-arrow-right</v-icon>
         </v-col>
         <v-divider></v-divider>
         <v-container v-if="loading" class="d-flex flex-column align-center">
@@ -240,9 +241,13 @@ export default {
     openPrintDialog() {
       window.print();
     },
-    exportTableData() {
+    exportMatrixTableData() {
       const store = useBerichteState()
-      store.exportTableData()
+      store.exportMatrixTableData()
+    },
+    exportBoatClassTableData() {
+      const store = useBerichteState()
+      store.exportBoatClassTableData()
     },
     setFilterState() {
       this.filterOpen = !this.filterOpen;

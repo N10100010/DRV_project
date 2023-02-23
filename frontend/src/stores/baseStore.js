@@ -22,6 +22,7 @@ export const useRennstrukturAnalyseState = defineStore({
     state: () => ({
         filterOpen: false,
         loadingState: false,
+        compData: [],
         tableExport: [],
         data: {
             filterOptions: {
@@ -66,8 +67,9 @@ export const useRennstrukturAnalyseState = defineStore({
         },
         getCompetitionData(state) {
             const data = state.data.raceData[0]
-            data.worldBestTimeBoatClass = formatMilliseconds(data.worldBestTimeBoatClass);
-            data.bestTimeBoatClassCurrentOZ = formatMilliseconds(data.bestTimeBoatClassCurrentOZ);
+            data.worldBestTimeBoatClass = formatMilliseconds(data.result_time_world_best);
+            data.bestTimeBoatClassCurrentOZ = formatMilliseconds(data.result_time_best_of_current_olympia_cycle);
+            state.compData = data
             return data
         },
         getRaceAnalysisFilterOptions(state) {
@@ -355,6 +357,13 @@ export const useRennstrukturAnalyseState = defineStore({
         },
         exportTableData() {
             let finalData = []
+            var progression = null
+            if(this.compData.progression_code) {
+                progression = this.compData.progression_code
+            } else {
+                progression = "-"
+            }
+
             for (const data of Object.values(this.tableExport)) {
                 let rowData = []
                 for (const [, value] of data.entries()) {
@@ -362,11 +371,20 @@ export const useRennstrukturAnalyseState = defineStore({
                 }
                 finalData.push(rowData)
             }
-            const csvContent = "data:text/csv;charset=utf-8," + finalData.map(e => e.join(",")).join("\n");
+            const csvContent = "data:text/csv;charset=utf-8,"
+                + "Rennen," + this.compData.display_name + "\n"
+                + "Ort," + this.compData.venue.replace(",", " |") + "\n"
+                + "Startzeit," + this.compData.start_date + "\n"
+                + "Weltbestzeit," +  this.compData.worldBestTimeBoatClass + "\n"
+                + "Bestzeit laufender OZ/Jahr," + this.compData.bestTimeBoatClassCurrentOZ + "\n"
+                + "Progression," + progression
+                + "\n\n"
+                + finalData.map(e => e.join(",")).join("\n")
+            ;
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "rennstruktur.csv");
+            link.setAttribute("download", "Rennstruktur_" + this.compData.boat_class + ".csv");
             document.body.appendChild(link);
             link.click();
         }
