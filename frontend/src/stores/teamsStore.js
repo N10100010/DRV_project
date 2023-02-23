@@ -185,15 +185,21 @@ export const useTeamsState = defineStore({
             this.filterConfig = data
         },
         exportTableData() {
-             const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(row => {
-                if (Array.isArray(row)) {
-                    return row.map(cell => {
-                        if (typeof cell === "string") {
-                            return `"${cell}"`;
-                        }
-                        return cell;
-                    }).join(",");
-                }
+             const csvContent = "data:text/csv;charset=utf-8,"
+                + "\nNation," + this.data.nation + "\n"
+                + "Datensätze," + this.data.results + "\n"
+                + "Zeitraum," + this.data.interval[0] + " - " + this.data.interval[1] + "\n"
+                + "Events," + this.filterConfig.events.replaceAll(",", " |")
+                + "\n\n"
+                + this.tableExport.map(row => {
+                    if (Array.isArray(row)) {
+                        return row.map(cell => {
+                            if (typeof cell === "string") {
+                                return `"${cell}"`;
+                            }
+                            return cell;
+                        }).join(",");
+                    }
                 return row;
             }).join("\n");
             const encodedUri = encodeURI(csvContent);

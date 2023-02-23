@@ -102,11 +102,15 @@ export const useMedaillenspiegelState = defineStore({
             this.filterOpen = !filterState
         },
         exportTableData() {
-            const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(e => e.join(",")).join("\n");
+            const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(e => e.join(",")).join("\n")
+                + "\n\nDatensätze," + this.data.results + "\n"
+                + "Zeitraum," + this.data.start_date + " - " + this.data.end_date + "\n"
+                + "Events," + this.data.comp_types.replaceAll(",", " |")
+            ;
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "medaillenspiegel.csv");
+            link.setAttribute("download", "Medaillenspiegel.csv");
             document.body.appendChild(link);
             link.click();
         }

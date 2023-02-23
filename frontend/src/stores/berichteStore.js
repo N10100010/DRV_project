@@ -8,7 +8,7 @@ export const useBerichteState = defineStore({
     state: () => ({
         filterOpen: false,
         loading: true,
-        tableExport: [],
+        matrixTableExport: [],
         lastFilterConfig: {
           "interval": [0, 0],
           "competition_type": "",
@@ -260,7 +260,7 @@ export const useBerichteState = defineStore({
                     }
                 }
             })
-            state.tableExport = rowValues
+            state.matrixTableExport = rowValues
             return rowValues
         },
         getSelectedBoatClass(state) {
@@ -537,22 +537,84 @@ export const useBerichteState = defineStore({
         setFilterConfig(data) {
             this.filterConfig = data
         },
-        exportTableData() {
-            const csvContent = "data:text/csv;charset=utf-8," + this.tableExport.map(row => {
-                if (Array.isArray(row)) {
-                    return row.map(cell => {
-                        if (typeof cell === "string") {
-                            return `"${cell}"`;
-                        }
-                        return cell;
-                    }).join(",");
-                }
-                return row;
-            }).join("\n");
+        exportMatrixTableData() {
+            var results = 0;
+
+            if(this.data.results > 0) {
+                results = this.data.results;
+            } else {
+                results = 0;
+            }
+
+            const csvContent = "data:text/csv;charset=utf-8,"
+                + "\nBootsklassen,Alle\n"
+                + "Datensätze," + results + "\n"
+                + "Zeitraum," + this.lastFilterConfig.interval[0] + " - " + this.lastFilterConfig.interval[1] + "\n"
+                + "Events," + this.lastFilterConfig.competition_type.replaceAll(",", " |") + "\n"
+                + "Läufe," + this.lastFilterConfig.race_phase_type.replaceAll(",", " |") + "\n"
+                + "Läufe (erweitert)," + this.lastFilterConfig.race_phase_subtype.replaceAll(",", " |") + "\n\n"
+                
+                + ",WB [t],Ø [t],Δ [s],n\n"
+                + this.matrixTableExport.map(row => {
+                    if (Array.isArray(row)) {
+                        return row.map(cell => {
+                            if (typeof cell === "string") {
+                                return `"${cell}"`;
+                            }
+                            return cell;
+                        }).join(",");
+                    }
+                    return row;
+                }).join("\n");
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "berichte.csv");
+            link.setAttribute("download", "Berichte_" + "Matrix.csv");
+            document.body.appendChild(link);
+            link.click();
+        },
+        exportBoatClassTableData() {
+            var results = 0;
+            var worldbesttime = 0;
+
+            if(this.data.results > 0) {
+                results = this.data.results;
+            } else {
+                results = 0;
+            }
+
+            if(this.data.world_best_time_boat_class > 0) {
+                worldbesttime = formatMilliseconds(this.data.world_best_time_boat_class)
+            } else {
+                worldbesttime = "-"
+            }
+            
+            const csvContent = "data:text/csv;charset=utf-8,"
+                + "\nBootsklasse," + this.data.boat_classes + "\n"
+                + "Datensätze," + this.data.results + "\n"
+                + "Zeitraum," + this.lastFilterConfig.interval[0] + " - " + this.lastFilterConfig.interval[1] + "\n"
+                + "Events," + this.lastFilterConfig.competition_type.replaceAll(",", " |") + "\n"
+                + "Läufe," + this.lastFilterConfig.race_phase_type.replaceAll(",", " |") + "\n"
+                + "Läufe (erweitert)," + this.lastFilterConfig.race_phase_subtype.replaceAll(",", " |") + "\n\n"
+
+                + "Weltbestzeit," + worldbesttime + "\n"
+                + "Beste im Zeitraum," + formatMilliseconds(this.data.best_in_period) + "\n"
+                + "Ø Geschwindigkeit (m/s)," + this.data["mean"]["m/s"] + "\n"
+                + "Ø t über 500m," + formatMilliseconds(this.data["mean"]["pace 500m"]) + "\n"
+                + "Ø t über 1000m," + formatMilliseconds(this.data["mean"]["pace 1000m"]) + "\n"
+                + "Ø t über 2000m," + formatMilliseconds(this.data["mean"]["mm:ss,00"]) + "\n"
+                + "Standardabweichung," + formatMilliseconds(this.data.std_dev) + "\n"
+                + "Median," + formatMilliseconds(this.data.median) + "\n"
+                + ",Bedingungen\n"
+                + "Abstufung schnellste," + "(n=" + this.data["gradation_fastest"]["results"] + ") " + formatMilliseconds(this.data["gradation_fastest"]["time"]) + "\n"
+                + "Abstufung mittel," + "(n=" + this.data["gradation_medium"]["results"] + ") " + formatMilliseconds(this.data["gradation_medium"]["time"]) + "\n"
+                + "Abstufung langsam," + "(n=" + this.data["gradation_slow"]["results"] + ") " + formatMilliseconds(this.data["gradation_slow"]["time"]) + "\n"
+                + "Abstufung langsamste," + "(n=" + this.data["gradation_slowest"]["results"] + ") " + formatMilliseconds(this.data["gradation_slowest"]["time"]);
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "Berichte_" + this.data.boat_classes + ".csv");
             document.body.appendChild(link);
             link.click();
         }
