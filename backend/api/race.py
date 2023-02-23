@@ -1,5 +1,6 @@
 import datetime
 from collections import OrderedDict, defaultdict
+from contextlib import suppress
 import itertools
 import statistics
 
@@ -160,13 +161,16 @@ def compute_intermediates_figures(race_boats):
             figures["result_time"] = intermediate.result_time_ms
 
         # now we have all the pace values, we can compute avg speeds
-        avg_speed = statistics.mean(_skip_NoneType(_speeds(boats_dict=result, distance=distance)))
+        avg_speed = None
+        with suppress(statistics.StatisticsError):
+            avg_speed = statistics.mean(_skip_NoneType(_speeds(boats_dict=result, distance=distance)))
 
         for race_boat_id, intermediate in valid_intermeds_lookup.items():
             figures = result[intermediate.race_boat_id][distance]
             speed = figures['speed']
-            rel_diff_to_avg_speed = (speed - avg_speed) / avg_speed * 100.0
-            figures["rel_diff_to_avg_speed"] = rel_diff_to_avg_speed
+            if avg_speed:
+                rel_diff_to_avg_speed = (speed - avg_speed) / avg_speed * 100.0
+                figures["rel_diff_to_avg_speed"] = rel_diff_to_avg_speed
 
         first_distance = False
         last_distance = distance
