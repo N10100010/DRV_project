@@ -16,7 +16,7 @@
       <v-navigation-drawer
           v-model="filterOpen"
           temporary
-          v-bind:style='{"margin-top" : (mobile? "71.25px" : "160px" )}'
+          v-bind:style='{"margin-top": (mobile ? "71.25px" : (headerReduced ? "81px" : "159px"))}'
           style="background-color: white; border: none"
           width="600">
         <medaillenspiegel-filter/>
@@ -99,9 +99,13 @@ import BarChart from "@/components/charts/BarChart.vue";
 <script>
 import {mapState} from "pinia";
 import {useMedaillenspiegelState} from "@/stores/medaillenspiegelStore";
+import {useGlobalState} from "@/stores/globalStore";
 
 export default {
   computed: {
+    ...mapState(useGlobalState, {
+      headerReduced: "getHeaderReducedState"
+    }),
     ...mapState(useMedaillenspiegelState, {
       filterState: "getFilterState"
     }),
