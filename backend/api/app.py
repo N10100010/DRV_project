@@ -318,7 +318,7 @@ def get_race(race_id: int) -> dict:
         year_start=datetime.date.today().year - 4
     )
 
-    intermediates_figures = compute_intermediates_figures(race.race_boats)
+    intermediates_figures = compute_intermediates_figures(race.race_boats, force_500m_grid=True)
 
     result = {
         "race_id": race.id,
