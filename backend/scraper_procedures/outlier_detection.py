@@ -212,6 +212,9 @@ def outlier_detection_result_data(session:Session, boat_class: model.Boat_Class)
             .join(model.Intermediate_Time.race_boat)
             .join(model.Race_Boat.race)
             .join(model.Race.event)
+            .join(model.Event.competition)
+            .join(model.Competition.competition_type)
+            .join(model.Competition_Type.competition_category)
             .where(
                 and_(
                     model.Event.boat_class_id == boat_class.id,
