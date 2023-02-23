@@ -9,6 +9,10 @@ const formatMilliseconds = ms => {
     return new Date(ms).toISOString().slice(14, -2);
 };
 
+function roundToTwoDecimal(num) {
+  return num ? Number(num.toFixed(2)) : num;
+}
+
 
 // predefined colors for charts
 const COLORS = ['#0C67F7', '#93E9ED', '#E0A9FA', '#E0B696', '#E0FAAC', '#F0E95A'];
@@ -100,15 +104,16 @@ export const useRennstrukturAnalyseState = defineStore({
 
                     const firstArray = [];
                     const secondArray = [];
-                    const speedValues = [];
+                    // const speedValues = [];
                     const strokeValues = [];
                     const propulsionValues = [];
 
                     Object.values(dataObj.race_data).forEach(gpsData => {
                         if (dataObj.intermediates !== '0') {
-                            speedValues.push(gpsData["speed [m/s]"] + "[m/s]");
+
+                            // speedValues.push(gpsData["speed [m/s]"] + "[m/s]");
                             strokeValues.push(gpsData["stroke [1/min]"] + "[1/min]");
-                            propulsionValues.push(gpsData["propulsion [m/stroke]"] ? gpsData["propulsion [m/stroke]"].toFixed(2) : "–" + "[m/Schlag]");
+                            propulsionValues.push(gpsData["propulsion [m/stroke]"] ? roundToTwoDecimal(gpsData["propulsion [m/stroke]"]) : "–" + "[m/Schlag]");
                         }
                     });
                     for (const [index, [key, intermediate]] of Object.entries(dataObj.intermediates).entries()) {
@@ -118,7 +123,12 @@ export const useRennstrukturAnalyseState = defineStore({
                                 formatMilliseconds(intermediate["pace [millis]"]),
                                 formatMilliseconds(intermediate["deficit [millis]"])
                             )
-                            secondArray.push(["(" + intermediate["rank"] + ")", speedValues[index], strokeValues[index], propulsionValues[index]])
+                            secondArray.push([
+                                "(" + intermediate["rank"] + ")",
+                                roundToTwoDecimal(intermediate["speed [m/s]"]) + "[m/s]",
+                                strokeValues[index],
+                                roundToTwoDecimal(propulsionValues[index])
+                            ])
                         }
                     }
                     const chunkSize = 3;
