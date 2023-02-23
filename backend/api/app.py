@@ -391,7 +391,8 @@ def get_race(race_id: int) -> dict:
                 "pace [millis]": figures.get('pace'),
                 "speed [m/s]": figures.get('speed'),
                 "deficit [millis]": figures.get('deficit'),
-                "rel_diff_to_avg_speed [%]": figures.get('rel_diff_to_avg_speed')
+                "rel_diff_to_avg_speed [%]": figures.get('rel_diff_to_avg_speed'),
+                "stroke [1/min]": strokes_for_intermediates.get(intermediate.distance_meter)
             }
             # relative difference to average time at this mark
 
