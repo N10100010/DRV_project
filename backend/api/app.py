@@ -672,7 +672,6 @@ def get_athlete(athlete_id: int):
         "medals_bronze": bronze,
         "final_a": final_a,
         "final_b": final_b,
-        "world_best_boat_class": best_time_boat_class,
         "num_of_races": len(athlete_race_boats),
         "race_list": race_results,
     })
