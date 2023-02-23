@@ -3,9 +3,11 @@ from collections import OrderedDict, defaultdict
 from contextlib import suppress
 import itertools
 import statistics
+from collections.abc import Iterable
 
 from sqlalchemy import select, or_, and_, func
 
+from common.helpers import stepfunction
 from model import model
 
 COND_VALID_2000M_RESULTS = and_(
@@ -178,6 +180,27 @@ def compute_intermediates_figures(race_boats):
 
     return result
 
+def is_valid_race_data(race_data: model.Race_Data) -> bool:
+    return race_data.is_outlier == False
+
+def _iter_strokes_from_race_data(race_data_list: Iterable[model.Race_Data]) -> model.Race_Data:
+    for race_data in race_data_list:
+        is_valid_stroke = (
+            race_data.is_outlier == False
+            and race_data.stroke != None
+        )
+        if is_valid_stroke:
+            yield race_data.stroke
+
+def strokes_for_intermediate_steps(race_data_list, stepsize=500):
+    result = {}
+    map_to_steps_func = lambda race_data: stepfunction(race_data.distance_meter, stepsize=stepsize)
+    for meter_mark, data_points in itertools.groupby(race_data_list, key=map_to_steps_func):
+        avg = None
+        with suppress(TypeError, statistics.StatisticsError):
+            avg = statistics.fmean(_iter_strokes_from_race_data(data_points))
+        result[meter_mark] = avg
+    return result
 
 if __name__ == '__main__':
     from sys import exit as sysexit
