@@ -106,14 +106,12 @@ export const useRennstrukturAnalyseState = defineStore({
 
                     const firstArray = [];
                     const secondArray = [];
-                    // const speedValues = [];
-                    const strokeValues = [];
                     const propulsionValues = [];
 
                     Object.values(dataObj.race_data).forEach(gpsData => {
                         if (dataObj.intermediates !== '0') {
-                            strokeValues.push(gpsData["stroke [1/min]"] + "[1/min]");
-                            propulsionValues.push(gpsData["propulsion [m/stroke]"] ? roundToTwoDecimal(gpsData["propulsion [m/stroke]"]) : "–" + "[m/Schlag]");
+                            const propVal = gpsData["propulsion [m/stroke]"]
+                            propulsionValues.push(propVal ? roundToTwoDecimal(propVal) : 0);
                         }
                     });
                     for (const [index, [key, intermediate]] of Object.entries(dataObj.intermediates).entries()) {
@@ -123,11 +121,15 @@ export const useRennstrukturAnalyseState = defineStore({
                                 formatMilliseconds(intermediate["pace [millis]"]),
                                 formatMilliseconds(intermediate["deficit [millis]"])
                             )
+
+                            const strokeVal = intermediate["stroke [1/min]"]
+                            const speedVal = intermediate["speed [m/s]"]
+                            const propulsionVal = propulsionValues[index]
                             secondArray.push([
                                 "(" + intermediate["rank"] + ")",
-                                roundToTwoDecimal(intermediate["speed [m/s]"]) + "[m/s]",
-                                strokeValues[index],
-                                roundToTwoDecimal(propulsionValues[index])
+                                speedVal ? roundToTwoDecimal(speedVal) + "[m/s]" : "–",
+                                strokeVal ? roundToTwoDecimal(strokeVal) + "[1/smin]" : "–",
+                                propulsionVal ? roundToTwoDecimal(propulsionVal) + "[m/Schlag]" : "–"
                             ])
                         }
                     }
