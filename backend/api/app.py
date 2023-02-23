@@ -2,10 +2,10 @@ import os
 from secrets import token_hex
 import datetime
 import json
+from itertools import groupby
 from collections import OrderedDict
 from statistics import stdev, median, mean
 import numpy as np
-from collections import OrderedDict
 
 from flask import Flask
 from flask import request
@@ -22,7 +22,7 @@ from sqlalchemy.orm import joinedload
 
 from . import auth
 from model import model
-from .race import result_time_best_of_year_interval, compute_intermediates_figures
+from .race import result_time_best_of_year_interval, compute_intermediates_figures, strokes_for_intermediate_steps
 from common.rowing import propulsion_in_meters_per_stroke
 from . import mocks  # todo: remove me
 from . import globals
@@ -318,7 +318,7 @@ def get_race(race_id: int) -> dict:
         year_start=datetime.date.today().year - 4
     )
 
-    intermediates_figures = compute_intermediates_figures(race.race_boats)
+    intermediates_figures = compute_intermediates_figures(race.race_boats, force_500m_grid=True)
 
     result = {
         "race_id": race.id,
@@ -374,6 +374,7 @@ def get_race(race_id: int) -> dict:
             }
 
         # intermediates
+        strokes_for_intermediates = strokes_for_intermediate_steps(race_boat.race_data)
         sorted_intermediates = sorted(race_boat.intermediates, key=lambda x: x.distance_meter)
         intermediate: model.Intermediate_Time
         for intermediate in sorted_intermediates:
@@ -390,7 +391,8 @@ def get_race(race_id: int) -> dict:
                 "pace [millis]": figures.get('pace'),
                 "speed [m/s]": figures.get('speed'),
                 "deficit [millis]": figures.get('deficit'),
-                "rel_diff_to_avg_speed [%]": figures.get('rel_diff_to_avg_speed')
+                "rel_diff_to_avg_speed [%]": figures.get('rel_diff_to_avg_speed'),
+                "stroke [1/min]": strokes_for_intermediates.get(intermediate.distance_meter)
             }
             # relative difference to average time at this mark
 

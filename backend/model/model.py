@@ -419,7 +419,7 @@ class Race_Data(Base):
     stroke = Column(Float)
 
     # outlier detection
-    is_outlier = Column(Boolean)
+    is_outlier = Column(Boolean, nullable=False, default=True)
 
 
 class Intermediate_Time(Base):

@@ -63,7 +63,7 @@
                 </tr>
                 <tr>
                   <th>Geschlecht</th>
-                  <td>{{data.gender ? `${data.gender}` : '–'}}</td>
+                  <td>{{data.gender ? (data.gender == "Men" ? "Männlich" : "Weiblich") : '–'}}</td>
                 </tr>
                 <tr>
                   <th>Gewicht</th>
@@ -79,7 +79,18 @@
                 </tr>
                 <tr>
                   <th>Disziplin(en)</th>
-                  <td><p v-for="item in data.disciplines">{{ item }}</p></td>
+                  <td>
+                    <p>
+                      <template v-for="(item, idx) in data.disciplines">
+                        <template v-if="idx < data.disciplines.length - 1">
+                          {{ item }},
+                        </template>
+                        <template v-else>
+                          {{ item }}
+                        </template>
+                      </template>
+                    </p>
+                  </td>
                 </tr>
                 <tr>
                   <th>Rennanzahl</th>
@@ -107,7 +118,7 @@
                 </tr>
                 <tr>
                   <th>Finale B</th>
-                  <td>{{ data.final_a }}</td>
+                  <td>{{ data.final_b }}</td>
                 </tr>
                 </tbody>
               </v-table>
