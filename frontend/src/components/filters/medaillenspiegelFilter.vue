@@ -215,13 +215,10 @@ export default {
       })
     },
     clearFormInputs() {
-      this.selectedGenders = 0
-      this.startYear = 1950
-      this.endYear = new Date().getFullYear()
+      this.startYear = Object.values(this.filterOptions[0].years[0])[0]
+      this.endYear = Object.values(this.filterOptions[0].years[1])[0]
       this.selectedCompTypes = ["WCH"]
-      this.selectedNation = []
-      this.selectedMedalTypes = 0
-      this.selectedBoatClasses = this.optionsBoatClasses[0]
+      this.selectedNation = "GER (Germany))"
     },
     checkScreen() {
       this.windowWidth = window.innerWidth

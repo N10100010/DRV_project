@@ -196,9 +196,9 @@ export default {
       this.selectedAthlete = null
       this.selectedNation = null
       this.selectedBirthYear = null
-      this.selectedGenders = 0
-      this.selectedAgeGroups = 0
-      this.selectedBoatClasses = this.optionsBoatClasses[0]
+      this.selectedGenders = 3
+      this.optionsDisciplines = []
+      this.selectedBoatClasses = [0]
     },
     checkScreen() {
       this.windowWidth = window.innerWidth

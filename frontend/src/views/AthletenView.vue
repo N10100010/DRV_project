@@ -120,14 +120,6 @@
                   <th>Finale B</th>
                   <td>{{ data.final_b }}</td>
                 </tr>
-                <tr>
-                  <th>Bestzeit Bootsklasse</th>
-                  <td>{{ data.best_time_boat_class ? `${formatMilliseconds(data.best_time_boat_class)}` : "–"}}</td>
-                </tr>
-                <tr>
-                  <th>Bestzeit Bootsklasse OZ</th>
-                  <td>{{data.best_time_current_oz ? `${formatMilliseconds(data.best_time_current_oz)}` : "–"}}</td>
-                </tr>
                 </tbody>
               </v-table>
             </v-col>
