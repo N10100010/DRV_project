@@ -378,22 +378,36 @@ def get_race(race_id: int) -> dict:
         sorted_intermediates = sorted(race_boat.intermediates, key=lambda x: x.distance_meter)
         intermediate: model.Intermediate_Time
         for intermediate in sorted_intermediates:
+            intermediate_dict = {
+                "rank": None,
+                "time [millis]": None,
+                "pace [millis]": None,
+                "speed [m/s]": None,
+                "deficit [millis]": None,
+                "rel_diff_to_avg_speed [%]": None,
+                "stroke [1/min]": None,
+                "is_outlier": None
+            }
+            rb_result['intermediates'][str(intermediate.distance_meter)] = intermediate_dict
+
             figures = intermediates_figures[intermediate.race_boat_id][intermediate.distance_meter]
             result_time_ms = intermediate.result_time_ms
-            if intermediate.is_outlier:
-                continue
+
+            # if intermediate.is_outlier:
+            #     continue
             if intermediate.invalid_mark_result_code:
                 result_time_ms = intermediate.invalid_mark_result_code.id
 
-            rb_result['intermediates'][str(intermediate.distance_meter)] = {
+            intermediate_dict.update({
                 "rank": intermediate.rank,
                 "time [millis]": result_time_ms,
                 "pace [millis]": figures.get('pace'),
                 "speed [m/s]": figures.get('speed'),
                 "deficit [millis]": figures.get('deficit'),
                 "rel_diff_to_avg_speed [%]": figures.get('rel_diff_to_avg_speed'),
-                "stroke [1/min]": strokes_for_intermediates.get(intermediate.distance_meter)
-            }
+                "stroke [1/min]": strokes_for_intermediates.get(intermediate.distance_meter),
+                "is_outlier": intermediate.is_outlier
+            })
             # relative difference to average time at this mark
 
     return Response(json.dumps(result, sort_keys=False), content_type='application/json')
