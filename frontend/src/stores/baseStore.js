@@ -6,6 +6,12 @@ const formatMilliseconds = ms => {
     if (!ms) {
         return '00:00.00';
     }
+
+    const is_string = typeof ms === 'string' || ms instanceof String;
+    if (is_string) {
+        return ms;
+    }
+
     return new Date(ms).toISOString().slice(14, -2);
 };
 
