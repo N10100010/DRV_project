@@ -224,7 +224,7 @@ def get_matrix() -> dict:
         .join(model.Competition_Type.competition_category)
         .where(
             model.Intermediate_Time.distance_meter == 2000,
-            # model.Intermediate_Time.is_outlier == False, 
+            model.Intermediate_Time.is_outlier == False, 
             model.Intermediate_Time.result_time_ms != 0
         )
         .group_by(
@@ -399,16 +399,6 @@ def get_race(race_id: int) -> dict:
     return Response(json.dumps(result, sort_keys=False), content_type='application/json')
 
 
-@app.teardown_appcontext
-def shutdown_session(exception=None):
-    ''' Enable Flask to automatically remove database sessions at the
-    end of the request or when the application shuts down.
-    Ref: http://flask.pocoo.org/docs/patterns/sqlalchemy/
-    Ref: https://stackoverflow.com/a/45719168
-    '''
-    Scoped_Session.remove()
-
-
 @app.route('/get_report_boat_class', methods=['POST'])
 @jwt_required()
 def get_report_boat_class():
@@ -427,8 +417,7 @@ def get_report_boat_class():
 
     statement = (
         select(
-            model.Race.id.label("race_id"),
-            model.Competition.id.label("competition_id")
+            model.Race.id.label("race_id")
         )
         .join(model.Race.event)
         .join(model.Event.competition)
@@ -449,7 +438,7 @@ def get_report_boat_class():
     comp_categories = set()
 
     for row in result:
-        race_id, competition_id = row
+        race_id = row
         race = session.query(model.Race).get(race_id)
         boat_class_name = race.event.boat_class.abbreviation
         comp_categories.add(race.event.competition.competition_type.competition_category.name)
@@ -466,7 +455,9 @@ def get_report_boat_class():
                 race_dates.append(
                     '{:02d}'.format(date.year) + '-{:02d}'.format(date.month) + '-{:02d}'.format(date.day))
                 intermediate_times_for_race_boat = session.query(model.Intermediate_Time).filter(
-                    model.Intermediate_Time.race_boat_id == race_boat.id).all()
+                    model.Intermediate_Time.race_boat_id == race_boat.id, 
+                    model.Intermediate_Time.is_outlier == False
+                ).all()
                 for intermediate_time in intermediate_times_for_race_boat:
                     if intermediate_time.distance_meter == 500:
                         int_times_500.append(intermediate_time.result_time_ms)
@@ -991,3 +982,13 @@ def get_calendar(year: int):
                 }
             })
     return result
+
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    ''' Enable Flask to automatically remove database sessions at the
+    end of the request or when the application shuts down.
+    Ref: http://flask.pocoo.org/docs/patterns/sqlalchemy/
+    Ref: https://stackoverflow.com/a/45719168
+    '''
+    Scoped_Session.remove()
