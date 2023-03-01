@@ -7,8 +7,12 @@ axios.interceptors.response.use(
     }, function (error) {
         console.log(error.response.data)
         if (error.response.status === 401) {
+            const path = window.location.pathname;
+            const searchParameter = window.location.search;
+            console.log(window.location.pathname)
+            console.log(window.location.search)
             localStorage.setItem('session_token', '')
-            router.push('/auth')
+            router.push(`/auth?redirect=${path + searchParameter}`)
         }
         return Promise.reject(error)
     }
