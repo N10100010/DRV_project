@@ -377,7 +377,7 @@ def get_race(race_id: int) -> dict:
         strokes_for_intermediates = strokes_for_intermediate_steps(race_boat.race_data)
         sorted_intermediates = sorted(race_boat.intermediates, key=lambda x: x.distance_meter)
         intermediate: model.Intermediate_Time
-        for intermediate in sorted_intermediates:
+        for intermediate in sorted_intermediates: # ❌ TODO: iterate over figure matrix (see intermediates_figures) to provide dicts for all 'cells'
             intermediate_dict = {
                 "rank": None,
                 "time [millis]": None,
@@ -393,14 +393,13 @@ def get_race(race_id: int) -> dict:
             figures = intermediates_figures[intermediate.race_boat_id][intermediate.distance_meter]
             result_time_ms = intermediate.result_time_ms
 
-            # if intermediate.is_outlier:
-            #     continue
             if intermediate.invalid_mark_result_code:
                 result_time_ms = intermediate.invalid_mark_result_code.id
+                continue
 
             intermediate_dict.update({
                 "rank": intermediate.rank,
-                "time [millis]": result_time_ms,
+                "time [millis]": figures.get('result_time'),
                 "pace [millis]": figures.get('pace'),
                 "speed [m/s]": figures.get('speed'),
                 "deficit [millis]": figures.get('deficit'),
