@@ -302,9 +302,9 @@ export const useRennstrukturAnalyseState = defineStore({
                             type: 'time',
                             time: {
                                 parser: 'mm:ss.SS',
-                                unit: 'millisecond',
+                                unit: 'second',
                                 displayFormats: {
-                                    millisecond: 'mm:ss.SS',
+                                    second: 'mm:ss.SS',
                                     tooltip: 'mm:ss.SS'
                                 }
                             },
