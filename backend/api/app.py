@@ -113,7 +113,10 @@ def get_race_analysis_filter_results() -> dict:
         - year
         - competition_type
     of interest.
-    @param filter_dict: example for filter_dict {  "year": 2008, "competition_type": f5da0ad6-afea-436c-a396-19de6497762f  }
+    OR 
+    This endpoint is used, when the user clicks on a competition in the calendar subpage.
+    BOTH USAGES ARE VALID!
+    @param filter_dict: example for filter_dict {  "year": 2008, "competition_type": f5da0ad6-afea-436c-a396-19de6497762f , [OPTIONAL] "competition_id": 42 }
     @return: nested dict/json: structure containing competitions, their events and their races respectively.
     See https://github.com/N10100010/DRV_project/blob/api-design/doc/backend-api.md#user-auswahl-jahr-einzeln-und-wettkampfklasse-zb-olympics for mock of return value.
 
@@ -121,26 +124,37 @@ def get_race_analysis_filter_results() -> dict:
     from datetime import datetime
     import logging
 
-    year = request.json["data"].get('year')
-    competition_type_id = request.json["data"].get('competition_type') 
+    year = request.json["data"].get('year', None)
+    competition_type_id = request.json["data"].get('competition_type', None) 
+    competition_id = request.json["data"].get('competition_id', None) 
 
-    logging.debug(f"Year: {year}, comp cat: {competition_type_id}")
+    logging.info(f"Year: {year}, comp cat: {competition_type_id}, comp id: {competition_id}")
 
     session = Scoped_Session()
 
-    statement = (
-        select(
-            model.Competition
-        )
-        .join(model.Competition.competition_type)
-        .join(model.Competition_Type.competition_category)
-        .where(
-            and_(
-                model.Competition_Type.additional_id_ == competition_type_id,
-                model.Competition.year == year,
+    if competition_id: 
+        statement = (
+            select(
+                model.Competition
+            )
+            .where(
+                model.Competition.id == competition_id
             )
         )
-    )
+    else: 
+        statement = (
+            select(
+                model.Competition
+            )
+            .join(model.Competition.competition_type)
+            .join(model.Competition_Type.competition_category)
+            .where(
+                and_(
+                    model.Competition_Type.additional_id_ == competition_type_id,
+                    model.Competition.year == year,
+                )
+            )
+        )
 
     filtered_competitions = session.execute(statement).fetchall()
 

@@ -354,6 +354,15 @@ export const useRennstrukturAnalyseState = defineStore({
                     console.error(`Request failed: ${error}`)
                 })
         },
+        async fetchCompetitionData(data) {
+            await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/race_analysis_filter_results`, {data})
+                .then(response => {
+                    this.data.analysis = response.data
+                    this.loadingState = false
+                }).catch(error => {
+                    console.error(`Request failed: ${error}`)
+                })
+        },
         setFilterState(filterState) {
             this.filterOpen = !filterState
         },
