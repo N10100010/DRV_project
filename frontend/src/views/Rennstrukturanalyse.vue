@@ -403,7 +403,7 @@ export default {
       if (race_id) {
         const store = useRennstrukturAnalyseState()
         store.fetchRaceData(race_id)
-      }       
+      }
     }
   },
   methods: {
