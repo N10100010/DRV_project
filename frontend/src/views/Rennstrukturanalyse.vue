@@ -403,7 +403,7 @@ export default {
       if (race_id) {
         const store = useRennstrukturAnalyseState()
         store.fetchRaceData(race_id)
-      }
+      }       
     }
   },
   methods: {
@@ -483,6 +483,20 @@ export default {
       immediate: true,
       deep: true,
       handler(to, from) {
+          
+        if (typeof to !== 'undefined') {
+          // redirect from calendar to RSA 
+          if (to.fullPath.includes("?competition_id=")) {
+            const url = new URL(window.location.href);
+            const comp_id = url.searchParams.get("competition_id");
+            this.displayCompetitions = !!comp_id; 
+            const store = useRennstrukturAnalyseState()
+            const data = {
+              "competition_id": comp_id
+            }
+            store.fetchCompetitionData(data)
+          }
+        }
         if (typeof from !== 'undefined' && typeof to !== 'undefined') {
           // from events backwards to comp
           if (to.path === "/rennstrukturanalyse" && from.path.match(/\/rennstrukturanalyse\/[\w-]+/)) {
