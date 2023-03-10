@@ -144,6 +144,7 @@ def compute_intermediates_figures(race_boats):
         intermediate: model.Intermediate_Time
         for race_boat_id, intermediate in intermediates_dict.items():
             figures = {
+                "__intermediate": None,
                 "deficit": None,
                 "rel_diff_to_avg_speed": None,
                 "pace": None,
@@ -151,6 +152,8 @@ def compute_intermediates_figures(race_boats):
                 "result_time": None
             }
             result[race_boat_id][distance] = figures
+
+            figures["__intermediate"] = intermediate
 
             # handle cases with no meaningful result_time
             if intermediate == None or intermediate.result_time_ms == None:
