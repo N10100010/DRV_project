@@ -109,7 +109,9 @@ def valid_intermediate(interm: model.Intermediate_Time) -> bool:
 def _best_time(intermediates: list[model.Intermediate_Time]) -> int:
     valid_intermediates = tuple(( i for i in intermediates if valid_intermediate(i) ))
     result_times = tuple( map(lambda i: i.result_time_ms, valid_intermediates) )
-    best_time = min(result_times)
+    best_time = None
+    with suppress(ValueError):
+        best_time = min(result_times)
     return best_time
 
 def _instantaneous_speed(figures_dict, grid_resolution):
@@ -166,7 +168,9 @@ def compute_intermediates_figures(race_boats):
             valid_intermeds_lookup[race_boat_id] = intermediate
 
             # relative to best boat
-            deficit = intermediate.result_time_ms - best_time
+            deficit = None
+            if best_time != None:
+                deficit = intermediate.result_time_ms - best_time
 
             pace = None
             if first_distance:
