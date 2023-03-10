@@ -389,16 +389,20 @@ def get_race(race_id: int) -> dict:
             }
             rb_result['intermediates'][str(distance_meter)] = intermediate_dict
 
-            intermediate_dict.update({
-                "rank": intermediate.rank if intermediate else None,
-                "time [millis]": figures.get('result_time'),
-                "pace [millis]": figures.get('pace'),
-                "speed [m/s]": figures.get('speed'),
-                "deficit [millis]": figures.get('deficit'),
-                "rel_diff_to_avg_speed [%]": figures.get('rel_diff_to_avg_speed'),
-                "stroke [1/min]": strokes_for_intermediates.get(distance_meter),
-                "is_outlier": intermediate.is_outlier if intermediate else None
-            })
+            result_time = figures.get('result_time')
+            intermediate_dict["time [millis]"] = result_time
+
+            is_valid_mark = isinstance(result_time, int)
+            if is_valid_mark:
+                intermediate_dict.update({
+                    "rank": intermediate.rank if intermediate else None,
+                    "pace [millis]": figures.get('pace'),
+                    "speed [m/s]": figures.get('speed'),
+                    "deficit [millis]": figures.get('deficit'),
+                    "rel_diff_to_avg_speed [%]": figures.get('rel_diff_to_avg_speed'),
+                    "stroke [1/min]": strokes_for_intermediates.get(distance_meter),
+                    "is_outlier": intermediate.is_outlier if intermediate else None
+                })
 
     return Response(json.dumps(result, sort_keys=False), content_type='application/json')
 
