@@ -441,7 +441,7 @@ class Intermediate_Time(Base):
     result_time_ms = Column(Integer) # in milliseconds // TODO: as String?
 
     # outlier detection
-    is_outlier = Column(Boolean)
+    is_outlier = Column(Boolean, nullable=False, default=True)
 
     # other wr API fields
     difference__ = Column(String)
