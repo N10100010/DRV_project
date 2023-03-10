@@ -17,7 +17,7 @@ from common import rowing
 from common.helpers import get_, select_first
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("scrape")
 
 
 def _get_competitions_to_scrape(session):
@@ -77,7 +77,71 @@ def _date_of_competition(comp: model.Competition) -> datetime.date:
     return comp.end_date.date() or comp.start_date.date() or year
 
 
-def _scrape_competition(session, competition: model.Competition, parse_pdf_race_data=True, parse_pdf_intermediates=True, logger=logger):
+def _inject_pdf_race_data(session, competition: model.Competition):
+    for event in competition.events:
+        race: model.Race
+        for race in event.races:
+            url = race.pdf_url_race_data
+            logger.info(f'Fetch & parse PDF race data race="{race.additional_id_}" url="{url}"')
+            pdf_race_data_, _ = pdf_race_data.extract_data_from_pdf_url([url])
+            if not pdf_race_data_:
+                logger.info(f'Failed to parse (or fetch)')
+            
+            # Ideas:
+            # - sanity check with parsed ranks
+            # - check for multiple matches on either side.
+            #       (pop out of pdf_result_list; or with seen in set() pattern from wr_map_race_boat)
+            # - check if all race_boats were matched.
+            race_boat: model.Race_Boat
+            for race_boat in race.race_boats:
+                for pdf_boat in pdf_race_data_.get('data', []):
+                    matched_name = race_boat.name.lower().strip() == pdf_boat.get('country','').lower().strip()
+                    
+                    parsed_rank = None
+                    with suppress(Exception):
+                        parsed_rank = int(pdf_boat.get('rank'))
+                    matched_rank = race_boat.rank == parsed_rank
+
+                    if matched_name and matched_rank:
+                        logger.info(f'Race data matched for "{race_boat.name}"')
+                        data_ = get_(pdf_boat, 'data', {})
+                        dists   = get_(data_, 'dist [m]', [])
+                        speeds  = get_(data_, 'speed', [])
+                        strokes = get_(data_, 'stroke', [])
+                        is_consistent = len(dists) == len(speeds) == len(strokes)
+                        
+                        if not is_consistent:
+                            logger.error(f'Data is inconsistent: Arrays have different lengths')
+                            continue # TODO: consider not commiting for this Race_Boat at all
+                        
+                        for dist, speed, stroke in zip(dists, speeds, strokes):
+                            try:
+                                race_data_point = select_first(race_boat.race_data, lambda i: i.distance_meter==dist)
+                                if not race_data_point:
+                                    race_data_point = model.Race_Data()
+                                race_data_point.data_source=model.Enum_Data_Source.world_rowing_pdf.value
+                                race_data_point.distance_meter = dist
+                                race_data_point.speed_meter_per_sec = speed
+                                race_data_point.stroke = stroke
+                            except Exception:
+                                logger.error(f'Failed to write dist="{dist}" speed="{speed}" stroke="{stroke}"')
+                            else:
+                                session.add(race_data_point)
+                                race_boat.race_data.append(race_data_point)
+
+
+def _inject_pdf_intermediates(session, competition: model.Competition):
+    for event in competition.events:
+        race: model.Race
+        for race in event.races:
+            url = race.pdf_url_race_data
+            logger.info(f'Fetch & parse PDF race data race="{race.additional_id_}" url="{url}"')
+            pdf_race_data_, _ = pdf_race_data.extract_data_from_pdf_url([url])
+            if not pdf_race_data_:
+                logger.info(f'Failed to parse (or fetch)')
+
+
+def _scrape_competition(session, competition: model.Competition, parse_pdf_race_data=True, parse_pdf_intermediates=True):
     uuid = competition.additional_id_
     assert not uuid == None
 
@@ -101,60 +165,11 @@ def _scrape_competition(session, competition: model.Competition, parse_pdf_race_
 
     logger.info(f'Fetch & parse PDF race data')
     if parse_pdf_race_data:
-        for event in competition.events:
-            race: model.Race
-            for race in event.races:
-                url = race.pdf_url_race_data
-                logger.info(f'Fetch & parse PDF race data race="{race.additional_id_}" url="{url}"')
-                pdf_race_data_, _ = pdf_race_data.extract_data_from_pdf_url([url])
-                if not pdf_race_data_:
-                    logger.info(f'Failed to parse (or fetch)')
-                
-                # Ideas:
-                # - sanity check with parsed ranks
-                # - check for multiple matches on either side.
-                #       (pop out of pdf_result_list; or with seen in set() pattern from wr_map_race_boat)
-                # - check if all race_boats were matched.
-                race_boat: model.Race_Boat
-                for race_boat in race.race_boats:
-                    for pdf_boat in pdf_race_data_.get('data', []):
-                        matched_name = race_boat.name.lower().strip() == pdf_boat.get('country','').lower().strip()
-                        
-                        parsed_rank = None
-                        with suppress(Exception):
-                            parsed_rank = int(pdf_boat.get('rank'))
-                        matched_rank = race_boat.rank == parsed_rank
-
-                        if matched_name and matched_rank:
-                            logger.info(f'Race data matched for "{race_boat.name}"')
-                            data_ = get_(pdf_boat, 'data', {})
-                            dists   = get_(data_, 'dist [m]', [])
-                            speeds  = get_(data_, 'speed', [])
-                            strokes = get_(data_, 'stroke', [])
-                            is_consistent = len(dists) == len(speeds) == len(strokes)
-                            
-                            if not is_consistent:
-                                logger.error(f'Data is inconsistent: Arrays have different lengths')
-                                continue # TODO: consider not commiting for this Race_Boat at all
-                            
-                            for dist, speed, stroke in zip(dists, speeds, strokes):
-                                try:
-                                    race_data_point = select_first(race_boat.race_data, lambda i: i.distance_meter==dist)
-                                    if not race_data_point:
-                                        race_data_point = model.Race_Data()
-                                    race_data_point.data_source=model.Enum_Data_Source.world_rowing_pdf.value
-                                    race_data_point.distance_meter = dist
-                                    race_data_point.speed_meter_per_sec = speed
-                                    race_data_point.stroke = stroke
-                                except Exception:
-                                    logger.error(f'Failed to write dist="{dist}" speed="{speed}" stroke="{stroke}"')
-                                else:
-                                    session.add(race_data_point)
-                                    race_boat.race_data.append(race_data_point)
-                            
+        _inject_pdf_race_data(session=session, competition=competition)
+    if parse_pdf_intermediates:
+        _inject_pdf_intermediates(session=session, competition=competition)
 
 def scrape(parse_pdf=True):
-    logger = logging.getLogger("scrape")
     LEVEL_PRESCRAPED    = model.Enum_Maintenance_Level.world_rowing_api_prescraped.value
     LEVEL_SCRAPED       = model.Enum_Maintenance_Level.world_rowing_api_scraped.value
     LEVEL_POSTPROCESSED = model.Enum_Maintenance_Level.world_rowing_api_postprocessed.value
@@ -182,7 +197,6 @@ def scrape(parse_pdf=True):
                         competition=competition,
                         parse_pdf_intermediates=parse_pdf,
                         parse_pdf_race_data=parse_pdf,
-                        logger=logger
                     )
 
                 # HIGH PRIO TODO:
