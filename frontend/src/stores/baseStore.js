@@ -308,9 +308,9 @@ export const useRennstrukturAnalyseState = defineStore({
                             type: 'time',
                             time: {
                                 parser: 'mm:ss.SS',
-                                unit: 'millisecond',
+                                unit: 'second',
                                 displayFormats: {
-                                    millisecond: 'mm:ss.SS',
+                                    second: 'mm:ss.SS',
                                     tooltip: 'mm:ss.SS'
                                 }
                             },
@@ -355,6 +355,15 @@ export const useRennstrukturAnalyseState = defineStore({
             await axios.get(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/get_race/${raceId}/`)
                 .then(response => {
                     this.data.raceData[0] = response.data
+                    this.loadingState = false
+                }).catch(error => {
+                    console.error(`Request failed: ${error}`)
+                })
+        },
+        async fetchCompetitionData(data) {
+            await axios.post(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/race_analysis_filter_results`, {data})
+                .then(response => {
+                    this.data.analysis = response.data
                     this.loadingState = false
                 }).catch(error => {
                     console.error(`Request failed: ${error}`)

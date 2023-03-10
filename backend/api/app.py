@@ -113,7 +113,10 @@ def get_race_analysis_filter_results() -> dict:
         - year
         - competition_type
     of interest.
-    @param filter_dict: example for filter_dict {  "year": 2008, "competition_type": f5da0ad6-afea-436c-a396-19de6497762f  }
+    OR 
+    This endpoint is used, when the user clicks on a competition in the calendar subpage.
+    BOTH USAGES ARE VALID!
+    @param filter_dict: example for filter_dict {  "year": 2008, "competition_type": f5da0ad6-afea-436c-a396-19de6497762f , [OPTIONAL] "competition_id": 42 }
     @return: nested dict/json: structure containing competitions, their events and their races respectively.
     See https://github.com/N10100010/DRV_project/blob/api-design/doc/backend-api.md#user-auswahl-jahr-einzeln-und-wettkampfklasse-zb-olympics for mock of return value.
 
@@ -121,26 +124,37 @@ def get_race_analysis_filter_results() -> dict:
     from datetime import datetime
     import logging
 
-    year = request.json["data"].get('year')
-    competition_type_id = request.json["data"].get('competition_type') 
+    year = request.json["data"].get('year', None)
+    competition_type_id = request.json["data"].get('competition_type', None) 
+    competition_id = request.json["data"].get('competition_id', None) 
 
-    logging.debug(f"Year: {year}, comp cat: {competition_type_id}")
+    logging.info(f"Year: {year}, comp cat: {competition_type_id}, comp id: {competition_id}")
 
     session = Scoped_Session()
 
-    statement = (
-        select(
-            model.Competition
-        )
-        .join(model.Competition.competition_type)
-        .join(model.Competition_Type.competition_category)
-        .where(
-            and_(
-                model.Competition_Type.additional_id_ == competition_type_id,
-                model.Competition.year == year,
+    if competition_id: 
+        statement = (
+            select(
+                model.Competition
+            )
+            .where(
+                model.Competition.id == competition_id
             )
         )
-    )
+    else: 
+        statement = (
+            select(
+                model.Competition
+            )
+            .join(model.Competition.competition_type)
+            .join(model.Competition_Type.competition_category)
+            .where(
+                and_(
+                    model.Competition_Type.additional_id_ == competition_type_id,
+                    model.Competition.year == year,
+                )
+            )
+        )
 
     filtered_competitions = session.execute(statement).fetchall()
 
@@ -224,7 +238,7 @@ def get_matrix() -> dict:
         .join(model.Competition_Type.competition_category)
         .where(
             model.Intermediate_Time.distance_meter == 2000,
-            # model.Intermediate_Time.is_outlier == False, 
+            model.Intermediate_Time.is_outlier == False, 
             model.Intermediate_Time.result_time_ms != 0
         )
         .group_by(
@@ -407,16 +421,6 @@ def get_race(race_id: int) -> dict:
     return Response(json.dumps(result, sort_keys=False), content_type='application/json')
 
 
-@app.teardown_appcontext
-def shutdown_session(exception=None):
-    ''' Enable Flask to automatically remove database sessions at the
-    end of the request or when the application shuts down.
-    Ref: http://flask.pocoo.org/docs/patterns/sqlalchemy/
-    Ref: https://stackoverflow.com/a/45719168
-    '''
-    Scoped_Session.remove()
-
-
 @app.route('/get_report_boat_class', methods=['POST'])
 @jwt_required()
 def get_report_boat_class():
@@ -435,8 +439,7 @@ def get_report_boat_class():
 
     statement = (
         select(
-            model.Race.id.label("race_id"),
-            model.Competition.id.label("competition_id")
+            model.Race.id.label("race_id")
         )
         .join(model.Race.event)
         .join(model.Event.competition)
@@ -457,7 +460,7 @@ def get_report_boat_class():
     comp_categories = set()
 
     for row in result:
-        race_id, competition_id = row
+        race_id = row
         race = session.query(model.Race).get(race_id)
         boat_class_name = race.event.boat_class.abbreviation
         comp_categories.add(race.event.competition.competition_type.competition_category.name)
@@ -474,7 +477,9 @@ def get_report_boat_class():
                 race_dates.append(
                     '{:02d}'.format(date.year) + '-{:02d}'.format(date.month) + '-{:02d}'.format(date.day))
                 intermediate_times_for_race_boat = session.query(model.Intermediate_Time).filter(
-                    model.Intermediate_Time.race_boat_id == race_boat.id).all()
+                    model.Intermediate_Time.race_boat_id == race_boat.id, 
+                    model.Intermediate_Time.is_outlier == False
+                ).all()
                 for intermediate_time in intermediate_times_for_race_boat:
                     if intermediate_time.distance_meter == 500:
                         int_times_500.append(intermediate_time.result_time_ms)
@@ -999,3 +1004,13 @@ def get_calendar(year: int):
                 }
             })
     return result
+
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    ''' Enable Flask to automatically remove database sessions at the
+    end of the request or when the application shuts down.
+    Ref: http://flask.pocoo.org/docs/patterns/sqlalchemy/
+    Ref: https://stackoverflow.com/a/45719168
+    '''
+    Scoped_Session.remove()
