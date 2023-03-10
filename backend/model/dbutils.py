@@ -142,7 +142,6 @@ def assoc_has_athlete_uuid(uuid: str):
 def wr_map_race_boat(session, entity: model.Race_Boat, data):
     entity.country = wr_insert(session, model.Country, wr_map_country, get_(data, 'country'))
     
-    # Current Strategy: Delete all associations and create new ones according to given data.
     for raceBoatAthlete in get_(data, 'raceBoatAthletes', []):
         athlete_data = get_(raceBoatAthlete, 'person', {})
         if athlete_data:

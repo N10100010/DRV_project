@@ -332,7 +332,7 @@ def get_race(race_id: int) -> dict:
         year_start=datetime.date.today().year - 4
     )
 
-    intermediates_figures = compute_intermediates_figures(race.race_boats, force_500m_grid=True)
+    intermediates_figures = compute_intermediates_figures(race.race_boats)
 
     result = {
         "race_id": race.id,
@@ -389,26 +389,34 @@ def get_race(race_id: int) -> dict:
 
         # intermediates
         strokes_for_intermediates = strokes_for_intermediate_steps(race_boat.race_data)
-        sorted_intermediates = sorted(race_boat.intermediates, key=lambda x: x.distance_meter)
-        intermediate: model.Intermediate_Time
-        for intermediate in sorted_intermediates:
-            figures = intermediates_figures[intermediate.race_boat_id][intermediate.distance_meter]
-            result_time_ms = intermediate.result_time_ms
-            if intermediate.is_outlier:
-                continue
-            if intermediate.invalid_mark_result_code:
-                result_time_ms = intermediate.invalid_mark_result_code.id
-
-            rb_result['intermediates'][str(intermediate.distance_meter)] = {
-                "rank": intermediate.rank,
-                "time [millis]": result_time_ms,
-                "pace [millis]": figures.get('pace'),
-                "speed [m/s]": figures.get('speed'),
-                "deficit [millis]": figures.get('deficit'),
-                "rel_diff_to_avg_speed [%]": figures.get('rel_diff_to_avg_speed'),
-                "stroke [1/min]": strokes_for_intermediates.get(intermediate.distance_meter)
+        for distance_meter, figures in intermediates_figures[race_boat.id].items(): # ❌ TODO: iterate over figure matrix (see intermediates_figures) to provide dicts for all 'cells'
+            intermediate: model.Intermediate_Time = figures["__intermediate"]
+            intermediate_dict = {
+                "rank": None,
+                "time [millis]": None,
+                "pace [millis]": None,
+                "speed [m/s]": None,
+                "deficit [millis]": None,
+                "rel_diff_to_avg_speed [%]": None,
+                "stroke [1/min]": None,
+                "is_outlier": None
             }
-            # relative difference to average time at this mark
+            rb_result['intermediates'][str(distance_meter)] = intermediate_dict
+
+            result_time = figures.get('result_time')
+            intermediate_dict["time [millis]"] = result_time
+
+            is_valid_mark = isinstance(result_time, int)
+            if is_valid_mark:
+                intermediate_dict.update({
+                    "rank": intermediate.rank if intermediate else None,
+                    "pace [millis]": figures.get('pace'),
+                    "speed [m/s]": figures.get('speed'),
+                    "deficit [millis]": figures.get('deficit'),
+                    "rel_diff_to_avg_speed [%]": figures.get('rel_diff_to_avg_speed'),
+                    "stroke [1/min]": strokes_for_intermediates.get(distance_meter),
+                    "is_outlier": intermediate.is_outlier if intermediate else None
+                })
 
     return Response(json.dumps(result, sort_keys=False), content_type='application/json')
 
