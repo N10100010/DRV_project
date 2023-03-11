@@ -19,6 +19,7 @@ from common.helpers import get_, select_first, Timedelta_Parser
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("scrape")
 
+REQUIRED_INTERMEDIATES_MARKS = ( 500, 1000, 1500, 2000 )
 
 def _get_competitions_to_scrape(session):
     """Returns tuple: competitions_iterator, number_of_competitions"""
@@ -152,16 +153,14 @@ def _shallow_validation_pdf_intermediates(pdf_results, race: model.Race):
     return True
 
 
-def _intermediates_validation_pdf_intermediates(pdf_results):
+def _intermediates_validation_pdf_intermediates(pdf_results_):
     """ checks plausibility of parsed data meaning that { 500, 1000, 1500, 2000 } has to have a result time for each boat
     (assumes 2km race course length with 500m resolution)
     """
-    REQUIRED_MARKS = { 500, 1000, 1500, 2000 }
-
     valid = True
-    for pdf_result_ in pdf_results:
+    for pdf_result_ in pdf_results_:
         times = get_(pdf_result_, 'times', [])        
-        for required_mark in REQUIRED_MARKS:
+        for required_mark in REQUIRED_INTERMEDIATES_MARKS:
             if not required_mark in times:
                 return False
 
@@ -175,7 +174,37 @@ def _intermediates_validation_pdf_intermediates(pdf_results):
                 return False
 
     return True
-    
+
+
+def _create_intermediates_table(pdf_results_):
+    """ returns dict of form
+        dict[distance_meter][idx] containing a dict for: boat_name, result_time, rank
+        e.g. dict[1500][2] = { boat_name: 'GER2', result_time: 54321, rank: 5 }
+    """
+    table = {}
+
+    for pdf_result in pdf_results_:
+        boat_name = pdf_result.get('country','').strip().upper()
+        for distance_meter in REQUIRED_INTERMEDIATES_MARKS:
+            if not distance_meter in table:
+                table[distance_meter] = []
+            
+            result_time_str = pdf_result['times'][distance_meter]
+            result_time = Timedelta_Parser.to_millis(result_time_str)
+
+            table[distance_meter].append({
+                "boat_name": boat_name,
+                "result_time": result_time,
+                "rank": None
+            })
+
+    # sorting in order to determine ranks
+    for distance_meter, boats_list in table.items():
+        boats_list.sort(key=lambda d: d['result_time'])
+        for idx, dict_ in enumerate(boats_list):
+            dict_['rank'] = idx+1
+
+    return table
 
 
 def _parse_and_inject_pdf_intermediates(session, race: model.Race):
@@ -193,14 +222,24 @@ def _parse_and_inject_pdf_intermediates(session, race: model.Race):
         logger.info(f'Validation failed: could not match all boat/team names')
         return
 
-    completeness_valid = _intermediates_validation_pdf_intermediates(pdf_results=pdf_result_)
+    completeness_valid = _intermediates_validation_pdf_intermediates(pdf_results_=pdf_results_)
     if not completeness_valid:
         logger.info(f'Validation failed: incomplete data')
+        return
+
+    intermediates_table = _create_intermediates_table(pdf_results_=pdf_results_)
 
     for pdf_result_ in pdf_results_:
         race_boat_name = pdf_result_.get('country','').strip().upper()
         race_boat: model.Race_Boat = select_first(race.race_boats, lambda rb: rb.name == race_boat_name)
-        
+        pdf_times = pdf_result_.get['times']
+        for mark in REQUIRED_INTERMEDIATES_MARKS:
+            pdf_time = Timedelta_Parser.to_millis(pdf_times[mark])
+            
+            intermediate: model.Intermediate_Time = select_first(race_boat.intermediates, lambda i: i.distance_meter == mark)
+            if not intermediate:
+                intermediate = model.Intermediate_Time(race_boat=race_boat, distance_meter=mark)
+
         ... # also bubble up the 2km intermediate
 
     pass
@@ -277,3 +316,5 @@ def scrape(parse_pdf=True):
             except Exception as error:
                 logger.error(f'ERROR while scraping Competition uuid="{competition_uuid}"')
                 logger.error(str(error))
+                if SCRAPER_DEV_MODE:
+                    raise error
