@@ -328,7 +328,7 @@ class Race(Base): # https://world-rowing-api.soticcloud.net/stats/api/race/b0eae
 
     # To be able to filter for standard 2000m races // inferred by year threshold
     # NOTE: Consider to hold this info at event or even competition level
-    course_length = Column(Integer, index=True)
+    # course_length = Column(Integer, index=True) # assumed 2km for all data existing in database
     
     pdf_url_results = Column(String)
     pdf_url_race_data = Column(String)

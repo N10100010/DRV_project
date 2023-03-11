@@ -268,16 +268,6 @@ def _scrape_competition(session, competition: model.Competition, parse_pdf_race_
     competition = dbutils.wr_map_competition_scrape(session, competition, competition_data)
     session.commit() # TODO: consider removing multiple commits
 
-    logger.info(f"Determine course lengths")
-    for event in competition.events:
-        race: model.Race
-        for race in event.races:
-            race.course_length = rowing.get_course_length(
-                boat_class=event.boat_class.abbreviation,
-                race_date=_date_of_competition(competition)
-            )
-    session.commit()
-
     for event in competition.events:
         race: model.Race
         for race in event.races:
