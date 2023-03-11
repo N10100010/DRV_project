@@ -102,7 +102,7 @@ def _parse_and_inject_pdf_race_data(session, race: model.Race):
                 parsed_rank = int(pdf_boat.get('rank'))
             matched_rank = race_boat.rank == parsed_rank
 
-            if matched_name and matched_rank:
+            if matched_name: # optional -> matched_name and matched_rank
                 logger.info(f'Race data matched for "{race_boat.name}"')
                 data_ = get_(pdf_boat, 'data', {})
                 dists   = get_(data_, 'dist [m]', [])
