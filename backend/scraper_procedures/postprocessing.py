@@ -66,6 +66,8 @@ def refresh_world_best_times(session):
         race_boat.result_time_ms = result_time_ms
         race_boat.invalid_mark_result_code_id = None
 
+        # bubble_down_2km_intermediate(session=session, race_boat=race_boat, force_overwrite=True, outlier_val=False)
+
         boat_class.world_best_race_boat = race_boat
 
         logger.info(f"Updating wbt for boat_class: {boat_class_abbr}")
@@ -106,11 +108,11 @@ def bubble_down_2km_intermediate_(session, force_overwrite=True, outlier_val=Tru
 
 def postprocess():
     with model.Scoped_Session() as session:
-        logger.info(f"Bubble-down precedure (synchronize/create 2km intermediate)")
-        bubble_down_2km_intermediate_(session=session, force_overwrite=True, outlier_val=True)
-
         logger.info(f"Fetch & write world best times")
         refresh_world_best_times(session=session)
+
+        logger.info(f"Bubble-down precedure (synchronize/create 2km intermediate)")
+        bubble_down_2km_intermediate_(session=session, force_overwrite=True, outlier_val=True)
 
         logger.info("Outlier Marking")
         mark_outliers(session=session)
