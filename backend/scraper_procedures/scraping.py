@@ -242,7 +242,8 @@ def _parse_and_inject_pdf_intermediates(session, race: model.Race):
             intermediate: model.Intermediate_Time = select_first(race_boat.intermediates, lambda i: i.distance_meter==distance_meter)
             if not intermediate:
                 intermediate = model.Intermediate_Time(race_boat=race_boat, distance_meter=distance_meter)
-            
+                session.add(intermediate)
+                
             intermediate.data_source = model.Enum_Data_Source.world_rowing_pdf.value
             intermediate.result_time_ms = pdf_time
             intermediate.rank = computed_rank
