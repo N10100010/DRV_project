@@ -10,6 +10,7 @@ from sqlalchemy import func, desc, and_, or_, not_
 from sqlalchemy.orm import joinedload
 
 from .config import *
+from .common import bubble_up_2km_intermediate
 from model import model
 from model import dbutils
 from scraping_wr import api, pdf_race_data, pdf_result
@@ -229,20 +230,26 @@ def _parse_and_inject_pdf_intermediates(session, race: model.Race):
 
     intermediates_table = _create_intermediates_table(pdf_results_=pdf_results_)
 
-    for pdf_result_ in pdf_results_:
-        race_boat_name = pdf_result_.get('country','').strip().upper()
-        race_boat: model.Race_Boat = select_first(race.race_boats, lambda rb: rb.name == race_boat_name)
-        pdf_times = pdf_result_.get['times']
-        for mark in REQUIRED_INTERMEDIATES_MARKS:
-            pdf_time = Timedelta_Parser.to_millis(pdf_times[mark])
-            
-            intermediate: model.Intermediate_Time = select_first(race_boat.intermediates, lambda i: i.distance_meter == mark)
+    for distance_meter, boats_list in intermediates_table.items():
+        for boat_data in boats_list:
+            race_boat_name = boat_data['boat_name']
+            pdf_time = boat_data['result_time']
+            computed_rank = boat_data['rank']
+
+            race_boat: model.Race_Boat = select_first(race.race_boats, lambda rb: rb.name==race_boat_name)
+            intermediate: model.Intermediate_Time = select_first(race_boat.intermediates, lambda i: i.distance_meter==distance_meter)
             if not intermediate:
-                intermediate = model.Intermediate_Time(race_boat=race_boat, distance_meter=mark)
+                intermediate = model.Intermediate_Time(race_boat=race_boat, distance_meter=distance_meter)
+            
+            intermediate.data_source = model.Enum_Data_Source.world_rowing_pdf.value
+            intermediate.result_time_ms = pdf_time
+            intermediate.rank = computed_rank
+            intermediate.invalid_mark_result_code_id = None
+            intermediate.is_outlier = True
 
-        ... # also bubble up the 2km intermediate
-
-    pass
+            if distance_meter == 2000:
+                bubble_up_2km_intermediate(intermediate)
+    
 
 
 def _scrape_competition(session, competition: model.Competition, parse_pdf_race_data=True, parse_pdf_intermediates=True):
@@ -275,6 +282,7 @@ def _scrape_competition(session, competition: model.Competition, parse_pdf_race_
                 _parse_and_inject_pdf_intermediates(session=session, race=race)
             if parse_pdf_race_data:
                 _parse_and_inject_pdf_race_data(session=session, race=race)
+    session.commit()
 
 def scrape(parse_pdf=True):
     LEVEL_PRESCRAPED    = model.Enum_Maintenance_Level.world_rowing_api_prescraped.value
