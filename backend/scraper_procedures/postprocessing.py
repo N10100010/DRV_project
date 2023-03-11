@@ -117,7 +117,7 @@ def postprocess():
         logger.info(f"Bubble-down precedure (synchronize/create 2km intermediate)")
         bubble_down_2km_intermediate_(session=session, force_overwrite=True, outlier_val=True)
 
-        logger.info(f"Fetch & write world best times")
+        logger.info(f"Fetch & write world best times. Also syncs to 2km intermediate")
         refresh_world_best_times(session=session)
 
         logger.info("Outlier Marking")
