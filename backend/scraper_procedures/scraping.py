@@ -133,7 +133,7 @@ def _shallow_validation_pdf_intermediates(pdf_results, race: model.Race):
     """
     upper_ = lambda x: x.strip().upper() if isinstance(x, str) else x
 
-    pdf_boat_names = map(lambda d: d.get('country') , get_(pdf_results, 'data', {}))
+    pdf_boat_names = map(lambda d: d.get('country'), pdf_results)
     db_boat_names = map(lambda rb: rb.name, race.race_boats)
 
     pdf_boat_names = list(map(upper_, pdf_boat_names))
@@ -152,28 +152,27 @@ def _shallow_validation_pdf_intermediates(pdf_results, race: model.Race):
     return True
 
 
-def _intermediates_validation_pdf_intermediates(pdf_result_):
-    """ checks plausibility of parsed data from one boat/team
+def _intermediates_validation_pdf_intermediates(pdf_results):
+    """ checks plausibility of parsed data meaning that { 500, 1000, 1500, 2000 } has to have a result time for each boat
     (assumes 2km race course length with 500m resolution)
     """
     REQUIRED_MARKS = { 500, 1000, 1500, 2000 }
 
-    times = get_(pdf_result_, 'times', [])
+    valid = True
+    for pdf_result_ in pdf_results:
+        times = get_(pdf_result_, 'times', [])        
+        for required_mark in REQUIRED_MARKS:
+            if not required_mark in times:
+                return False
 
-    actual_marks = set(times.keys())
-    all_required_marks_present = REQUIRED_MARKS.issubset(actual_marks)
-    if not all_required_marks_present:
-        return False
-    
-    for mark in REQUIRED_MARKS:
-        result_time_str = get_(times, mark, None)
-        try:
-            result_time = Timedelta_Parser.to_millis(result_time_str)
-        except:
-            return False
-        
-        if result_time < 0:
-            return False
+            result_time_str = get_(times, required_mark, None)
+            try:
+                result_time = Timedelta_Parser.to_millis(result_time_str)
+            except:
+                return False
+            
+            if result_time < 0:
+                return False
 
     return True
     
@@ -182,30 +181,27 @@ def _intermediates_validation_pdf_intermediates(pdf_result_):
 def _parse_and_inject_pdf_intermediates(session, race: model.Race):
     url = race.pdf_url_results
     logger.info(f'Fetch & parse PDF results race="{race.additional_id_}" url="{url}"')
-    pdf_results_, _ = pdf_result.extract_data_from_pdf_urls([url])
-    if not pdf_results_:
+    pdf_parser_result__, _ = pdf_result.extract_data_from_pdf_urls([url])
+    if not pdf_parser_result__:
         logger.info(f'Failed to parse (or fetch)')
         return
     
+    pdf_results_ = get_(pdf_parser_result__, 'data', [])
+
     shallow_valid = _shallow_validation_pdf_intermediates(pdf_results=pdf_results_, race=race)
     if not shallow_valid:
-        logger.info(f'Validation using boat/team names failed')
+        logger.info(f'Validation failed: could not match all boat/team names')
         return
 
-    valid = True
-    for pdf_result_ in get_(pdf_results_, 'data', []):
-        pdf_data_seems_good = _intermediates_validation_pdf_intermediates(pdf_result_)
-        if not pdf_data_seems_good:
-            valid = False
-            break
-    
-    if not valid:
+    completeness_valid = _intermediates_validation_pdf_intermediates(pdf_results=pdf_result_)
+    if not completeness_valid:
         logger.info(f'Validation failed: incomplete data')
 
-    for pdf_result_ in get_(pdf_results_, 'data', []):
-        race_boat_name = pdf_result_.get('country','').upper()
+    for pdf_result_ in pdf_results_:
+        race_boat_name = pdf_result_.get('country','').strip().upper()
         race_boat: model.Race_Boat = select_first(race.race_boats, lambda rb: rb.name == race_boat_name)
-        ...
+        
+        ... # also bubble up the 2km intermediate
 
     pass
 
