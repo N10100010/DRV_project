@@ -341,18 +341,7 @@ def __wr_map_competition(session, entity: model.Competition, data):
 
 
 def wr_map_competition_scrape(session, entity: model.Competition, data: dict):
-    # Check maintenance state
-    STATE_RESULT_STATE = model.Enum_Maintenance_Level.world_rowing_api_scraped.value
-    STATE_UPPER_LIMIT  = STATE_RESULT_STATE
-
-    state = entity.scraper_maintenance_level
-    update_entity = state == None or state <= STATE_UPPER_LIMIT
-    if not update_entity:
-        return entity
-
-    entity.scraper_maintenance_level = STATE_RESULT_STATE
     entity.scraper_data_provider = model.Enum_Data_Provider.world_rowing.value
-    entity.scraper_last_scrape = dt.datetime.now()
 
     entity = __wr_map_competition(session, entity, data)
     return entity

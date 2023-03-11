@@ -87,29 +87,6 @@ def mark_outliers(session, logger=logger):
 
             # Low Prio TODO: session.commit() should ideally be executed here
 
-# def _get_competitions_to_maintain(session):
-#     """Returns tuple: competitions_iterator, number_of_competitions"""
-#     DATA_PROVIDER_ID = model.Enum_Data_Provider.world_rowing.value
-#     LEVEL_SCRAPED = model.Enum_Maintenance_Level.world_rowing_api_scraped.value
-#     LEVEL_POSTPROCESSED = model.Enum_Maintenance_Level.world_rowing_api_postprocessed.value
-#     scrape_before_date = datetime.datetime.now() - datetime.timedelta(days=int(SCRAPER_MAINTENANCE_PERIOD_DAYS))
-
-#     statement = (
-#         select(model.Competition)
-#         .where(model.Competition.scraper_data_provider == DATA_PROVIDER_ID)
-#         .where(
-#             or_(
-#                 model.Competition.scraper_maintenance_level == LEVEL_SCRAPED,
-#                 and_(
-#                     model.Competition.scraper_maintenance_level == LEVEL_POSTPROCESSED,
-#                     model.Competition.scraper_last_scrape < scrape_before_date
-#                 )
-#             )
-#         )
-#     )
-#     competitions = session.execute(statement).scalars().all()
-#     return competitions, len(competitions)
-
 
 def postprocess():
     logger = logging.getLogger("postprocessing")

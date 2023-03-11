@@ -31,7 +31,7 @@ def _get_competitions_to_scrape(session):
     statement = (
         select(model.Competition)
         .where(model.Competition.scraper_data_provider == DATA_PROVIDER_ID)
-        .where(model.Competition.scraper_maintenance_level.in_( [LEVEL_PRESCRAPED, LEVEL_SCRAPED] ))
+        #.where(model.Competition.scraper_maintenance_level.in_( [LEVEL_PRESCRAPED, LEVEL_SCRAPED] ))
         .order_by(
             desc(model.Competition.year),
             desc(model.Competition.start_date),
@@ -47,7 +47,7 @@ def _competition_within_rescrape_window(comp: model.Competition) -> bool:
     # LEVEL_SCRAPED is assumed
     rescrape_limit = datetime.datetime.now() - datetime.timedelta(days=int(SCRAPER_RESCRAPE_LIMIT_DAYS))
     # if only start date is given, assume X days for competition to take
-    competition_duration_default_assumption = 10
+    competition_duration_default_assumption = 14
     gracious_date_limit = rescrape_limit - datetime.timedelta(days=competition_duration_default_assumption)
     
     if comp.end_date:
@@ -287,12 +287,12 @@ def _scrape_competition(session, competition: model.Competition, parse_pdf_race_
 def scrape(parse_pdf=True):
     LEVEL_PRESCRAPED    = model.Enum_Maintenance_Level.world_rowing_api_prescraped.value
     LEVEL_SCRAPED       = model.Enum_Maintenance_Level.world_rowing_api_scraped.value
-    LEVEL_POSTPROCESSED = model.Enum_Maintenance_Level.world_rowing_api_postprocessed.value
 
     with model.Scoped_Session() as session:
         competitions_iter, num_competitions = _get_competitions_to_scrape(session=session)
         logger.info(f"Competitions that have to be scraped N={num_competitions}")
 
+        competition: model.Competition
         for competition in tqdm(competitions_iter):
             competition_uuid = competition.additional_id_
             logger.info(f'Competition uuid="{competition_uuid}"')
@@ -302,7 +302,7 @@ def scrape(parse_pdf=True):
                     continue
                 
                 scrape = True
-                if competition.scraper_maintenance_level in [LEVEL_SCRAPED, LEVEL_POSTPROCESSED]:
+                if competition.scraper_maintenance_level in [LEVEL_SCRAPED]:
                     scrape = _competition_within_rescrape_window(comp=competition)
 
                 if scrape:
@@ -314,13 +314,11 @@ def scrape(parse_pdf=True):
                         parse_pdf_race_data=parse_pdf,
                     )
 
-                # HIGH PRIO TODO:
-                #   - introduce deep_scrape/parse_pdf param?
-                #   - set maintenance state in the end
-                #   - set scraper_last_scrape in the end
+                    # mark competition as SCRAPED along with date for rescrape logic
+                    competition.scraper_maintenance_level = LEVEL_SCRAPED
+                    competition.scraper_last_scrape = datetime.datetime.now()
 
                 session.commit()
-                # Race Data PDF here or in maintain()
             except Exception as error:
                 logger.error(f'ERROR while scraping Competition uuid="{competition_uuid}"')
                 logger.error(str(error))
