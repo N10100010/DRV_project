@@ -148,6 +148,10 @@
 
           <v-row>
             <v-col cols="12">
+              <p v-show="outliers.size > 0" style="color: orange">
+                <v-icon color="orange">mdi-information</v-icon>
+                <b>Diese Tabelle enthält Ausreißerwerte.</b>
+              </p>
               <v-table class="tableStyles" density="compact">
                 <thead>
                 <tr>
@@ -156,7 +160,7 @@
                 </thead>
                 <tbody class="nth-grey">
                 <tr v-for="(country, idx) in tableData.slice(1)">
-                  <td v-for="item in country" class="px-2">
+                    <td v-for="item in country" :key="item" class="px-2" :style="{ color: Array.from(outliers).includes(idx) ? 'orange' : '' }">
                     <template v-if="Array.isArray(item)">
                       <template v-for="element in item">
                         <a v-if="element && typeof element === 'object'
@@ -275,6 +279,10 @@ export default {
     ...mapState(useRennstrukturAnalyseState, {
       intermediateChartOptions: "getIntermediateChartOptions"
     }),
+    ...mapState(useRennstrukturAnalyseState, {
+      outliers: "getOutlierCountries"
+    }),
+
   },
   data() {
     return {
