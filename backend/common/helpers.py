@@ -26,8 +26,26 @@ class Timedelta_Parser:
         if not isinstance(delta_str, str):
             raise TypeError("Not a string")
 
-        parsed = datetime.strptime(delta_str.strip(), '%H:%M:%S.%f')
+        PATTERNS = (
+            '%H:%M:%S.%f',
+            '%M:%S.%f',
+            '%S.%f'
+        )
 
+        parsed = None
+        error = None
+        for pattern in PATTERNS:
+            try:
+                parsed = datetime.strptime(delta_str.strip(), pattern)
+                break
+            except Exception as err:
+                error = err
+        if parsed == None:
+            if error == None:
+                raise Exception("Unexpected edge case")
+            else:
+                raise error
+        
         SECOND_IN_MICROSEC = 1000000
         MINUTE_IN_MICROSEC = 60 * SECOND_IN_MICROSEC
         HOUR_IN_MICROSEC   = 60 * MINUTE_IN_MICROSEC
