@@ -302,6 +302,10 @@ def wr_map_competition_prescrape(session, entity, data):
     entity.name = get_(data, 'DisplayName')
     with suppress(TypeError, ValueError):
         entity.year = int(get_(data, 'Year'))
+    with suppress(TypeError, ValueError):
+        entity.start_date = dt.datetime.fromisoformat(get_(data, 'StartDate', ''))
+    with suppress(TypeError, ValueError):
+        entity.end_date = dt.datetime.fromisoformat(get_(data, 'EndDate', ''))
     return entity
 
 
