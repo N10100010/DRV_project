@@ -81,12 +81,13 @@ def _date_of_competition(comp: model.Competition) -> datetime.date:
 
 def _parse_and_inject_pdf_race_data(session, race: model.Race):
     url = race.pdf_url_race_data
-    logger.info(f'Fetch & parse PDF race data race="{race.additional_id_}" url="{url}"')
+    logger.info(f'pdf_racedata:Fetch & parse PDF race data url="{url}"')
     pdf_race_data_, _ = pdf_race_data.extract_data_from_pdf_url([url])
     if not pdf_race_data_:
-        logger.info(f'Failed to parse (or fetch)')
+        logger.info(f'pdf_racedata:Failed to parse (or fetch)')
         return
-    
+    matched_log_list_ = []
+
     # Ideas:
     # - sanity check with parsed ranks
     # - check for multiple matches on either side.
@@ -103,7 +104,7 @@ def _parse_and_inject_pdf_race_data(session, race: model.Race):
             matched_rank = race_boat.rank == parsed_rank
 
             if matched_name: # optional -> matched_name and matched_rank
-                logger.info(f'Race data matched for "{race_boat.name}"')
+                matched_log_list_.append(race_boat.name)
                 data_ = get_(pdf_boat, 'data', {})
                 dists   = get_(data_, 'dist [m]', [])
                 speeds  = get_(data_, 'speed', [])
@@ -111,7 +112,7 @@ def _parse_and_inject_pdf_race_data(session, race: model.Race):
                 is_consistent = len(dists) == len(speeds) == len(strokes)
                 
                 if not is_consistent:
-                    logger.error(f'Data is inconsistent: Arrays have different lengths')
+                    logger.error(f'pdf_racedata:Data is inconsistent: Arrays have different lengths')
                     continue # TODO: consider not commiting for this Race_Boat at all
                 
                 for dist, speed, stroke in zip(dists, speeds, strokes):
@@ -124,10 +125,11 @@ def _parse_and_inject_pdf_race_data(session, race: model.Race):
                         race_data_point.speed_meter_per_sec = speed
                         race_data_point.stroke = stroke
                     except Exception:
-                        logger.error(f'Failed to write dist="{dist}" speed="{speed}" stroke="{stroke}"')
+                        logger.error(f'pdf_racedata:Failed to write dist="{dist}" speed="{speed}" stroke="{stroke}"')
                     else:
                         session.add(race_data_point)
                         race_boat.race_data.append(race_data_point)
+    logger.info(f'pdf_racedata:Race data matched for {matched_log_list_}')
 
 
 def _shallow_validation_pdf_intermediates(pdf_results, race: model.Race):
@@ -210,22 +212,22 @@ def _create_intermediates_table(pdf_results_):
 
 def _parse_and_inject_pdf_intermediates(session, race: model.Race):
     url = race.pdf_url_results
-    logger.info(f'Fetch & parse PDF results race="{race.additional_id_}" url="{url}"')
+    logger.info(f'pdf_results:Fetch & parse PDF results url="{url}"')
     pdf_parser_result__, _ = pdf_result.extract_data_from_pdf_urls([url])
     if not pdf_parser_result__:
-        logger.info(f'Failed to parse (or fetch)')
+        logger.info(f'pdf_results:Failed to parse (or fetch)')
         return
     
     pdf_results_ = get_(pdf_parser_result__, 'data', [])
 
     shallow_valid = _shallow_validation_pdf_intermediates(pdf_results=pdf_results_, race=race)
     if not shallow_valid:
-        logger.info(f'Validation failed: could not match all boat/team names')
+        logger.info(f'pdf_results:Validation failed: could not match all boat/team names')
         return
 
     completeness_valid = _intermediates_validation_pdf_intermediates(pdf_results_=pdf_results_)
     if not completeness_valid:
-        logger.info(f'Validation failed: incomplete data')
+        logger.info(f'pdf_results:Validation failed: incomplete data')
         return
 
     intermediates_table = _create_intermediates_table(pdf_results_=pdf_results_)
@@ -249,6 +251,8 @@ def _parse_and_inject_pdf_intermediates(session, race: model.Race):
 
             if distance_meter == 2000:
                 bubble_up_2km_intermediate(intermediate)
+
+    logger.info(f'pdf_results:Completely matched & written')
     
 
 
@@ -274,10 +278,11 @@ def _scrape_competition(session, competition: model.Competition, parse_pdf_race_
             )
     session.commit()
 
-    logger.info(f'Fetch & parse PDF race data')
     for event in competition.events:
         race: model.Race
         for race in event.races:
+            if parse_pdf_intermediates or parse_pdf_race_data:
+                logger.info(f'Begin PDF injection for race="{race.additional_id_}"')
             if parse_pdf_intermediates:
                 _parse_and_inject_pdf_intermediates(session=session, race=race)
             if parse_pdf_race_data:
