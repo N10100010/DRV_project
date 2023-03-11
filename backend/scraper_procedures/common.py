@@ -19,7 +19,7 @@ def bubble_up_2km_intermediate(intermediate: model.Intermediate_Time):
     intermediate.race_boat.invalid_mark_result_code_id = intermediate.invalid_mark_result_code_id
     intermediate.race_boat.rank = intermediate.rank
 
-def bubble_down_2km_intermediate(session, race_boat: model.Race_Boat, force_overwrite=True, outlier_val=True, logger=logger):
+def bubble_down_2km_intermediate(session, race_boat: model.Race_Boat, force_overwrite=True, outlier_val=True, logger=logger, data_source=None):
     """ synchronizes Race_Boat result data to its 2km Intermediate
     """
     written_something_ = False
@@ -35,6 +35,8 @@ def bubble_down_2km_intermediate(session, race_boat: model.Race_Boat, force_over
         intermediate.rank = race_boat.rank
         intermediate.result_time_ms = race_boat.result_time_ms
         intermediate.is_outlier = outlier_val
+        if data_source != None:
+            intermediate.data_source = data_source
 
     if create_new:
         session.add(intermediate)
