@@ -441,7 +441,6 @@ class Intermediate_Time(Base):
     is_outlier = Column(Boolean, nullable=False, default=True)
 
     # other wr API fields
-    difference__ = Column(String)
     start_position__ = Column(String)
 
 
