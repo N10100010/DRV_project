@@ -70,7 +70,7 @@ Debug with hot reload:
 python -m flask --app api_server:app --debug run
 ```
 
-**Note** Do not use this command for deployment. Use something like `gunicorn`.
+**Note** Do not use this command for deployment. Use something like `waitress` or `gunicorn`.
 
 ### Frontend (Node.js/Vue)
 
