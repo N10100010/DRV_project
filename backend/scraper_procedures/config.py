@@ -6,7 +6,7 @@ DAY_IN_SECONDS = 60 * 60 * 24
 SCRAPER_SLEEP_TIME_SECONDS = 1 * DAY_IN_SECONDS
 
 # Lower limit of competition date
-SCRAPER_YEAR_MIN = int(os.environ.get('SCRAPER_YEAR_MIN', '1900').strip())
+SCRAPER_YEAR_MIN = int(os.environ.get('SCRAPER_YEAR_MIN', '1986').strip())
 
 # Upper limit of competition date. (None -> unlimited)
 SCRAPER_YEAR_MAX = os.environ.get('SCRAPER_YEAR_MAX', None)
