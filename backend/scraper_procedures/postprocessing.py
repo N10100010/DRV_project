@@ -1,5 +1,6 @@
 import logging
 from contextlib import suppress
+from itertools import count
 
 from sqlalchemy import select, update
 from sqlalchemy.sql.expression import func
@@ -10,7 +11,7 @@ from model import model
 from model import dbutils
 from scraping_wr import api
 from scraper_procedures import outlier_detection
-from common.helpers import Timedelta_Parser, get_
+from common.helpers import Timedelta_Parser, get_, true_every_nth
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("postprocessing")
@@ -104,10 +105,13 @@ def bubble_down_2km_intermediate_(session, force_overwrite=True, outlier_val=Tru
     )
     iterator = session.execute(statement).scalars()
     entities_written = 0
-    for race_boat in iterator:
+    for race_boat, n, print_log in zip(iterator, count(), true_every_nth(1500)):
         written = bubble_down_2km_intermediate(session=session, race_boat=race_boat, force_overwrite=force_overwrite, outlier_val=outlier_val)
         if written:
             entities_written += 1
+
+        if print_log:
+            logger.info(f'... visited so far: {n}')
 
     session.commit()
     logger.info(f"Bubbled down count={entities_written}")

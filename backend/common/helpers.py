@@ -140,3 +140,11 @@ def stepfunction(x, stepsize=500):
     """
     stepsize = int(stepsize)
     return (((int(x)-1)//stepsize)+1) * stepsize 
+
+def true_every_nth(n):
+    while True:
+        for i in range(n):
+            if i == 0:
+                yield True
+            else:
+                yield False
