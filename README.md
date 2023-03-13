@@ -27,28 +27,36 @@ docker compose down --rmi all --volumes
 
 ## How to run things manually
 
-### (Preparation) Install required packages
+*Note that `.vscode` directory contains some useful debug configurations.*
 
-    pip install -r requirements.txt
+### (Preparation) Install required packages for the backend
+
+Using Python (at least v3.10), install all requirements.txt
+
+    pip install -r api.requirements.txt
+    pip install -r scraper.requirements.txt
 
 ### Database (PostgreSQL)
 
 - **[doc/DATABASE.md](doc/DATABASE.md)** describes how to
+    - Backup & restore
     - run a development PostgreSQL based on `docker-compose`
     - initialize tables
 - **[backend/README.md](backend/README.md)** describes how to
     - grab data from World Rowing API
 - **[backend/model/README.md](backend/model/README.md)** describes how to
     - create/drop tables
-    - insert data
+    - insert competition data
 
 ### Backend Scrape/Maintenance Process (Python)
+
+*Note: Working directory (cwd) is `backend/`*
 
     python scraper.py
 
 ### Backend API Server (Python/Flask)
 
-*Note: `pwd` is `backend/`*
+*Note: Working directory (cwd) is `backend/`*
 
 ```sh
 python -m flask --app api_server:app run
@@ -66,6 +74,6 @@ python -m flask --app api_server:app --debug run
 
 ### Frontend (Node.js/Vue)
 
-- **frontend/README.md** describes how to
+- **[frontend/README.md](frontend/README.md)** describes how to
     - install required packages
     - run the frontend
