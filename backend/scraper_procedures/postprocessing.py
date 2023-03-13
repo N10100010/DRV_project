@@ -29,7 +29,7 @@ def refresh_world_best_times(session):
     boat_classes = api.get_boatclasses()
     for wbt in wbts:
         boat_class_abbr = wbt.get('boat_class','')
-        logger.error(f'Boat Class "{boat_class_abbr}"')
+        logger.info(f'Boat Class "{boat_class_abbr}"')
         boat_class_data = _wr_select_boat_class(boat_classes, boat_class_abbr)
         if not boat_class_data:
             logger.error(f'Could not resolve uuid of boat class')
